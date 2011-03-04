@@ -1,10 +1,4 @@
 package AII;
-/* Copyright (C) 2003 University of Pennsylvania.
-   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
-http://www.cs.umass.edu/~mccallum/mallet
-This software is provided under the terms of the Common Public License,
-version 1.0, as published by http://www.opensource.org.  For further
-information, see the file `LICENSE' included with this distribution. */
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,29 +35,11 @@ import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.util.CommandOption;
 import cc.mallet.util.MalletLogger;
 
-/**
- * This class's main method trains, tests, or runs a generic CRF-based sequence
- * tagger.
- * <p>
- * Training and test files consist of blocks of lines, one block for each
- * instance, separated by blank lines. Each block of lines should have the first
- * form specified for the input of
- * {@link SimpleTaggerSentence2FeatureVectorSequence}. A variety of command line
- * options control the operation of the main program, as described in the
- * comments for {@link #main main}.
- * 
- * @author Fernando Pereira <a
- *         href="mailto:pereira@cis.upenn.edu">pereira@cis.upenn.edu</a>
- * @version 1.0
- */
-public class CRFTagger {
-	private static Logger logger = MalletLogger.getLogger(CRFTagger.class
+public class CRFTrain {
+	private static Logger logger = MalletLogger.getLogger(CRFTrain.class
 			.getName());
 
-	/**
-	 * No <code>SimpleTagger</code> objects allowed.
-	 */
-	private CRFTagger() {
+	private CRFTrain() {
 	}
 
 	/**
@@ -121,7 +97,7 @@ public class CRFTagger {
 			LabelAlphabet labels;
 			LabelSequence target = null;
 			String[][] tokens;
-			
+
 			if (inputData instanceof String)
 				tokens = parseSentence((String) inputData);
 			else if (inputData instanceof String[][])
@@ -129,16 +105,16 @@ public class CRFTagger {
 			else
 				throw new IllegalArgumentException(
 						"Not a String or String[][]; got " + inputData);
-			
+
 			FeatureVector[] fvs = new FeatureVector[tokens.length];
 			if (isTargetProcessing()) {
 				labels = (LabelAlphabet) getTargetAlphabet();
 				target = new LabelSequence(labels, tokens.length);
 			}
-			
+
 			for (int l = 0; l < tokens.length; l++) {
 				int nFeatures;
-				
+
 				if (isTargetProcessing()) {
 					if (tokens[l].length < 1)
 						throw new IllegalStateException(
@@ -149,7 +125,7 @@ public class CRFTagger {
 				} else {
 					nFeatures = tokens[l].length;
 				}
-				
+
 				ArrayList<Integer> featureIndices = new ArrayList<Integer>();
 				for (int f = 0; f < nFeatures; f++) {
 					int featureIndex = features.lookupIndex(tokens[l][f]);
@@ -160,29 +136,22 @@ public class CRFTagger {
 						featureIndices.add(featureIndex);
 					}
 				}
-				
+
 				int[] featureIndicesArr = new int[featureIndices.size()];
 				for (int index = 0; index < featureIndices.size(); index++) {
 					featureIndicesArr[index] = featureIndices.get(index);
 				}
-				
-				fvs[l] = false ? new AugmentableFeatureVector(
-						features, featureIndicesArr, null,
-						featureIndicesArr.length) : new FeatureVector(features,
-						featureIndicesArr);
-						/*
-						 * Whether to perform feature induction during training
-						 */
+		       	fvs[l] = new FeatureVector(features, featureIndicesArr);
 			}
-			
+
 			carrier.setData(new FeatureVectorSequence(fvs));
-			
+
 			if (isTargetProcessing()) {
 				carrier.setTarget(target);
 			} else {
 				carrier.setTarget(new LabelSequence(getTargetAlphabet()));
 			}
-			
+
 			return carrier;
 		}
 	}
@@ -219,52 +188,39 @@ public class CRFTagger {
 	 * @return the trained model
 	 */
 	public static CRF train(InstanceList training, InstanceList testing,
-			TransducerEvaluator eval, int[] orders, String defaultLabel,
+			int[] orders, String defaultLabel,
 			String forbidden, String allowed, boolean connected,
 			int iterations, double var, CRF crf) {
-		
+
 		Pattern forbiddenPat = Pattern.compile(forbidden);
 		Pattern allowedPat = Pattern.compile(allowed);
-		
+
 		if (crf == null) {
 			crf = new CRF(training.getPipe(), (Pipe) null);
+			
 			String startName = crf.addOrderNStates(training, orders, null,
 					defaultLabel, forbiddenPat, allowedPat, connected);
+			
 			for (int i = 0; i < crf.numStates(); i++)
 				crf.getState(i).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
+			
 			crf.getState(startName).setInitialWeight(0.0);
 		}
+		
 		logger.info("Training on " + training.size() + " instances");
+		
 		if (testing != null)
 			logger.info("Testing on " + testing.size() + " instances");
 
-		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood(
-				crf);
+		CRFTrainerByLabelLikelihood crft = new CRFTrainerByLabelLikelihood(crf);
 		crft.setGaussianPriorVariance(var);
-
-//		if (weightsOption.value.equals("dense")) {
-//			crft.setUseSparseWeights(false);
-//			crft.setUseSomeUnsupportedTrick(false);
-//		} else if (weightsOption.value.equals("some-dense")) {
-			crft.setUseSparseWeights(true);
-			crft.setUseSomeUnsupportedTrick(true);
-//		} else if (weightsOption.value.equals("sparse")) {
-//			crft.setUseSparseWeights(true);
-//			crft.setUseSomeUnsupportedTrick(false);
-//		} else {
-//			throw new RuntimeException("Unknown weights option: "
-//					+ weightsOption.value);
-//		}
+		crft.setUseSparseWeights(true);
+		crft.setUseSomeUnsupportedTrick(true);
 
 		boolean converged;
 		for (int i = 1; i <= iterations; i++) {
 			converged = crft.train(training, 1);
-			
-			if (i % 1 == 0 && eval != null) { 
-				// Change the 1 to higher integer to evaluate less often
-				eval.evaluate(crft);
-			}
-			
+
 			if (converged)
 				break;
 		}
@@ -273,27 +229,22 @@ public class CRFTagger {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String corpus = "corpus.txt";
-		String model = "crf.model";
-		
-		Reader trainingFile = null, testFile = null;
-		InstanceList trainingData = null, testData = null;
+		String corpus = "corpus/train_2.txt";
+		String model = "corpus/prueba_crf_2.model";
 
+		Reader trainingFile = null;
 		trainingFile = new FileReader(new File(corpus));
 
 		Pipe p = null;
 		p = new SimpleTaggerSentence2FeatureVectorSequence();
 		p.getTargetAlphabet().lookupIndex("O");
-
-		CRF crf = null;		
-		TransducerEvaluator eval = null;
-		
 		p.setTargetProcessing(true);
-		
+
+		InstanceList trainingData = null;
 		trainingData = new InstanceList(p);
-		trainingData.addThruPipe(new LineGroupIterator(trainingFile,
-				Pattern.compile("^\\s*$"), true));
-		
+		trainingData.addThruPipe(new LineGroupIterator(trainingFile, Pattern
+				.compile("^\\s*$"), true));
+
 		logger.info("Number of features in training data: "
 				+ p.getDataAlphabet().size());
 
@@ -304,15 +255,18 @@ public class CRFTagger {
 				buf.append(" ").append(targets.lookupObject(i).toString());
 			logger.info(buf.toString());
 		}
+
+		int[] list_of_label_Markov_orders = {1,2};
+		int iterations = 500;
 		
-//		crf = train(trainingData, testData, eval, ordersOption.value,
-//				"O", null,
-//				null, connectedOption.value,
-//				iterationsOption.value, gaussianVarianceOption.value, crf);
-//		
-//		ObjectOutputStream s = new ObjectOutputStream(
-//				new FileOutputStream(model));
-//		s.writeObject(crf);
-//		s.close();
+		CRF crf = null;
+		crf = train(trainingData, null, list_of_label_Markov_orders, "O",
+				"\\s", ".*", true, iterations,
+				10, crf);
+
+		ObjectOutputStream s = new ObjectOutputStream(new FileOutputStream(
+				model));
+		s.writeObject(crf);
+		s.close();
 	}
 }
