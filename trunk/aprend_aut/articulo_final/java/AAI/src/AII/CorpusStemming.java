@@ -55,8 +55,9 @@ public class CorpusStemming {
 				for (int i = 1; i < tokens.length; i++) {
 					out.write(" " + tokens[i]);	
 				}
+				out.write("\n");
         	} else {
-        		out.write(corpusLine);
+        		out.write("\n");
         	}        	
         }
 
