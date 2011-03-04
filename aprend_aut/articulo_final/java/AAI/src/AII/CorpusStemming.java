@@ -1,5 +1,8 @@
 package AII;
 
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.BufferedReader;
@@ -8,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.OutputStream;
+import java.util.Scanner;
 
 import org.tartarus.snowball.ext.spanishStemmer;
 
@@ -19,40 +23,46 @@ public class CorpusStemming {
 			System.exit(-1);
 		}
 
-		spanishStemmer stemmer = new spanishStemmer();
-
-		Reader reader;
-		reader = new InputStreamReader(new FileInputStream(args[1]));
-		reader = new BufferedReader(reader);
-
-		StringBuffer input = new StringBuffer();
-
-		OutputStream outstream;
-		outstream = System.out;
-
-		Writer output = new OutputStreamWriter(outstream);
-		output = new BufferedWriter(output);
-
-		int repeat = 1;
+		System.out.println("Corpus: " + args[0]);
+		System.out.println("Stemmed corpus: " + args[1]);
+		System.out.println("Stemming count: " + args[2]);
 		
-		int character;
-		while ((character = reader.read()) != -1) {
-			char ch = (char) character;
-			if (Character.isWhitespace((char) ch)) {
-				if (input.length() > 0) {
-					stemmer.setCurrent(input.toString());
-					for (int i = repeat; i != 0; i--) {
-						stemmer.stem();
-					}
-					output.write(stemmer.getCurrent());
-					output.write('\n');
-					input.delete(0, input.length());
+		spanishStemmer stemmer = new spanishStemmer();
+		
+		FileReader reader = new FileReader(args[0]);
+		BufferedReader in = new BufferedReader(reader);
+
+		FileWriter writer = new FileWriter(args[1]);
+		BufferedWriter out = new BufferedWriter(writer);
+
+		int repeat = Integer.parseInt(args[2]);
+		
+		String corpusLine;
+        while ((corpusLine = in.readLine()) != null) {
+        	corpusLine = corpusLine.trim();
+        	
+        	if (corpusLine.length() > 0) {
+        		String[] tokens = corpusLine.split(" ");
+        		String word = tokens[0];
+        		
+				stemmer.setCurrent(word);
+				
+				for (int i = repeat; i != 0; i--) {
+					stemmer.stem();
 				}
-			} else {
-				input.append(Character.toLowerCase(ch));
-			}
-		}
-		output.flush();
+				
+				out.write(stemmer.getCurrent());
+				for (int i = 1; i < tokens.length; i++) {
+					out.write(" " + tokens[i]);	
+				}
+        	} else {
+        		out.write(corpusLine);
+        	}        	
+        }
+
+        out.flush();
+        out.close();
+        in.close();
 	}
 
 }
