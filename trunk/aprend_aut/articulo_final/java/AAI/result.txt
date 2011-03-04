@@ -1,0 +1,293 @@
+Corpus: corpus/test_full_0.txt
+Salida: corpus/result_0.txt
+Total corpus tokens: 67144
+Total salida tokens: 67144
+===================================================
+>> Token 'CON_TILDE'
+Total: 17
+Errores: 3 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 14] 
+[O: 3] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 64903
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 64903] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 2224
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 2223] 
+===================================================
+Corpus: corpus/test_full_1.txt
+Salida: corpus/result_1.txt
+Total corpus tokens: 61651
+Total salida tokens: 61651
+===================================================
+>> Token 'CON_TILDE'
+Total: 47
+Errores: 2 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 45] 
+[O: 2] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 59276
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 59276] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 2328
+Errores: 0 (0%)
+
+Matriz de confusión:
+[SIN_TILDE: 2328] 
+===================================================
+Corpus: corpus/test_full_2.txt
+Salida: corpus/result_2.txt
+Total corpus tokens: 47137
+Total salida tokens: 47137
+===================================================
+>> Token 'CON_TILDE'
+Total: 65
+Errores: 5 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 60] 
+[O: 5] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 45519
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 45519] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1553
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 1552] 
+===================================================
+Corpus: corpus/test_full_3.txt
+Salida: corpus/result_3.txt
+Total corpus tokens: 51632
+Total salida tokens: 51632
+===================================================
+>> Token 'CON_TILDE'
+Total: 38
+Errores: 4 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 34] 
+[O: 4] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 49765
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 49765] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1829
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 1828] 
+===================================================
+Corpus: corpus/test_full_4.txt
+Salida: corpus/result_4.txt
+Total corpus tokens: 51255
+Total salida tokens: 51255
+===================================================
+>> Token 'CON_TILDE'
+Total: 6
+Errores: 0 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 6] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 49529
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 49529] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1720
+Errores: 0 (0%)
+
+Matriz de confusión:
+[SIN_TILDE: 1720] 
+===================================================
+Corpus: corpus/test_full_5.txt
+Salida: corpus/result_5.txt
+Total corpus tokens: 61023
+Total salida tokens: 61023
+===================================================
+>> Token 'CON_TILDE'
+Total: 14
+Errores: 0 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 14] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 59034
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 59034] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1975
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 1974] 
+===================================================
+Corpus: corpus/test_full_6.txt
+Salida: corpus/result_6.txt
+Total corpus tokens: 58352
+Total salida tokens: 58352
+===================================================
+>> Token 'CON_TILDE'
+Total: 15
+Errores: 0 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 15] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 56414
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 56414] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1923
+Errores: 2 (0%)
+
+Matriz de confusión:
+[O: 2] 
+[SIN_TILDE: 1921] 
+===================================================
+Corpus: corpus/test_full_7.txt
+Salida: corpus/result_7.txt
+Total corpus tokens: 56056
+Total salida tokens: 56056
+===================================================
+>> Token 'CON_TILDE'
+Total: 10
+Errores: 0 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 10] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 54267
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 54267] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1779
+Errores: 2 (0%)
+
+Matriz de confusión:
+[O: 2] 
+[SIN_TILDE: 1777] 
+===================================================
+Corpus: corpus/test_full_8.txt
+Salida: corpus/result_8.txt
+Total corpus tokens: 48725
+Total salida tokens: 48725
+===================================================
+>> Token 'CON_TILDE'
+Total: 12
+Errores: 1 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 11] 
+[O: 1] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 47346
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 47346] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1367
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 1366] 
+===================================================
+Corpus: corpus/test_full_9.txt
+Salida: corpus/result_9.txt
+Total corpus tokens: 59161
+Total salida tokens: 59161
+===================================================
+>> Token 'CON_TILDE'
+Total: 14
+Errores: 0 (0%)
+
+Matriz de confusión:
+[CON_TILDE: 14] 
+===================================================
+===================================================
+>> Token 'O'
+Total: 57168
+Errores: 0 (0%)
+
+Matriz de confusión:
+[O: 57168] 
+===================================================
+===================================================
+>> Token 'SIN_TILDE'
+Total: 1979
+Errores: 1 (0%)
+
+Matriz de confusión:
+[O: 1] 
+[SIN_TILDE: 1978] 
+===================================================
