@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import cc.mallet.fst.CRF;
@@ -34,34 +35,80 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.types.Token;
+import cc.mallet.types.TokenSequence;
+import cc.mallet.util.PropertyList;
 
 public class CRFTrain {
 
 	private CRFTrain() {
 	}
 
-	public static CRF TrainCRF(String trainingFilename)
-			throws IOException {
+	public static class SimpleTokenSentence2FeatureVectorSequence extends Pipe {
+		private static final long serialVersionUID = -2059308802200728626L;
+
+		public SimpleTokenSentence2FeatureVectorSequence(Alphabet dataDict) {
+			super(dataDict, null);
+		}
+
+		public SimpleTokenSentence2FeatureVectorSequence() {
+			super(new Alphabet(), null);
+		}
+
+		public Instance pipe(Instance carrier) {
+			TokenSequence tokens = (TokenSequence) carrier.getData();
+			Alphabet features = getDataAlphabet();
+
+			FeatureVector[] fvs = new FeatureVector[tokens.size()];
+
+			for (int l = 0; l < tokens.size(); l++) {
+				ArrayList<Integer> featureIndices = new ArrayList<Integer>();
+
+				int featureIndex;
+				featureIndex = features.lookupIndex(tokens.get(l).getText());
+				if (featureIndex >= 0) {
+					featureIndices.add(featureIndex);
+				}
+
+				if (tokens.get(l).getFeatures() != null) {
+					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
+							.getFeatures().iterator();
+					while (iter.hasNext()) {
+						iter.next();
+
+						if (iter.hasNext() || !isTargetProcessing()) {
+							featureIndex = features.lookupIndex(iter.getKey());
+							if (featureIndex >= 0) {
+								featureIndices.add(featureIndex);
+							}
+						}
+					}
+				}
+
+				int[] featureIndicesArr = new int[featureIndices.size()];
+				for (int index = 0; index < featureIndices.size(); index++) {
+					featureIndicesArr[index] = featureIndices.get(index);
+				}
+
+				fvs[l] = new FeatureVector(features, featureIndicesArr);
+			}
+
+			carrier.setData(new FeatureVectorSequence(fvs));
+
+			return carrier;
+		}
+	}
+
+	public static CRF TrainCRF(String trainingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
-		int[][] conjunctions = new int[2][];
-		conjunctions[0] = new int[] { -1 };
-		conjunctions[1] = new int[] { 1 };
-
-		pipes.add(new SimpleTaggerSentence2TokenSequence(true));
-//		pipes.add(new OffsetConjunctions(conjunctions));
-		// pipes.add(new FeaturesInWindow("PREV-", -1, 1));
-		// pipes.add(new TokenTextCharSuffix("C1=", 1));
-		// pipes.add(new TokenTextCharSuffix("C2=", 2));
-		// pipes.add(new TokenTextCharSuffix("C3=", 3));
-//		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
-//		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
-//		pipes.add(new RegexMatches("HYPHENATED", Pattern.compile(".*[\\-|_].*")));
-		// pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
-//		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
-//		pipes.add(new TokenSequenceLowercase());
-		pipes.add(new TokenSequence2FeatureVectorSequence());
-
+		pipes.add(new SimpleTaggerSentence2TokenSequence());
+		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
+		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
+		pipes.add(new RegexMatches("HYPHENATED", Pattern.compile(".*[\\-|\\_].*")));
+		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
+		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
+		pipes.add(new TokenSequenceLowercase());
+		pipes.add(new CRFTrain.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -71,18 +118,32 @@ public class CRFTrain {
 
 		CRF crf = new CRF(pipe, null);
 
+		// Errores: 3/0/0
 		int[] orders = { 1 };
-	    Pattern forbiddenPat = Pattern.compile("\\s");
-	    Pattern allowedPat = Pattern.compile(".*");
-		
+		Pattern forbiddenPat = Pattern.compile("\\s");
+		Pattern allowedPat = Pattern.compile(".*");
+
 		String startName = crf.addOrderNStates(trainingInstances, orders, null,
-				"O",forbiddenPat, allowedPat, true);
+				"O", forbiddenPat, allowedPat, true);
 		for (int i = 0; i < crf.numStates(); i++)
 			crf.getState(i).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
 		crf.getState(startName).setInitialWeight(0.0);
-
-//	    crf.addStatesForLabelsConnectedAsIn(trainingInstances);
-	    
+		
+//		crf.addStatesForLabelsConnectedAsIn(trainingInstances);
+//		crf.addStartState();
+		
+		// Muchos errores
+//		crf.addStatesForBiLabelsConnectedAsIn(trainingInstances);
+//		crf.addStartState();
+		
+		// Errores: 3/0/2
+//		crf.addStatesForHalfLabelsConnectedAsIn(trainingInstances);
+//		crf.addStartState();
+		
+		// Errores: 3/0/2
+//		crf.addStatesForThreeQuarterLabelsConnectedAsIn(trainingInstances);
+//		crf.addStartState();
+	
 		CRFTrainerByLabelLikelihood trainer = new CRFTrainerByLabelLikelihood(
 				crf);
 		trainer.setGaussianPriorVariance(10.0);
@@ -93,7 +154,8 @@ public class CRFTrain {
 		// CRFTrainerByL1LabelLikelihood trainer =
 		// new CRFTrainerByL1LabelLikelihood(crf, 0.75);
 
-		//trainer.addEvaluator(new PerClassAccuracyEvaluator(trainingInstances, "training"));
+		// trainer.addEvaluator(new PerClassAccuracyEvaluator(trainingInstances,
+		// "training"));
 		trainer.train(trainingInstances, 500);
 
 		return crf;

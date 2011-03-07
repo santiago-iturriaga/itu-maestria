@@ -23,48 +23,100 @@ import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureVector;
+import cc.mallet.types.FeatureVectorSequence;
+import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
+import cc.mallet.types.TokenSequence;
 
 public class HMMTrain {
+	public static class SimpleTokenSentence2FeatureSequence extends Pipe {
+		private static final long serialVersionUID = -2059308802200728626L;
+
+		public SimpleTokenSentence2FeatureSequence(Alphabet dataDict) {
+			super(dataDict, null);
+		}
+
+		public SimpleTokenSentence2FeatureSequence() {
+			super(new Alphabet(), null);
+		}
+
+		public Instance pipe(Instance carrier) {
+			TokenSequence tokens = (TokenSequence) carrier.getData();
+			Alphabet features = getDataAlphabet();
+
+			FeatureVector[] fvs = new FeatureVector[tokens.size()];
+
+			for (int l = 0; l < tokens.size(); l++) {
+				ArrayList<Integer> featureIndices = new ArrayList<Integer>();
+
+				int featureIndex;
+				featureIndex = features.lookupIndex(tokens.get(l).getText());
+				if (featureIndex >= 0) {
+					featureIndices.add(featureIndex);
+				}
+
+				if (tokens.get(l).getFeatures() != null) {
+					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
+							.getFeatures().iterator();
+					while (iter.hasNext()) {
+						iter.next();
+
+						if (iter.hasNext() || !isTargetProcessing()) {
+							featureIndex = features.lookupIndex(iter.getKey());
+							if (featureIndex >= 0) {
+								featureIndices.add(featureIndex);
+							}
+						}
+					}
+				}
+
+				int[] featureIndicesArr = new int[featureIndices.size()];
+				for (int index = 0; index < featureIndices.size(); index++) {
+					featureIndicesArr[index] = featureIndices.get(index);
+				}
+
+				fvs[l] = new FeatureVector(features, featureIndicesArr);
+			}
+
+			carrier.setData(new FeatureVectorSequence(fvs));
+
+			return carrier;
+		}
+	}
+	
 	public static HMM TrainHMM(String trainingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
-		int[][] conjunctions = new int[2][];
-		conjunctions[0] = new int[] { -1 };
-		conjunctions[1] = new int[] { 1 };
-		
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
-		pipes.add(new OffsetConjunctions(conjunctions));
-		// pipes.add(new FeaturesInWindow("PREV-", -1, 1));
-		// pipes.add(new TokenTextCharSuffix("C1=", 1));
-		// pipes.add(new TokenTextCharSuffix("C2=", 2));
-		// pipes.add(new TokenTextCharSuffix("C3=", 3));
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
 		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
-		pipes.add(new RegexMatches("HYPHENATED", Pattern.compile(".*[\\-|_].*")));
-		// pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
+		pipes.add(new RegexMatches("HYPHENATED", Pattern.compile(".*[\\-|\\_].*")));
+		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
 		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
 		pipes.add(new TokenSequenceLowercase());
-		pipes.add(new TokenSequence2FeatureSequence());
-
+		pipes.add(new CRFTrain.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
-		trainingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(new InputStreamReader(new FileInputStream(trainingFilename))), Pattern.compile("^\\s*$"), true));
+		trainingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
+				new InputStreamReader(new FileInputStream(trainingFilename))),
+				Pattern.compile("^\\s*$"), true));
 		
 		HMM hmm = new HMM(pipe, null);
 
-//		int[] orders = { 1 };
-//	    Pattern forbiddenPat = Pattern.compile("\\s");
-//	    Pattern allowedPat = Pattern.compile(".*");
+		int[] orders = { 1 };
+	    Pattern forbiddenPat = Pattern.compile("\\s");
+	    Pattern allowedPat = Pattern.compile(".*");
 		
-//		String startName = hmm.addOrderNStates(trainingInstances, orders, null,
-//				"O",forbiddenPat, allowedPat, true);
-//		for (int i = 0; i < hmm.numStates(); i++)
-//			hmm.getState(i).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
-//		hmm.getState(startName).setInitialWeight(0.0);
+		String startName = hmm.addOrderNStates(trainingInstances, orders, null,
+				"O",forbiddenPat, allowedPat, true);
+		for (int i = 0; i < hmm.numStates(); i++)
+			hmm.getState(i).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
+		hmm.getState(startName).setInitialWeight(0.0);
 		
-		hmm.addStatesForLabelsConnectedAsIn(trainingInstances);
+		//hmm.addStatesForLabelsConnectedAsIn(trainingInstances);
 		
 		HMMTrainerByLikelihood trainer = 
 			new HMMTrainerByLikelihood(hmm);
