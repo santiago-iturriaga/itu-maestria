@@ -16,7 +16,7 @@ import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 
-public class HMMTest {
+public class MEMMTest {
 
 	/**
 	 * @param args
