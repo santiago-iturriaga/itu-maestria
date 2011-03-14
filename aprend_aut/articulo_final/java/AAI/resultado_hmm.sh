@@ -1,0 +1,1 @@
+./comparar_resultado.sh corpus/test_full_2.txt corpus/hmm_2.result.txt
