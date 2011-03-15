@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	char *arch_inst;	// Archivo de texto con la instancia del problema a resolver.
 	int NT; 			// Cantidad de tareas.
 	int NM; 			// Cantidad de máquinas.
 	int *Priority;		// Array de prioridades de tareas.
@@ -28,7 +29,6 @@ int main(int argc, char *argv[]) {
 	int *lastAsig;		// Array con la cantidad de tareas asignadas a cada máquina.
 
 	{
-		char *arch_inst;
 		arch_inst = (char *) malloc(sizeof(char) * 120);
 		strcpy(arch_inst, argv[1]);
 
@@ -42,7 +42,6 @@ int main(int argc, char *argv[]) {
 
 		// Cargo el tamaño de la instancia de la primer línea del archivo de texto. ================
 		fscanf(fi, "%d %d", &NT, &NM);
-		fprintf(stdout, "NT: %d, NM: %d\n", NT, NM);
 
 		// Cargo la la lista de prioridades de las tareas. =========================================
 		int i, j;
@@ -155,8 +154,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	fprintf(stdout, "Makespan: %f\n", makespan);
-
 	// WRR final de la solución.
 	float total_wrr = 0.0;
 
@@ -174,7 +171,14 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	fprintf(stdout, "WRR: %f\n", total_wrr);
+	if (DEBUG == 0) {
+		fprintf(stdout, "%s|%d|%d|%f|%f\n", arch_inst, NT, NM, makespan, total_wrr);
+	} else {
+		fprintf(stdout, "%s\n", arch_inst);
+		fprintf(stdout, "NT: %d, NM: %d\n", NT, NM);
+		fprintf(stdout, "Makespan: %f\n", makespan);
+		fprintf(stdout, "WRR: %f\n", total_wrr);
+	}
 
 	return EXIT_SUCCESS;
 }
