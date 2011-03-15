@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
 			min_wrr_task = FLT_MAX;
 			second_min_wrr_task = FLT_MAX;
 			best_mach_task = -1;
-			sufferage_task = 0.0;
+			sufferage_task = -1.0;
 
 			if (asig[i] == NO_ASIG) {
 				float wrr = 0.0;
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
 						min_wrr_task = wrr;
 						best_mach_task = j;
 					} else {
-						if (wrr < second_min_wrr_task) {
+						if (wrr <= second_min_wrr_task) {
 							second_min_wrr_task = wrr;
 						}
 					}
@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 				sufferage_task = second_min_wrr_task - min_wrr_task;
 			}
 
-			if (sufferage_task > worst_sufferage) {
+			if (sufferage_task >= worst_sufferage) {
 				worst_sufferage = sufferage_task;
 				best_task = i;
 				best_machine = best_mach_task;
