@@ -68,7 +68,7 @@ public class SVMCorpus {
 			
 			HashMap<String, Integer> alfabeto;
 			
-			for (int i = 0; i < 1; i++) {
+			for (int i = 0; i < 10; i++) {
 				alfabeto = new HashMap<String, Integer>();
 				
 				reader = new FileReader(corpus);
@@ -140,13 +140,13 @@ public class SVMCorpus {
 									}
 									
 									String nGram = "";
-									if (prevWordTag > 0) {
-										nGram += " 2:" + prevWordTag;
-										
-										if (prevPrevWordTag > 0) {
-											nGram += " 3:" + prevPrevWordTag;
-										}
-									}
+//									if (prevWordTag > 0) {
+//										nGram += " 2:" + prevWordTag;
+//										
+//										if (prevPrevWordTag > 0) {
+//											nGram += " 3:" + prevPrevWordTag;
+//										}
+//									}
 									
 									testBuffWriter.write(tagIndex + " qid:" + testLine + " 1:" + alfabeto.get(word) + nGram + " # " + word + "\n");
 									testBuffWriterFull.write(tagIndex + "\n");
@@ -189,13 +189,13 @@ public class SVMCorpus {
 									}
 
 									String nGram = "";
-									if (prevWordTag > 0) {
-										nGram += " 2:" + prevWordTag;
-										
-										if (prevPrevWordTag > 0) {
-											nGram += " 3:" + prevPrevWordTag;
-										}
-									}
+//									if (prevWordTag > 0) {
+//										nGram += " 2:" + prevWordTag;
+//										
+//										if (prevPrevWordTag > 0) {
+//											nGram += " 3:" + prevPrevWordTag;
+//										}
+//									}
 									
 									trainBuffWriter.write(tagIndex + " qid:" + exampleLine + " 1:" + alfabeto.get(word) + nGram + " # " + word + "\n");
 									

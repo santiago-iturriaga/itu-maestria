@@ -1,6 +1,7 @@
 package AII;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -169,7 +170,7 @@ public class CRFTrain {
 		}
 
 		TransducerTrainer trainer = null;
-		
+
 		if (t == 0) {
 			trainer = new CRFTrainerByLabelLikelihood(crf);
 			((CRFTrainerByLabelLikelihood) trainer)
@@ -191,14 +192,18 @@ public class CRFTrain {
 		for (int t = 0; t < 3; t++) {
 			for (int p = 0; p < 3; p++) {
 				for (int i = 0; i < 9; i++) {
-					String model = "corpus/crf_" + i + "_" + p + "_" + t + ".model";
+					String model = "corpus/crf_" + i + "_" + p + "_" + t
+							+ ".model";
 
-					CRF modelObj = TrainCRF(train, i, p, t);
+					File modelFile = new File(model);
+					if (!modelFile.exists()) {
+						CRF modelObj = TrainCRF(train, i, p, t);
 
-					ObjectOutputStream s = new ObjectOutputStream(
-							new FileOutputStream(model));
-					s.writeObject(modelObj);
-					s.close();
+						ObjectOutputStream s = new ObjectOutputStream(
+								new FileOutputStream(model));
+						s.writeObject(modelObj);
+						s.close();
+					}
 				}
 			}
 		}
