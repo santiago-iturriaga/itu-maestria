@@ -23,16 +23,14 @@ public class SVMCorpus {
 		String corpus = "/home/santiago/eclipse/java-workspace/AAI/corpus.txt";
 		String path = "/home/santiago/eclipse/java-workspace/AAI/corpus_svm/";
 
-//		if (args.length == 2) {
-//			corpus = args[0];
-//			
-//			path = args[1];
-//			if (path.charAt(path.length()-1) == '/') {
-//				path = path.substring(0, path.length()-1);
-//			}
-//		} else {
-//			System.exit(-1);
-//		}
+		if (args.length == 2) {
+			corpus = args[0];
+			
+			path = args[1];
+			if (path.charAt(path.length()-1) == '/') {
+				path = path.substring(0, path.length()-1);
+			}
+		}
 
 		System.out.println("Corpus: " + corpus);
 	
