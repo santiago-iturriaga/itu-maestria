@@ -1,0 +1,18 @@
+# -------------------------------------------------------------
+#SVMTool configuration file for English on the whole WSJ corpus
+# -------------------------------------------------------------
+#prefix of the model files which will be created
+NAME = svmt_c2
+# -------------------------------------------------------------
+#location of the training set
+TRAINSET = /home/santiago/eclipse/java-workspace/AAI/corpus/train_2.txt
+TESTSET = /home/santiago/eclipse/java-workspace/AAI/corpus/test_full_2.txt
+# -------------------------------------------------------------
+#location of the Joachims svmlight software
+SVMDIR = /home/santiago/Facultad/AAI/svm_light/
+# -------------------------------------------------------------
+#action items
+# -------------------------------------------------------------
+do M0 LR T
+# -------------------------------------------------------------
+

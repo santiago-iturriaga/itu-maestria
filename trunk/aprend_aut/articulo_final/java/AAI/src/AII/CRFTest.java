@@ -23,7 +23,7 @@ public class CRFTest {
 	 */
 	public static void main(String[] args) throws Throwable {
 		String testingFilename = "corpus/test_2.txt";
-		String modelFilename = "corpus/crf_2.model";
+		String modelFilename = args[0]; //"corpus/crf_2.model";
 
 		ObjectInputStream s = new ObjectInputStream(new FileInputStream(
 				modelFilename));
