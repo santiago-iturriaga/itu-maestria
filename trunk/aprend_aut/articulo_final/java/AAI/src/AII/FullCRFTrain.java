@@ -1,43 +1,38 @@
 package AII;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import cc.mallet.fst.HMM;
-import cc.mallet.fst.HMMTrainerByLikelihood;
-import cc.mallet.fst.MEMM;
-import cc.mallet.fst.MEMMTrainer;
-import cc.mallet.fst.PerClassAccuracyEvaluator;
+import cc.mallet.fst.CRF;
+import cc.mallet.fst.CRFTrainerByL1LabelLikelihood;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
+import cc.mallet.fst.CRFTrainerByStochasticGradient;
 import cc.mallet.fst.Transducer;
-import cc.mallet.fst.TransducerEvaluator;
+import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.SimpleTaggerSentence2TokenSequence;
-import cc.mallet.pipe.TokenSequence2FeatureSequence;
-import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
 import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSequence;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
-import cc.mallet.types.Sequence;
 import cc.mallet.types.TokenSequence;
 
-public class MEMMTrain {
+public class FullCRFTrain {
+
 	public static class SimpleTokenSentence2FeatureVectorSequence extends Pipe {
 		private static final long serialVersionUID = -2059308802200728626L;
 
@@ -93,25 +88,24 @@ public class MEMMTrain {
 		}
 	}
 
-	public static MEMM TrainMEMM(String trainingFilename, int i, int p)
-			throws IOException {
+	public static CRF TrainCRF(String trainingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
-		pipes.add(new SimpleTaggerSentence2TokenSequence());
 
-		if (p == 0) {
-			int[][] conjunctions = new int[1][];
-			conjunctions[0] = new int[] { 1 };
-			pipes.add(new OffsetConjunctions(conjunctions));
-			pipes.add(new MEMMTrain.SimpleTokenSentence2FeatureVectorSequence());
-		} else if (p == 1) {
-			int[][] conjunctions = new int[2][];
-			conjunctions[0] = new int[] { 1 };
-			conjunctions[1] = new int[] { -1 };
-			pipes.add(new OffsetConjunctions(conjunctions));
-			pipes.add(new MEMMTrain.SimpleTokenSentence2FeatureVectorSequence());
-		} else if (p == 2) {
-			pipes.add(new MEMMTrain.SimpleTokenSentence2FeatureVectorSequence());
-		}
+		pipes.add(new SimpleTaggerSentence2TokenSequence());
+		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
+		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
+		pipes.add(new RegexMatches("HYPHENATED", Pattern
+				.compile(".*[\\-|\\_].*")));
+		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
+		pipes.add(new RegexMatches("SIGN", Pattern.compile(".*[\\!|\\?].*")));
+		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
+		pipes.add(new TokenSequenceLowercase());
+
+		int[][] conjunctions = new int[1][];
+		conjunctions[0] = new int[] { 1 };
+		pipes.add(new OffsetConjunctions(conjunctions));
+		pipes.add(new FullCRFTrain.SimpleTokenSentence2FeatureVectorSequence());
+
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -119,58 +113,33 @@ public class MEMMTrain {
 				new InputStreamReader(new FileInputStream(trainingFilename))),
 				Pattern.compile("^\\s*$"), true));
 
-		MEMM memm = new MEMM(pipe, null);
+		CRF crf = new CRF(pipe, null);
+		crf.addStatesForHalfLabelsConnectedAsIn(trainingInstances);
 
-		if (i == 0)
-			memm.addFullyConnectedStatesForBiLabels();
-		else if (i == 1)
-			memm.addFullyConnectedStatesForLabels();
-		else if (i == 2)
-			memm.addFullyConnectedStatesForThreeQuarterLabels(trainingInstances);
-		else if (i == 3)
-			memm.addFullyConnectedStatesForTriLabels();
-		else if (i == 4)
-			memm.addStatesForBiLabelsConnectedAsIn(trainingInstances);
-		else if (i == 5)
-			memm.addStatesForHalfLabelsConnectedAsIn(trainingInstances);
-		else if (i == 6)
-			memm.addStatesForLabelsConnectedAsIn(trainingInstances);
-		else if (i == 7)
-			memm.addStatesForThreeQuarterLabelsConnectedAsIn(trainingInstances);
-		else if (i == 8) {
-			int[] orders = { 1 };
-			Pattern forbiddenPat = Pattern.compile("\\s");
-			Pattern allowedPat = Pattern.compile(".*");
+		TransducerTrainer trainer = null;
+		trainer = new CRFTrainerByLabelLikelihood(crf);
+		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(10.0);
 
-			String startName = memm.addOrderNStates(trainingInstances, orders,
-					null, "O", forbiddenPat, allowedPat, true);
-			for (int s = 0; s < memm.numStates(); s++)
-				memm.getState(s).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
-			memm.getState(startName).setInitialWeight(0.0);
-		}
-
-		MEMMTrainer trainer = new MEMMTrainer(memm);
 		trainer.train(trainingInstances, 500);
 
-		return memm;
+		return crf;
 	}
 
 	public static void main(String[] args) throws Exception {
-		{
-			String train = "corpus/train_2.txt";
-			
-			for (int p = 0; p < 3; p++) {
-				for (int i = 0; i < 9; i++) {
-					String model = "corpus/memm_" + i + "_" + p + ".model";
+		for (int i = 0; i < 10; i++) {
+			String train = "corpus/train_" + i + ".txt";
+			String model = "model_crf/crf_" + i + ".model";
 
-					MEMM modelObj = TrainMEMM(train, i, p);
+			File modelFile = new File(model);
+			if (!modelFile.exists()) {
+				CRF modelObj = TrainCRF(train);
 
-					ObjectOutputStream s = new ObjectOutputStream(
-							new FileOutputStream(model));
-					s.writeObject(modelObj);
-					s.close();
-				}
+				ObjectOutputStream s = new ObjectOutputStream(
+						new FileOutputStream(model));
+				s.writeObject(modelObj);
+				s.close();
 			}
 		}
 	}
+
 }

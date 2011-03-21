@@ -1,3 +1,24 @@
+Mejores:
+
+Salida: corpus/crf_5_0_0.result.txt
+>>> Errores: 3 (0.006364427095487621%)
+
+Salida: corpus/crf_2_2_2.result.txt
+>>> Errores: 4 (0.008485902793983494%)
+
+Salida: corpus/crf_2_2_0.result.txt
+>>> Errores: 4 (0.008485902793983494%)
+
+Salida: corpus/crf_2_1_2.result.txt
+>>> Errores: 4 (0.008485902793983494%)
+
+Salida: corpus/crf_2_1_0.result.txt
+>>> Errores: 4 (0.008485902793983494%)
+
+Salida: corpus/crf_2_0_2.result.txt
+>>> Errores: 4 (0.008485902793983494%)
+
+===================================================
 Corpus: corpus/test_full_2.txt
 Salida: corpus/crf_0_0_0.result.txt
 Total corpus tokens: 47137
