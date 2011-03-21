@@ -24,7 +24,7 @@ public class HMMTest {
 	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) throws Throwable {
-		String testingFilename = "corpus/test_1.txt";
+		String testingFilename = "corpus/test_2.txt";
 		String modelFilename = args[0]; //"corpus/hmm_1.model";
 
 		ObjectInputStream s = new ObjectInputStream(new FileInputStream(

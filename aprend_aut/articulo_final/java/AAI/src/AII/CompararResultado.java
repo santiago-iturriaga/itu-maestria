@@ -95,17 +95,22 @@ public class CompararResultado {
 			System.out.println("Total corpus tokens: " + corpusTokenIndex / 2);
 			System.out.println("Total salida tokens: " + salidaTokenIndex);
 			
+			int totalError = 0;
+
+			System.out.println("===================================================");
+			
 			Iterator<String> keys = tokens.keySet().iterator();
 			while (keys.hasNext()) {
 				String token;
 				token = keys.next();
 
-				System.out.println("===================================================");
 				System.out.println(">> Token '" + token + "'");
 				System.out.println("Total: " + tokens.get(token));
-				System.out.println("Errores: " + tokensErrors.get(token) + " (" + tokensErrors.get(token)/tokens.get(token)*100 + "%)");
+				System.out.println("Errores: " + tokensErrors.get(token) + " (" + (double)tokensErrors.get(token) / (double)tokens.get(token) * 100.0 + "%)");
 				System.out.println();
 				System.out.println("Matriz de confusión:");
+							
+				totalError += tokensErrors.get(token);
 				
 				TreeMap<String, Integer> tokenMatrizConfusion = tokensMatrizConfusion.get(token);
 				Iterator<String> keysConfusion = tokenMatrizConfusion.keySet().iterator();
@@ -115,9 +120,9 @@ public class CompararResultado {
 					
 					System.out.println("[" + tokenConfusion + ": " + tokenMatrizConfusion.get(tokenConfusion) + "] ");
 				}
-								
-				System.out.println("===================================================");
 			}
+			System.out.println(">>> Errores: " + totalError + " (" + (double)totalError / (double)salidaTokenIndex * 100.0 + "%)");
+			System.out.println("===================================================");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

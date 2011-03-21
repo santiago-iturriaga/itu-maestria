@@ -1,10 +1,2 @@
-./0_test_simple.sh
-./1_test_simple.sh
-./2_test_simple.sh
-./3_test_simple.sh
-./4_test_simple.sh
-./5_test_simple.sh
-./6_test_simple.sh
-./7_test_simple.sh
-./8_test_simple.sh
-./9_test_simple.sh
+./test_hmm_prueba.sh
+./test_crf_prueba.sh
