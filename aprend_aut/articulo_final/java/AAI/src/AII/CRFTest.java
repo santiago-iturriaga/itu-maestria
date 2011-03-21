@@ -16,11 +16,6 @@ import cc.mallet.types.Sequence;
 
 public class CRFTest {
 
-	/**
-	 * @param args
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
-	 */
 	public static void main(String[] args) throws Throwable {
 		String testingFilename = "corpus/test_2.txt";
 		String modelFilename = args[0]; //"corpus/crf_2.model";
