@@ -9,7 +9,7 @@ do
 	#SVMTool configuration file for English on the whole WSJ corpus
 	# -------------------------------------------------------------
 	#prefix of the model files which will be created
-	echo "NAME = svm_t${i}" > model_svm/train_${i}.svmt
+	echo "NAME = svm_t${i}" > train_${i}.svmt
 	# -------------------------------------------------------------
 	#location of the training set
 	echo "TRAINSET = /home/santiago/eclipse/java-workspace/AAI/corpus/train_${i}.txt" >> train_${i}.svmt

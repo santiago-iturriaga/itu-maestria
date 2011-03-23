@@ -9,6 +9,8 @@ import java.io.ObjectInputStream;
 import java.util.regex.Pattern;
 
 import cc.mallet.fst.CRF;
+import cc.mallet.fst.PerClassAccuracyEvaluator;
+import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.types.InstanceList;
@@ -30,7 +32,7 @@ public class CRFTest {
 		testingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(testingFilename))),
 				Pattern.compile("^\\s*$"), true));
-
+	
 		for (int i = 0; i < testingInstances.size(); i++) {
 			Sequence input = (Sequence) testingInstances.get(i).getData();
 

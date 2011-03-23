@@ -24,6 +24,7 @@ public class FullCRFTest {
 		s.close();
 
 		Pipe pipe = crf.getInputPipe();
+		
 		InstanceList testingInstances = new InstanceList(pipe);
 		testingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(testingFilename))),
