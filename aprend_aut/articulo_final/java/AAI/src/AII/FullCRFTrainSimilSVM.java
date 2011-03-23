@@ -21,9 +21,12 @@ import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.SimpleTaggerSentence2TokenSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.LineGroupIterator;
+import cc.mallet.pipe.tsf.FeaturesInWindow;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
+import cc.mallet.pipe.tsf.OffsetFeatureConjunction;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
+import cc.mallet.pipe.tsf.TokenTextCharSuffix;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -93,39 +96,75 @@ public class FullCRFTrainSimilSVM {
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
 		
+		// Binary: initial Upper Case, all Upper Case,
+		// word: no initial Capital Letter(s), all Lower Case,
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
-		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
-		pipes.add(new RegexMatches("HYPHENATED", Pattern
-				.compile(".*[\\-|\\_].*")));
-		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
-		pipes.add(new RegexMatches("SIGN", Pattern.compile(".*[\\!|\\?].*")));
 		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
+		
+		// Normalizo todo a lowercase
 		pipes.add(new TokenSequenceLowercase());
+			
+		// Word features: 	w−3 , w−2 , w−1 , w0 , w+1, w+2 , w+3
+		// Word bigrams: 	(w−2 , w−1 ), (w−1 , w+1), (w−1 , w0 ), (w0 , w+1 ), (w+1 , w+2)
+		// Word trigrams: 	(w−2 , w−1 , w0 ), (w−2, w−1 , w+1 ),
+		//					(w−1 , w0 , w+1 ), (w−1, w+1 , w+2 ), (w0 , w+1 , w+2 )
+		int[][] conjunctionsWords = new int[17][];
+		conjunctionsWords[0] = new int[] { -3 };
+		conjunctionsWords[1] = new int[] { -2 };
+		conjunctionsWords[2] = new int[] { -1 };
+		conjunctionsWords[3] = new int[] { 0 };
+		conjunctionsWords[4] = new int[] { 1 };
+		conjunctionsWords[5] = new int[] { 2 };
+		conjunctionsWords[6] = new int[] { 3 };
+		conjunctionsWords[7] = new int[] { -2, -1 };
+		conjunctionsWords[8] = new int[] { -1, 1 };
+		conjunctionsWords[9] = new int[] { -1, 0 };
+		conjunctionsWords[10] = new int[] { 0, 1 };
+		conjunctionsWords[11] = new int[] { 1, 2 };
+		conjunctionsWords[12] = new int[] { -2, -1, 0 };
+		conjunctionsWords[13] = new int[] { -2, -1, 1 };
+		conjunctionsWords[14] = new int[] { -1, 0, 1 };
+		conjunctionsWords[15] = new int[] { -1, 1, 2 };
+		conjunctionsWords[16] = new int[] { 0, 1, 2 };
+		pipes.add(new OffsetConjunctions(conjunctionsWords));
 		
-		//pipes.add(new FeaturesInWindow("PREV-", -1, 1));
-		//pipes.add(new FeaturesInWindow("NEXT-", 1, 2));
-		
-		// Word features: w−3 , w−2 , w−1 , w0 , w+1, w+2 , w+3
-		// Word bigrams: (w−2 , w−1 ), (w−1 , w+1), (w−1 , w0 ), (w0 , w+1 ), (w+1 , w+2)
-		// Word trigrams: (w−2 , w−1 , w0 ), (w−2, w−1 , w+1 ),
-		//	(w−1 , w0 , w+1 ), (w−1, w+1 , w+2 ), (w0 , w+1 , w+2 )
-		
-		// POS features: p−3 , p−2 , p−1 , p0 , p+1 , p+2 , p+3
-		// POS bigrams: (p−2 , p−1 ), (p−1 , a+1 ), (a+1 , a+2 )
-		// POS trigrams: (p−2 , p−1 , a+0 ), (p−2, p−1 , a+1 ),
-		//	(p−1 , a0 , a+1 ), (p−1 , a+1 , a+2 )
-		
+		// POS features:	p−3 , p−2 , p−1 , p0 , p+1 , p+2 , p+3
+		// POS bigrams:		(p−2 , p−1 ), (p−1 , a+1 ), (a+1 , a+2 )
+		// POS trigrams:	(p−2 , p−1 , a+0 ), (p−2, p−1 , a+1 ),
+		//					(p−1 , a0 , a+1 ), (p−1 , a+1 , a+2 )
+		pipes.add(new FeaturesInWindow("P-3-", -3, -3));
+		pipes.add(new FeaturesInWindow("P-2-", -2, -2));
+		pipes.add(new FeaturesInWindow("P-1-", -1, -1));
+		pipes.add(new FeaturesInWindow("P-2-1-", -2, -1));
+				
 		// Ambiguity class: a0 , a1 , a2 , a3
 		// may_be's: m0 , m1 , m2 , m3
 
-		// Punctuation: punctuation (’.’, ’ ?’, ’ !’)
 		// Suffixes: s1 , s1 s2 , s1 s2 s3 , s1 s2 s3 s4
+		pipes.add(new TokenTextCharSuffix("S1=", 1));
+		pipes.add(new TokenTextCharSuffix("S2=", 2));
+		pipes.add(new TokenTextCharSuffix("S3=", 3));
+		pipes.add(new TokenTextCharSuffix("S4=", 4));
+		
 		// Preffixes: sn , sn-1 sn , sn-2 sn-1 sn , sn-3 sn-2 sn-1 sn
+		pipes.add(new TokenTextCharSuffix("P1=", 1));
+		pipes.add(new TokenTextCharSuffix("P2=", 2));
+		pipes.add(new TokenTextCharSuffix("P3=", 3));
+		pipes.add(new TokenTextCharSuffix("P4=", 4));
+				
+		// features: contains a (period / number / hyphen ...)	
+		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
+		pipes.add(new RegexMatches("NUMBER", Pattern.compile(".*[0-9].*")));
+		pipes.add(new RegexMatches("HYPHENATED", Pattern
+				.compile(".*[\\-|\\_].*")));
+		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
 
-		// Binary: initial Upper Case, all Upper Case,
-		// word: no initial Capital Letter(s), all Lower Case,
-		// features: contains a (period / number / hyphen ...)
-		// word length: integer	
+		// Punctuation: punctuation (’.’, ’ ?’, ’ !’)
+		pipes.add(new RegexMatches("SIGN-QUESTION", Pattern.compile(".*\\?.*")));
+		pipes.add(new RegexMatches("SIGN-EXCLAMATION", Pattern.compile(".*\\!.*")));
+		pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
+		
+		// word length: integer
 		
 		pipes.add(new FullCRFTrainSimilSVM.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
@@ -137,7 +176,6 @@ public class FullCRFTrainSimilSVM {
 
 		CRF crf = new CRF(pipe, null);
 		
-//		crf.addFullyConnectedStatesForThreeQuarterLabels(trainingInstances);
 		int[] orders = { 1 };
 		Pattern forbiddenPat = Pattern.compile("\\s");
 		Pattern allowedPat = Pattern.compile(".*");
