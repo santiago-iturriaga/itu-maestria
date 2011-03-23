@@ -31,7 +31,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.TokenSequence;
 
-public class FullCRFTrain {
+public class FullCRFTrainSimilSVM {
 
 	public static class SimpleTokenSentence2FeatureVectorSequence extends Pipe {
 		private static final long serialVersionUID = -2059308802200728626L;
@@ -92,6 +92,7 @@ public class FullCRFTrain {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
+		
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
 		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
 		pipes.add(new RegexMatches("HYPHENATED", Pattern
@@ -99,8 +100,34 @@ public class FullCRFTrain {
 		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
 		pipes.add(new RegexMatches("SIGN", Pattern.compile(".*[\\!|\\?].*")));
 		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
-		pipes.add(new TokenSequenceLowercase());	
-		pipes.add(new FullCRFTrain.SimpleTokenSentence2FeatureVectorSequence());
+		pipes.add(new TokenSequenceLowercase());
+		
+		//pipes.add(new FeaturesInWindow("PREV-", -1, 1));
+		//pipes.add(new FeaturesInWindow("NEXT-", 1, 2));
+		
+		// Word features: w−3 , w−2 , w−1 , w0 , w+1, w+2 , w+3
+		// Word bigrams: (w−2 , w−1 ), (w−1 , w+1), (w−1 , w0 ), (w0 , w+1 ), (w+1 , w+2)
+		// Word trigrams: (w−2 , w−1 , w0 ), (w−2, w−1 , w+1 ),
+		//	(w−1 , w0 , w+1 ), (w−1, w+1 , w+2 ), (w0 , w+1 , w+2 )
+		
+		// POS features: p−3 , p−2 , p−1 , p0 , p+1 , p+2 , p+3
+		// POS bigrams: (p−2 , p−1 ), (p−1 , a+1 ), (a+1 , a+2 )
+		// POS trigrams: (p−2 , p−1 , a+0 ), (p−2, p−1 , a+1 ),
+		//	(p−1 , a0 , a+1 ), (p−1 , a+1 , a+2 )
+		
+		// Ambiguity class: a0 , a1 , a2 , a3
+		// may_be's: m0 , m1 , m2 , m3
+
+		// Punctuation: punctuation (’.’, ’ ?’, ’ !’)
+		// Suffixes: s1 , s1 s2 , s1 s2 s3 , s1 s2 s3 s4
+		// Preffixes: sn , sn-1 sn , sn-2 sn-1 sn , sn-3 sn-2 sn-1 sn
+
+		// Binary: initial Upper Case, all Upper Case,
+		// word: no initial Capital Letter(s), all Lower Case,
+		// features: contains a (period / number / hyphen ...)
+		// word length: integer	
+		
+		pipes.add(new FullCRFTrainSimilSVM.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -110,6 +137,7 @@ public class FullCRFTrain {
 
 		CRF crf = new CRF(pipe, null);
 		
+//		crf.addFullyConnectedStatesForThreeQuarterLabels(trainingInstances);
 		int[] orders = { 1 };
 		Pattern forbiddenPat = Pattern.compile("\\s");
 		Pattern allowedPat = Pattern.compile(".*");
