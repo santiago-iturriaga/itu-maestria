@@ -3,7 +3,7 @@ export PERL5LIB=/home/santiago/Facultad/AAI/SVMTool-1.3.1/lib:$PERL5LIB
 
 cd model_svm
 
-for i in {0..9}
+for i in {2..2}
 do
 	# -------------------------------------------------------------
 	#SVMTool configuration file for English on the whole WSJ corpus
@@ -19,7 +19,8 @@ do
 	# -------------------------------------------------------------
 	#action items
 	# -------------------------------------------------------------
-	echo "do M0 LR" >> train_${i}.svmt
+	#echo "do M0 LR" >> train_${i}.svmt
+	echo "do M0 LRL" >> train_${i}.svmt
 	# -------------------------------------------------------------
 
 	/home/santiago/Facultad/AAI/SVMTool-1.3.1/bin/SVMTlearn train_${i}.svmt
