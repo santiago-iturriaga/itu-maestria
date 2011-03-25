@@ -15,6 +15,26 @@ import java.util.TreeMap;
 
 public class SplitCorpus {
 
+	public static String quitarTildes(String palabra) {
+		String palabraLower = palabra.toLowerCase();
+			
+	    if (palabraLower.equals("cuándo")) {
+	        return palabra.replace('á', 'a');
+	    } else if (palabraLower.equals("cuánto")) {
+	    	return palabra.replace('á', 'a');
+	    } else if (palabraLower.equals("dónde")) {
+	    	return palabra.replace('ó', 'o');
+	    } else if (palabraLower.equals("cómo")) {
+	    	return palabra.replace('ó', 'o');
+	    } else if (palabraLower.equals("adónde")) {
+	    	return palabra.replace('ó', 'o');
+	    } else if (palabraLower.equals("qué")) {
+	    	return palabra.replace('é', 'e');
+	    }
+	    
+	    return palabra;
+	}
+	
 	/**
 	 * @param args
 	 */
@@ -98,7 +118,7 @@ public class SplitCorpus {
 	            	
 					if (corpusLine.trim().equals("")) {
 						if ((corpusLineIndex >= start_offset)&&(corpusLineIndex <= end_offset)) {
-							System.out.println(">> " + currentLine.size() + " a test");
+//							System.out.println(">> " + currentLine.size() + " a test");
 							
 							for (int j = 0; j < currentLine.size(); j++) {
 								String tokens;
@@ -108,7 +128,7 @@ public class SplitCorpus {
 								tokenArray = tokens.split(" ");
 								
 								if (tokenArray.length > 1) {
-									testBuffWriter.write(tokenArray[0] + "\n");
+									testBuffWriter.write(quitarTildes(tokenArray[0]) + "\n");
 									testBuffWriterFull.write(tokens + "\n");
 								} else {
 									testBuffWriter.write(tokens + "\n");
@@ -116,10 +136,20 @@ public class SplitCorpus {
 								}
 							}
 						} else {
-							System.out.println(">> " + currentLine.size() + " a train");
+//							System.out.println(">> " + currentLine.size() + " a train");
 							
 							for (int j = 0; j < currentLine.size(); j++) {
-								trainBuffWriter.write(currentLine.get(j) + "\n");
+								String[] tokenArray;
+								tokenArray = currentLine.get(j).trim().split(" ");
+								
+								if (tokenArray.length == 2) {
+									trainBuffWriter.write(quitarTildes(tokenArray[0]) + " " + tokenArray[1] + "\n");
+								} else if (tokenArray.length > 2) {
+									System.out.println("Changos!!!: '" + currentLine.get(j) + "'");
+									System.exit(1);
+								} else {
+									trainBuffWriter.write(currentLine.get(j) + "\n");	
+								}
 							}
 						}
 						

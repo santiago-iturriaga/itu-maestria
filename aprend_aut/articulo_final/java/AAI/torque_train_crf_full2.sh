@@ -61,6 +61,6 @@ echo
 
 rm model_crf/*.model
 
-java -classpath /home/santiago/eclipse/java-workspace/AAI/bin:/home/santiago/eclipse/java-workspace/AAI/lib/mallet-deps.jar \
+/usr/java/jdk1.6.0_03/bin/java -classpath /home/siturria/AprendAut/AAI/bin:/home/siturria/AprendAut/AAI/lib/mallet-deps.jar \
 	-Xmx12000M AII.FullCRFTrainSimilSVM
 	

@@ -16,7 +16,9 @@ public class FullCRFTest {
 
 	public static void main(String[] args) throws Throwable {
 		String testingFilename = args[1]; //"corpus/test_2.txt";
+//		String testingFilename = "corpus/test_0.txt";
 		String modelFilename = args[0]; // "corpus/crf_2.model";
+//		String modelFilename = "corpus/crf_0.model";
 
 		ObjectInputStream s = new ObjectInputStream(new FileInputStream(
 				modelFilename));
