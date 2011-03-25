@@ -14,6 +14,8 @@ import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByL1LabelLikelihood;
 import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByStochasticGradient;
+import cc.mallet.fst.PerClassAccuracyEvaluator;
+import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.fst.Transducer;
 import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
@@ -108,34 +110,34 @@ public class FullCRFTrainSimilSVM {
 		// Word bigrams: 	(w−2 , w−1 ), (w−1 , w+1), (w−1 , w0 ), (w0 , w+1 ), (w+1 , w+2)
 		// Word trigrams: 	(w−2 , w−1 , w0 ), (w−2, w−1 , w+1 ),
 		//					(w−1 , w0 , w+1 ), (w−1, w+1 , w+2 ), (w0 , w+1 , w+2 )
-		int[][] conjunctionsWords = new int[17][];
-		conjunctionsWords[0] = new int[] { -3 };
-		conjunctionsWords[1] = new int[] { -2 };
-		conjunctionsWords[2] = new int[] { -1 };
-		conjunctionsWords[3] = new int[] { 0 };
-		conjunctionsWords[4] = new int[] { 1 };
-		conjunctionsWords[5] = new int[] { 2 };
-		conjunctionsWords[6] = new int[] { 3 };
-		conjunctionsWords[7] = new int[] { -2, -1 };
-		conjunctionsWords[8] = new int[] { -1, 1 };
-		conjunctionsWords[9] = new int[] { -1, 0 };
-		conjunctionsWords[10] = new int[] { 0, 1 };
-		conjunctionsWords[11] = new int[] { 1, 2 };
-		conjunctionsWords[12] = new int[] { -2, -1, 0 };
-		conjunctionsWords[13] = new int[] { -2, -1, 1 };
-		conjunctionsWords[14] = new int[] { -1, 0, 1 };
-		conjunctionsWords[15] = new int[] { -1, 1, 2 };
-		conjunctionsWords[16] = new int[] { 0, 1, 2 };
-		pipes.add(new OffsetConjunctions(conjunctionsWords));
+//		int[][] conjunctionsWords = new int[12][];
+//		conjunctionsWords[0] = new int[] { -3 };
+//		conjunctionsWords[1] = new int[] { -2 };
+//		conjunctionsWords[2] = new int[] { -1 };
+//		conjunctionsWords[3] = new int[] { 0 };
+//		conjunctionsWords[4] = new int[] { 1 };
+//		conjunctionsWords[5] = new int[] { 2 };
+//		conjunctionsWords[6] = new int[] { 3 };
+//		conjunctionsWords[7] = new int[] { -2, -1 };
+//		conjunctionsWords[8] = new int[] { -1, 1 };
+//		conjunctionsWords[9] = new int[] { -1, 0 };
+//		conjunctionsWords[10] = new int[] { 0, 1 };
+//		conjunctionsWords[11] = new int[] { 1, 2 };
+//		conjunctionsWords[12] = new int[] { -2, -1, 0 };
+//		conjunctionsWords[13] = new int[] { -2, -1, 1 };
+//		conjunctionsWords[14] = new int[] { -1, 0, 1 };
+//		conjunctionsWords[15] = new int[] { -1, 1, 2 };
+//		conjunctionsWords[16] = new int[] { 0, 1, 2 };
+//		pipes.add(new OffsetConjunctions(conjunctionsWords));
 		
 		// POS features:	p−3 , p−2 , p−1 , p0 , p+1 , p+2 , p+3
 		// POS bigrams:		(p−2 , p−1 ), (p−1 , a+1 ), (a+1 , a+2 )
 		// POS trigrams:	(p−2 , p−1 , a+0 ), (p−2, p−1 , a+1 ),
 		//					(p−1 , a0 , a+1 ), (p−1 , a+1 , a+2 )
-		pipes.add(new FeaturesInWindow("P-3-", -3, -3));
-		pipes.add(new FeaturesInWindow("P-2-", -2, -2));
-		pipes.add(new FeaturesInWindow("P-1-", -1, -1));
-		pipes.add(new FeaturesInWindow("P-2-1-", -2, -1));
+//		pipes.add(new FeaturesInWindow("P-3-", -3, -3));
+//		pipes.add(new FeaturesInWindow("P-2-", -2, -2));
+//		pipes.add(new FeaturesInWindow("P-1-", -1, -1));
+//		pipes.add(new FeaturesInWindow("P-2-1-", -2, -1));
 				
 		// Ambiguity class: a0 , a1 , a2 , a3
 		// may_be's: m0 , m1 , m2 , m3
@@ -173,7 +175,7 @@ public class FullCRFTrainSimilSVM {
 		trainingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(trainingFilename))),
 				Pattern.compile("^\\s*$"), true));
-
+		
 		CRF crf = new CRF(pipe, null);
 		
 		int[] orders = { 1 };
@@ -189,15 +191,17 @@ public class FullCRFTrainSimilSVM {
 		TransducerTrainer trainer = null;
 		trainer = new CRFTrainerByLabelLikelihood(crf);
 		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(10.0);
-
+		
 		trainer.train(trainingInstances, 500);
-
+		
 		return crf;
 	}
 
 	public static void main(String[] args) throws Exception {
+//		int i = 0;
 		for (int i = 0; i < 10; i++) {
 			String train = "corpus/train_" + i + ".txt";
+//			String test = "corpus/test_full_" + i + ".txt";
 			String model = "model_crf/crf_" + i + ".model";
 
 			CRF modelObj = TrainCRF(train);
