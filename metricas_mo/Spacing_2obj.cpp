@@ -16,10 +16,11 @@ float distancia2(float x1, float x2, float y1, float y2) {
 int main(int argc, char **argv) {
 
 	if (argc < 2) {
-		printf("Uso : ./spacing <archivo_entrada>\n");
+		printf("Uso : ./spacing <archivo_entrada> [debug]\n");
 		exit(1);
 	}
 
+	bool debug = argc >= 3;
 	FILE *fpin;
 
 	float func[MAX_PUNTOS][2];
@@ -29,7 +30,8 @@ int main(int argc, char **argv) {
 	float sum = 0.0;
 	float f1, f2;
 
-	printf("Archivo : %s\n", argv[1]);
+	if (debug)
+		printf("Archivo : %s\n", argv[1]);
 
 	if ((fpin = fopen(argv[1], "r"))) {
 		while (fscanf(fpin, "%f %f", &f1, &f2) != EOF) {
@@ -40,7 +42,8 @@ int main(int argc, char **argv) {
 			i++;
 		}
 
-		printf("size: %d\n", i);
+		if (debug)
+			printf("size: %d\n", i);
 
 		float mindist, distcalc;
 		int k, h, min;
@@ -60,9 +63,10 @@ int main(int argc, char **argv) {
 					}
 				}
 			}
-			printf("%d : Dist (%f %f) <-> (%f %f) = %f (cercano %d)\n", k,
-					func[k][0], func[k][1], func[min][0], func[min][1],
-					mindist, min);
+			if (debug)
+				printf("%d : Dist (%f %f) <-> (%f %f) = %f (cercano %d)\n", k,
+						func[k][0], func[k][1], func[min][0], func[min][1],
+						mindist, min);
 			dist[k] = mindist;
 			sum += dist[k];
 			count++;
@@ -71,17 +75,24 @@ int main(int argc, char **argv) {
 		float dprom = sum / count;
 		float desv, spacing;
 		float sumdesv = 0.0;
-		printf("%d puntos\n", count);
-		printf("Dist prom = %f \n", dprom);
+		if (debug)
+			printf("%d puntos\n", count);
+		if (debug)
+			printf("Dist prom = %f \n", dprom);
 
 		for (int j = 0; j < i - 1; j++) {
 			desv = pow(dist[j] - dprom, 2);
 			sumdesv += desv;
 		}
-		printf("Sum desv: %f\n", sumdesv);
+		if (debug)
+			printf("Sum desv: %f\n", sumdesv);
 
 		spacing = sqrt(sum / (i - 1));
-		printf("Spacing: %f\n", spacing);
+
+		if (debug)
+			printf("Spacing: %f\n", spacing);
+		else
+			printf("%f\n", spacing);
 
 	} else {
 		printf("Error al abrir archivo %s\n", argv[1]);

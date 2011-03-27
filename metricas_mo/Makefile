@@ -1,7 +1,7 @@
 CXXFLAGS =	-O2 -g -Wall -fmessage-length=0
 LIBS =
 
-all: FP_2obj FP_3obj FP_2obj_3col Spacing_2obj Spread_2obj
+all: FP_2obj FP_3obj FP_2obj_3col Spacing_2obj Spread_2obj GD_2obj
 
 FP_2obj: FP_2obj.cpp
 	$(CXX) $(CXXFLAGS) -o FP_2obj FP_2obj.cpp $(LIBS)
@@ -18,5 +18,8 @@ Spacing_2obj: Spacing_2obj.cpp
 FP_3obj: FP_3obj.cpp
 	$(CXX) $(CXXFLAGS) -o FP_3obj FP_3obj.cpp $(LIBS)
 
+GD_2obj: GD_2obj.cpp
+	$(CXX) $(CXXFLAGS) -o GD_2obj GD_2obj.cpp $(LIBS)
+
 clean:
-	rm -f FP_2obj FP_3obj Spread_2obj Spacing_2obj
+	rm -f FP_2obj FP_3obj Spread_2obj Spacing_2obj GD_2obj
