@@ -17,7 +17,6 @@ float distancia(float x1, float x2, float y1, float y2) {
 }
 
 int main(int argc, char **argv) {
-
 	FILE *fpin, *fpcalc;
 	float f1, f2, f3, fp1, fp2, fp3;
 	float dist, mindist, dprom;
@@ -26,11 +25,14 @@ int main(int argc, char **argv) {
 	int cantpts = 0;
 
 	if (argc < 2) {
-		printf("Uso : ./fp <archivo_entrada> <archivo frente> \n");
+		printf("Uso : ./fp <archivo_entrada> <archivo frente> <debug>\n");
 		exit(1);
 	}
 
-	printf("Archivo : %s\n", argv[1]);
+	bool debug = argc >= 3;
+
+	if (debug)
+		printf("Archivo : %s\n", argv[1]);
 	if (fpin = fopen(argv[1], "r")) {
 		while (fscanf(fpin, "%f %f", &f1, &f2) != EOF) {
 			// Para cada punto, calcular distancia a FP
@@ -43,8 +45,9 @@ int main(int argc, char **argv) {
 						mindist = dist;
 					}
 				}
-				printf("Minima distancia de (%f %f) a FP: %f\n", f1, f2,
-						mindist);
+				if (debug)
+					printf("Minima distancia de (%f %f) a FP: %f\n", f1, f2,
+							mindist);
 				sumdist += mindist;
 				cantpts++;
 				//sleep(1);
@@ -56,8 +59,12 @@ int main(int argc, char **argv) {
 		}
 		fclose(fpin);
 		dprom = sumdist / cantpts;
-		printf("%d puntos. Distancia promedio al f. Pareto : %f\n", cantpts,
-				dprom);
+
+		if (debug)
+			printf("%d puntos. Distancia promedio al f. Pareto : %f\n",
+					cantpts, dprom);
+		else
+			printf("%d, %f\n", cantpts, dprom);
 	} else {
 		printf("Error al abrir archivo %s\n", argv[1]);
 		exit(1);
