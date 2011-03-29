@@ -14,9 +14,11 @@ import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByL1LabelLikelihood;
 import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByStochasticGradient;
+import cc.mallet.fst.InstanceAccuracyEvaluator;
 import cc.mallet.fst.PerClassAccuracyEvaluator;
 import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.fst.Transducer;
+import cc.mallet.fst.TransducerEvaluator;
 import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
@@ -33,13 +35,14 @@ import cc.mallet.pipe.tsf.TokenTextCharPrefix;
 import cc.mallet.pipe.tsf.TokenTextCharSuffix;
 import cc.mallet.pipe.tsf.TokenTextNGrams;
 import cc.mallet.types.Alphabet;
+import cc.mallet.types.AugmentableFeatureVector;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.TokenSequence;
 
-public class FullCRFTrainSimilSVM {
+public class CRFTrainInduce {
 
 	public static class SimpleTokenSentence2FeatureVectorSequence extends Pipe {
 		private static final long serialVersionUID = -2059308802200728626L;
@@ -67,7 +70,7 @@ public class FullCRFTrainSimilSVM {
 					featureIndices.add(featureIndex);
 				}
 
-				System.out.println(">>>> " + tokens.get(l).getText());
+//				System.out.println(">>>> " + tokens.get(l).getText());
 				
 				if (tokens.get(l).getFeatures() != null) {
 					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
@@ -75,7 +78,7 @@ public class FullCRFTrainSimilSVM {
 					while (iter.hasNext()) {
 						iter.next();
 
-						System.out.print(iter.getKey() + "  ");
+//						System.out.print(iter.getKey() + "  ");
 						
 						if (iter.hasNext() || !isTargetProcessing()) {
 							featureIndex = features.lookupIndex(iter.getKey());
@@ -91,9 +94,9 @@ public class FullCRFTrainSimilSVM {
 					featureIndicesArr[index] = featureIndices.get(index);
 				}
 
-				fvs[l] = new FeatureVector(features, featureIndicesArr);
+				fvs[l] = new AugmentableFeatureVector(features, featureIndicesArr, null, featureIndicesArr.length);
 				
-				System.out.println("\n");
+//				System.out.println("\n");
 			}
 
 			carrier.setData(new FeatureVectorSequence(fvs));
@@ -102,7 +105,7 @@ public class FullCRFTrainSimilSVM {
 		}
 	}
 
-	public static CRF TrainCRF(String trainingFilename) throws IOException {
+	public static CRF TrainCRF(String trainingFilename, String testingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
@@ -115,28 +118,10 @@ public class FullCRFTrainSimilSVM {
 		// Normalizo todo a lowercase
 		pipes.add(new TokenSequenceLowercase());
 			
-		// Word features
-		int[][] conjunctionsWords = new int[3][];
-		conjunctionsWords[0] = new int[] { -1 };
-		conjunctionsWords[1] = new int[] { -2, -1 };
-		conjunctionsWords[2] = new int[] { -1, +1 };
-		pipes.add(new OffsetConjunctions(conjunctionsWords));
-		
-//		pipes.add(new TokenTextCharNGrams("BigramChar", new int[] {1, 2}));
-//		pipes.add(new TokenTextNGrams("Bigram", new int[] {1, 2}));
-		
 		// Suffixes
 		pipes.add(new TokenTextCharSuffix("S2=", 2));
+		pipes.add(new TokenTextCharSuffix("S3=", 3));
 
-		// POS features
-		pipes.add(new FeaturesInWindow("Suffixes", -1, 0, Pattern.compile("S2=.*"), true));
-		
-//		pipes.add(new OffsetFeatureConjunction("Suffixes-2", new String[] {"S2=.*"}, new int[] {-2, -1}));
-//		pipes.add(new OffsetFeatureConjunction("Suffixes-1", new String[] {"S2=.*"}, new int[] {-1}));
-		
-		// Preffixes
-//		pipes.add(new TokenTextCharPrefix("P2=", 2));
-				
 		// features: contains a (period / number / hyphen ...)	
 		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
 		pipes.add(new RegexMatches("NUMBER", Pattern.compile(".*[0-9].*")));
@@ -151,7 +136,7 @@ public class FullCRFTrainSimilSVM {
 		pipes.add(new RegexMatches("SIGN-EXCLAMATION", Pattern.compile(".*\\!.*")));
 		pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
 				
-		pipes.add(new FullCRFTrainSimilSVM.SimpleTokenSentence2FeatureVectorSequence());
+		pipes.add(new CRFTrainInduce.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -159,23 +144,39 @@ public class FullCRFTrainSimilSVM {
 				new InputStreamReader(new FileInputStream(trainingFilename))),
 				Pattern.compile("^\\s*$"), true));
 		
+		InstanceList testingInstances = new InstanceList(pipe);
+		testingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
+				new InputStreamReader(new FileInputStream(testingFilename))),
+				Pattern.compile("^\\s*$"), true));
+		
 		CRF crf = new CRF(pipe, null);
-		
-		int[] orders = { 1 };
-		Pattern forbiddenPat = Pattern.compile("\\s");
-		Pattern allowedPat = Pattern.compile(".*");
+		crf.addFullyConnectedStatesForLabels();
 
-		String startName = crf.addOrderNStates(trainingInstances, orders,
-				null, "O", forbiddenPat, allowedPat, true);
-		for (int s = 0; s < crf.numStates(); s++)
-			crf.getState(s).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
-		crf.getState(startName).setInitialWeight(0.0);
-
-		TransducerTrainer trainer = null;
+		CRFTrainerByLabelLikelihood trainer = null;
 		trainer = new CRFTrainerByLabelLikelihood(crf);
-		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(10.0);
+		trainer.setGaussianPriorVariance(10.0);
+	
+//	      if (weightsOption.value.equals("dense")) {
+//	          crft.setUseSparseWeights(false);
+//	          crft.setUseSomeUnsupportedTrick(false);
+//	        }
+//	        else if (weightsOption.value.equals("some-dense")) {
+//	          crft.setUseSparseWeights(true);
+//	          crft.setUseSomeUnsupportedTrick(true);
+//	        }
+//	        else if (weightsOption.value.equals("sparse")) {
+//	          crft.setUseSparseWeights(true);
+//	          crft.setUseSomeUnsupportedTrick(false);
+//	        }
 		
-		trainer.train(trainingInstances, 500);
+//		trainer.addEvaluator(new InstanceAccuracyEvaluator());
+//		trainer.addEvaluator(new PerClassAccuracyEvaluator(testingInstances, "testing"));
+//		trainer.addEvaluator(new TokenAccuracyEvaluator(testingInstances, "testing"));
+				
+		TransducerEvaluator eval = new TokenAccuracyEvaluator(new InstanceList[] {trainingInstances, testingInstances}, new String[] {"Training", "Testing"});
+		
+		trainer.trainWithFeatureInduction(trainingInstances, null, testingInstances, eval, 1000, 10, 20, 500, 0.5, false, null);
+//		trainer.train(trainingInstances, 1000);
 		
 		return crf;
 	}
@@ -184,10 +185,10 @@ public class FullCRFTrainSimilSVM {
 		int i = 2;
 //		for (int i = 0; i < 10; i++) {
 			String train = "corpus/train_" + i + ".txt";
-//			String test = "corpus/test_full_" + i + ".txt";
-			String model = "model_crf/svm_crf_" + i + ".model";
+			String test = "corpus/test_full_" + i + ".txt";
+			String model = "model_crf/induce_crf_" + i + ".model";
 
-			CRF modelObj = TrainCRF(train);
+			CRF modelObj = TrainCRF(train, test);
 
 			ObjectOutputStream s = new ObjectOutputStream(
 					new FileOutputStream(model));

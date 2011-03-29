@@ -14,8 +14,6 @@ import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByL1LabelLikelihood;
 import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByStochasticGradient;
-import cc.mallet.fst.PerClassAccuracyEvaluator;
-import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.fst.Transducer;
 import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
@@ -23,15 +21,9 @@ import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.SimpleTaggerSentence2TokenSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.LineGroupIterator;
-import cc.mallet.pipe.tsf.FeaturesInWindow;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
-import cc.mallet.pipe.tsf.OffsetFeatureConjunction;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
-import cc.mallet.pipe.tsf.TokenTextCharNGrams;
-import cc.mallet.pipe.tsf.TokenTextCharPrefix;
-import cc.mallet.pipe.tsf.TokenTextCharSuffix;
-import cc.mallet.pipe.tsf.TokenTextNGrams;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -39,7 +31,7 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.TokenSequence;
 
-public class FullCRFTrainSimilSVM {
+public class CRFTrain2 {
 
 	public static class SimpleTokenSentence2FeatureVectorSequence extends Pipe {
 		private static final long serialVersionUID = -2059308802200728626L;
@@ -67,16 +59,12 @@ public class FullCRFTrainSimilSVM {
 					featureIndices.add(featureIndex);
 				}
 
-				System.out.println(">>>> " + tokens.get(l).getText());
-				
 				if (tokens.get(l).getFeatures() != null) {
 					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
 							.getFeatures().iterator();
 					while (iter.hasNext()) {
 						iter.next();
 
-						System.out.print(iter.getKey() + "  ");
-						
 						if (iter.hasNext() || !isTargetProcessing()) {
 							featureIndex = features.lookupIndex(iter.getKey());
 							if (featureIndex >= 0) {
@@ -92,8 +80,6 @@ public class FullCRFTrainSimilSVM {
 				}
 
 				fvs[l] = new FeatureVector(features, featureIndicesArr);
-				
-				System.out.println("\n");
 			}
 
 			carrier.setData(new FeatureVectorSequence(fvs));
@@ -102,63 +88,26 @@ public class FullCRFTrainSimilSVM {
 		}
 	}
 
-	public static CRF TrainCRF(String trainingFilename) throws IOException {
+	public static CRF TrainCRF(String trainingFilename, double g) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
-		
-		// Binary: initial Upper Case, all Upper Case,
-		// word: no initial Capital Letter(s), all Lower Case,
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
-		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
-		
-		// Normalizo todo a lowercase
-		pipes.add(new TokenSequenceLowercase());
-			
-		// Word features
-		int[][] conjunctionsWords = new int[3][];
-		conjunctionsWords[0] = new int[] { -1 };
-		conjunctionsWords[1] = new int[] { -2, -1 };
-		conjunctionsWords[2] = new int[] { -1, +1 };
-		pipes.add(new OffsetConjunctions(conjunctionsWords));
-		
-//		pipes.add(new TokenTextCharNGrams("BigramChar", new int[] {1, 2}));
-//		pipes.add(new TokenTextNGrams("Bigram", new int[] {1, 2}));
-		
-		// Suffixes
-		pipes.add(new TokenTextCharSuffix("S2=", 2));
-
-		// POS features
-		pipes.add(new FeaturesInWindow("Suffixes", -1, 0, Pattern.compile("S2=.*"), true));
-		
-//		pipes.add(new OffsetFeatureConjunction("Suffixes-2", new String[] {"S2=.*"}, new int[] {-2, -1}));
-//		pipes.add(new OffsetFeatureConjunction("Suffixes-1", new String[] {"S2=.*"}, new int[] {-1}));
-		
-		// Preffixes
-//		pipes.add(new TokenTextCharPrefix("P2=", 2));
-				
-		// features: contains a (period / number / hyphen ...)	
 		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
-		pipes.add(new RegexMatches("NUMBER", Pattern.compile(".*[0-9].*")));
 		pipes.add(new RegexMatches("HYPHENATED", Pattern
 				.compile(".*[\\-|\\_].*")));
 		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
-		pipes.add(new RegexMatches("SIGN", Pattern
-				.compile(".*[\\.|,|\"|:|;].*")));		
-		
-		// Punctuation: punctuation (’.’, ’ ?’, ’ !’)
-		pipes.add(new RegexMatches("SIGN-QUESTION", Pattern.compile(".*\\?.*")));
-		pipes.add(new RegexMatches("SIGN-EXCLAMATION", Pattern.compile(".*\\!.*")));
-		pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
-				
-		pipes.add(new FullCRFTrainSimilSVM.SimpleTokenSentence2FeatureVectorSequence());
+		pipes.add(new RegexMatches("SIGN", Pattern.compile(".*[\\!|\\?].*")));
+		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
+		pipes.add(new TokenSequenceLowercase());	
+		pipes.add(new CRFTrain2.SimpleTokenSentence2FeatureVectorSequence());
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
 		trainingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(trainingFilename))),
 				Pattern.compile("^\\s*$"), true));
-		
+
 		CRF crf = new CRF(pipe, null);
 		
 		int[] orders = { 1 };
@@ -173,27 +122,27 @@ public class FullCRFTrainSimilSVM {
 
 		TransducerTrainer trainer = null;
 		trainer = new CRFTrainerByLabelLikelihood(crf);
-		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(10.0);
-		
+		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(g);
+
 		trainer.train(trainingInstances, 500);
-		
+
 		return crf;
 	}
 
 	public static void main(String[] args) throws Exception {
 		int i = 2;
-//		for (int i = 0; i < 10; i++) {
+		
+		for (double g = 5.0; g <= 20.0; g = g + 5.0) {
 			String train = "corpus/train_" + i + ".txt";
-//			String test = "corpus/test_full_" + i + ".txt";
-			String model = "model_crf/svm_crf_" + i + ".model";
+			String model = "model_crf/t2_crf_" + i + "_" + (int)g + ".model";
 
-			CRF modelObj = TrainCRF(train);
+			CRF modelObj = TrainCRF(train, g);
 
 			ObjectOutputStream s = new ObjectOutputStream(
 					new FileOutputStream(model));
 			s.writeObject(modelObj);
 			s.close();
-//		}
+		}
 	}
 
 }

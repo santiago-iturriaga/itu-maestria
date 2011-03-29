@@ -192,9 +192,11 @@ public class CRFTrain {
 		for (int t = 0; t < 3; t++) {
 			for (int p = 0; p < 3; p++) {
 				for (int i = 0; i < 9; i++) {
-					String model = "corpus/crf_" + i + "_" + p + "_" + t
+					String model = "model_crf/t1_crf_" + i + "_" + p + "_" + t
 							+ ".model";
 
+					System.out.println("=================> Procesando " + model);
+					
 					File modelFile = new File(model);
 					if (!modelFile.exists()) {
 						CRF modelObj = TrainCRF(train, i, p, t);

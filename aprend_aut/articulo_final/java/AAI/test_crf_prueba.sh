@@ -6,7 +6,7 @@ do
 		do
 	
 			java -classpath /home/santiago/eclipse/java-workspace/AAI/bin:/home/santiago/eclipse/java-workspace/AAI/lib/mallet-deps.jar \
-				AII.CRFTest corpus/crf_${i}_${p}_${t}.model > corpus/crf_${i}_${p}_${t}.result.txt	
+				AII.CRFTest model_crf/t1_crf_${i}_${p}_${t}.model > model_crf/t1_crf_${i}_${p}_${t}.result.txt	
 		
 		done
 	done
