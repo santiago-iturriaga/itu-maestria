@@ -130,6 +130,7 @@ public class CRFTrainFinal {
 		pipes.add(new RegexMatches("SIGN-ALL", Pattern
 				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
 		pipes.add(new RegexMatches("QQ", Pattern.compile("(por|de|y)")));
+		pipes.add(new RegexMatches("QQ2", Pattern.compile("(es|y)")));
 		pipes.add(new RegexMatches("ADVERBIO", Pattern
 				.compile("(cuando|cuanto|donde|que|como|adonde)")));
 		// pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
@@ -138,7 +139,7 @@ public class CRFTrainFinal {
 		pipes.add(new TokenFirstPosition("FIRST"));
 		pipes.add(new TokenSequenceLowercase());
 		pipes.add(new TokenText("WORD="));
-		
+
 		pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
 				new String[] { "SIGN-ALL" }, new int[] { -1 }));
 
@@ -152,15 +153,18 @@ public class CRFTrainFinal {
 
 		pipes.add(new OffsetFeatureConjunction("PREV-ADVERBIO",
 				new String[] { "ADVERBIO" }, new int[] { -1 }));
-	
-		pipes.add(new OffsetFeatureConjunction("PREV-QQ",
-				new String[] { "QQ", "ADVERBIO" }, new int[] { -1, 0 }));
+
+		pipes.add(new OffsetFeatureConjunction("PREV-QQ", new String[] { "QQ",
+				"ADVERBIO" }, new int[] { -1, 0 }));
+
+		pipes.add(new OffsetFeatureConjunction("NEXT-QQ2", new String[] {
+				"ADVERBIO", "QQ" }, new int[] { 0, 1 }));
 
 		// pipes.add(new TokenTextCharSuffix("S4=", 4));
 		// pipes.add(new TokenTextCharSuffix("S3=", 3));
 		// pipes.add(new TokenTextCharSuffix("S2=", 2));
 		pipes.add(new CRFTrainFinal.SimpleTokenSentence2FeatureVectorSequence());
-//		pipes.add(new SequencePrintingPipe(log));
+		pipes.add(new SequencePrintingPipe(log));
 
 		Pipe pipe = new SerialPipes(pipes);
 
@@ -206,8 +210,9 @@ public class CRFTrainFinal {
 	}
 
 	public static void main(String[] args) throws Exception {
-		 String train = "corpus/train_2.txt";
-//		String train = "corpus/test_full_2.txt";
+//		String train = "corpus/train_2.txt";
+		// String train = "corpus/test_full_2.txt";
+		String train = "corpus.txt";
 		String model = "model_crf/final_crf_2.model";
 		String output = "CRFTrainFinal.log";
 
