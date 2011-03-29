@@ -24,8 +24,11 @@ public class DatosTestSet {
 	 */
 	public static void main(String[] args) {
 		// String testset = args[0];
-//		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
-		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRFTrainFinal.log";
+		// String testset =
+		// "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
+		// String testset =
+		// "/home/santiago/eclipse/java-workspace/AAI/CRFTrainFinal.log";
+		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRFCorpus.log";
 
 		try {
 			FileReader reader = new FileReader(testset);
@@ -73,7 +76,8 @@ public class DatosTestSet {
 				for (int j = 0; j < lines.get(i).size(); j++) {
 					currentToken = lines.get(i).get(j);
 
-					if (currentToken.indexOf("CON_TILDE") >= 0) {
+					// if (currentToken.indexOf("CON_TILDE") >= 0) {
+					if (currentToken.indexOf("SIN_TILDE") >= 0) {
 						tieneCON_TILDE = true;
 						cantidadDeConTilde++;
 
@@ -118,10 +122,10 @@ public class DatosTestSet {
 							next_1.put(palabra_contexto, conteo);
 						}
 					}
-					if (currentToken.indexOf("SIN_TILDE") >= 0) {
-						tieneSIN_TILDE = true;
-						cantidadDeSinTilde++;
-					}
+					// if (currentToken.indexOf("SIN_TILDE") >= 0) {
+					// tieneSIN_TILDE = true;
+					// cantidadDeSinTilde++;
+					// }
 					if (currentToken.indexOf("SIGN-QE") >= 0) {
 						tieneSIGN_QE = true;
 					}
@@ -145,31 +149,33 @@ public class DatosTestSet {
 				tieneSIGN_QE = false;
 			}
 
-			System.out
-					.println("[SIN_TILDE] ====================================================");
-			for (int i = 0; i < sinTildeTestset.size(); i++) {
-				for (int j = 0; j < sinTildeTestset.get(i).size(); j++) {
-					System.out.println(sinTildeTestset.get(i).get(j));
-				}
-
-				System.out.println("\n");
-			}
-			System.out
-					.println("[CON_TILDE] ====================================================");
-			for (int i = 0; i < conTildeTestset.size(); i++) {
-				for (int j = 0; j < conTildeTestset.get(i).size(); j++) {
-					System.out.println(conTildeTestset.get(i).get(j));
-				}
-
-				System.out.println("\n");
-			}
+			// System.out
+			// .println("[SIN_TILDE] ====================================================");
+			// for (int i = 0; i < sinTildeTestset.size(); i++) {
+			// for (int j = 0; j < sinTildeTestset.get(i).size(); j++) {
+			// System.out.println(sinTildeTestset.get(i).get(j));
+			// }
+			//
+			// System.out.println("\n");
+			// }
+			// System.out
+			// .println("[CON_TILDE] ====================================================");
+			// for (int i = 0; i < conTildeTestset.size(); i++) {
+			// for (int j = 0; j < conTildeTestset.get(i).size(); j++) {
+			// System.out.println(conTildeTestset.get(i).get(j));
+			// }
+			//
+			// System.out.println("\n");
+			// }
 			System.out
 					.println("[ PREV -1 ] ====================================================");
 			{
 				Iterator<String> iter = previous_1.keySet().iterator();
 				while (iter.hasNext()) {
 					String key = iter.next();
-					System.out.println(key + ": " + previous_1.get(key));
+					if (previous_1.get(key) > 1) {
+						System.out.println(key + ": " + previous_1.get(key));
+					}
 				}
 			}
 			System.out
@@ -178,7 +184,9 @@ public class DatosTestSet {
 				Iterator<String> iter = previous_2.keySet().iterator();
 				while (iter.hasNext()) {
 					String key = iter.next();
-					System.out.println(key + ": " + previous_2.get(key));
+					if (previous_2.get(key) > 1) {
+						System.out.println(key + ": " + previous_2.get(key));
+					}
 				}
 			}
 			System.out
@@ -187,17 +195,19 @@ public class DatosTestSet {
 				Iterator<String> iter = next_1.keySet().iterator();
 				while (iter.hasNext()) {
 					String key = iter.next();
-					System.out.println(key + ": " + next_1.get(key));
+					if (next_1.get(key) > 1) {
+						System.out.println(key + ": " + next_1.get(key));
+					}
 				}
 			}
 			System.out
 					.println("================================================================");
-			System.out.println("cantidadConTilde: " + cantidadDeConTilde);
-			System.out.println("cantidadSinTilde: " + cantidadDeSinTilde);
-			System.out.println("cantidadConTildeConQE: "
-					+ cantidadDeConTildeConQE);
-			System.out.println("cantidadSinTildeConQE: "
-					+ cantidadDeSinTildeConQE);
+//			System.out.println("cantidadConTilde: " + cantidadDeConTilde);
+//			System.out.println("cantidadSinTilde: " + cantidadDeSinTilde);
+//			System.out.println("cantidadConTildeConQE: "
+//					+ cantidadDeConTildeConQE);
+//			System.out.println("cantidadSinTildeConQE: "
+//					+ cantidadDeSinTildeConQE);
 
 			in.close();
 		} catch (Exception e) {
