@@ -120,58 +120,42 @@ public class CRFTrainFinal {
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
-		// pipes.add(new RegexMatches("STARTSNUMBER",
-		// Pattern.compile("^[0-9].*")));
-		// pipes.add(new RegexMatches("HYPHENATED", Pattern
-		// .compile(".*[\\-|\\_].*")));
 		pipes.add(new RegexMatches("SIGN-PUNCT", Pattern
-				.compile("(,|-|:|;|\\.|\\*0\\*)")));
+				.compile("(-|:|;|\\.|¡|¿)")));
 		pipes.add(new RegexMatches("SIGN-QE", Pattern.compile("(\\?|¿|!|¡)")));
 		pipes.add(new RegexMatches("SIGN-ALL", Pattern
 				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
-		
-		// 44 Errores ===========
-//		pipes.add(new RegexMatches("QQ", Pattern.compile("(por|de|y)")));
-//		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|de|-|para|en|y|sobre|ver|a|saber|sé|,|¿)")));
-//		pipes.add(new RegexMatches("CP-2", Pattern.compile("(,|no|¿|para|-|se|y|que)")));
-//		pipes.add(new RegexMatches("CP+1", Pattern.compile("(se|\\*0\\*|\\?|no|,|es|le|significa)")));
-		
-		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|-|para|en|sobre|ver|a|saber|sé|¿)")));
-		pipes.add(new RegexMatches("CP-2", Pattern.compile("(no|¿|para|-|se|que)")));
-		pipes.add(new RegexMatches("CP+1", Pattern.compile("(\\?|no|,|es|le|significa)")));
-		
+
+		// 30 Errores ===========
+		pipes.add(new RegexMatches("CP-1", Pattern
+				.compile("(por|-|para|en|sobre|ver|a|saber|sé|¿)")));
+		pipes.add(new RegexMatches("CP-2", Pattern
+				.compile("(no|¿|para|-|se|que)")));
+		pipes.add(new RegexMatches("CP+1", Pattern
+				.compile("(\\?|no|,|es|le|significa)")));
+
 		pipes.add(new RegexMatches("ADVERBIO", Pattern
 				.compile("(cuando|cuanto|donde|que|como|adonde)")));
-		// pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
-		// pipes.add(new RegexMatches("DOLLARSIGN",
-		// Pattern.compile(".*\\$.*")));
+
 		pipes.add(new TokenFirstPosition("FIRST"));
 		pipes.add(new TokenSequenceLowercase());
 		pipes.add(new TokenText("WORD="));
 
-		pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
-				new String[] { "SIGN-ALL" }, new int[] { -1 }));
+		pipes.add(new OffsetFeatureConjunction("PREV-FIRST", new String[] {
+				"SIGN-PUNCT", "ADVERBIO" }, new int[] { -1, 0 }));
 
-		// pipes.add(new OffsetFeatureConjunction("PREV-FIRST", new String[]
-		// {"SIGN-END"}, new int[] {-1}));
-		// pipes.add(new OffsetFeatureConjunction("PREV-FIRST", new String[]
-		// {"SIGN-QE"}, new int[] {-1}));
-
-		pipes.add(new OffsetFeatureConjunction("SECOND",
-				new String[] { "FIRST" }, new int[] { -1 }));
+		pipes.add(new OffsetFeatureConjunction("PREV-FIRST", new String[] {
+				"FIRST", "ADVERBIO" }, new int[] { -1, 0 }));
 
 		pipes.add(new OffsetFeatureConjunction("PREV-ADVERBIO",
 				new String[] { "ADVERBIO" }, new int[] { -1 }));
 
-//		pipes.add(new OffsetFeatureConjunction("PREV-QQ", new String[] { "QQ",
-//				"ADVERBIO" }, new int[] { -1, 0 }));
-
 		pipes.add(new OffsetFeatureConjunction("REGLA-1", new String[] {
 				"CP-1", "ADVERBIO" }, new int[] { -1, 0 }));
-		
+
 		pipes.add(new OffsetFeatureConjunction("REGLA-2", new String[] {
 				"CP-2", "ADVERBIO" }, new int[] { -2, 0 }));
-		
+
 		pipes.add(new OffsetFeatureConjunction("REGLA+1", new String[] {
 				"ADVERBIO", "CP+1" }, new int[] { 0, 1 }));
 
@@ -227,7 +211,7 @@ public class CRFTrainFinal {
 	public static void main(String[] args) throws Exception {
 		String train = "corpus/train_2.txt";
 		// String train = "corpus/test_full_2.txt";
-//		String train = "corpus.txt";
+		// String train = "corpus.txt";
 		String model = "model_crf/final_crf_2.model";
 		String output = "CRFTrainFinal.log";
 
