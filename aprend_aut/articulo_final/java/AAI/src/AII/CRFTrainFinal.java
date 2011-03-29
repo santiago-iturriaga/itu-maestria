@@ -129,10 +129,17 @@ public class CRFTrainFinal {
 		pipes.add(new RegexMatches("SIGN-QE", Pattern.compile("(\\?|¿|!|¡)")));
 		pipes.add(new RegexMatches("SIGN-ALL", Pattern
 				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
+		
+		// 44 Errores ===========
 //		pipes.add(new RegexMatches("QQ", Pattern.compile("(por|de|y)")));
-		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|de|-|para|en|y|sobre|ver|a|saber|sé|,|¿)")));
-		pipes.add(new RegexMatches("CP-2", Pattern.compile("(,|no|¿|para|-|se|y|que)")));
-		pipes.add(new RegexMatches("CP+1", Pattern.compile("(se|\\*0\\*|\\?|no|,|es|le|significa)")));
+//		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|de|-|para|en|y|sobre|ver|a|saber|sé|,|¿)")));
+//		pipes.add(new RegexMatches("CP-2", Pattern.compile("(,|no|¿|para|-|se|y|que)")));
+//		pipes.add(new RegexMatches("CP+1", Pattern.compile("(se|\\*0\\*|\\?|no|,|es|le|significa)")));
+		
+		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|-|para|en|sobre|ver|a|saber|sé|¿)")));
+		pipes.add(new RegexMatches("CP-2", Pattern.compile("(no|¿|para|-|se|que)")));
+		pipes.add(new RegexMatches("CP+1", Pattern.compile("(\\?|no|,|es|le|significa)")));
+		
 		pipes.add(new RegexMatches("ADVERBIO", Pattern
 				.compile("(cuando|cuanto|donde|que|como|adonde)")));
 		// pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));

@@ -24,11 +24,11 @@ public class DatosTestSet {
 	 */
 	public static void main(String[] args) {
 		// String testset = args[0];
-		// String testset =
-		// "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
+		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
 		// String testset =
 		// "/home/santiago/eclipse/java-workspace/AAI/CRFTrainFinal.log";
-		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRFCorpus.log";
+		// String testset =
+		// "/home/santiago/eclipse/java-workspace/AAI/CRFCorpus.log";
 
 		try {
 			FileReader reader = new FileReader(testset);
@@ -76,8 +76,8 @@ public class DatosTestSet {
 				for (int j = 0; j < lines.get(i).size(); j++) {
 					currentToken = lines.get(i).get(j);
 
-					// if (currentToken.indexOf("CON_TILDE") >= 0) {
-					if (currentToken.indexOf("SIN_TILDE") >= 0) {
+					if (currentToken.indexOf("CON_TILDE") >= 0) {
+						// if (currentToken.indexOf("SIN_TILDE") >= 0) {
 						tieneCON_TILDE = true;
 						cantidadDeConTilde++;
 
@@ -122,10 +122,10 @@ public class DatosTestSet {
 							next_1.put(palabra_contexto, conteo);
 						}
 					}
-					// if (currentToken.indexOf("SIN_TILDE") >= 0) {
-					// tieneSIN_TILDE = true;
-					// cantidadDeSinTilde++;
-					// }
+					if (currentToken.indexOf("SIN_TILDE") >= 0) {
+						tieneSIN_TILDE = true;
+						cantidadDeSinTilde++;
+					}
 					if (currentToken.indexOf("SIGN-QE") >= 0) {
 						tieneSIGN_QE = true;
 					}
@@ -202,12 +202,12 @@ public class DatosTestSet {
 			}
 			System.out
 					.println("================================================================");
-//			System.out.println("cantidadConTilde: " + cantidadDeConTilde);
-//			System.out.println("cantidadSinTilde: " + cantidadDeSinTilde);
-//			System.out.println("cantidadConTildeConQE: "
-//					+ cantidadDeConTildeConQE);
-//			System.out.println("cantidadSinTildeConQE: "
-//					+ cantidadDeSinTildeConQE);
+			System.out.println("cantidadConTilde: " + cantidadDeConTilde);
+			System.out.println("cantidadSinTilde: " + cantidadDeSinTilde);
+			System.out.println("cantidadConTildeConQE: "
+					+ cantidadDeConTildeConQE);
+			System.out.println("cantidadSinTildeConQE: "
+					+ cantidadDeSinTildeConQE);
 
 			in.close();
 		} catch (Exception e) {
