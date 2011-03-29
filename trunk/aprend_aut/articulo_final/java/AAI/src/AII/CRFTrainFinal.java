@@ -128,18 +128,17 @@ public class CRFTrainFinal {
 				.compile("(,|-|:|;|\\.|\\*0\\*)")));
 		pipes.add(new RegexMatches("SIGN-QE", Pattern.compile("(\\?|¿|!|¡)")));
 		pipes.add(new RegexMatches("SIGN-ALL", Pattern
-				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡)")));
+				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
 		pipes.add(new RegexMatches("QQ", Pattern.compile("(por|de|y)")));
+		pipes.add(new RegexMatches("ADVERBIO", Pattern
+				.compile("(cuando|cuanto|donde|que|como|adonde)")));
 		// pipes.add(new RegexMatches("SIGN-END", Pattern.compile(".*\\..*")));
 		// pipes.add(new RegexMatches("DOLLARSIGN",
 		// Pattern.compile(".*\\$.*")));
 		pipes.add(new TokenFirstPosition("FIRST"));
 		pipes.add(new TokenSequenceLowercase());
-
-		// int[][] conjunctions = new int[1][];
-		// conjunctions[0] = new int[] { -1 };
-		// pipes.add(new OffsetConjunctions(conjunctions));
-
+		pipes.add(new TokenText("WORD="));
+		
 		pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
 				new String[] { "SIGN-ALL" }, new int[] { -1 }));
 
@@ -153,14 +152,9 @@ public class CRFTrainFinal {
 
 		pipes.add(new OffsetFeatureConjunction("PREV-ADVERBIO",
 				new String[] { "ADVERBIO" }, new int[] { -1 }));
-
-		pipes.add(new RegexMatches("ADVERBIO", Pattern
-				.compile("(cuando|cuanto|donde|que|como|adonde)")));
-		
+	
 		pipes.add(new OffsetFeatureConjunction("PREV-QQ",
 				new String[] { "QQ", "ADVERBIO" }, new int[] { -1, 0 }));
-
-		pipes.add(new TokenText("WORD="));
 
 		// pipes.add(new TokenTextCharSuffix("S4=", 4));
 		// pipes.add(new TokenTextCharSuffix("S3=", 3));

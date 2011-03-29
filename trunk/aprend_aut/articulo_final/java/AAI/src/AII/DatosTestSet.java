@@ -3,6 +3,8 @@ package AII;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.regex.Pattern;
 
 public class DatosTestSet {
 
@@ -16,6 +18,9 @@ public class DatosTestSet {
 			FileReader reader = new FileReader(testset);
 			BufferedReader in = new BufferedReader(reader);
 
+			Hashtable<String, Integer> previous_1 = new Hashtable<String, Integer>();
+			Hashtable<String, Integer> previous_2 = new Hashtable<String, Integer>();
+			
 			ArrayList<ArrayList<String>> sinTildeTestset = new ArrayList<ArrayList<String>>();
 			ArrayList<ArrayList<String>> conTildeTestset = new ArrayList<ArrayList<String>>();
 			ArrayList<String> currentLine = new ArrayList<String>();
@@ -36,20 +41,17 @@ public class DatosTestSet {
 
 				if (corpusLine.trim().length() == 0) {
 					// Fin de oración.
-					if (tieneSIGN_QE) {
-						if (tieneCON_TILDE) {
-							conTildeTestset.add(currentLine);
-							cantidadDeConTildeConQE++;
-						}
-						if (tieneSIN_TILDE) {
-							sinTildeTestset.add(currentLine);
-							cantidadDeSinTildeConQE++;
-						}
-
-						tieneCON_TILDE = false;
-						tieneSIN_TILDE = false;
-						tieneSIGN_QE = false;
+					if (tieneCON_TILDE) {
+						conTildeTestset.add(currentLine);
+						cantidadDeConTildeConQE++;
+					} else if (tieneSIN_TILDE) {
+						sinTildeTestset.add(currentLine);
+						cantidadDeSinTildeConQE++;
 					}
+
+					tieneCON_TILDE = false;
+					tieneSIN_TILDE = false;
+					tieneSIGN_QE = false;
 					
 					currentLine = new ArrayList<String>();
 				} else {
@@ -59,6 +61,12 @@ public class DatosTestSet {
 					if (corpusLine.indexOf("CON_TILDE") >= 0) {
 						tieneCON_TILDE = true;
 						cantidadDeConTilde++;
+						
+						Pattern.compile("WORD=.*")
+						
+						if (currentLine.size() > 1) {
+							
+						}
 					}
 					if (corpusLine.indexOf("SIN_TILDE") >= 0) {
 						tieneSIN_TILDE = true;
