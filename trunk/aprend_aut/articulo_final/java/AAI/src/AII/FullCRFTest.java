@@ -13,12 +13,9 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.Sequence;
 
 public class FullCRFTest {
-
 	public static void main(String[] args) throws Throwable {
-		String testingFilename = args[1]; //"corpus/test_2.txt";
-//		String testingFilename = "corpus/test_0.txt";
-		String modelFilename = args[0]; // "corpus/crf_2.model";
-//		String modelFilename = "corpus/crf_0.model";
+		String testingFilename = args[1];
+		String modelFilename = args[0];
 
 		ObjectInputStream s = new ObjectInputStream(new FileInputStream(
 				modelFilename));
@@ -26,7 +23,7 @@ public class FullCRFTest {
 		s.close();
 
 		Pipe pipe = crf.getInputPipe();
-		
+
 		InstanceList testingInstances = new InstanceList(pipe);
 		testingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(testingFilename))),

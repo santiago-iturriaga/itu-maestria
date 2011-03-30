@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -22,8 +23,10 @@ import cc.mallet.pipe.SimpleTaggerSentence2TokenSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
+import cc.mallet.pipe.tsf.OffsetFeatureConjunction;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
+import cc.mallet.pipe.tsf.TokenText;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
@@ -54,10 +57,6 @@ public class FullCRFTrain {
 				ArrayList<Integer> featureIndices = new ArrayList<Integer>();
 
 				int featureIndex;
-				featureIndex = features.lookupIndex(tokens.get(l).getText());
-				if (featureIndex >= 0) {
-					featureIndices.add(featureIndex);
-				}
 
 				if (tokens.get(l).getFeatures() != null) {
 					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
@@ -88,19 +87,52 @@ public class FullCRFTrain {
 		}
 	}
 
-	public static CRF TrainCRF(String trainingFilename) throws IOException {
+	public static CRF TrainCRF(String trainingFilename)
+			throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
 		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
-		pipes.add(new RegexMatches("STARTSNUMBER", Pattern.compile("^[0-9].*")));
-		pipes.add(new RegexMatches("HYPHENATED", Pattern
-				.compile(".*[\\-|\\_].*")));
-		pipes.add(new RegexMatches("DOLLARSIGN", Pattern.compile(".*\\$.*")));
-		pipes.add(new RegexMatches("SIGN", Pattern.compile(".*[\\!|\\?].*")));
-		pipes.add(new TokenFirstPosition("FIRSTTOKEN"));
-		pipes.add(new TokenSequenceLowercase());	
-		pipes.add(new FullCRFTrain.SimpleTokenSentence2FeatureVectorSequence());
+		pipes.add(new RegexMatches("SIGN-PUNCT", Pattern
+				.compile("(,|-|:|;|\\.|\\*0\\*)")));
+		pipes.add(new RegexMatches("SIGN-QE", Pattern.compile("(\\?|¿|!|¡)")));
+		pipes.add(new RegexMatches("SIGN-ALL", Pattern
+				.compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
+		
+		pipes.add(new RegexMatches("CP-1", Pattern.compile("(por|-|para|en|sobre|ver|a|saber|sé|¿)")));
+		pipes.add(new RegexMatches("CP-2", Pattern.compile("(no|¿|para|-|se|que)")));
+		pipes.add(new RegexMatches("CP+1", Pattern.compile("(\\?|no|,|es|le|significa)")));
+		
+		pipes.add(new RegexMatches("ADVERBIO", Pattern
+				.compile("(cuando|cuanto|donde|que|como|adonde)")));
+
+		pipes.add(new TokenFirstPosition("FIRST"));
+		pipes.add(new TokenSequenceLowercase());
+		pipes.add(new TokenText("WORD="));
+
+		pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
+				new String[] { "SIGN-ALL" }, new int[] { -1 }));
+
+		pipes.add(new OffsetFeatureConjunction("SECOND",
+				new String[] { "FIRST" }, new int[] { -1 }));
+
+		pipes.add(new OffsetFeatureConjunction("PREV-ADVERBIO",
+				new String[] { "ADVERBIO" }, new int[] { -1 }));
+
+		pipes.add(new OffsetFeatureConjunction("REGLA-1", new String[] {
+				"CP-1", "ADVERBIO" }, new int[] { -1, 0 }));
+		
+		pipes.add(new OffsetFeatureConjunction("REGLA-2", new String[] {
+				"CP-2", "ADVERBIO" }, new int[] { -2, 0 }));
+		
+		pipes.add(new OffsetFeatureConjunction("REGLA+1", new String[] {
+				"ADVERBIO", "CP+1" }, new int[] { 0, 1 }));
+
+		// pipes.add(new TokenTextCharSuffix("S4=", 4));
+		// pipes.add(new TokenTextCharSuffix("S3=", 3));
+		// pipes.add(new TokenTextCharSuffix("S2=", 2));
+		pipes.add(new CRFTrainFinal.SimpleTokenSentence2FeatureVectorSequence());
+
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -109,22 +141,25 @@ public class FullCRFTrain {
 				Pattern.compile("^\\s*$"), true));
 
 		CRF crf = new CRF(pipe, null);
-		
+
 		int[] orders = { 1 };
-		Pattern forbiddenPat = Pattern.compile("\\s");
+		Pattern forbiddenPat = Pattern.compile("(CON_TILDE,CON_TILDE)");
 		Pattern allowedPat = Pattern.compile(".*");
 
-		String startName = crf.addOrderNStates(trainingInstances, orders,
-				null, "O", forbiddenPat, allowedPat, true);
+		String startName = crf.addOrderNStates(trainingInstances, orders, null,
+				"O", forbiddenPat, allowedPat, true);
 		for (int s = 0; s < crf.numStates(); s++)
 			crf.getState(s).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
 		crf.getState(startName).setInitialWeight(0.0);
 
-		TransducerTrainer trainer = null;
-		trainer = new CRFTrainerByLabelLikelihood(crf);
-		((CRFTrainerByLabelLikelihood) trainer).setGaussianPriorVariance(10.0);
+		CRFTrainerByLabelLikelihood trainer = null;
 
-		trainer.train(trainingInstances, 500);
+		trainer = new CRFTrainerByLabelLikelihood(crf);
+		trainer.setGaussianPriorVariance(11.0);
+		trainer.setUseSparseWeights(true);
+		trainer.setUseSomeUnsupportedTrick(true);
+
+		trainer.train(trainingInstances, 1000);
 
 		return crf;
 	}
@@ -132,12 +167,12 @@ public class FullCRFTrain {
 	public static void main(String[] args) throws Exception {
 		for (int i = 0; i < 10; i++) {
 			String train = "corpus/train_" + i + ".txt";
-			String model = "model_crf/crf_" + i + ".model";
+			String model = "model_crf/f_" + i + ".model";
 
 			CRF modelObj = TrainCRF(train);
 
-			ObjectOutputStream s = new ObjectOutputStream(
-					new FileOutputStream(model));
+			ObjectOutputStream s = new ObjectOutputStream(new FileOutputStream(
+					model));
 			s.writeObject(modelObj);
 			s.close();
 		}

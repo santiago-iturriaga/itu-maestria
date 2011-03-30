@@ -1,2 +1,0 @@
-java -classpath "/home/santiago/bin/mallet-2.0.6/class:/home/santiago/bin/mallet-2.0.6/lib/mallet-deps.jar" \
-	cc.mallet.fst.SimpleTagger --model-file corpus/0.model corpus/test_0.txt > corpus/result_0.txt

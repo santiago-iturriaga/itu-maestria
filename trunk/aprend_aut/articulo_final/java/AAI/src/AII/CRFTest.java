@@ -35,8 +35,8 @@ public class CRFTest {
 				new InputStreamReader(new FileInputStream(testingFilename))),
 				Pattern.compile("^\\s*$"), true));
 		
-		PrintWriter o = new PrintWriter("log.alpha");
-		testingInstances.getAlphabet().dump(o);
+//		PrintWriter o = new PrintWriter("log.alpha");
+//		testingInstances.getAlphabet().dump(o);
 		
 		for (int i = 0; i < testingInstances.size(); i++) {
 			Sequence input = (Sequence) testingInstances.get(i).getData();
