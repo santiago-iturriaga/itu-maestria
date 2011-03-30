@@ -34,16 +34,16 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 
 	public SVMPrintingPipe() {
 		super(new Alphabet(), null);
-		
+
 		this.index = 0;
 	}
 
 	public SVMPrintingPipe(Alphabet dataDict) {
 		super(dataDict, null);
-		
+
 		this.index = 0;
 	}
-	
+
 	public SVMPrintingPipe(String logFile) throws FileNotFoundException {
 		super(new Alphabet(), null);
 
@@ -66,118 +66,57 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 		int N = data.size();
 
 		if (data instanceof TokenSequence) {
-			TokenSequence tokens = (TokenSequence) data;
-			Alphabet features = getDataAlphabet();
-
-			index++;
-			for (int l = 0; l < tokens.size(); l++) {
-				String currentTarget = target.get(l).toString();
-				if (currentTarget.equals("O")) {
-					writer.print("1 ");
-				} else if (currentTarget.equals("SIN_TILDE")) {
-					writer.print("2 ");
-				} else if (currentTarget.equals("CON_TILDE")) {
-					writer.print("3 ");
-				} else {
-					writer.print("0 ");
-				}
-
-				writer.print("qid:" + index + " ");
-
-				int featureIndex;
-				if (tokens.get(l).getFeatures() != null) {
-					cc.mallet.util.PropertyList.Iterator iter = tokens.get(l)
-							.getFeatures().iterator();
-
-					ArrayList<Integer> features_aux = new ArrayList<Integer>();
-					iter = tokens.get(l).getFeatures().iterator();
-					while (iter.hasNext()) {
-						iter.next();
-
-						featureIndex = features.lookupIndex(iter.getKey());
-						if (featureIndex >= 0) {
-							features_aux.add(featureIndex);
-						}
-					}
-
-					Collections.sort(features_aux);
-
-					for (int i = 0; i < features_aux.size(); i++) {
-						writer.print((features_aux.get(i) + 1) + ":1 ");
-					}
-
-					writer.println();
-
-					// int wordPos = 0;
-					// int currentPos = 0;
-					// boolean encontrado = false;
-					// while ((iter.hasNext()) && (!encontrado)) {
-					// iter.next();
-					//
-					// if (iter.hasNext()) {
-					// if (iter.getKey().startsWith("WORD=")) {
-					// featureIndex = features.lookupIndex(iter
-					// .getKey());
-					// if (featureIndex >= 0) {
-					// writer.print(featureIndex + ":1 ");
-					// // + "("+ iter.getKey() + ")  ");
-					// encontrado = true;
-					// wordPos = currentPos;
-					// }
-					// }
-					// currentPos++;
-					// }
-					// }
-					//
-					// iter = tokens.get(l).getFeatures().iterator();
-					// currentPos = 0;
-					// while (iter.hasNext()) {
-					// iter.next();
-					//
-					// if (iter.hasNext()) {
-					// if (wordPos != currentPos) {
-					// featureIndex = features.lookupIndex(iter
-					// .getKey());
-					// if (featureIndex >= 0) {
-					// writer.print(featureIndex + ":1 ");
-					// // + "("+ iter.getKey() + ")  ");
-					// }
-					// }
-					//
-					// currentPos++;
-					// }
-					// }
-				}
-			}
-		} else if (data instanceof FeatureVectorSequence) {
 			throw new UnsupportedOperationException("Not yet implemented.");
+		} else if (data instanceof FeatureVectorSequence) {
+			FeatureVectorSequence fvs = (FeatureVectorSequence) data;
+			Alphabet dict = (fvs.size() > 0) ? fvs.getFeatureVector(0)
+					.getAlphabet() : null;
 
-			// FeatureVectorSequence fvs = (FeatureVectorSequence) data;
-			// Alphabet dict = (fvs.size() > 0) ? fvs.getFeatureVector(0)
-			// .getAlphabet() : null;
-			//
-			// for (int i = 0; i < N; i++) {
-			// writer.print(dict.lookupObject(
-			// fvs.getFeatureVector(i).indexAtLocation(0)).toString() + ' ');
-			//
-			// Object label = target.get(i);
-			// writer.print(label);
-			//
-			// FeatureVector fv = fvs.getFeatureVector(i);
-			// for (int loc = 1; loc < fv.numLocations(); loc++) {
-			// writer.print(' ');
-			// String fname = dict.lookupObject(fv.indexAtLocation(loc))
-			// .toString();
-			// double value = fv.valueAtLocation(loc);
-			// if (!Maths.almostEquals(value, 1.0)) {
-			// throw new IllegalArgumentException(
-			// "Printing to SimpleTagger format: FeatureVector not binary at time slice "
-			// + i + " fv:" + fv);
-			// }
-			// writer.print(fname);
-			// }
-			// writer.println();
-			// }
+			for (int i = 0; i < N; i++) {
+				FeatureVector fv = fvs.getFeatureVector(i);
+
+				int wordPos = -1;
+				for (int currentPos = 0; (currentPos < fv.numLocations())
+						&& (wordPos == -1); currentPos++) {
+					String currentFeature = dict
+							.lookupObject(
+									fvs.getFeatureVector(i).indexAtLocation(
+											currentPos)).toString();
+
+					if (currentFeature.startsWith("WORD=")) {
+						wordPos = currentPos;
+					}
+				}
+
+				if (wordPos == -1) {
+					throw new IllegalArgumentException();
+				} else {
+					writer.print(dict
+							.lookupObject(
+									fvs.getFeatureVector(i).indexAtLocation(
+											wordPos)).toString()
+							.substring("WORD=".length()) + ' ');
+				}
+
+				Object label = target.get(i);
+				writer.print(label);
+
+				for (int loc = 0; loc < fv.numLocations(); loc++) {
+					if (loc != wordPos) {
+						writer.print(' ');
+						String fname = dict.lookupObject(
+								fv.indexAtLocation(loc)).toString();
+						double value = fv.valueAtLocation(loc);
+						if (!Maths.almostEquals(value, 1.0)) {
+							throw new IllegalArgumentException(
+									"Printing to SimpleTagger format: FeatureVector not binary at time slice "
+											+ i + " fv:" + fv);
+						}
+						writer.print(fname);
+					}
+				}
+				writer.println();
+			}
 		} else {
 			throw new IllegalArgumentException(
 					"Don't know how to print data of type " + data);
@@ -190,7 +129,7 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		out.writeObject(logFile);
-		
+
 		writer.flush();
 		writer.close();
 	}
@@ -198,7 +137,7 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 	private void readObject(ObjectInputStream in) throws IOException,
 			ClassNotFoundException {
 		logFile = (String) in.readObject();
-		
+
 		this.writer = new PrintWriter(logFile);
 	}
 }

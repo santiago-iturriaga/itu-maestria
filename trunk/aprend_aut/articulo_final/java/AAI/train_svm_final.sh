@@ -7,10 +7,10 @@ i=2
 m=0
 
 echo "NAME = final_svm" > final_svm.svmt
-echo "TRAINSET = /home/santiago/eclipse/java-workspace/AAI/corpus/train_2.txt" >> final_svm.svmt
-echo "TESTSET = /home/santiago/eclipse/java-workspace/AAI/corpus/test_full_2.txt" >> final_svm.svmt
-#echo "TRAINSET = /home/santiago/eclipse/java-workspace/AAI/crf_to_svm_train_2.log" >> final_svm.svmt
-#echo "TESTSET = /home/santiago/eclipse/java-workspace/AAI/crf_to_svm_test_2.log" >> final_svm.svmt
+#echo "TRAINSET = /home/santiago/eclipse/java-workspace/AAI/corpus/train_2.txt" >> final_svm.svmt
+#echo "TESTSET = /home/santiago/eclipse/java-workspace/AAI/corpus/test_full_2.txt" >> final_svm.svmt
+echo "TRAINSET = /home/santiago/eclipse/java-workspace/AAI/SVMTrainFinal.log" >> final_svm.svmt
+echo "TESTSET = /home/santiago/eclipse/java-workspace/AAI/SVMTestFinal.log" >> final_svm.svmt
 echo "SVMDIR = /home/santiago/Facultad/AAI/svm_light/" >> final_svm.svmt
 echo "REMOVE_FILES = 1" >> final_svm.svmt
 echo "F = 1 200000" >> final_svm.svmt

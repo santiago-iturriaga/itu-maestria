@@ -41,6 +41,8 @@ public class TokenNotWord extends Pipe implements Serializable
 			
 			if (words.contains(t.getText().trim())) {
 				t.setFeatureValue (prefix, 1.0);
+			} else {
+				t.setFeatureValue (t.getText().trim(), 1.0);
 			}
 		}
 		return carrier;
