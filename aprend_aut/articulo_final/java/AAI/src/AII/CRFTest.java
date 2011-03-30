@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
 import java.util.regex.Pattern;
 
 import cc.mallet.fst.CRF;
@@ -28,11 +29,15 @@ public class CRFTest {
 		s.close();
 		
 		Pipe pipe = crf.getInputPipe();
+		
 		InstanceList testingInstances = new InstanceList(pipe);
 		testingInstances.addThruPipe(new LineGroupIterator(new BufferedReader(
 				new InputStreamReader(new FileInputStream(testingFilename))),
 				Pattern.compile("^\\s*$"), true));
-	
+		
+		PrintWriter o = new PrintWriter("log.alpha");
+		testingInstances.getAlphabet().dump(o);
+		
 		for (int i = 0; i < testingInstances.size(); i++) {
 			Sequence input = (Sequence) testingInstances.get(i).getData();
 
