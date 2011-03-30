@@ -78,6 +78,8 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 					writer.print("2 ");
 				} else if (currentTarget.equals("CON_TILDE")) {
 					writer.print("3 ");
+				} else {
+					writer.print("0 ");
 				}
 
 				writer.print("qid:" + index + " ");
@@ -182,7 +184,7 @@ public class SVMPrintingPipe extends Pipe implements Serializable {
 		}
 
 		// writer.println();
-
+		writer.flush();
 		return carrier;
 	}
 

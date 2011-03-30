@@ -1,2 +1,4 @@
+rm model_crf/final_crf_2.model
+
 java -classpath /home/santiago/eclipse/java-workspace/AAI/bin:/home/santiago/eclipse/java-workspace/AAI/lib/mallet-deps.jar \
-	cc.mallet.fst.SimpleTagger --model-file corpus/2.model corpus/test_2.txt > corpus/result_2.txt
+	-Xmx1024M AII.OutputSVMTrainFinal
