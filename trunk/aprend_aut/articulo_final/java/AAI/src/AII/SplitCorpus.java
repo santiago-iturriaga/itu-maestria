@@ -129,7 +129,7 @@ public class SplitCorpus {
 								
 								if (tokenArray.length > 1) {
 									testBuffWriter.write(quitarTildes(tokenArray[0]) + "\n");
-									testBuffWriterFull.write(tokens + "\n");
+									testBuffWriterFull.write(quitarTildes(tokenArray[0]) + " " + tokenArray[1] + "\n");
 								} else {
 									testBuffWriter.write(tokens + "\n");
 									testBuffWriterFull.write(tokens + "\n");	
