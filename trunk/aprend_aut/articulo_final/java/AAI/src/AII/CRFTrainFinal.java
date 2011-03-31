@@ -256,7 +256,7 @@ public class CRFTrainFinal {
 		CRFTrainerByLabelLikelihood trainer = null;
 
 		trainer = new CRFTrainerByLabelLikelihood(crf);
-		trainer.setGaussianPriorVariance(10.0);
+		trainer.setGaussianPriorVariance(9.0);
 		trainer.setUseSparseWeights(true);
 		trainer.setUseSomeUnsupportedTrick(true);
 
