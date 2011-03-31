@@ -35,6 +35,7 @@ import cc.mallet.pipe.tsf.OffsetFeatureConjunction;
 import cc.mallet.pipe.tsf.RegexMatches;
 import cc.mallet.pipe.tsf.SequencePrintingPipe;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
+import cc.mallet.pipe.tsf.TokenNotWord;
 import cc.mallet.pipe.tsf.TokenText;
 import cc.mallet.pipe.tsf.TokenTextCharSuffix;
 import cc.mallet.types.Alphabet;
@@ -125,12 +126,12 @@ public class CRFTrainFinal {
 		
 		pipes.add(new RegexMatches("SPECIAL-SUFFIX", Pattern
 				.compile(".*(á|é|í|ó|ú)(!|\\?|\\.)*$")));
-
+		
 		pipes.add(new RegexMatches("PREV-SINT", Pattern
-				.compile("^(,)$")));
+				.compile("^(,|lo|la|el|los)$")));
 
 		pipes.add(new RegexMatches("PREV-CINT", Pattern
-				.compile("^(por)$")));
+				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
 		
 		// pipes.add(new RegexMatches("SIGN-PUNCT",
 		// Pattern.compile("(:|;|\\.|\\*0\\*)")));
@@ -161,6 +162,15 @@ public class CRFTrainFinal {
 		pipes.add(new RegexMatches("ADVERBIO", Pattern
 				.compile("^(cuando|cuanto|donde|que|como|adonde)$")));
 
+		ArrayList<String> adverbios = new ArrayList<String>();
+		adverbios.add("cuando");
+		adverbios.add("cuanto");
+		adverbios.add("donde");
+		adverbios.add("que");
+		adverbios.add("como");
+		adverbios.add("adonde");
+		pipes.add(new TokenNotWord("NOADVERBIO", adverbios));
+		
 		pipes.add(new OffsetFeatureConjunction("BEGINNING",
 				new String[] { "FIRST", "ADVERBIO" }, new int[] { -1, 0 }));
 
