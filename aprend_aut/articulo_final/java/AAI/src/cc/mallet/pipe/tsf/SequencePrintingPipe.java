@@ -84,6 +84,7 @@ public class SequencePrintingPipe extends Pipe implements Serializable {
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {
+		writer.flush();
 	}
 
 	private void readObject(ObjectInputStream in) throws IOException,
