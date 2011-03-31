@@ -11,12 +11,14 @@ import java.util.regex.Pattern;
 public class DatosTestSet {
 
 	public static String getWord(String token) {
-		Pattern p = Pattern.compile("WORD=.*");
-		Matcher m = p.matcher(token);
-		m.find();
-		String palabra = m.group().substring("WORD=".length()).split(" ")[0];
-
-		return palabra;
+//		Pattern p = Pattern.compile("WORD=.*");
+//		Matcher m = p.matcher(token);
+//		m.find();
+//		String palabra = m.group().substring("WORD=".length()).split(" ")[0];
+//
+//		return palabra;
+		
+		return token.split(" ")[0].toLowerCase();
 	}
 
 	/**
@@ -24,16 +26,22 @@ public class DatosTestSet {
 	 */
 	public static void main(String[] args) {
 		// String testset = args[0];
-		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
+//		String testset = "/home/santiago/eclipse/java-workspace/AAI/CRF_Test.log";
 		// String testset =
 		// "/home/santiago/eclipse/java-workspace/AAI/CRFTrainFinal.log";
 		// String testset =
 		// "/home/santiago/eclipse/java-workspace/AAI/CRFCorpus.log";
-
+		 String testset = "/home/santiago/eclipse/java-workspace/AAI/corpus.txt";
+		
 		try {
 			FileReader reader = new FileReader(testset);
 			BufferedReader in = new BufferedReader(reader);
 
+			int cantidadCONCON = 0;
+			int cantidadCONSIN = 0;
+			int cantidadSINCON = 0;
+			int cantidadSINSIN = 0;
+			
 			Hashtable<String, Integer> previous_1 = new Hashtable<String, Integer>();
 			Hashtable<String, Integer> previous_2 = new Hashtable<String, Integer>();
 			Hashtable<String, Integer> next_1 = new Hashtable<String, Integer>();
@@ -72,11 +80,18 @@ public class DatosTestSet {
 				}
 			}
 
+			String lastToken = "";
+			
 			for (int i = 0; i < lines.size(); i++) {
-				for (int j = 0; j < lines.get(i).size(); j++) {
+				lastToken = "";
+				
+				for (int j = 0; j < lines.get(i).size(); j++) {				
 					currentToken = lines.get(i).get(j);
 
 					if (currentToken.indexOf("CON_TILDE") >= 0) {
+						if (lastToken.indexOf("CON_TILDE") >= 0) cantidadCONCON++;
+						if (lastToken.indexOf("SIN_TILDE") >= 0) cantidadCONSIN++;
+						
 						// if (currentToken.indexOf("SIN_TILDE") >= 0) {
 						tieneCON_TILDE = true;
 						cantidadDeConTilde++;
@@ -123,12 +138,17 @@ public class DatosTestSet {
 						}
 					}
 					if (currentToken.indexOf("SIN_TILDE") >= 0) {
+						if (lastToken.indexOf("CON_TILDE") >= 0) cantidadSINCON++;
+						if (lastToken.indexOf("SIN_TILDE") >= 0) cantidadSINSIN++;
+						
 						tieneSIN_TILDE = true;
 						cantidadDeSinTilde++;
 					}
 					if (currentToken.indexOf("SIGN-QE") >= 0) {
 						tieneSIGN_QE = true;
 					}
+					
+					lastToken = currentToken;
 				}
 
 				// Fin de oración.
@@ -208,6 +228,12 @@ public class DatosTestSet {
 					+ cantidadDeConTildeConQE);
 			System.out.println("cantidadSinTildeConQE: "
 					+ cantidadDeSinTildeConQE);
+			
+			
+			System.out.println("cantidadConCon: " + cantidadCONCON);
+			System.out.println("cantidadConSin: " + cantidadCONSIN);
+			System.out.println("cantidadSinCon: " + cantidadSINCON);
+			System.out.println("cantidadSinSin: " + cantidadSINSIN);
 
 			in.close();
 		} catch (Exception e) {

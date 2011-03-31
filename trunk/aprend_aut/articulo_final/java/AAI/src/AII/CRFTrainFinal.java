@@ -120,32 +120,38 @@ public class CRFTrainFinal {
 		// pipes.add(new RegexMatches("DOLLARSIGN",
 		// Pattern.compile(".*\\$.*")));
 		pipes.add(new TokenFirstPosition("FIRST"));
-		
+
 		pipes.add(new TokenSequenceLowercase());
 		pipes.add(new TokenText("WORD="));
-		
+
 		pipes.add(new RegexMatches("SPECIAL-SUFFIX", Pattern
 				.compile(".*(á|é|í|ó|ú)(!|\\?|\\.)*$")));
-		
+
 		pipes.add(new RegexMatches("PREV-SINT", Pattern
-				.compile("^(,|lo|la|el|los)$")));
+				.compile("^(,|lo|la|el|los|\")$")));
 
 		pipes.add(new RegexMatches("PREV-CINT", Pattern
 				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
-		
+
+		pipes.add(new RegexMatches("NEXT-SINT", Pattern
+				.compile("^(el|la|los|en|las|ha|\")$")));
+
+		pipes.add(new RegexMatches("NEXT-CINT", Pattern
+				.compile("^(es|le|significa)$")));
+
 		// pipes.add(new RegexMatches("SIGN-PUNCT",
 		// Pattern.compile("(:|;|\\.|\\*0\\*)")));
 		// pipes.add(new RegexMatches("SIGN-COMA", Pattern
 		// .compile(",")));
 		// pipes.add(new RegexMatches("SIGN-GUION", Pattern
 		// .compile("-")));
-		
+
 		pipes.add(new RegexMatches("SIGN-QE", Pattern
 				.compile(".*(\\?|¿|!|¡).*")));
 		pipes.add(new InQuestionMarks("IN-QE", Pattern
 				.compile(".*(\\?|¿|!|¡).*"), Pattern
 				.compile("^(cuando|cuanto|donde|que|como|adonde)$")));
-		
+
 		// pipes.add(new RegexMatches("SIGN-ALL", Pattern
 		// .compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
 
@@ -170,28 +176,37 @@ public class CRFTrainFinal {
 		adverbios.add("como");
 		adverbios.add("adonde");
 		pipes.add(new TokenNotWord("NOADVERBIO", adverbios));
-		
-		pipes.add(new OffsetFeatureConjunction("BEGINNING",
-				new String[] { "FIRST", "ADVERBIO" }, new int[] { -1, 0 }));
 
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-QE",
-				new String[] { "SIGN-QE", "ADVERBIO" }, new int[] { -1, 0 }));
+		pipes.add(new OffsetFeatureConjunction("BEGINNING", new String[] {
+				"FIRST", "ADVERBIO" }, new int[] { -1, 0 }));
 
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT",
-				new String[] { "PREV-SINT", "ADVERBIO" }, new int[] { -1, 0 }));
-		
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT",
-				new String[] { "PREV-CONT", "ADVERBIO" }, new int[] { -1, 0 }));
-		
-//		pipes.add(new OffsetFeatureConjunction("THIRD",
-//				new String[] { "SECOND" }, new int[] { -1 }));
-		
-		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX",
-				new String[] { "ADVERBIO", "SPECIAL-SUFFIX" }, new int[] { 0, 1 }));
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-QE", new String[] {
+				"SIGN-QE", "ADVERBIO" }, new int[] { -1, 0 }));
 
-//		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX",
-//				new String[] { "ADVERBIO", "ADVERBIO" }, new int[] { 0, 1 }));
-		
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-QE", new String[] {
+				"ADVERBIO", "SIGN-QE" }, new int[] { 0, 1 }));
+
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
+				"PREV-SINT", "ADVERBIO" }, new int[] { -1, 0 }));
+
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
+				"PREV-CONT", "ADVERBIO" }, new int[] { -1, 0 }));
+
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
+				"ADVERBIO", "NEXT-SINT" }, new int[] { 0, 1 }));
+
+		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
+				"ADVERBIO", "NEXT-CONT" }, new int[] { 0, 1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("THIRD",
+		// new String[] { "SECOND" }, new int[] { -1 }));
+
+		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX", new String[] {
+				"ADVERBIO", "SPECIAL-SUFFIX" }, new int[] { 0, 1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX",
+		// new String[] { "ADVERBIO", "ADVERBIO" }, new int[] { 0, 1 }));
+
 		// pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
 		// new String[] { "SIGN-ALL" }, new int[] { -1 }));
 
@@ -226,8 +241,10 @@ public class CRFTrainFinal {
 
 		int[] orders = { 1 };
 		// Pattern forbiddenPat = Pattern.compile("\\s");
+		// Pattern forbiddenPat = Pattern
+		// .compile("(CON_TILDE,CON_TILDE)|(SIN_TILDE,CON_TILDE)|(.*SIN_TILDE,CON_TILDE.*)|(.*CON_TILDE,CON_TILDE.*)");
 		Pattern forbiddenPat = Pattern
-				.compile("(CON_TILDE,CON_TILDE)|((.*)CON_TILDE(.*)CON_TILDE(.*))");
+			.compile(".*(CON_TILDE,CON_TILDE|SIN_TILDE,CON_TILDE).*");
 		Pattern allowedPat = Pattern.compile(".*");
 
 		String startName = crf.addOrderNStates(trainingInstances, orders, null,
