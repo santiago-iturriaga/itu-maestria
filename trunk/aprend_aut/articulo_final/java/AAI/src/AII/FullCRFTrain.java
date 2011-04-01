@@ -26,6 +26,7 @@ import cc.mallet.pipe.tsf.InQuestionMarks;
 import cc.mallet.pipe.tsf.OffsetConjunctions;
 import cc.mallet.pipe.tsf.OffsetFeatureConjunction;
 import cc.mallet.pipe.tsf.RegexMatches;
+import cc.mallet.pipe.tsf.SequencePrintingPipe;
 import cc.mallet.pipe.tsf.TokenFirstPosition;
 import cc.mallet.pipe.tsf.TokenNotWord;
 import cc.mallet.pipe.tsf.TokenText;
@@ -89,35 +90,62 @@ public class FullCRFTrain {
 		}
 	}
 
-	public static CRF TrainCRF(String trainingFilename)
-			throws IOException {
+	public static CRF TrainCRF(String trainingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
+		pipes.add(new RegexMatches("CAPITALIZED", Pattern.compile("^\\p{Lu}.*")));
+		// pipes.add(new RegexMatches("STARTSNUMBER",
+		// Pattern.compile("^[0-9].*")));
+		// pipes.add(new RegexMatches("HYPHENATED", Pattern
+		// .compile(".*[\\-|\\_].*")));
+		// pipes.add(new RegexMatches("DOLLARSIGN",
+		// Pattern.compile(".*\\$.*")));
 		pipes.add(new TokenFirstPosition("FIRST"));
+
 		pipes.add(new TokenSequenceLowercase());
 		pipes.add(new TokenText("WORD="));
 
-		pipes.add(new RegexMatches("SPECIAL-SUFFIX", Pattern
-				.compile(".*(á|é|í|ó|ú)(!|\\?|\\.)*$")));
+//		pipes.add(new RegexMatches("SPECIAL-SUFFIX", Pattern
+//				.compile(".*(á|é|í|ó|ú)(!|\\?|\\.)*$")));
 
 		pipes.add(new RegexMatches("PREV-SINT", Pattern
 				.compile("^(,|lo|la|el|los|\")$")));
 
 		pipes.add(new RegexMatches("PREV-CINT", Pattern
-				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
+				.compile("^(por|-|sobre|ver|saber|sé)$")));
 
 		pipes.add(new RegexMatches("NEXT-SINT", Pattern
 				.compile("^(el|la|los|en|las|ha|\")$")));
 
 		pipes.add(new RegexMatches("NEXT-CINT", Pattern
-				.compile("^(es|le|significa)$")));
+				.compile("^(es|le|significa|*0*)$")));
+
+		// pipes.add(new RegexMatches("SIGN-PUNCT",
+		// Pattern.compile("(:|;|\\.|\\*0\\*)")));
+		// pipes.add(new RegexMatches("SIGN-COMA", Pattern
+		// .compile(",")));
+		// pipes.add(new RegexMatches("SIGN-GUION", Pattern
+		// .compile("-")));
 
 		pipes.add(new RegexMatches("SIGN-QE", Pattern
 				.compile(".*(\\?|¿|!|¡).*")));
 		pipes.add(new InQuestionMarks("IN-QE", Pattern
 				.compile(".*(\\?|¿|!|¡).*"), Pattern
 				.compile("^(cuando|cuanto|donde|que|como|adonde)$")));
+
+		// pipes.add(new RegexMatches("SIGN-ALL", Pattern
+		// .compile("(,|-|:|;|\\.|\\*0\\*|\\?|¿|!|¡|\")")));
+
+		// pipes.add(new RegexMatches("CP-1",
+		// Pattern.compile("(por|-|para|en|sobre|ver|a|saber|sé)")));;
+		// pipes.add(new RegexMatches("CP-2",
+		// Pattern.compile("(no|para|-|se|que)")));
+		// pipes.add(new RegexMatches("CP+1",
+		// Pattern.compile("(no|es|le|significa)")));
+
+		// pipes.add(new RegexMatches("CP",
+		// Pattern.compile("^(por|para|en|sobre|ver|a|saber|sé|no|se|es|le|significa)$")));
 
 		pipes.add(new RegexMatches("ADVERBIO", Pattern
 				.compile("^(cuando|cuanto|donde|que|como|adonde)$")));
@@ -130,6 +158,12 @@ public class FullCRFTrain {
 		adverbios.add("como");
 		adverbios.add("adonde");
 		pipes.add(new TokenNotWord("NOADVERBIO", adverbios));
+
+		pipes.add(new OffsetFeatureConjunction("BEGINNING", new String[] {
+				"CAPITALIZED", "ADVERBIO" }, new int[] { 0, 0 }));
+		
+		pipes.add(new OffsetFeatureConjunction("BEGINNING", new String[] {
+				"FIRST", "ADVERBIO" }, new int[] { 0, 0 }));
 
 		pipes.add(new OffsetFeatureConjunction("BEGINNING", new String[] {
 				"FIRST", "ADVERBIO" }, new int[] { -1, 0 }));
@@ -152,10 +186,41 @@ public class FullCRFTrain {
 		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
 				"ADVERBIO", "NEXT-CONT" }, new int[] { 0, 1 }));
 
-		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX", new String[] {
-				"ADVERBIO", "SPECIAL-SUFFIX" }, new int[] { 0, 1 }));
+		// pipes.add(new OffsetFeatureConjunction("THIRD",
+		// new String[] { "SECOND" }, new int[] { -1 }));
 
+//		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX", new String[] {
+//				"ADVERBIO", "SPECIAL-SUFFIX" }, new int[] { 0, 1 }));
+//
+//		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX", new String[] {
+//				"SPECIAL-SUFFIX", "ADVERBIO" }, new int[] { 1, 0 }));
+
+		// pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX",
+		// new String[] { "ADVERBIO", "ADVERBIO" }, new int[] { 0, 1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("PREV-FIRST",
+		// new String[] { "SIGN-ALL" }, new int[] { -1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("SECOND",
+		// new String[] { "FIRST" }, new int[] { -1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("PREV-ADVERBIO",
+		// new String[] { "ADVERBIO" }, new int[] { -1 }));
+
+		// pipes.add(new OffsetFeatureConjunction("REGLA-1", new String[] {
+		// "CP-1", "ADVERBIO" }, new int[] { -1, 0 }));
+
+		// pipes.add(new OffsetFeatureConjunction("REGLA-2", new String[] {
+		// "CP-2", "ADVERBIO" }, new int[] { -2, 0 }));
+
+		// pipes.add(new OffsetFeatureConjunction("REGLA+1", new String[] {
+		// "ADVERBIO", "CP+1" }, new int[] { 0, 1 }));
+
+		// pipes.add(new TokenTextCharSuffix("S4=", 4));
+		// pipes.add(new TokenTextCharSuffix("S3=", 3));
 		pipes.add(new CRFTrainFinal.SimpleTokenSentence2FeatureVectorSequence());
+		// pipes.add(new SequencePrintingPipe(log));
+
 		Pipe pipe = new SerialPipes(pipes);
 
 		InstanceList trainingInstances = new InstanceList(pipe);
@@ -166,22 +231,26 @@ public class FullCRFTrain {
 		CRF crf = new CRF(pipe, null);
 
 		int[] orders = { 1 };
-		Pattern forbiddenPat = Pattern.compile("\\s");
+		// Pattern forbiddenPat = Pattern.compile("\\s");
+		Pattern forbiddenPat = Pattern.compile("(CON_TILDE,CON_TILDE)");
+		// Pattern forbiddenPat = Pattern
+		// .compile(".*(CON_TILDE,CON_TILDE|SIN_TILDE,CON_TILDE).*");
 		Pattern allowedPat = Pattern.compile(".*");
 
 		String startName = crf.addOrderNStates(trainingInstances, orders, null,
 				"O", forbiddenPat, allowedPat, true);
+
 		for (int s = 0; s < crf.numStates(); s++)
 			crf.getState(s).setInitialWeight(Transducer.IMPOSSIBLE_WEIGHT);
+
 		crf.getState(startName).setInitialWeight(0.0);
 
 		CRFTrainerByLabelLikelihood trainer = null;
 
 		trainer = new CRFTrainerByLabelLikelihood(crf);
-		trainer.setGaussianPriorVariance(11.0);
+		trainer.setGaussianPriorVariance(10.0);
 		trainer.setUseSparseWeights(true);
 		trainer.setUseSomeUnsupportedTrick(true);
-
 		trainer.train(trainingInstances, 1000);
 
 		return crf;
