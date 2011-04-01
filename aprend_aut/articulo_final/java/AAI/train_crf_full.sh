@@ -1,4 +1,4 @@
 #rm model_crf/*.model
 
 java -classpath /home/santiago/eclipse/java-workspace/AAI/bin:/home/santiago/eclipse/java-workspace/AAI/lib/mallet-deps.jar \
-	-Xmx1024M AII.FullCRFTrain
+	-Xmx3072M AII.FullCRFTrain

@@ -215,12 +215,14 @@ public class FullCRFTrain {
 			String model = "model_crf/f_" + i + ".model";
 
 			if (!new java.io.File(model).exists()) {
-				CRF modelObj = TrainCRF(train);
+				CRF modelObj = null;
+				modelObj = TrainCRF(train);
 
 				ObjectOutputStream s = new ObjectOutputStream(
 						new FileOutputStream(model));
 				s.writeObject(modelObj);
 				s.close();
+				s = null;
 			}
 		}
 	}
