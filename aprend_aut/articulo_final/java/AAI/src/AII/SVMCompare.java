@@ -23,16 +23,12 @@ public class SVMCompare {
 		String resultado = "/home/santiago/eclipse/java-workspace/AAI/corpus_svm/result_0.txt";
 		String original = "/home/santiago/eclipse/java-workspace/AAI/corpus_svm/test_full_0.txt";
 
-		// if (args.length == 2) {
-		// corpus = args[0];
-		//
-		// path = args[1];
-		// if (path.charAt(path.length()-1) == '/') {
-		// path = path.substring(0, path.length()-1);
-		// }
-		// } else {
-		// System.exit(-1);
-		// }
+		if (args.length == 2) {
+			original = args[0];
+			resultado = args[1];
+		} else {
+			System.exit(-1);
+		}
 
 		System.out.println("Original: " + original);
 		System.out.println("Resultado: " + resultado);
@@ -72,7 +68,7 @@ public class SVMCompare {
 					} else {
 						error = false;
 						cantOK_SIN_TILDE++;
-					}					
+					}
 				} else if (originalLine.equals("3")) {
 					if (!originalLine.equals(resultadoLine)) {
 						error = true;
@@ -82,15 +78,19 @@ public class SVMCompare {
 						cantOK_CON_TILDE++;
 					}
 				}
-				
+
 				if (error) {
-					System.out.println("[DIFFERENCIA] Línea: " + currentLine + "\n");
+					System.out.println("[DIFFERENCIA] Línea: " + currentLine
+							+ "\n");
 				}
 			}
-			
-			System.out.println("Cantidad O         => OK:" + cantOK_O + " ERROR:" + cantERROR_O + "\n");
-			System.out.println("Cantidad SIN_TILDE => OK:" + cantOK_SIN_TILDE + " ERROR:" + cantERROR_SIN_TILDE + "\n");
-			System.out.println("Cantidad CON_TILDE => OK:" + cantOK_CON_TILDE + " ERROR:" + cantERROR_CON_TILDE + "\n");
+
+			System.out.println("Cantidad O         => OK:" + cantOK_O
+					+ " ERROR:" + cantERROR_O + "\n");
+			System.out.println("Cantidad SIN_TILDE => OK:" + cantOK_SIN_TILDE
+					+ " ERROR:" + cantERROR_SIN_TILDE + "\n");
+			System.out.println("Cantidad CON_TILDE => OK:" + cantOK_CON_TILDE
+					+ " ERROR:" + cantERROR_CON_TILDE + "\n");
 
 			original_in.close();
 			resultado_in.close();
