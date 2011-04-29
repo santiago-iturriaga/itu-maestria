@@ -1,4 +1,4 @@
-#Thu Mar 03 17:48:24 UYST 2011
+#Fri Apr 29 00:58:12 UYT 2011
 eclipse.preferences.version=1
 encoding//src/bayes_classify_0.py=utf-8
 encoding//src/bayes_classify_1.py=utf-8
@@ -6,10 +6,13 @@ encoding//src/bayes_classify_2.py=utf-8
 encoding//src/cess_esp/bayes_classify_0.py=utf-8
 encoding//src/cess_esp/bayes_classify_1.py=utf-8
 encoding//src/cess_esp/dump.py=utf-8
+encoding//src/compare_svm.py=utf-8
 encoding//src/conll2002/bayes_classify_1.py=utf-8
 encoding//src/conll2002/dump.py=utf-8
 encoding//src/dump_conll2002.py=utf-8
 encoding//src/dump_testa_conll2002.py=utf-8
 encoding//src/dump_train_conll2002.py=utf-8
+encoding//src/metrics/obtener_crf.py=utf-8
+encoding//src/metrics/obtener_svm.py=utf-8
 encoding//src/probar_corpus_cess_esp.py=utf-8
 encoding//src/tags_conll2002.py=utf-8
