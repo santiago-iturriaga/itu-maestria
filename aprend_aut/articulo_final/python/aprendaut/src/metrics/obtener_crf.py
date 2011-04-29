@@ -70,14 +70,17 @@ def palabra_invertir_tilde(palabra):
     return palabra
 
 if __name__ == '__main__':
+    O = 0
     O_tp = 0
     O_fp = 0
     O_fn = 0
     
+    SIN_TILDE = 0
     SIN_TILDE_tp = 0
     SIN_TILDE_fp = 0
     SIN_TILDE_fn = 0
     
+    CON_TILDE = 0
     CON_TILDE_tp = 0
     CON_TILDE_fp = 0
     CON_TILDE_fn = 0
@@ -123,6 +126,13 @@ if __name__ == '__main__':
                     metricas_por_adv[adverbio]['total'] = metricas_por_adv[adverbio]['total'] + 1
                 elif reference[index][0] == 'CON_TILDE':
                     metricas_por_adv[adverbio_inv]['total'] = metricas_por_adv[adverbio_inv]['total'] + 1
+            
+            if reference[index][0] == 'O':
+                O = O + 1
+            elif reference[index][0] == 'SIN_TILDE':
+                SIN_TILDE = SIN_TILDE + 1
+            elif reference[index][0] == 'CON_TILDE':
+                CON_TILDE = CON_TILDE + 1
             
             if reference[index][0] == test[index]:
                 if reference[index][0] == 'O':
@@ -187,6 +197,7 @@ if __name__ == '__main__':
         precision_O = 0.0
         recall_O = 0.0
         f_measure_O = 0.0
+    print "[O] Total: %d" % O
     print "[O] Precision: %f" % precision_O
     print "[O] Recall: %f" % recall_O
     print "[O] F-measure: %f" % f_measure_O
@@ -199,6 +210,7 @@ if __name__ == '__main__':
         precision_SIN_TILDE = 0.0
         recall_SIN_TILDE = 0.0
         f_measure_SIN_TILDE = 0.0
+    print "[SIN_TILDE] Total: %d" % SIN_TILDE
     print "[SIN_TILDE] Precision: %f" % precision_SIN_TILDE
     print "[SIN_TILDE] Recall: %f" % recall_SIN_TILDE
     print "[SIN_TILDE] F-measure: %f" % f_measure_SIN_TILDE
@@ -211,6 +223,7 @@ if __name__ == '__main__':
         precision_CON_TILDE = 0.0
         recall_CON_TILDE = 0.0
         f_measure_CON_TILDE = 0.0
+    print "[CON_TILDE] Total: %d" % CON_TILDE
     print "[CON_TILDE] Precision: %f" % precision_CON_TILDE
     print "[CON_TILDE] Recall: %f" % recall_CON_TILDE
     print "[CON_TILDE] F-measure: %f\n" % f_measure_CON_TILDE
@@ -228,3 +241,22 @@ if __name__ == '__main__':
         print "[%s] Precision: %f" % (adv, precision_adv)
         print "[%s] Recall: %f" % (adv, recall_adv)
         print "[%s] F-measure: %f\n" % (adv, f_measure_adv)
+        
+    print "=========================================================================================================="
+
+    print "\texttt{O} & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f \\" % ()
+    print "\texttt{SIN_TILDE} & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f \\" % ()
+    print "\texttt{CON_TILDE} & %.2f & %.2f & %.2f & %.2f & %.2f & %.2f \\" % ()
+        
+    print "[O] Precision: %f" % precision_O
+    print "[O] Recall: %f" % recall_O
+    print "[O] F-measure: %f" % f_measure_O
+
+    print "[SIN_TILDE] Precision: %f" % precision_SIN_TILDE
+    print "[SIN_TILDE] Recall: %f" % recall_SIN_TILDE
+    print "[SIN_TILDE] F-measure: %f" % f_measure_SIN_TILDE
+
+    print "[CON_TILDE] Precision: %f" % precision_CON_TILDE
+    print "[CON_TILDE] Recall: %f" % recall_CON_TILDE
+    print "[CON_TILDE] F-measure: %f\n" % f_measure_CON_TILDE
+    
