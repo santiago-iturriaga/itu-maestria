@@ -1,0 +1,84 @@
+[0] Test: 67144, Reference: 67144
+[1] Test: 61651, Reference: 61651
+[2] Test: 47137, Reference: 47137
+[3] Test: 51632, Reference: 51632
+[4] Test: 51255, Reference: 51255
+[5] Test: 61023, Reference: 61023
+[6] Test: 58352, Reference: 58352
+[7] Test: 56056, Reference: 56056
+[8] Test: 48725, Reference: 48725
+
+[O] tp=486053 fp=1 fn=0
+[SIN_TILDE] tp=16692 fp=146 fn=6
+[CON_TILDE] tp=77 fp=6 fn=147
+
+[O] Precision: 0.999998
+[O] Recall: 1.000000
+[O] F-measure: 0.999999
+[SIN_TILDE] Precision: 0.991329
+[SIN_TILDE] Recall: 0.999641
+[SIN_TILDE] F-measure: 0.995468
+[CON_TILDE] Precision: 0.927711
+[CON_TILDE] Recall: 0.343750
+[CON_TILDE] F-measure: 0.501629
+
+[adonde] (total=3) tp=3 fp=0 fn=0
+[adonde] Precision: 1.000000
+[adonde] Recall: 1.000000
+[adonde] F-measure: 1.000000
+
+[adónde] (total=0) tp=0 fp=0 fn=0
+[adónde] Precision: 0.000000
+[adónde] Recall: 0.000000
+[adónde] F-measure: 0.000000
+
+[como] (total=1574) tp=1572 fp=52 fn=2
+[como] Precision: 0.967980
+[como] Recall: 0.998729
+[como] F-measure: 0.983114
+
+[cuando] (total=447) tp=447 fp=4 fn=0
+[cuando] Precision: 0.991131
+[cuando] Recall: 1.000000
+[cuando] F-measure: 0.995546
+
+[cuanto] (total=55) tp=55 fp=2 fn=0
+[cuanto] Precision: 0.964912
+[cuanto] Recall: 1.000000
+[cuanto] F-measure: 0.982143
+
+[cuándo] (total=4) tp=0 fp=0 fn=4
+[cuándo] Precision: 0.000000
+[cuándo] Recall: 0.000000
+[cuándo] F-measure: 0.000000
+
+[cuánto] (total=2) tp=0 fp=0 fn=2
+[cuánto] Precision: 0.000000
+[cuánto] Recall: 0.000000
+[cuánto] F-measure: 0.000000
+
+[cómo] (total=69) tp=16 fp=2 fn=52
+[cómo] Precision: 0.888889
+[cómo] Recall: 0.235294
+[cómo] F-measure: 0.372093
+
+[donde] (total=392) tp=392 fp=15 fn=0
+[donde] Precision: 0.963145
+[donde] Recall: 1.000000
+[donde] F-measure: 0.981227
+
+[dónde] (total=17) tp=2 fp=0 fn=15
+[dónde] Precision: 1.000000
+[dónde] Recall: 0.117647
+[dónde] F-measure: 0.210526
+
+[que] (total=14227) tp=14223 fp=73 fn=4
+[que] Precision: 0.994894
+[que] Recall: 0.999719
+[que] F-measure: 0.997300
+
+[qué] (total=132) tp=59 fp=4 fn=73
+[qué] Precision: 0.936508
+[qué] Recall: 0.446970
+[qué] F-measure: 0.605128
+
