@@ -29,7 +29,7 @@
 %\urldef{\mailsa}\path|{alfred.hofmann, ursula.barth, ingrid.haas, frank.holzwarth,|
 %\urldef{\mailsb}\path|anna.kramer, leonie.kunz, christine.reiss, nicole.sator,|
 %\urldef{\mailsc}\path|erika.siebert-cole, peter.strasser, lncs}@springer.com|    
-\urldef{\mailsi}\path|siturria@fing.edu.uy|
+\urldef{\mailsi}\path|siturria,dgarat,gmonce@fing.edu.uy|
 \urldef{\nltk}\path|http://www.nltk.org/|
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
@@ -52,7 +52,8 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Santiago Iturriaga}
+\author{Santiago Iturriaga \and Diego Garat \and Guillermo Moncecchi} 
+
 %
 \authorrunning{Restauración automática de acentos ortográficos en adverbios interrogativos}
 % (feature abused for this document to repeat the title also on left hand pages)
@@ -80,12 +81,12 @@ Montevideo, Uruguay \\
 
 \begin{abstract}
 %The abstract goes here. DO NOT USE SPECIAL CHARACTERS, SYMBOLS, OR MATH IN YOUR TITLE OR ABSTRACT.
-La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español. La restauración automática de acentos ortográficos consiste en la inserción de acentos ortográficos omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso del problema de restauración automática de acentos ortográficos ya que en muchas ocasiones no existen marcas claras que indiquen la presencia del adverbio interrogativo. Este trabajo presenta dos técnicas de aprendizaje automático aplicadas a la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. La primer técnica aplicada al problema es conditional random fields (CRF), un modelo introducido por Lafferty, McCallum, y Pereira\cite{LAFFERTY01} en el año 2001. La segunda técnica aplicada es support vector machine (SVM),  introducida por Cortes and Vapnik\cite{CORTES95} en el año 1995. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF con una disminuci\'on del error del 31,5\%.
-\keywords{aprendizaje automático, crf, svm}
+La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español. Su restauración automática consiste en la inserción de acentos   omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines}) aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF con una disminuci\'on del error del 31,5\%.
+\keywords{aprendizaje automático, crf, svm, restauración automática de acentos ortográficos}
 \end{abstract}
 
 \section{Introducción}
-Dado un texto sin la presencia de acentos ortográficos, el problema de restauración automática de acentos ortográficos consiste en insertar acentos ortográficos en los lugares del texto en el que son requeridos por las normas de acentuación. Los acentos ortográficos son muy importantes para determinar el significado de una oración, sin embargo es muy común omitir este tipo de signo ortográfico en la escritura informal, e.g. es muy común omitir acentos ortográficos en letras mayúsculas.
+Dado un texto sin la presencia de acentos ortográficos, el problema de su  restauración automática consiste en insertar acentos ortográficos en los lugares del texto en el que son requeridos por las normas de acentuación. Los acentos ortográficos son muy importantes para determinar el significado de una oración; sin embargo, es muy común omitir este tipo de signo ortográfico en la escritura informal, e.g. es muy común omitir acentos ortográficos en letras mayúsculas.
 
 La acentuación ortográfica en algunas palabras del idioma español sirve solamente como ayuda a la pronunciación. Sin embargo, en otras palabras la acentuación ortográfica elimina la ambigüedad de una oración. Tomando esto en cuenta, podemos clasificar las palabras con acento ortográfico del idioma español de la siguiente manera\cite{CRANDALL95}:
 \begin{enumerate}
@@ -95,9 +96,9 @@ La acentuación ortográfica en algunas palabras del idioma español sirve solam
 
 La restauración de acentos ortográficos es trivial para las palabras \emph{sin ambig\"uedad}. Sin embargo, la restauración de acentos ortográficos en las palabras \emph{con ambig\"uedad} requiere examinar el contexto de dicha palabra. 
 
-El problema de la restauración de acentos ortográficos se encuentra estrechamente relacionado con los problemas de desambiguación léxica; involucra aspectos de la desambiguación del significado de una palabra y aspectos del etiquetado gramatical\footnote{En inglés: \emph{Part-of-speech tagging}.}. Esta clase de problemas de desambiguación contiene un grupo de problemas muy similares entre sí, e.g. el problema de restauración de mayúsculas. En el problema de restauración de mayúsculas, al igual que en la restauración de acentos ortográficos, se intenta distinguir entre conceptos semánticos diferentes, e.g. papa (tubérculo) y Papa (obispo de Roma).
+El problema de la restauración de acentos ortográficos se encuentra estrechamente relacionado con los problemas de desambiguación léxica; involucra aspectos de la desambiguación del significado de una palabra y aspectos del etiquetado gramatical. Esta clase de problemas de desambiguación contiene un grupo de problemas muy similares entre sí, e.g. el problema de restauración de mayúsculas, donde se intenta distinguir entre conceptos semánticos diferentes, e.g. papa (tubérculo) y Papa (obispo de Roma).
 
-La restauración de acentos ortográficos es una problemática que ha sido atacada utilizando técnicas. Crandall\cite{CRANDALL95} propone un método híbrido combinando un método basado en HMM y un modelo Bayesiano. Crandall utiliza ambos modelos eligiendo para cada palabra, uno u otro dependiendo de la confianza ofrecida por cada método. Simard\cite{SIMARD98}, para la restauración de acentos ortográficos de textos en francés, también propone un método basado HMM combinado con un análisis morfo-sintáctico del corpus. Yarowsky\cite{YAROWSKY94,YAROWSKY94-2} experimentó con métodos basados en HMM, clasificadores Bayesianos, y listas de decisión para la restauración de acentos ortográficos de textos en español y francés. Todos estos trabajos basan sus métodos de aprendizaje a nivel de palabras, Mihalcea\cite{MIHALCEA02} presenta un enfoque innovador al utilizar árboles de decisión a nivel de letras para restaurar acentos ortográficos en idioma rumano. La gran mayoría de estos trabajos reportan un porcentaje de éxito muy elevado, pero debe tenerse en cuenta el porcentaje de éxito del clasificador de línea base también es muy elevado. Por ejemplo, en el idioma francés aproximadamente el $85\%$ de las palabras no llevan acento ortográfico, y la forma correcta de más de la mitad de las palabras restantes puede deducirse determinísticamente. Esto deja una tasa base de éxito del $95\%$\cite{SIMARD98}.
+La restauración de acentos ortográficos es una problemática que ha sido atacada utilizando diferentes técnicas. Crandall\cite{CRANDALL95} propone un método híbrido combinando un método basado en \emph{Hidden Markov Models}(HMM) y un modelo Bayesiano: utiliza ambos modelos eligiendo, para cada palabra, uno u otro dependiendo de la confianza ofrecida por cada método. Simard\cite{SIMARD98}, para la restauración de acentos ortográficos de textos en francés, también propone un método basado HMM combinado con un análisis morfosintáctico del corpus. Yarowsky\cite{YAROWSKY94,YAROWSKY94-2} experimenta con métodos basados en HMM, clasificadores Bayesianos, y listas de decisión para la restauración de acentos ortográficos de textos en español y francés. Todos estos trabajos basan sus métodos de aprendizaje a nivel de palabras, mientras que Mihalcea\cite{MIHALCEA02} presenta un enfoque innovador al utilizar árboles de decisión a nivel de letras para restaurar acentos ortográficos en idioma rumano. La gran mayoría de estos trabajos reportan un porcentaje de éxito muy elevado, pero debe tenerse en cuenta que el porcentaje de éxito del clasificador de línea base también es muy elevado. Por ejemplo, en el idioma francés aproximadamente el $85\%$ de las palabras no llevan acento ortográfico, y la forma correcta de más de la mitad de las palabras restantes puede deducirse determinísticamente. Esto deja una tasa base de éxito del $95\%$\cite{SIMARD98}.
 
 En este trabajo se presenta la aplicación de dos técnicas de aprendizaje automático, CRF y SVM, para la resolución del problema de restauración automática de acentos ortográficos en adverbios interrogativos. Los adverbios interrogativos tienen una gran dependencia con el contexto en el que aparecen y presentan un problema particularmente difícil de resolver debido a su alto nivel ambigüedad.
 
@@ -112,11 +113,9 @@ Un adverbio se define de la siguiente forma\cite{RAE}.
 \item{m. \emph{Gram}. Pueden también funcionar como interrogativos o exclamativos. ORTOGR. Escr. con acento. \emph{¿Cómo estás? ¡Cuánto lo siento!}}
 \end{enumerate}
 
-Los adverbios \emph{como, cuando, cuanto y donde} pueden funcionar de forma interrogativa. Cuando un adverbio es interrogativo debe ser acentuado ortográficamente \emph{cómo, cuándo, cuánto y dónde}. Además, el adverbio interrogativo puede formularse de forma directa o indirecta\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}.
+Los adverbios \emph{como, cuando, cuanto y donde} pueden funcionar de forma interrogativa. Cuando un adverbio es interrogativo debe ser acentuado ortográficamente \emph{cómo, cuándo, cuánto y dónde}. Además, el adverbio interrogativo puede formularse de forma directa o indirecta\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}. Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos, e.g. \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
 
-Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos, e.g. \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
-
-El problema que se ataca en este trabajo es el siguiente. Dado un texto del que fueron quitados todos los acentos ortográficos de sus adverbios: \emph{cuándo, cuánto, dónde, cómo, adónde, qué}; se deberá clasificar cada palabra del texto en una de las siguientes clases: 
+El problema que se ataca en este trabajo es el siguiente: dado un texto del que fueron quitados todos los acentos ortográficos de sus adverbios: \emph{cuándo, cuánto, dónde, cómo, adónde, qué}; se debe clasificar cada palabra del texto en una de las siguientes clases: 
 \begin{itemize}
 	\item {\texttt{O}}. Toda palabra que no es uno de los adverbios considerados.
 	\item {\texttt{SIN\_TILDE}}. Si se trata de un adverbio no interrogativo.
@@ -160,7 +159,7 @@ El separador lineal se encuentra definido por un vector de pesos $w$ y un sesgo 
 
 \subsection{Métricas de Desempeño}
 \label{sec:metricas}
-Los clasificadores propuestos serán evaluados utilizando las métricas de \emph{Precisión}, \emph{Recall} y \emph{Medida-F}. Durante la clasificación de elementos en una clase, el objetivo del clasificador consiste en encontrar la mayor cantidad de elementos de la clase buscada y al mismo tiempo confundir la menor cantidad de elementos de otras clases con los elementos de la clase buscada. La primera parte del objetivo anterior corresponde al concepto de \emph{Recall}, mientras que la segunda parte corresponde al concepto de \emph{Precisi\'on}.
+Los clasificadores propuestos son evaluados utilizando las métricas de \emph{Precisión}, \emph{Recall} y \emph{Medida-F}. Durante la clasificación de elementos en una clase, el objetivo del clasificador consiste en encontrar la mayor cantidad de elementos de la clase buscada y al mismo tiempo confundir la menor cantidad de elementos de otras clases con los elementos de la clase buscada. La primera parte del objetivo anterior corresponde al concepto de \emph{Recall}, mientras que la segunda parte corresponde al concepto de \emph{Precisi\'on}.
 
 Generalmente las métricas de \emph{Precisión} y \emph{Recall} resultan en conflicto en el sentido de que cuando se intenta aumentar la cantidad de elementos hallados de una clase en particular (i.e. aumentar el \emph{Recall}), usualmente se incrementa también la cantidad de errores cometidos al confundir elementos de otras clases (i.e. disminuye la \emph{Precisión})~\cite{RAGHAVAN89}.
 
@@ -198,7 +197,7 @@ Generalmente se utiliza un valor de $\alpha=0.5$ por lo tanto la ecuación~\ref{
 \end{equation}
 
 \subsection{Corpus Considerado}
-Para la evaluación de las técnicas elegidas se definió un corpus sobre el cual se realizó el entrenamiento y la validación de los clasificadores. El corpus utilizado se construyó en base a la unión de los corpus CESS Treebanks y CoNLL 2002. Para la construcción del corpus se utilizó la herramienta Natural Languaje Toolkit (NLTK) 2.0~\footnote{Disponible para descargar en \nltk}. Ambos corpus se encuentran incluidos y tokenizados en la herramienta NLTK, por lo tanto la utilización de NLTK facilitó la construcción del corpus de trabajo.
+Para la evaluación de las técnicas elegidas se construye un corpus sobre el cual se realiza el entrenamiento y la validación de los clasificadores,  en base a la unión de los corpus CESS Treebanks y CoNLL 2002. Para la construcción del corpus se utiliza la herramienta Natural Languaje Toolkit (NLTK) 2.0~\footnote{Disponible para descargar en \nltk}. Ambos corpus se encuentran incluidos y tokenizados en la herramienta NLTK, por lo tanto la utilización de NLTK facilita la construcción del corpus de trabajo.
 
 El corpus construido consta de un total de $562136$ tokens, de los cuales $18677$ son adverbios no interrogativos y $238$ son adverbios interrogativos. En el cuadro \ref{table:corpus} se muestra la proporci\'on de las etiquetas asignas al corpus construido.
 
@@ -221,17 +220,17 @@ El corpus construido consta de un total de $562136$ tokens, de los cuales $18677
 	\end{tabular}
 \end{table}
 
-La gran mayoría de los tokens del corpus no son adverbios, un $96,64\%$, y por lo tanto les fueron asignados la etiqueta \texttt{\small O}. Esto nos asegura que utilizando un clasificador de línea base muy simple podemos obtener fácilmente un $96,64\%$ de \'exito asignando la etiqueta \texttt{\small O} a todos los tokens de nuestro corpus. A\'un m\'as, resulta trivial determinar si un token es un adverbio del tipo buscado, por lo tanto basta con asignar la etiqueta \texttt{\small SIN\_TILDE} a todos los adverbios considerados para clasificar correctamente el $98,70\%$ de los adverbios y obtener un $99,96\%$ de \'exito en nuestro clasificador.
+La gran mayoría de los tokens del corpus (un $96,64\%$)  no son adverbios, y por lo tanto se les asigna la etiqueta \texttt{\small O}. Esto nos asegura que utilizando un clasificador de línea base muy simple podemos obtener fácilmente un $96,64\%$ de precisión asignando la etiqueta \texttt{\small O} a todos los tokens de nuestro corpus. A\'un m\'as, resulta trivial determinar si un token es un adverbio del tipo buscado, por lo tanto basta con asignar la etiqueta \texttt{\small SIN\_TILDE} a todos los adverbios considerados para clasificar correctamente el $98,70\%$ de los adverbios y obtener un $99,96\%$ de \'exito en nuestro clasificador.
 
 \subsection{Herramientas de Implementación}
-El clasificador basado en CRF fue implementado utilizando la herramienta MALLET 2.0.6, esta herramienta fue desarrollada por Andrew McCallum et al.\cite{MCCALLUM02}. MALLET se encuentra implementado en lenguaje Java y es una herramienta para el procesamiento estadístico del lenguaje natural que incluye herramientas para el etiquetado de secuencias mediante algoritmos como HMM, MEMM, y CRF.
+El clasificador basado en CRF es implementado  utilizando la herramienta MALLET 2.0.6, desarrollada por Andrew McCallum et al.\cite{MCCALLUM02}. MALLET se encuentra implementado en lenguaje Java y se utiliza para el etiquetado de secuencias.
 
-Para la implementaci\'on del clasificador basado en SVM se utiliz\'o la implementaci\'on SVM$^{light}$, desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS08}. Junto con SVM$^{light}$ se utilizó la herramienta SVMTool, desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04}\cite{GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl, que brinda herramientas que facilitan la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
+Para la implementaci\'on del clasificador basado en SVM se utiliza SVM$^{light}$, desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS08}. Junto con SVM$^{light}$ se utiliza SVMTool, herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04}\cite{GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl, y permite  la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
 
 \subsection{Clasificación Utilizando CRF}
-Como ya fue mencionado, se utilizó MALLET para la clasificación mediante CRF. Para definir las características de clasificación, MALLET provee un conjunto de \emph{tubos} que pueden ser aplicados a los tokens del corpus para generar las características deseadas para la clasificaci\'on. Estos \emph{tubos} permiten analizar los tokens mediante expresiones regulares, determinar la posición del token en la oración, obtener subconjuntos de caracteres del token, realizar conjunciones de características de diferentes tokens, etc.
+Como ya fue mencionado, se utiliza MALLET para la clasificación mediante CRF. Para definir las características de clasificación, MALLET provee un conjunto de \emph{tubos} que pueden ser aplicados a los tokens del corpus para generar las características deseadas para la clasificaci\'on. Estos \emph{tubos} permiten analizar los tokens mediante expresiones regulares, determinar la posición del token en la oración, obtener subconjuntos de caracteres del token, realizar conjunciones de características de diferentes tokens, etc.
 
-La mayoría de las características utilizadas para la clasificación pudieron ser especificadas con el conjunto de \emph{tubos} incluidos en MALLET, sin embargo para un pequeño conjunto de características fue necesario implementar \emph{tubos} adicionales.
+La mayoría de las características utilizadas para la clasificación se especifican con el conjunto de \emph{tubos} incluidos en MALLET, sin embargo para un pequeño conjunto de características es necesario implementar \emph{tubos} adicionales.
 
 En el cuadro \ref{table:featuresCRF} se muestran las características utilizadas para la clasificación mediante CRF.
 
@@ -271,18 +270,14 @@ En el cuadro \ref{table:featuresCRF} se muestran las características utilizadas
 	\end{tabular}
 \end{table}
 
-Las características \texttt{\small PREV-SINT}, \texttt{\small NEXT-SINT}, \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} fueron incluidas luego de realizar un estudio sobre los tokens que preceden y que suceden a los adverbios interrogativos y no interrogativos en el corpus. Existen tokens que preceden o suceden a un adverbio que tienen una gran cantidad de ocurrencias sin importar si el adverbio es interrogativo o no. Sin embargo, otros tokens ocurren (en su mayoría) en el contexto de adverbios interrogativos o adverbios no interrogativos, pero no en ambos.
+Las características \texttt{\small PREV-SINT}, \texttt{\small NEXT-SINT}, \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se incluyen luego de realizar un estudio sobre los tokens que preceden y  suceden a los adverbios interrogativos y no interrogativos en el corpus. Existen tokens que preceden o suceden a un adverbio que tienen una gran cantidad de ocurrencias sin importar si el adverbio es interrogativo o no. Sin embargo, otros tokens ocurren (en su mayoría) en el contexto de adverbios interrogativos o adverbios no interrogativos, pero no en ambos.
 
-Se agregó la característica \texttt{\small PREV-SINT} a los tokens que preceden, con mayor ocurrencia, a adverbios no interrogativos y que a su vez no preceden a adverbios interrogativos. De la misma manera se agregó la característica \texttt{\small NEXT-SINT} a los tokens que suceden, con mayor frecuencia, a adverbio no interrogativo, pero no suceden a adverbios interrogativos.
+Se agrega, además, la característica \texttt{\small PREV-SINT} a los tokens que preceden, con mayor ocurrencia, a adverbios no interrogativos y que a su vez no preceden a adverbios interrogativos. De la misma manera se agregan la característica \texttt{\small NEXT-SINT} a los tokens que suceden, con mayor frecuencia, a adverbio no interrogativo, pero no suceden a adverbios interrogativos, y  las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} para los token que preceden y suceden a adverbios interrogativos, pero no lo hacen con adverbios no interrogativos.
 
-De la misma manera, se establecieron las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} para los token que preceden y suceden a adverbios interrogativos, pero no lo hacen con adverbios no interrogativos.
-
-Para el entrenamiento se utilizó un modelo CRF de orden-1 totalmente conectado, y se utilizó un entrenador de verosimilitud por etiqueta. Por último, se prohibió la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
+Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, optimizando la verosimilitud por etiqueta. Adicionalmente, se prohibe la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
 
 \subsection{Clasificación Utilizando SVM}
-Para la clasificación mediante SVM se utilizó la herramienta SVMTool. Se ha aplicado SVMTool a problemas de etiquetado gramatical en español e ingl\'es, logrando en español un porcentaje de éxito en la clasificación del $96,89\%$\cite{GIMENEZ04}.
-
-Por defecto, la herramienta SVMTool utiliza para la clasificación las ca\-rac\-te\-rís\-ti\-cas definidas y optimizadas por Giménez et al.\cite{GIMENEZ04}. En este trabajo se tomaron como base las caracter\'isticas defecto, pero se calibraron estas caracter\'isticas para mejorar su desempeño en el problema de restauración de acentos ortográficos.
+Para la clasificación mediante SVM se utiliza la herramienta SVMTool. Se ha aplicado SVMTool a problemas de etiquetado gramatical en español e ingl\'es, logrando en español un porcentaje de éxito en la clasificación del $96,89\%$\cite{GIMENEZ04}. Por defecto, la herramienta SVMTool utiliza para la clasificación las características definidas y optimizadas por Giménez et al.\cite{GIMENEZ04}. En este trabajo se toman como base las caracter\'isticas defecto, calibradas para mejorar su desempeño en el problema de restauración de acentos ortográficos.
 
 En el cuadro \ref{table:featuresSVM} se presentan las características de SVMTool utilizadas para la clasificación.
 
@@ -314,7 +309,7 @@ En el cuadro \ref{table:featuresSVM} se presentan las características de SVMToo
 
 Para la clasificación se utiliza una ventana de $5$ tokens centrada en el token a etiquetar. Así $t_{0}$ representa el token a ser etiquetado, $t_{+1}$ el token que sucede a $t_{0}$ en la oración, y $t_{-1}$ el token que lo precede. La característica \texttt{\small Tokens} representa los unigramas formados por los tokens de la oración. De forma similar la característica \texttt{\small Etiquetas} representa las etiquetas de los tokens en la oración; esta característica toma en cuenta las etiquetas de los dos tokens inmediatamente anteriores al token actual.
 
-Adem\'as de los unigramas, para la clasificaci\'on se toman en cuenta bigramas y trigramas tanto de tokens (i.e. \texttt{\small Bigramas$_{t}$}, \texttt{\small Trigramas$_{t}$}) como de etiquetas (i.e. \texttt{\small Bigramas$_{e}$} y \texttt{\small Trigramas$_{e}$}). Para el caso de los bigramas y trigramas de etiquetas ocurre una situaci\'on particular, para formar algunos n-gramas se utilizan etiquetas de tokens que se encuentran a la derecha del token que está siendo etiquetado, es decir, etiquetas que aún no han sido asignadas. Existen diferentes formas de resolver este problema, Nakagawa et al.\cite{NAKAGAWA01} propone realizar un etiquetado en dos pasadas para conocer las etiquetas a izquierda y derecha de cada token. La herramienta SVMTool implementa la solución propuesta por Daelemans et al.\cite{DAELEMANS96} que consiste en utilizar etiquetas de ambig\"uedad que representan las posibles etiquetas de los tokens no clasificados.
+Adem\'as de los unigramas, para la clasificaci\'on se toman en cuenta bigramas y trigramas tanto de tokens (i.e. \texttt{\small Bigramas$_{t}$}, \texttt{\small Trigramas$_{t}$}) como de etiquetas (i.e. \texttt{\small Bigramas$_{e}$} y \texttt{\small Trigramas$_{e}$}). Para el caso de los bigramas y trigramas de etiquetas ocurre una situaci\'on particular, para formar algunos ngramas se utilizan etiquetas de tokens que se encuentran a la derecha del token que está siendo etiquetado, es decir, etiquetas que aún no han sido asignadas. Existen diferentes formas de resolver este problema, Nakagawa et al.\cite{NAKAGAWA01} propone realizar un etiquetado en dos pasadas para conocer las etiquetas a izquierda y derecha de cada token. La herramienta SVMTool implementa la solución propuesta por Daelemans et al.\cite{DAELEMANS96} que consiste en utilizar etiquetas de ambig\"uedad que representan las posibles etiquetas de los tokens no clasificados.
 
 Las caracter\'istica \texttt{\small Oraci\'on} representa información de puntuación de la oración, e.g. si la oración finaliza con el token \emph{'.'}, o \emph{'?'}, o \emph{'!'}.
 
@@ -352,7 +347,7 @@ La plataforma de hardware utilizada para los experimentos consiste en un computa
 	\end{tabular}
 \end{table}
 
-Para cada clasificador se realizaron $10$ entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por $9$ de las $10$ partes del corpus y validando el resultado con la parte del corpus restante. En el cuadro \ref{table:tiempo-entrenamiento} puede verse que el tiempo de entrenamiento y evaluación de cada conjunto de partes resultó similar en ambos clasificadores, pero durante el entrenamiento el clasificador CRF demandó un consumo de memoria RAM sensiblemente superior al clasificador SVM. El consumo de memoria fue una limitante importante durante el entrenamiento ya que agregando indiscriminadamente características se lleg\'o fácilmente a consumir los 4 GB de RAM disponibles en la plataforma de hardware utilizada.
+Para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. En el cuadro \ref{table:tiempo-entrenamiento} puede verse que el tiempo de entrenamiento y evaluación de cada conjunto de partes resulta similar en ambos clasificadores, pero durante el entrenamiento el clasificador CRF demanda un consumo de memoria RAM sensiblemente superior al clasificador SVM. El consumo de memoria es, entonces, una limitante importante durante el entrenamiento ya que agregando indiscriminadamente características se llega fácilmente a consumir los 4 GB de RAM disponibles en la plataforma de hardware utilizada.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -425,7 +420,7 @@ En el cuadro \ref{table:evaluacion-promedio} puede verse que ninguno de los clas
 	\end{tabular}
 \end{table}
 
-Al comparar el total de errores obtenidos por cada clasificador luego de las $10$ evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución del $31,47\%$ del error en la clasificación de adverbios con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución de solamente el $18,14\%$ (ver cuadro \ref{table:evaluacion-total}).
+Al comparar el total de errores obtenidos por cada clasificador luego de las diez  evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución del $31,47\%$ del error en la clasificación de adverbios con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución de solamente el $18,14\%$ (ver cuadro \ref{table:evaluacion-total}).
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -448,7 +443,7 @@ Al comparar el total de errores obtenidos por cada clasificador luego de las $10
 	\end{tabular}
 \end{table}
 
-Las matrices de confusi\'on de los clasificadores muestran los tipos de errores cometidos. Los cuadros \ref{table:confusion-svm} y \ref{table:confusion-crf} muestran que para ambos clasificadores la gran mayor\'ia de errores son cometidos al clasificar adverbios interrogativos con etiquetas \texttt{\small SIN\_TILDE}. El $98,98\%$ de los errores del clasificador SVM y $95,09\%$ del clasificador CRF son debido a este tipo de confusi\'on. Además, los errores cometidos al clasificar adverbios no interrogativos se deben a que son etiquetados como adverbios interrogativos. Resulta sorprendente ver que el clasificador CRF cometió un error al clasificar un adverbio interrogativo con la etiqueta \texttt{\small O}.
+Las matrices de confusi\'on de los clasificadores muestran los tipos de errores cometidos. Los cuadros \ref{table:confusion-svm} y \ref{table:confusion-crf} muestran que para ambos clasificadores la gran mayor\'ia de errores son cometidos al clasificar adverbios interrogativos con etiquetas \texttt{\small SIN\_TILDE}. El $98,98\%$ de los errores del clasificador SVM y $95,09\%$ del clasificador CRF son debido a este tipo de confusi\'on. Además, los errores cometidos al clasificar adverbios no interrogativos se deben a que son etiquetados como adverbios interrogativos. Resulta sorprendente ver que el clasificador CRF comete un error al clasificar un adverbio interrogativo con la etiqueta \texttt{\small O}.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -492,8 +487,8 @@ Analizando en detalle algunos de los errores cometidos por los clasificadores en
 \begin{itemize}
 \item{\emph{Si de él careciéramos, ¿para qué unas tareas que requieren esfuerzo, dedicación, capacidad y que -además- no mejoran ninguna economía?}}
 \item{\emph{¿Puede un país pedir sanciones contra otro antes de que se resuelva una apelación de este último sobre el contencioso objeto de la sanción?}}
-\item{\emph{Acabará aceptándose ese factor como un nuevo índice de las economías nacionales?}}
-\item{\emph{Es cierta esa versión cristiana y consoladora que asegura que los sacrificios no son inútiles?}}
+\item{\emph{¿Acabará aceptándose ese factor como un nuevo índice de las economías nacionales?}}
+\item{\emph{¿Es cierta esa versión cristiana y consoladora que asegura que los sacrificios no son inútiles?}}
 \end{itemize}
 Podemos ver que los signos interrogativos inducen errores al contener adverbios no interrogativos.
 
@@ -561,13 +556,13 @@ Ambos clasificadores presentan una métrica de \emph{Precisión} muy elevada en 
 \section{Conclusión}
 \label{sec:Conclusiones}
 
-En este trabajo se construyó un corpus para la restauración automática de acentos ortográficos en adverbios interrogativos, y se propusieron dos clasificadores para resolver dicho problema. Ambos clasificadores obtuvieron buenos resultados, disminuyendo en $18,14\%$ y $31,47\%$ el error obtenido por el clasificador de línea base. El clasificador basado en CRF obtiene, comparativamente, una cantidad de aciertos sensiblemente superior al clasificador basado en SVM. 
+En este trabajo se construye un corpus para la restauración automática de acentos ortográficos en adverbios interrogativos, y se proponen dos clasificadores para resolver dicho problema. Ambos clasificadores obtienen buenos resultados, disminuyendo en $18,14\%$ y $31,47\%$ el error obtenido por el clasificador de línea base. El clasificador basado en CRF obtiene, comparativamente, una cantidad de aciertos sensiblemente superior al clasificador basado en SVM. 
 
-En ambos clasificadores se logr\'o mantener al m\'inimo el error de clasificaci\'on de adverbios no interrogativos, entre $0,02-0,04\%$. Esto mantiene al m\'inimo la generaci\'on de falsos positivos, ofrece seguridad en la clasificaci\'on, y permite su combinaci\'on con otras t\'ecnicas para clasificar los adverbios interrogativos realizando sucesivas iteraciones.
+En ambos clasificadores se logra mantener al m\'inimo el error de clasificaci\'on de adverbios no interrogativos, entre $0,02-0,04\%$. Esto minimiza la generaci\'on de falsos positivos, ofrece seguridad en la clasificaci\'on, y permite su combinaci\'on con otras t\'ecnicas para clasificar los adverbios interrogativos realizando sucesivas iteraciones.
 
-Los tiempos de entrenamiento y clasificación resultaron más que aceptables, y permiten la utilización \emph{en línea} de ambos clasificadores para la restauración de acentos ortogr\'aficos en tiempo real.
+Los tiempos de entrenamiento y clasificación resultan más que aceptables, y permiten la utilización \emph{en línea} de ambos clasificadores para la restauración de acentos ortogr\'aficos en tiempo real.
 
-Por \'ultimo, vale destacar que el clasificador basado en CRF resulta m\'as claro gracias a su modelo estructurado; permite enfocarse en la definición de características del lenguaje y no es necesario definir decenas de n-gramas para simular una secuencia.
+Por \'ultimo, vale destacar que el clasificador basado en CRF resulta m\'as claro gracias a su modelo estructurado; permite enfocarse en la definición de características del lenguaje y no es necesario definir decenas de ngramas para simular una secuencia.
 
 \bibliographystyle{splncs03}
 \bibliography{aai}
