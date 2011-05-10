@@ -81,12 +81,12 @@ Montevideo, Uruguay \\
 
 \begin{abstract}
 %The abstract goes here. DO NOT USE SPECIAL CHARACTERS, SYMBOLS, OR MATH IN YOUR TITLE OR ABSTRACT.
-La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español. Su restauración automática consiste en la inserción de acentos   omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines}) aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF con una disminuci\'on del error del 31,5\%.
-\keywords{aprendizaje automático, crf, svm, restauración automática de acentos ortográficos}
+La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español; su restauración automática consiste en la inserción de acentos  omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines} (SVM) aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF .
+\keywords{crf, svm, restauración automática de acentos ortográficos}
 \end{abstract}
 
 \section{Introducción}
-Dado un texto sin la presencia de acentos ortográficos, el problema de su  restauración automática consiste en insertar acentos ortográficos en los lugares del texto en el que son requeridos por las normas de acentuación. Los acentos ortográficos son muy importantes para determinar el significado de una oración; sin embargo, es muy común omitir este tipo de signo ortográfico en la escritura informal, e.g. es muy común omitir acentos ortográficos en letras mayúsculas.
+Dado un texto sin la presencia de acentos ortográficos, el problema de su  restauración automática consiste en insertar acentos ortográficos en los lugares del texto en el que son requeridos por las normas de acentuación. Los acentos ortográficos son muy importantes para determinar el significado de una oración; sin embargo, es muy común omitir este tipo de signo ortográfico en la escritura informal, por ejemplo, en letras mayúsculas.
 
 La acentuación ortográfica en algunas palabras del idioma español sirve solamente como ayuda a la pronunciación. Sin embargo, en otras palabras la acentuación ortográfica elimina la ambigüedad de una oración. Tomando esto en cuenta, podemos clasificar las palabras con acento ortográfico del idioma español de la siguiente manera\cite{CRANDALL95}:
 \begin{enumerate}
@@ -94,112 +94,27 @@ La acentuación ortográfica en algunas palabras del idioma español sirve solam
 \item{Palabras con ambigüedad}. Las palabras pertenecientes a esta clase pueden cambiar su significado dependiendo si son escritas con o sin acentuación ortográfica. Por ejemplo: diferentes conjugaciones del mismo verbo (\emph{canto/cantó, hable/hablé}), sustantivos (\emph{papa/papá, secretaria/secretaría}), etc.
 \end{enumerate}
 
-La restauración de acentos ortográficos es trivial para las palabras \emph{sin ambig\"uedad}. Sin embargo, la restauración de acentos ortográficos en las palabras \emph{con ambig\"uedad} requiere examinar el contexto de dicha palabra. 
-
-El problema de la restauración de acentos ortográficos se encuentra estrechamente relacionado con los problemas de desambiguación léxica; involucra aspectos de la desambiguación del significado de una palabra y aspectos del etiquetado gramatical. Esta clase de problemas de desambiguación contiene un grupo de problemas muy similares entre sí, e.g. el problema de restauración de mayúsculas, donde se intenta distinguir entre conceptos semánticos diferentes, e.g. papa (tubérculo) y Papa (obispo de Roma).
+La restauración de acentos ortográficos es trivial para las palabras \emph{sin ambig\"uedad}. Sin embargo, la restauración de acentos ortográficos en las palabras \emph{con ambig\"uedad} requiere examinar el contexto de cada palabra. Este problema se encuentra estrechamente relacionado con los problemas de desambiguación léxica: involucra aspectos de la desambiguación del significado de una palabra y aspectos del etiquetado gramatical. 
 
 La restauración de acentos ortográficos es una problemática que ha sido atacada utilizando diferentes técnicas. Crandall\cite{CRANDALL95} propone un método híbrido combinando un método basado en \emph{Hidden Markov Models}(HMM) y un modelo Bayesiano: utiliza ambos modelos eligiendo, para cada palabra, uno u otro dependiendo de la confianza ofrecida por cada método. Simard\cite{SIMARD98}, para la restauración de acentos ortográficos de textos en francés, también propone un método basado HMM combinado con un análisis morfosintáctico del corpus. Yarowsky\cite{YAROWSKY94,YAROWSKY94-2} experimenta con métodos basados en HMM, clasificadores Bayesianos, y listas de decisión para la restauración de acentos ortográficos de textos en español y francés. Todos estos trabajos basan sus métodos de aprendizaje a nivel de palabras, mientras que Mihalcea\cite{MIHALCEA02} presenta un enfoque innovador al utilizar árboles de decisión a nivel de letras para restaurar acentos ortográficos en idioma rumano. La gran mayoría de estos trabajos reportan un porcentaje de éxito muy elevado, pero debe tenerse en cuenta que el porcentaje de éxito del clasificador de línea base también es muy elevado. Por ejemplo, en el idioma francés aproximadamente el $85\%$ de las palabras no llevan acento ortográfico, y la forma correcta de más de la mitad de las palabras restantes puede deducirse determinísticamente. Esto deja una tasa base de éxito del $95\%$\cite{SIMARD98}.
 
-En este trabajo se presenta la aplicación de dos técnicas de aprendizaje automático, CRF y SVM, para la resolución del problema de restauración automática de acentos ortográficos en adverbios interrogativos. Los adverbios interrogativos tienen una gran dependencia con el contexto en el que aparecen y presentan un problema particularmente difícil de resolver debido a su alto nivel ambigüedad.
+En este trabajo se presenta la aplicación de dos técnicas de aprendizaje automático, CRF y SVM, para la resolución del problema de restauración automática de acentos ortográficos en adverbios interrogativos. Los adverbios interrogativos tienen una gran dependencia con el contexto en el que aparecen y son un problema particularmente difícil de resolver debido a su alto nivel ambigüedad.
 
-El trabajo está organizado de la siguiente forma. En la siguiente sección se presenta una descripción del problema. La sección \ref{sec:CRF} presenta la técnica CRF, la primer técnica aplicada. Luego, en la sección \ref{sec:SVM} es introducido SVM, la segunda técnica que fue aplicada al problema. La discusión del análisis experimental y de los resultados obtenidos es presentada en la sección \ref{sec:Resultados}, mientras que las conclusiones y las posibles líneas de trabajo futuro son presentadas en la sección \ref{sec:Conclusiones}.
+El trabajo está organizado de la siguiente forma. En la siguiente sección se presenta una descripción del problema y el corpus de trabajo. En las secciones~\ref{sec:CRF}~y~\ref{sec:SVM} se presentan respectivamente a los algoritmos  CRF y SVM y cómo se los utiliza en la resolución del problema. La discusión del análisis experimental y de los resultados obtenidos es presentada en la sección~\ref{sec:Resultados}, mientras que las conclusiones y las posibles líneas de trabajo futuro son presentadas en la sección~\ref{sec:Conclusiones}.
 
 \section{Descripción del Problema}
-Un adverbio se define de la siguiente forma\cite{RAE}.
+Los adverbios son palabras invariables que complementan el significado de un verbo, un adjetivo u de otro adverbio \cite{RAE}. Alguno de ellos ---\emph{cuando, cuanto, como, ...}---, pueden funcionar como relativos (\emph{la ciudad donde nació}) o de forma interrogativa/exclamativa (\emph{¿dónde nació?}), debiendo ser, en este último caso,  acentuados ortográficamente. 
 
-\begin{enumerate}
-\item{m. \emph{Gram}. Palabra invariable cuya función consiste en complementar la significación del verbo, de un adjetivo, de otro adverbio y de ciertas secuencias. Hay adverbios de lugar, como \emph{aquí, delante, lejos}; de tiempo, como \emph{hoy, mientras, nunca}; de modo, como \emph{bien, despacio, fácilmente}; de cantidad o grado, como \emph{bastante, mucho, muy}; de orden, como \emph{primeramente}; de afirmación, como \emph{sí}; de negación, como \emph{no}; de duda o dubitativos, como \emph{acaso}; de adición, como \emph{además, incluso, también}; de exclusión, como \emph{exclusive, salvo, tampoco}. Algunos pertenecen a varias clases.}
-\item{m. \emph{Gram}. Los adverbios \emph{como, cuando, cuanto y donde} pueden funcionar como relativos correspondientes a los adverbios demostrativos \emph{así, según, tal, entonces, ahora, tan, tanto, aquí, allí,} etc.; pueden tener antecedente expreso o implícito; p. ej., \emph{la ciudad donde nací; iré donde tú vayas.}}
-\item{m. \emph{Gram}. Pueden también funcionar como interrogativos o exclamativos. ORTOGR. Escr. con acento. \emph{¿Cómo estás? ¡Cuánto lo siento!}}
-\end{enumerate}
+Los adverbios interrogativos puede formularse de forma directa o indirecta\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}. Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos: \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
 
-Los adverbios \emph{como, cuando, cuanto y donde} pueden funcionar de forma interrogativa. Cuando un adverbio es interrogativo debe ser acentuado ortográficamente \emph{cómo, cuándo, cuánto y dónde}. Además, el adverbio interrogativo puede formularse de forma directa o indirecta\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}. Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos, e.g. \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
-
-El problema que se ataca en este trabajo es el siguiente: dado un texto del que fueron quitados todos los acentos ortográficos de sus adverbios: \emph{cuándo, cuánto, dónde, cómo, adónde, qué}; se debe clasificar cada palabra del texto en una de las siguientes clases: 
+El problema que se ataca en este trabajo es el siguiente: dado un texto del que fueron quitados todos los acentos ortográficos de sus adverbios: \emph{cuándo, cuánto, dónde, cómo, adónde} y \emph{qué}, se debe clasificar cada palabra del texto en una de las siguientes clases: 
 \begin{itemize}
 	\item {\texttt{O}}. Toda palabra que no es uno de los adverbios considerados.
 	\item {\texttt{SIN\_TILDE}}. Si se trata de un adverbio no interrogativo.
 	\item {\texttt{CON\_TILDE}}. Si se trata de un adverbio interrogativo (potencialmente un adverbio exclamativo).
 \end{itemize}
 
-A continuación se presentan las dos técnicas de aprendizaje automático aplicadas a la resolución del problema.
-
-\section{Conditional Random Fields (CRF)}
-\label{sec:CRF}
-
-Conditional random fields\cite{LAFFERTY01} es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. 
-
-La estructura del grafo que representa el modelo está dada por un único nodo $X$, que representa la entrada completa, y los nodos que representan los elementos $Y$ forman una cadena de primer orden simple (ver la figura \ref{fig:CRF}).
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[scale=0.5]{crf.png}
-	\caption{Estructura de un modelo CRF.}
-	\label{fig:CRF}
-\end{figure}
-
-El modelo CRF resulta superior a otros métodos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajación en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos\cite{WALLACH04}.
-
-\section{Support Vector Machines (SVM)}
-\label{sec:SVM}
-
-Support vector machines\cite{JOACHIMS99} es un clasificador lineal. Dado una serie de vectores de entrada, SVM intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso más simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento ${(x_1, y_1),...,(x_N,y_N)}$, siendo cada instancia $x_i$ un vector en $\Re^N$ y siendo $y_i \in \lbrace-1,+1\rbrace$ la etiqueta de clase correspondiente. El algoritmo SVM aprende un hiperplano lineal que separa el conjunto de ejemplos positivos del conjunto de ejemplos negativos con \emph{margen} máximo. El \emph{margen} se define como la distancia del hiperplano al punto más cercano de cada uno de los conjuntos de ejemplos.
-
-El separador lineal se encuentra definido por un vector de pesos $w$ y un sesgo $b$ que representa la distancia del hiperplano al origen. La regla de clasificación de SVM es entonces $f(x,w,b)=\langle x \cdot w \rangle+b$ (ver la figura \ref{fig:SVM})~\cite{MATA07}.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[scale=0.6]{svm.png}
-	\caption{Hiperplano que maximiza el margen.}
-	\label{fig:SVM}
-\end{figure}
-
-\section{Evaluación de las técnicas propuestas}
-\label{sec:Resultados}
-
-\subsection{Métricas de Desempeño}
-\label{sec:metricas}
-Los clasificadores propuestos son evaluados utilizando las métricas de \emph{Precisión}, \emph{Recall} y \emph{Medida-F}. Durante la clasificación de elementos en una clase, el objetivo del clasificador consiste en encontrar la mayor cantidad de elementos de la clase buscada y al mismo tiempo confundir la menor cantidad de elementos de otras clases con los elementos de la clase buscada. La primera parte del objetivo anterior corresponde al concepto de \emph{Recall}, mientras que la segunda parte corresponde al concepto de \emph{Precisi\'on}.
-
-Generalmente las métricas de \emph{Precisión} y \emph{Recall} resultan en conflicto en el sentido de que cuando se intenta aumentar la cantidad de elementos hallados de una clase en particular (i.e. aumentar el \emph{Recall}), usualmente se incrementa también la cantidad de errores cometidos al confundir elementos de otras clases (i.e. disminuye la \emph{Precisión})~\cite{RAGHAVAN89}.
-
-Para definir totalmente las métricas de \emph{Precisión} y \emph{Recall} debemos antes definir los siguientes conceptos.
-\begin{itemize}
-\item{\emph{Positivos Verdaderos} (PV) son elementos de la clase buscada que fueron correctamente identificados.}
-\item{\emph{Negativos Verdaderos} (NV) son elementos que no pertenecen a la clase buscada que fueron correctamente ignorados y clasificados en una clase diferente.}
-\item{\emph{Falsos Positivos} (FP), o errores de Tipo I, son elementos que pertenecen a otra clase y que fueron incorrectamente clasificados en la clase buscada.}
-\item{\emph{Falsos Negativos} (FN), o errores de Tipo II, son elementos que pertenecen a clase buscada y que fueron incorrectamente clasificados en otra clase.}
-\end{itemize}
-
-En base a estos conceptos podemos formular matemáticamente la métrica de \emph{Precisión} como se muestra en la ecuación~\ref{eq:precision} y la métrica de \emph{Recall} como se muestra en la ecuación~\ref{eq:recall}~\cite{BIRD09}.
-
-\begin{equation}
-	\label{eq:precision}
-	P = \frac{PV}{PV + FP}
-\end{equation}
-\begin{equation}
-	\label{eq:recall}
-	R = \frac{PV}{PV + FN}
-\end{equation}
-
-La Medida-F combina \emph{Precisi\'on} y \emph{Recall} para obtener una \'unica m\'etrica definida como la media arm\'onica ponderada de \emph{Precisi\'on} y \emph{Recall}. En su formulaci\'on m\'as general, la Medida-F puede expresarse como se presenta en la ecuaci\'on~\ref{eq:medida-f}.
-
-\begin{equation}
-	\label{eq:medida-f}
-	F_{\alpha} = \frac{P \times R}{(1 - \alpha)P + (\alpha)R}
-\end{equation}
-
-Generalmente se utiliza un valor de $\alpha=0.5$ por lo tanto la ecuación~\ref{eq:medida-f} se reduce a la ecuación~\ref{eq:medida-f-0-5}\cite{MAKHOUL99}.
-
-\begin{equation}
-	\label{eq:medida-f-0-5}
-	F_{0.5} = \frac{2 \times P \times R}{P + R}
-\end{equation}
-
-\subsection{Corpus Considerado}
-Para la evaluación de las técnicas elegidas se construye un corpus sobre el cual se realiza el entrenamiento y la validación de los clasificadores,  en base a la unión de los corpus CESS Treebanks y CoNLL 2002. Para la construcción del corpus se utiliza la herramienta Natural Languaje Toolkit (NLTK) 2.0~\footnote{Disponible para descargar en \nltk}. Ambos corpus se encuentran incluidos y tokenizados en la herramienta NLTK, por lo tanto la utilización de NLTK facilita la construcción del corpus de trabajo.
-
-El corpus construido consta de un total de $562136$ tokens, de los cuales $18677$ son adverbios no interrogativos y $238$ son adverbios interrogativos. En el cuadro \ref{table:corpus} se muestra la proporci\'on de las etiquetas asignas al corpus construido.
+El corpus de trabajo se basa en la unión de los corpus CESS Treebanks y CoNLL 2002. Para la construcción del corpus se utiliza la herramienta Natural Languaje Toolkit (NLTK) 2.0~\footnote{Disponible para descargar en \nltk}. El corpus construido consta de un total de $562136$ tokens, de los cuales $18677$ son adverbios no interrogativos y $238$ son adverbios interrogativos. En el cuadro \ref{table:corpus} se muestra la proporci\'on de las etiquetas asignas al corpus construido.
 
 %Aprox. 74 de 238 adeverbios interrogativos directos. El resto son indirectos. ¿31%?
 
@@ -222,17 +137,29 @@ El corpus construido consta de un total de $562136$ tokens, de los cuales $18677
 
 La gran mayoría de los tokens del corpus (un $96,64\%$)  no son adverbios, y por lo tanto se les asigna la etiqueta \texttt{\small O}. Esto nos asegura que utilizando un clasificador de línea base muy simple podemos obtener fácilmente un $96,64\%$ de precisión asignando la etiqueta \texttt{\small O} a todos los tokens de nuestro corpus. A\'un m\'as, resulta trivial determinar si un token es un adverbio del tipo buscado, por lo tanto basta con asignar la etiqueta \texttt{\small SIN\_TILDE} a todos los adverbios considerados para clasificar correctamente el $98,70\%$ de los adverbios y obtener un $99,96\%$ de \'exito en nuestro clasificador.
 
-\subsection{Herramientas de Implementación}
-El clasificador basado en CRF es implementado  utilizando la herramienta MALLET 2.0.6, desarrollada por Andrew McCallum et al.\cite{MCCALLUM02}. MALLET se encuentra implementado en lenguaje Java y se utiliza para el etiquetado de secuencias.
 
-Para la implementaci\'on del clasificador basado en SVM se utiliza SVM$^{light}$, desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS08}. Junto con SVM$^{light}$ se utiliza SVMTool, herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04}\cite{GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl, y permite  la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
+\section{Conditional Random Fields (CRF)}
+\label{sec:CRF}
+
+Conditional random fields\cite{LAFFERTY01} es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. 
+
+La estructura del grafo que representa el modelo está dada por un único nodo $X$, que representa la entrada completa, y los nodos que representan los elementos $Y$ forman una cadena de primer orden simple. % (ver la figura \ref{fig:CRF}).
+
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[scale=0.5]{crf.png}
+%	\caption{Estructura de un modelo CRF.}
+%	\label{fig:CRF}
+%\end{figure}
+
+El modelo CRF resulta superior a otros métodos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajación en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos\cite{WALLACH04}.
+
 
 \subsection{Clasificación Utilizando CRF}
-Como ya fue mencionado, se utiliza MALLET para la clasificación mediante CRF. Para definir las características de clasificación, MALLET provee un conjunto de \emph{tubos} que pueden ser aplicados a los tokens del corpus para generar las características deseadas para la clasificaci\'on. Estos \emph{tubos} permiten analizar los tokens mediante expresiones regulares, determinar la posición del token en la oración, obtener subconjuntos de caracteres del token, realizar conjunciones de características de diferentes tokens, etc.
 
-La mayoría de las características utilizadas para la clasificación se especifican con el conjunto de \emph{tubos} incluidos en MALLET, sin embargo para un pequeño conjunto de características es necesario implementar \emph{tubos} adicionales.
+El clasificador basado en CRF es implementado  utilizando la herramienta MALLET 2.0.6, desarrollada por Andrew McCallum et al.\cite{MCCALLUM02}. MALLET se encuentra implementado en lenguaje Java y se utiliza para el etiquetado de secuencias. Esta herramienta provee un conjunto de \emph{tubos} que pueden ser aplicados a los tokens del corpus para generar las características deseadas para la clasificaci\'on. Estos \emph{tubos} permiten analizar los tokens mediante expresiones regulares, determinar la posición del token en la oración, obtener subconjuntos de caracteres del token, realizar conjunciones de características de diferentes tokens, etc.
 
-En el cuadro \ref{table:featuresCRF} se muestran las características utilizadas para la clasificación mediante CRF.
+La mayoría de las características utilizadas para la clasificación se especifican con el conjunto de \emph{tubos} incluidos en MALLET, sin embargo para un pequeño conjunto de características es necesario implementar \emph{tubos} adicionales. En el cuadro \ref{table:featuresCRF} se muestran las características utilizadas para la clasificación mediante CRF.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -276,8 +203,26 @@ Se agrega, además, la característica \texttt{\small PREV-SINT} a los tokens qu
 
 Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, optimizando la verosimilitud por etiqueta. Adicionalmente, se prohibe la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
 
+
+\section{Support Vector Machines (SVM)}
+\label{sec:SVM}
+
+Support vector machines\cite{JOACHIMS99} es un clasificador lineal: dada una serie de vectores de entrada, SVM intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso más simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento ${(x_1, y_1),...,(x_N,y_N)}$, siendo cada instancia $x_i$ un vector en $\Re^N$ y siendo $y_i \in \lbrace-1,+1\rbrace$ la etiqueta de clase correspondiente. El algoritmo SVM aprende un hiperplano lineal que separa el conjunto de ejemplos positivos del conjunto de ejemplos negativos con \emph{margen} máximo. El \emph{margen} se define como la distancia del hiperplano al punto más cercano de cada uno de los conjuntos de ejemplos.
+
+El separador lineal se encuentra definido por un vector de pesos $w$ y un sesgo $b$ que representa la distancia del hiperplano al origen. La regla de clasificación de SVM es entonces $f(x,w,b)=\langle x \cdot w \rangle+b$. % (ver la figura \ref{fig:SVM})~\cite{MATA07}.
+
+%\begin{figure}[ht]
+%	\centering
+%	\includegraphics[scale=0.6]{svm.png}
+%	\caption{Hiperplano que maximiza el margen.}
+%	\label{fig:SVM}
+%\end{figure}
+
+
 \subsection{Clasificación Utilizando SVM}
-Para la clasificación mediante SVM se utiliza la herramienta SVMTool. Se ha aplicado SVMTool a problemas de etiquetado gramatical en español e ingl\'es, logrando en español un porcentaje de éxito en la clasificación del $96,89\%$\cite{GIMENEZ04}. Por defecto, la herramienta SVMTool utiliza para la clasificación las características definidas y optimizadas por Giménez et al.\cite{GIMENEZ04}. En este trabajo se toman como base las caracter\'isticas defecto, calibradas para mejorar su desempeño en el problema de restauración de acentos ortográficos.
+Para la implementaci\'on del clasificador basado en SVM se utiliza SVM$^{light}$, desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS08}. Junto con SVM$^{light}$ se utiliza SVMTool, herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04}\cite{GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl, y permite  la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
+
+Por defecto, la herramienta SVMTool utiliza para la clasificación las características definidas y optimizadas por Giménez et al.\cite{GIMENEZ04}. En este trabajo se toman como base las caracter\'isticas defecto, calibradas para mejorar su desempeño en el problema de restauración de acentos ortográficos.
 
 En el cuadro \ref{table:featuresSVM} se presentan las características de SVMTool utilizadas para la clasificación.
 
@@ -317,56 +262,93 @@ En SVMTool existen diferentes modelos para realizar el entrenamiento del clasifi
 
 Por último, en SVMTool existen dos posibles esquemas de clasificación, el esquema \emph{Goloso} y el esquema \emph{Por oración}. En el esquema \emph{Goloso} a cada token le es asignada la etiqueta que maximiza la función de puntuación del propio token. En el esquema \emph{Por oración} a cada token le es asignada la etiqueta que maximiza la sumatoria de las funciones de puntuación de todos los tokens de la oración. Se realizaron experimentos con ambos esquemas de clasificación y el esquema \emph{Por oración} arrojó mejores resultados por lo que se decidió utilizar este esquema.
 
-\subsection{Resultados Experimentales}
-La plataforma de hardware utilizada para los experimentos consiste en un computador con procesador Intel i3 de 2,13 GHz y 4 GB de RAM. Para la evaluación de los clasificadores se dividió el corpus por oraciones en $10$ partes de tamaño similar; en el cuadro \ref{table:partes-corpus} pueden verse en detalle cada una de las partes. 
+\section{Evaluación}
+\label{sec:Resultados}
 
-\begin{table}[ht]
- 	\renewcommand{\arraystretch}{1.3}
-	\renewcommand{\tabcolsep}{3pt}
-	\caption{Partes del corpus.}
-	\label{table:partes-corpus}
-	\centering
-	\begin{tabular}{r r r r}
-		\hline\hline
-		\multicolumn{1}{c}{\textbf{Parte}} 
-		& \multicolumn{1}{c}{\textbf{Tokens}} 
-		& \multicolumn{1}{c}{\textbf{\texttt{SIN\_TILDE}}} 
-		& \multicolumn{1}{c}{\textbf{\texttt{CON\_TILDE}}} \\
-		\hline
-		0 & 67144 & 2224 & 17 \\
-		1 & 61651 & 2328 & 47 \\
-		2 & 47137 & 1553 & 65 \\
-		3 & 51632 & 1829 & 38 \\
-		4 & 51255 & 1720 & 6 \\
-		5 & 61023 & 1975 & 14 \\
-		6 & 58352 & 1923 & 15 \\
-		7 & 56056 & 1779 & 10 \\
-		8 & 48725 & 1367 & 12 \\
-		9 & 59161 & 1979 & 14 \\
-		\hline
-	\end{tabular}
-\end{table}
+Los resultados de los clasificadores son evaluados utilizando las métricas de \emph{Precisión}, \emph{Recall} y \emph{Medida-F}\cite{BIRD09}:
 
-Para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. En el cuadro \ref{table:tiempo-entrenamiento} puede verse que el tiempo de entrenamiento y evaluación de cada conjunto de partes resulta similar en ambos clasificadores, pero durante el entrenamiento el clasificador CRF demanda un consumo de memoria RAM sensiblemente superior al clasificador SVM. El consumo de memoria es, entonces, una limitante importante durante el entrenamiento ya que agregando indiscriminadamente características se llega fácilmente a consumir los 4 GB de RAM disponibles en la plataforma de hardware utilizada.
+\begin{equation}
+	\label{eq:precision}
+	P = \frac{PV}{PV + FP}
+\end{equation}
+\begin{equation}
+	\label{eq:recall}
+	R = \frac{PV}{PV + FN}
+\end{equation}
+\begin{equation}
+	\label{eq:medida-f}
+	F_{\alpha} = \frac{P \times R}{(1 - \alpha)P + (\alpha)R}
+\end{equation}
 
-\begin{table}[ht]
- 	\renewcommand{\arraystretch}{1.3}
-	\renewcommand{\tabcolsep}{3pt}
-	\caption{Requerimientos de c\'omputo.}
-	\label{table:tiempo-entrenamiento}
-	\centering
-	\begin{tabular}{c r r r}
-		\hline\hline
-		\multicolumn{1}{c}{\textbf{Clasificador}} 
-		& \multicolumn{1}{c}{\textbf{T. entrenamiento}} 
-		& \multicolumn{1}{c}{\textbf{T. evaluaci\'on}} 
-		& \multicolumn{1}{c}{\textbf{Memoria}} \\
-		\hline
-		CRF & 8 min. & 20 seg. ($\sim$2300 tokens/s) & 1.6 GB \\
-		SVM & 5 min. & 30 seg. ($\sim$1500 tokens/s) & 120.0 MB \\
-		\hline
-	\end{tabular}
-\end{table}
+En donde:
+\begin{itemize}
+\item{\emph{Positivos Verdaderos} (PV) son elementos de la clase buscada que fueron correctamente identificados.}
+\item{\emph{Negativos Verdaderos} (NV) son elementos que no pertenecen a la clase buscada que fueron correctamente ignorados y clasificados en una clase diferente.}
+\item{\emph{Falsos Positivos} (FP), o errores de Tipo I, son elementos que pertenecen a otra clase y que fueron incorrectamente clasificados en la clase buscada.}
+\item{\emph{Falsos Negativos} (FN), o errores de Tipo II, son elementos que pertenecen a clase buscada y que fueron incorrectamente clasificados en otra clase.}
+\end{itemize}
+
+Para este trabajo se utiliza $F_{0.5}$\cite{MAKHOUL99}, por lo que la ecuación~\ref{eq:medida-f} se reduce a la ecuación~\ref{eq:medida-f-0-5}.
+
+\begin{equation}
+	\label{eq:medida-f-0-5}
+	F_{0.5} = \frac{2 \times P \times R}{P + R}
+\end{equation}
+
+
+%Para la evaluación de los clasificadores se dividió el corpus por oraciones en $10$ partes de tamaño similar; en el cuadro \ref{table:partes-corpus} pueden verse en detalle cada una de las partes. 
+
+%\begin{table}[ht]
+%	\renewcommand{\arraystretch}{1.3}
+%	\renewcommand{\tabcolsep}{3pt}
+%	\caption{Partes del corpus.}
+%	\label{table:partes-corpus}
+%	\centering
+%	\begin{tabular}{r r r r}
+%		\hline\hline
+%		\multicolumn{1}{c}{\textbf{Parte}} 
+%		& \multicolumn{1}{c}{\textbf{Tokens}} 
+%		& \multicolumn{1}{c}{\textbf{\texttt{SIN\_TILDE}}} 
+%		& \multicolumn{1}{c}{\textbf{\texttt{CON\_TILDE}}} \\
+%		\hline
+%		0 & 67144 & 2224 & 17 \\
+%		1 & 61651 & 2328 & 47 \\
+%		2 & 47137 & 1553 & 65 \\
+%		3 & 51632 & 1829 & 38 \\
+%		4 & 51255 & 1720 & 6 \\
+%		5 & 61023 & 1975 & 14 \\
+%		6 & 58352 & 1923 & 15 \\
+%		7 & 56056 & 1779 & 10 \\
+%		8 & 48725 & 1367 & 12 \\
+%		9 & 59161 & 1979 & 14 \\
+%		\hline
+%	\end{tabular}
+%\end{table}
+
+Para la evaluación de los clasificadores se dividió el corpus por oraciones en $10$ partes de tamaño similar; para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. 
+
+%La plataforma de hardware utilizada para los experimentos consiste en un computador con procesador Intel i3 de 2,13 GHz y 4 GB de RAM. 
+
+%En el cuadro \ref{table:tiempo-entrenamiento} puede verse que el tiempo de entrenamiento y evaluación de cada conjunto de partes resulta similar en ambos clasificadores, pero durante el entrenamiento el clasificador CRF demanda un consumo de memoria RAM sensiblemente superior al clasificador SVM. El consumo de memoria es, entonces, una limitante importante durante el entrenamiento ya que agregando indiscriminadamente características se llega fácilmente a consumir los 4 GB de RAM disponibles en la plataforma de hardware utilizada.
+
+%\begin{table}[ht]
+% 	\renewcommand{\arraystretch}{1.3}
+%	\renewcommand{\tabcolsep}{3pt}
+%	\caption{Requerimientos de c\'omputo.}
+%	\label{table:tiempo-entrenamiento}
+%	\centering
+%	\begin{tabular}{c r r r}
+%		\hline\hline
+%		\multicolumn{1}{c}{\textbf{Clasificador}} 
+%		& \multicolumn{1}{c}{\textbf{T. entrenamiento}} 
+%		& \multicolumn{1}{c}{\textbf{T. evaluaci\'on}} 
+%		& \multicolumn{1}{c}{\textbf{Memoria}} \\
+%		\hline
+%		CRF & 8 min. & 20 seg. ($\sim$2300 tokens/s) & 1.6 GB \\
+%		SVM & 5 min. & 30 seg. ($\sim$1500 tokens/s) & 120.0 MB \\
+%		\hline
+%	\end{tabular}
+%\end{table}
 
 En el cuadro \ref{table:evaluacion-promedio} puede verse que ninguno de los clasificadores arroja errores al clasificar la etiqueta \texttt{\small O}, y el error introducido en la clasificaci\'on de la etiqueta \texttt{\small SIN\_TILDE} es m\'inimo. Estas caracter\'isticas son fundamentales para mejorar el resultado obtenido por el clasificador de línea base. En la clasificación de la etiqueta \texttt{\small CON\_TILDE} el clasificador CRF resulta superior al clasificador SVM. En la clasificación de esta etiqueta ambos clasificadores presentan una desviación estándar del error similar, pero el clasificador CRF obtiene en promedio un $16,56\%$ menos de errores que el clasificador SVM.
 
@@ -419,6 +401,8 @@ En el cuadro \ref{table:evaluacion-promedio} puede verse que ninguno de los clas
 		\hline
 	\end{tabular}
 \end{table}
+
+** ¿A TODOS LOS ADVERBIOS O SÓLO A LOS INTERROGATIVOS? **
 
 Al comparar el total de errores obtenidos por cada clasificador luego de las diez  evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución del $31,47\%$ del error en la clasificación de adverbios con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución de solamente el $18,14\%$ (ver cuadro \ref{table:evaluacion-total}).
 
@@ -560,7 +544,7 @@ En este trabajo se construye un corpus para la restauración automática de acen
 
 En ambos clasificadores se logra mantener al m\'inimo el error de clasificaci\'on de adverbios no interrogativos, entre $0,02-0,04\%$. Esto minimiza la generaci\'on de falsos positivos, ofrece seguridad en la clasificaci\'on, y permite su combinaci\'on con otras t\'ecnicas para clasificar los adverbios interrogativos realizando sucesivas iteraciones.
 
-Los tiempos de entrenamiento y clasificación resultan más que aceptables, y permiten la utilización \emph{en línea} de ambos clasificadores para la restauración de acentos ortogr\'aficos en tiempo real.
+%Los tiempos de entrenamiento y clasificación resultan más que aceptables, y permiten la utilización \emph{en línea} de ambos clasificadores para la restauración de acentos ortogr\'aficos en tiempo real.
 
 Por \'ultimo, vale destacar que el clasificador basado en CRF resulta m\'as claro gracias a su modelo estructurado; permite enfocarse en la definición de características del lenguaje y no es necesario definir decenas de ngramas para simular una secuencia.
 
