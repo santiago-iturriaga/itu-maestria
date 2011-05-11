@@ -79,8 +79,9 @@
 \def\switcht@albion{%
 \def\abstractname{Abstract.}
 \def\ackname{Acknowledgement.}
-\def\andname{and}
-\def\lastandname{\unskip, and}
+%\def\andname{and}
+\def\andname{y}
+\def\lastandname{\unskip, y}
 \def\appendixname{Appendix}
 \def\chaptername{Chapter}
 \def\claimname{Claim}
