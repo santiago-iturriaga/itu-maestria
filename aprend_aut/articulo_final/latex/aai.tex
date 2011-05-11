@@ -255,8 +255,7 @@ Para este trabajo se utiliza $F_{0.5}$\cite{MAKHOUL99}, por lo que la ecuación~
 
 Para la evaluación de los clasificadores se dividió el corpus por oraciones en $10$ partes de tamaño similar; para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. 
 
-Al comparar el total de errores obtenidos por cada clasificador luego de las diez evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución promedio del $31,51\%$ del error en la clasificación de adverbios (tanto interrogativos como no interrogativos) con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución promedio de solamente el $17,65\%$. 
-
+%Al comparar el total de errores obtenidos por cada clasificador luego de las diez evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución promedio del $31,51\%$ del error en la clasificación de adverbios (tanto interrogativos como no interrogativos) con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución promedio de solamente el $17,65\%$. 
 Las matrices de confusi\'on de los clasificadores muestran los tipos de errores cometidos. Los cuadros \ref{table:confusion-svm} y \ref{table:confusion-crf} muestran que para ambos clasificadores la gran mayor\'ia de errores son cometidos al clasificar adverbios interrogativos con etiquetas \texttt{\small SIN\_TILDE}. El $98,98\%$ de los errores del clasificador SVM y $95,09\%$ del clasificador CRF son debido a este tipo de confusi\'on. Además, los errores cometidos al clasificar adverbios no interrogativos se deben a que son etiquetados como adverbios interrogativos. Resulta sorprendente ver que el clasificador CRF comete un error al clasificar un adverbio interrogativo con la etiqueta \texttt{\small O}.
 
 \begin{table}[ht]
@@ -271,7 +270,7 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 			& \multicolumn{1}{c|}{\textbf{\texttt{SIN\_TILDE}}}
 			& \multicolumn{1}{c|}{\textbf{\texttt{CON\_TILDE}}} \\
 		\hline\hline
-		\textbf{\texttt{O}}			 & 486053 & 0 & 0 \\ \hline
+		\textbf{\texttt{O}} & 486053 & 0 & 0 \\ \hline
 		\textbf{\texttt{SIN\_TILDE}} & 0 & 16695 & 3 \\ \hline
 		\textbf{\texttt{CON\_TILDE}} & 0 & 194 & 44 \\ 
 		\hline
@@ -291,7 +290,7 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 			& \multicolumn{1}{c|}{\textbf{\texttt{SIN\_TILDE}}}
 			& \multicolumn{1}{c|}{\textbf{\texttt{CON\_TILDE}}} \\
 		\hline\hline
-		\textbf{\texttt{O}}			 & 486052 & 0 & 0 \\ \hline
+		\textbf{\texttt{O}} & 486052 & 0 & 0 \\ \hline
 		\textbf{\texttt{SIN\_TILDE}} & 0 & 16691 & 7 \\ \hline
 		\textbf{\texttt{CON\_TILDE}} & 1 & 155 & 82 \\ 
 		\hline
@@ -359,14 +358,15 @@ En los cuadros~\ref{table:metricas-generales} y~\ref{table:metricas-adv} se eval
 	\end{tabular}
 \end{table}
 
-Ambos clasificadores presentan una métrica de \emph{Precisión} muy elevada en la clasificación de adverbios interrogativos. Esto indica que ambos clasificadores cometen una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada en la clasificación de adverbios interrogativos. Sin embargo, el clasificador basado en CRF presenta una m\'etrica de \emph{Recall} significativamente m\'as elevada que el clasificador basado en SVM para la clasificaci\'on de adverbios interrogativos. Esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto logra clasificar correctamente una mayor cantidad de adverbios interrogativos. Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la m\'etrica de \emph{Medida-F}; el clasificador CRF presenta una m\'etrica de \emph{Medida-F} claramente superior al clasificador SVM.
+Ambos clasificadores presentan una alta tasa de  \emph{Precisión}, lo que indica que ambos clasificadores cometen una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de  \emph{Recall} significativamente más elevada que el clasificador basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto logra clasificar correctamente una mayor cantidad de casos. Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
 
 \section{Conclusión}
 \label{sec:Conclusiones}
 
-En este trabajo se construye un corpus para la restauración automática de acentos ortográficos en adverbios interrogativos, y se proponen dos clasificadores para resolver dicho problema. Ambos clasificadores obtienen buenos resultados, disminuyendo en $17,6\%$ y $31,5\%$ el error obtenido por el clasificador de línea base. El clasificador basado en CRF obtiene, comparativamente, una cantidad de aciertos sensiblemente superior al clasificador basado en SVM. 
+En este trabajo se construye un corpus para la restauración automática de acentos ortográficos en adverbios interrogativos, y se proponen dos clasificadores para resolver dicho problema. %Ambos clasificadores obtienen buenos resultados, disminuyendo en $17,6\%$ y $31,5\%$ el error obtenido por el clasificador de línea base. 
+El clasificador basado en CRF obtiene, comparativamente, una cantidad de aciertos sensiblemente superior al clasificador basado en SVM. 
 
-En ambos clasificadores se logra mantener al m\'inimo el error de clasificaci\'on de adverbios no interrogativos, entre $0,02-0,04\%$. Esto minimiza la generaci\'on de falsos positivos, ofrece seguridad en la clasificaci\'on, y permite su combinaci\'on con otras t\'ecnicas para clasificar los adverbios interrogativos realizando sucesivas iteraciones.
+En ambos clasificadores se logra mantener al m\'inimo el error de clasificaci\'on de adverbios no interrogativos, entre $0,02-0,04\%$. Esto minimiza la generaci\'on de falsos negativos, ofrece seguridad en la clasificaci\'on, y permite su combinaci\'on con otras t\'ecnicas para clasificar los adverbios interrogativos realizando sucesivas iteraciones.
 
 Por \'ultimo, vale destacar que el clasificador basado en CRF resulta m\'as claro gracias a su modelo estructurado; permite enfocarse en la definición de características del lenguaje y no es necesario definir decenas de ngramas para simular una secuencia.
 
