@@ -118,12 +118,12 @@ La gran mayoría de los tokens del corpus (un $96,64\%$)  no son adverbios, y po
 \section{Restauración de acentos como un problema de clasificación}
 \label{sec:solucion-propuesta}
 
-En este trabajo se aborda el problema de la restauraci\'on de acentos ortogr\'aficos como un problema de clasificaci\'on... (blah) (blah) (blah)....
+En este trabajo se aborda el problema de la restauraci\'on de acentos ortogr\'aficos como un problema de clasificaci\'on. Con este proposito se introducen dos m\'etodos utilizados para el reconocimiento de patrones: Conditional random fields y Support vector machines. 
 
 \subsection{Clasificación Utilizando CRF}
 \label{sec:CRF}
 
-Conditional random fields\cite{LAFFERTY01} es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. 
+Conditional random fields, propuesto por Lafferty et al.\cite{LAFFERTY01}, es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. 
 
 El modelo CRF resulta superior a otros métodos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajación en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos\cite{WALLACH04}.
 
@@ -174,11 +174,13 @@ Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, 
 \subsection{Clasificación Utilizando SVM}
 \label{sec:SVM}
 
-Support vector machines\cite{JOACHIMS99} es un clasificador lineal: dada una serie de vectores de entrada, SVM intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso más simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento ${(x_1, y_1),...,(x_N,y_N)}$, siendo cada instancia $x_i$ un vector en $\Re^N$ y siendo $y_i \in \lbrace-1,+1\rbrace$ la etiqueta de clase correspondiente. El algoritmo SVM aprende un hiperplano lineal que separa el conjunto de ejemplos positivos del conjunto de ejemplos negativos con \emph{margen} máximo. El \emph{margen} se define como la distancia del hiperplano al punto más cercano de cada uno de los conjuntos de ejemplos.
+Support vector machines es un método de aprendizaje estadístico propuesto por Vapnik et al.\cite{CORTES95}. Es sabido que SVM obtiene mejores resultados que métodos tradicionales -como redes neuronales- aún en grandes espacios dimensionales con pequeños conjuntos de entrenamiento; por esta razón ha sido aplicado con éxito a problemas de detección facial, detección y reconocimiento de objetos, reconocimiento de textos manuscritos, categorización, predicción, entre otros\cite{BYUN02}. 
+
+Support vector machines es un clasificador lineal: dada una serie de vectores de entrada, el m\'etodo intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso más simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento ${(x_1, y_1),...,(x_N,y_N)}$, siendo cada instancia $x_i$ un vector en $\Re^N$ y siendo $y_i \in \lbrace-1,+1\rbrace$ la etiqueta de clase correspondiente. El algoritmo SVM aprende un hiperplano lineal que separa el conjunto de ejemplos positivos del conjunto de ejemplos negativos con \emph{margen} máximo. El \emph{margen} se define como la distancia del hiperplano al punto más cercano de cada uno de los conjuntos de ejemplos.
 
 El separador lineal se encuentra definido por un vector de pesos $w$ y un sesgo $b$ que representa la distancia del hiperplano al origen. La regla de clasificación de SVM es entonces $f(x,w,b)=\langle x \cdot w \rangle+b$.
 
-Para la implementaci\'on del clasificador basado en SVM se utiliza la herramienta SVM$^{light}$ desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS08}. Junto con SVM$^{light}$ se utiliza SVMTool, una herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04}\cite{GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl que facilita la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
+Para la implementaci\'on del clasificador basado en SVM se utiliza la herramienta SVM$^{light}$ desarrollada en lenguaje C por Thorsten Joachims\cite{JOACHIMS99,JOACHIMS08}. Junto con SVM$^{light}$ se utiliza SVMTool, una herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Politécnica de Cataluña\cite{GIMENEZ04,GIMENEZ06}. SVMTool es un generador de etiquetadores de secuencias para SVM$^{light}$ implementado en lenguaje Perl que facilita la utilizaci\'on de SVM$^{light}$ en problemas de etiquetado de secuencias. 
 
 Por defecto, la herramienta SVMTool utiliza para la clasificación las características definidas y optimizadas por Giménez et al. En este trabajo se toman como base las caracter\'isticas defecto, calibradas para mejorar su desempeño en el problema de restauración de acentos ortográficos.
 
@@ -299,12 +301,22 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 
 Analizando en detalle algunos de los errores cometidos por los clasificadores encontramos oraciones como las que siguen.
 \begin{itemize}
-\item{\emph{Si de él careciéramos, ¿para qué unas tareas que requieren esfuerzo, dedicación, capacidad y que -además- no mejoran ninguna economía?}}
-\item{\emph{¿Puede un país pedir sanciones contra otro antes de que se resuelva una apelación de este último sobre el contencioso objeto de la sanción?}}
-\item{\emph{¿Acabará aceptándose ese factor como un nuevo índice de las economías nacionales?}}
-\item{\emph{¿Es cierta esa versión cristiana y consoladora que asegura que los sacrificios no son inútiles?}}
+\item{\emph{Si de él careciéramos, ¿para qu\'e/\texttt{\small SIN\_TILDE} unas tareas que/\texttt{\small SIN\_TILDE} requieren esfuerzo, dedicación, capacidad y que/\texttt{\small SIN\_TILDE} -además- no mejoran ninguna economía?}}
+
+\item{\emph{¿No se debate permanentemente -como/\texttt{\small CON\_TILDE} toda religión y toda demencia- en el conflicto entre lo real y lo ficticio, lo percibido y lo proyectado, lo que/\texttt{\small SIN\_TILDE} constriñe y lo que/\texttt{\small SIN\_TILDE} exalta, los milagros y las bromas pesadas?}}
+
+\item{\emph{-Que/\texttt{\small CON\_TILDE} cómo/\texttt{\small O} va a llamarse el chiquillo?}}
+
+\item{\emph{En esta línea, Alberto Fernández se ha preguntado que/\texttt{\small SIN\_TILDE} ''si esto es lo que/\texttt{\small SIN\_TILDE} ocurrió entonces cuando/\texttt{\small SIN\_TILDE} CiU era influyente en Madrid, ¿qu\'e/\texttt{\small SIN\_TILDE} tiene que/\texttt{\small SIN\_TILDE} pasar ahora con un escenario español totalmente diferente?''}}
+
+\item{\emph{El dirigente popular ha evitado, no obstante, plantear su oferta de diálogo a CiU en el Parlament en forma de ultimátum y ha asegurado que/\texttt{\small SIN\_TILDE} el PP ''no se precipitará'' y que/\texttt{\small SIN\_TILDE} espera a ver ''qué/\texttt{\small SIN\_TILDE} ficha mueve'' la coalición que/\texttt{\small SIN\_TILDE} lidera Jordi Pujol.}} 
+
+\item{\emph{Además, confirmó que/\texttt{\small SIN\_TILDE} la marca de lujo Rolls Royce, adherida igualmente a BMW, permanecerá en el Reino Unido, por su añeja tradición británica y sus dimensiones, mucho menores que/\texttt{\small SIN\_TILDE} Rover, aunque no precisó d\'onde/\texttt{\small SIN\_TILDE} se instalará la nueva planta que/\texttt{\small SIN\_TILDE} la fabricará.}}
+
+\item{\emph{''Un experimento probará la preparación y las capacidades para el contexto militar del futuro, y sirve para que/\texttt{\small SIN\_TILDE} veamos c\'omo/\texttt{\small SIN\_TILDE} cada una de las fuerzas se desempeñará en una guerra''. }}
+
 \end{itemize}
-Podemos ver que los signos interrogativos inducen errores al contener adverbios no interrogativos.
+Podemos ver que las dos grandes causas de error de los clasificadores son: por un lado los adverbios interrogativos indirectos, y por otro lado los adverbios no interrogativos contenidos en frases interrogativas.
 
 En los cuadros~\ref{table:metricas-generales} y~\ref{table:metricas-adv} se evalúan los clasificadores utilizando las métricas de desempeño previamente definidas. En el cuadro~\ref{table:metricas-generales} se presenta el desempeño de los clasificadores por etiqueta, y en el cuadro~\ref{table:metricas-adv} se presenta el desempeño de los clasificadores para cada uno de los adverbios.
 
