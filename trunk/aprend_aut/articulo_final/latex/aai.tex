@@ -80,12 +80,12 @@ La restauración de acentos ortográficos es una problemática que ha sido ataca
 
 En este trabajo se presenta la aplicación de dos técnicas de aprendizaje automático, CRF y SVM, para la resolución del problema de restauración automática de acentos ortográficos en adverbios interrogativos. Este tipo de adverbios tienen una gran dependencia con el contexto en el que aparecen y son un problema particularmente difícil de resolver debido a su alto nivel ambigüedad.
 
-El trabajo está organizado de la siguiente forma. En la siguiente sección se presenta una descripción del problema y el corpus de trabajo. En las seccion~\ref{sec:solucion-propuesta} se aborda el problema de restauración de acentos ortográficos como un problema de clasificación y se introducen los métodos CRF y SVM. La discusión del análisis experimental y de los resultados obtenidos es presentada en la sección~\ref{sec:Resultados}, mientras que las conclusiones y las posibles líneas de trabajo futuro son presentadas en la sección~\ref{sec:Conclusiones}.
+El trabajo está organizado de la siguiente forma. En la siguiente sección se presenta una descripción del problema y el corpus de trabajo. En la sección~\ref{sec:solucion-propuesta} se aborda el problema de restauración de acentos ortográficos como un problema de clasificación y se introducen los métodos CRF y SVM. La discusión del análisis experimental y de los resultados obtenidos es presentada en la sección~\ref{sec:Resultados}, mientras que las conclusiones y las posibles líneas de trabajo futuro son presentadas en la sección~\ref{sec:Conclusiones}.
 
 \section{Descripción del Problema}
 Los adverbios son palabras invariables que complementan el significado de un verbo, un adjetivo u de otro adverbio ~\cite{RAE}. Alguno de ellos ---\emph{cuando, cuanto, como, ...}---, pueden funcionar como relativos (\emph{la ciudad donde nació}) o de forma interrogativa/exclamativa (\emph{¿dónde nació?}), debiendo ser, en este último caso,  acentuados ortográficamente. 
 
-Los adverbios interrogativos puede formularse de forma directa o indirecta~\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}. Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos: \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
+Los adverbios interrogativos pueden formularse de forma directa o indirecta~\cite{VECIANA04}. Un ejemplo de un adverbio interrogativo directo es el siguiente: \emph{¿Adónde os marcháis?}. Una frase similar formulada como adverbio interrogativo indirecto es: \emph{Dime adónde saldréis}. Si bien la existencia de signos de interrogación es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Además, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos: \emph{Cabe preguntarse entonces, ¿por qué algunas enfermedades de origen vírico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones?}.
 
 El problema que se ataca en este trabajo es el siguiente. Dado un texto del que fueron quitados todos los acentos ortográficos de sus adverbios: \emph{cuándo, cuánto, dónde, cómo, adónde} y \emph{qué}, se debe clasificar cada palabra del texto en una de las siguientes clases: 
 \begin{itemize}
@@ -118,7 +118,7 @@ La gran mayoría de los tokens del corpus (un $96,64\%$)  no son adverbios, y po
 \section{Restauración de acentos como un problema de clasificación}
 \label{sec:solucion-propuesta}
 
-En este trabajo se aborda el problema de la restauraci\'on de acentos ortogr\'aficos como un problema de clasificaci\'on. Con este proposito se introducen dos m\'etodos utilizados para el reconocimiento de patrones: Conditional random fields y Support vector machines. A continuación se presentan en detalle cada uno de estos métodos.
+En este trabajo se aborda el problema de la restauraci\'on de acentos ortogr\'aficos como un problema de clasificaci\'on. Con este propósito se introducen dos m\'etodos utilizados para el reconocimiento de patrones: Conditional random fields y Support vector machines. A continuación se presentan en detalle cada uno de estos métodos.
 
 \subsection{Clasificación Utilizando CRF}
 \label{sec:CRF}
@@ -168,7 +168,7 @@ En este trabajo, para la implementación del clasificador basado en CRF se utili
 Las características \texttt{\small PREV-SINT}, \texttt{\small NEXT-SINT}, \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se incluyen en el clasificador luego de realizar un estudio sobre los tokens que preceden y suceden a los adverbios corpus. La característica \texttt{\small PREV-SINT} a los tokens que preceden con mayor ocurrencia a adverbios no interrogativos pero no lo hacen con adverbios interrogativos. De la misma manera la característica \texttt{\small NEXT-SINT} se agrega a los tokens que suceden con mayor frecuencia a adverbios no interrogativos, pero no lo hacen con adverbios interrogativos. %De la misma forma, las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se agregan a los token que preceden y suceden a adverbios interrogativos, pero no lo hacen con adverbios no interrogativos.
 De forma similar, las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se agregan pero para adverbios interrogativos.
 
-Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, y optimizando la verosimilitud por etiqueta. Adicionalmente, se prohibe la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
+Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, y optimizando la verosimilitud por etiqueta. Adicionalmente, se prohíbe la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
 
 \subsection{Clasificación Utilizando SVM}
 \label{sec:SVM}
@@ -309,7 +309,7 @@ A continuación se muestran algunos ejemplos de adverbios encontrados en el corp
 
 \item{\emph{En esta línea, Alberto Fernández se ha preguntado que/\texttt{\small SIN\_TILDE} ''si esto es lo que/\texttt{\small SIN\_TILDE} ocurrió entonces cuando/\texttt{\small SIN\_TILDE} CiU era influyente en Madrid, ¿qu\'e/\texttt{\small SIN\_TILDE} tiene que/\texttt{\small SIN\_TILDE} pasar ahora con un escenario español totalmente diferente?''}}
 
-\item{\emph{El dirigente popular ha evitado, no obstante, plantear su oferta de diálogo a CiU en el Parlament en forma de ultimátum y ha asegurado que/\texttt{\small SIN\_TILDE} el PP ''no se precipitará'' y que/\texttt{\small SIN\_TILDE} espera a ver ''qué/\texttt{\small SIN\_TILDE} ficha mueve'' la coalición que/\texttt{\small SIN\_TILDE} lidera Jordi Pujol.}} 
+\item{\emph{El dirigente popular ha evitado, no obstante, plantear su oferta de diálogo a CiU en el Parlamento en forma de ultimátum y ha asegurado que/\texttt{\small SIN\_TILDE} el PP ''no se precipitará'' y que/\texttt{\small SIN\_TILDE} espera a ver ''qué/\texttt{\small SIN\_TILDE} ficha mueve'' la coalición que/\texttt{\small SIN\_TILDE} lidera Jordi Pujol.}} 
 
 \item{\emph{Además, confirmó que/\texttt{\small SIN\_TILDE} la marca de lujo Rolls Royce, adherida igualmente a BMW, permanecerá en el Reino Unido, por su añeja tradición británica y sus dimensiones, mucho menores que/\texttt{\small SIN\_TILDE} Rover, aunque no precisó d\'onde/\texttt{\small SIN\_TILDE} se instalará la nueva planta que/\texttt{\small SIN\_TILDE} la fabricará.}}
 
@@ -344,7 +344,7 @@ En los cuadros~\ref{table:metricas-generales} y~\ref{table:metricas-adv} se eval
 	\end{tabular}
 \end{table}
 
-Ambos clasificadores presentan una alta tasa de  \emph{Precisión}, lo que indica que ambos clasificadores cometen una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de  \emph{Recall} significativamente más elevada que el clasificador basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto logra clasificar correctamente una mayor cantidad de casos. Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
+Ambos clasificadores presentan una alta tasa de  \emph{Precisión}, lo que indica que ambos clasificadores cometen una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de  \emph{Recall} significativamente más elevada que el basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto clasifica correctamente una mayor cantidad de casos. Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -385,7 +385,7 @@ En la clasificaci\'on de adverbios no interrogativos el clasificador CRF mantien
 
 En la clasificación de adverbios interrogativos el clasificador CRF mejora sensiblemente los resultados obtenidos al aumentar la cantidad de ejemplos en el corpus de entrenamiento. Esto nos indica que para mejorar los resultados experimentales es necesario aumentar el tamaño del corpus considerado.% e incluir una mayor cantidad de ejemplos de adverbios interrogativos para el entrenamiento.
 
-Las principales líneas de trabajo a futuro incluyen la construcción de un corpus de mayor porte, y la utilización de otrás técnicas --como el etiquetado gramatical, el análisis morfosintáctico, etc.-- para aumentar la información de contexto al momento de la clasificación.
+Las principales líneas de trabajo a futuro incluyen la construcción de un corpus de mayor porte, y la utilización de otras técnicas --como el etiquetado gramatical, el análisis morfosintáctico, etc.-- para aumentar la información de contexto al momento de la clasificación.
 
 \bibliographystyle{splncs03}
 \bibliography{aai}
