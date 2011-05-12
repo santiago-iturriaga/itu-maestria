@@ -61,7 +61,7 @@ Montevideo, Uruguay \\
 
 \begin{abstract}
 %The abstract goes here. DO NOT USE SPECIAL CHARACTERS, SYMBOLS, OR MATH IN YOUR TITLE OR ABSTRACT.
-La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español; su restauración automática consiste en la inserción de acentos  omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines} (SVM) aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF.
+La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español; su restauración automática consiste en la inserción de acentos  omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines} (SVM), aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo significativamente superior el resultado obtenido utilizando CRF.
 \keywords{crf, svm, restauración automática de acentos ortográficos}
 \end{abstract}
 
@@ -344,7 +344,9 @@ En los cuadros~\ref{table:metricas-generales} y~\ref{table:metricas-adv} se eval
 	\end{tabular}
 \end{table}
 
-Ambos clasificadores presentan una alta tasa de  \emph{Precisión}, lo que indica que ambos clasificadores cometen una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de  \emph{Recall} significativamente más elevada que el basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto clasifica correctamente una mayor cantidad de casos. Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
+Ambos clasificadores presentan una alta tasa de \emph{Precisión}, lo que indica que se comete una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de  \emph{Recall} significativamente más elevada que el basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto clasifica correctamente una mayor cantidad de casos. 
+
+Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
