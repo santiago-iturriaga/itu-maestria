@@ -1,0 +1,567 @@
+{\rtf1\ansi\uc1\deff13\deflang1024
+{\fonttbl{\f0\fnil\fcharset0 Zapf Chancery;}
+{\f1\fnil\fcharset204 Zapf Chancery;}
+{\f2\fnil\fcharset204 Times;}
+{\f3\fnil\fcharset204 Helvetica;}
+{\f4\fnil\fcharset204 Helvetica;}
+{\f5\fnil\fcharset204 Courier;}
+{\f6\fnil\fcharset2 Symbol;}
+{\f7\fnil\fcharset0 MT Extra;}
+{\f8\fnil\fcharset238 Zapf Chancery;}
+{\f9\fnil\fcharset238 Times;}
+{\f10\fnil\fcharset238 Helvetica;}
+{\f11\fnil\fcharset238 Helvetica;}
+{\f12\fnil\fcharset238 Courier;}
+{\f13\fnil\fcharset0 Times;}
+{\f14\fnil\fcharset0 Helvetica;}
+{\f15\fnil\fcharset0 Helvetica;}
+{\f16\fnil\fcharset0 Courier;}
+}
+{\colortbl;
+\red0\green0\blue0;
+\red0\green0\blue255;
+\red0\green255\blue255;
+\red0\green255\blue0;
+\red255\green0\blue255;
+\red255\green0\blue0;
+\red255\green255\blue0;
+\red255\green255\blue255;
+\red0\green0\blue128;
+\red0\green128\blue128;
+\red0\green128\blue0;
+\red128\green0\blue128;
+\red128\green0\blue0;
+\red128\green128\blue0;
+\red128\green128\blue128;
+\red192\green192\blue192;
+}
+{\stylesheet
+{\s0\fs20\snext0 Normal;}
+{\s2\ql\sb240\sa60\keepn\f13\b\fs40 \sbasedon0\snext0 heading 1;}
+{\s2\ql\sb240\sa60\keepn\f13\b\fs40\li0 \sbasedon0\snext0 heading 1;}
+{\s1\ql\sb240\sa60\keepn\f13\b\fs40\li0 \sbasedon0\snext0 heading 1;}
+{\s6\ql\sb240\sa60\keepn\f13\b\fs24\li2048 \sbasedon0\snext0 heading 5;}
+{\s3\ql\sb240\sa60\keepn\f13\b\fs32\li512 \sbasedon0\snext0 heading 2;}
+{\s7\ql\sb240\sa60\keepn\f13\b\fs24\li2560 \sbasedon0\snext0 heading 6;}
+{\s4\ql\sb240\sa60\keepn\f13\b\fs32\li1024 \sbasedon0\snext0 heading 3;}
+{\s5\ql\sb240\sa60\keepn\f13\b\fs24\li1536 \sbasedon0\snext0 heading 4;}
+{\s6\ql\sb240\sa60\keepn\f13\b\fs24 \sbasedon0\snext0 heading 5;}
+{\s1\qc\sb240\sa60\keepn\f13\b\fs40 \sbasedon0\snext0 part;}
+{\s3\ql\sb240\sa60\keepn\f13\b\fs32 \sbasedon0\snext0 heading 2;}
+{\s7\ql\sb240\sa60\keepn\f13\b\fs24 \sbasedon0\snext0 heading 6;}
+{\s4\ql\sb240\sa60\keepn\f13\b\fs32 \sbasedon0\snext0 heading 3;}
+{\s5\ql\sb240\sa60\keepn\f13\b\fs24 \sbasedon0\snext0 heading 4;}
+}
+{\info
+{\title Original file was aai.tex}
+{\doccomm Created using latex2rtf 1.9.19 (released Nov 20 2007) on Wed May 11 23:16:41 2011
+}
+}
+{\footer\pard\plain\f13\fs20\qc\chpgn\par}
+\paperw11960\paperh16900\margl2500\margr2560\margt2520\margb1820\pgnstart0\widowctrl\qj\ftnbj\f13\aftnnar
+{\pard\qj\sl240\slmult1 \fi300 {Restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos en adverbios interrogativos}\par
+\pard\qj\sl240\slmult1 \fi300 {Restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos en adverbios interrogativos}\par
+\pard\qj\sl240\slmult1 \fi300 {Facultad de Ingenier\'eda,\par
+\pard\qj\sl240\slmult1 \fi0 Universidad de la Rep\'fablica,\par
+\pard\qj\sl240\slmult1 \fi0 Montevideo, Uruguay \par
+}
+\par\pard\qc {\fs30 \pard\qc\sl240\slmult1 \fi300 Restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos en adverbios interrogativos}
+\par\pard\qc {\fs24 Santiago Iturriaga \par
+\pard\qc\sl240\slmult1 \fi300 Diego Garat \par
+\pard\qc\sl240\slmult1 \fi300 Guillermo Moncecchi}
+\par\pard\qc {\fs24 }
+\par\pard\qc {\fs24 }
+\par\pard\qc {\fs24 }\par
+{\pard\qj\sl240\slmult1 \fi0 \qc{\b Resumen}\par
+\pard\qj\sl240\slmult1 \li1024\ri1024\fi0 La omisi\u243?n de los acentos ortogr\u225?ficos es uno de los errores tipogr\u225?ficos m\u225?s frecuentes en el idioma espa\u241?ol; su restauraci\u243?n autom\u225?tica consiste en la inserci\u243?n de acentos omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos t\u233?cnicas de aprendizaje autom\u225?tico, {\i Conditional Random Fields} (CRF) y {\i Support Vector Machines} (SVM) aplicadas a la resoluci\u243?n del problema de la restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos para el caso espec\u237?fico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'e9cnicas, siendo significativamente superior el resultado obtenido utilizando CRF. \par
+\pard\qj\sl240\slmult1 \li1024\ri1024\fi300 crf, svm, restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos \par
+}\pard\qj\sl240\slmult1 \sb360 \fi0 {\s3\ql\sb240\sa60\keepn\f13\b\fs32 1  Introducci\u243?n\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Dado un texto sin la presencia de acentos ortogr\u225?ficos, el problema de su restauraci\u243?n autom\u225?tica consiste en insertar acentos ortogr\u225?ficos en los lugares del texto en el que son requeridos por las normas de acentuaci\u243?n. Los acentos ortogr\u225?ficos son muy importantes para determinar el significado de una oraci\u243?n; sin embargo, es muy com\u250?n omitir este tipo de signo ortogr\u225?fico en la escritura informal, por ejemplo, en letras may\u250?sculas.\par
+\pard\qj\sl240\slmult1 \fi300 La acentuaci\u243?n ortogr\u225?fica en algunas palabras del idioma espa\u241?ol sirve solamente como ayuda a la pronunciaci\u243?n. Sin embargo, en otras palabras la acentuaci\u243?n ortogr\u225?fica elimina la ambig\u252?edad de una oraci\u243?n. Tomando esto en cuenta, podemos clasificar las palabras con acento ortogr\u225?fico del idioma espa\u241?ol de la siguiente manera\~
+[{\field{\*\fldinst{\lang1024 REF BIB_CRANDALL95 \\* MERGEFORMAT }}{\fldrslt{4}}}
+]: {\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 1.\tab {Palabras sin ambig\u252?edad}. Existe una \u250?nica forma correcta de escribir estas palabras, e.g. {\i acentuaci\u243?n} siempre debe ser escrita con tilde. \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 2.\tab {Palabras con ambig\u252?edad}. Las palabras pertenecientes a esta clase pueden cambiar su significado dependiendo si son escritas con o sin acentuaci\u243?n ortogr\u225?fica. Por ejemplo: diferentes conjugaciones del mismo verbo ({\i canto/cant\u243?, hable/habl\u233?}), sustantivos ({\i papa/pap\u225?, secretaria/secretar\u237?a}), etc. \par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 La restauraci\u243?n de acentos ortogr\u225?ficos es trivial para las palabras {\i sin ambig\'fcedad}. Sin embargo, la restauraci\u243?n de acentos ortogr\u225?ficos en las palabras {\i con ambig\'fcedad} requiere examinar el contexto de cada palabra. Este problema se encuentra estrechamente relacionado con los problemas de desambiguaci\u243?n l\u233?xica: involucra aspectos de la desambiguaci\u243?n del significado de una palabra y aspectos del etiquetado gramatical. \par
+\pard\qj\sl240\slmult1 \fi300 La restauraci\u243?n de acentos ortogr\u225?ficos es una problem\u225?tica que ha sido atacada utilizando diferentes t\u233?cnicas. Crandall\~
+[{\field{\*\fldinst{\lang1024 REF BIB_CRANDALL95 \\* MERGEFORMAT }}{\fldrslt{4}}}
+] propone un m\u233?todo h\u237?brido combinando un m\u233?todo basado en {\i Hidden Markov Models}(HMM) y un modelo Bayesiano: utiliza ambos modelos eligiendo, para cada palabra, uno u otro dependiendo de la confianza ofrecida por cada m\u233?todo. Simard\~
+[{\field{\*\fldinst{\lang1024 REF BIB_SIMARD98 \\* MERGEFORMAT }}{\fldrslt{16}}}
+], para la restauraci\u243?n de acentos ortogr\u225?ficos de textos en franc\u233?s, tambi\u233?n propone un m\u233?todo basado HMM combinado con un an\u225?lisis morfosint\u225?ctico del corpus. Yarowsky\~
+[{\field{\*\fldinst{\lang1024 REF BIB_YAROWSKY94 \\* MERGEFORMAT }}{\fldrslt{20}}}, {\field{\*\fldinst{\lang1024 REF BIB_YAROWSKY94_2 \\* MERGEFORMAT }}{\fldrslt{19}}}
+] experimenta con m\u233?todos basados en HMM, clasificadores Bayesianos, y listas de decisi\u243?n para la restauraci\u243?n de acentos ortogr\u225?ficos de textos en espa\u241?ol y franc\u233?s. Todos estos trabajos basan sus m\u233?todos de aprendizaje a nivel de palabras, mientras que Mihalcea\~
+[{\field{\*\fldinst{\lang1024 REF BIB_MIHALCEA02 \\* MERGEFORMAT }}{\fldrslt{14}}}
+] presenta un enfoque innovador al utilizar \u225?rboles de decisi\u243?n a nivel de letras para restaurar acentos ortogr\u225?ficos en idioma rumano. La gran mayor\u237?a de estos trabajos reportan un porcentaje de \u233?xito muy elevado, pero debe tenerse en cuenta que el porcentaje de \u233?xito del clasificador de l\u237?nea base tambi\u233?n es muy elevado. Por ejemplo, en el idioma franc\u233?s aproximadamente el {{85%}} de las palabras no llevan acento ortogr\u225?fico, y la forma correcta de m\u225?s de la mitad de las palabras restantes puede deducirse determin\u237?sticamente. Esto deja una tasa base de \u233?xito del {{95%}}\~
+[{\field{\*\fldinst{\lang1024 REF BIB_SIMARD98 \\* MERGEFORMAT }}{\fldrslt{16}}}
+].\par
+\pard\qj\sl240\slmult1 \fi300 En este trabajo se presenta la aplicaci\u243?n de dos t\u233?cnicas de aprendizaje autom\u225?tico, CRF y SVM, para la resoluci\u243?n del problema de restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos en adverbios interrogativos. Este tipo de adverbios tienen una gran dependencia con el contexto en el que aparecen y son un problema particularmente dif\u237?cil de resolver debido a su alto nivel ambig\u252?edad.\par
+\pard\qj\sl240\slmult1 \fi300 El trabajo est\u225? organizado de la siguiente forma. En la siguiente secci\u243?n se presenta una descripci\u243?n del problema y el corpus de trabajo. En las seccion\~{\field{\*\fldinst{\lang1024 REF BMsec_solucion_propuesta \\* MERGEFORMAT }}{\fldrslt{3}}} se aborda el problema de restauraci\u243?n de acentos ortogr\u225?ficos como un problema de clasificaci\u243?n y se introducen los m\u233?todos CRF y SVM. La discusi\u243?n del an\u225?lisis experimental y de los resultados obtenidos es presentada en la secci\u243?n\~{\field{\*\fldinst{\lang1024 REF BMsec_Resultados \\* MERGEFORMAT }}{\fldrslt{4}}}, mientras que las conclusiones y las posibles l\u237?neas de trabajo futuro son presentadas en la secci\u243?n\~{\field{\*\fldinst{\lang1024 REF BMsec_Conclusiones \\* MERGEFORMAT }}{\fldrslt{5}}}.\par
+\pard\qj\sl240\slmult1 \sb240 \fi0 {\s3\ql\sb240\sa60\keepn\f13\b\fs32 2  Descripci\u243?n del Problema\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Los adverbios son palabras invariables que complementan el significado de un verbo, un adjetivo u de otro adverbio \~
+[{\field{\*\fldinst{\lang1024 REF BIB_RAE \\* MERGEFORMAT }}{\fldrslt{6}}}
+]. Alguno de ellos \emdash {\i cuando, cuanto, como, ...}\emdash , pueden funcionar como relativos ({\i la ciudad donde naci\u243?}) o de forma interrogativa/exclamativa ({\i \u191?d\u243?nde naci\u243?? }), debiendo ser, en este \u250?ltimo caso, acentuados ortogr\u225?ficamente. \par
+\pard\qj\sl240\slmult1 \fi300 Los adverbios interrogativos puede formularse de forma directa o indirecta\~
+[{\field{\*\fldinst{\lang1024 REF BIB_VECIANA04 \\* MERGEFORMAT }}{\fldrslt{17}}}
+]. Un ejemplo de un adverbio interrogativo directo es el siguiente: {\i \u191?Ad\u243?nde os march\u225?is? }. Una frase similar formulada como adverbio interrogativo indirecto es: {\i Dime ad\u243?nde saldr\u233?is}. Si bien la existencia de signos de interrogaci\u243?n es un fuerte indicador de la presencia de adverbios interrogativos directos, no existe un indicador claro que marque la presencia de los adverbios interrogativos indirectos. Adem\u225?s, dentro de una frase que contiene un adverbio interrogativo pueden presentarse adverbios no interrogativos: {\i Cabe preguntarse entonces, \u191?por qu\u233? algunas enfermedades de origen v\u237?rico, como los catarros o la gripe, pueden sufrirse en repetidas ocasiones? }.\par
+\pard\qj\sl240\slmult1 \fi300 El problema que se ataca en este trabajo es el siguiente. Dado un texto del que fueron quitados todos los acentos ortogr\u225?ficos de sus adverbios: {\i cu\u225?ndo, cu\u225?nto, d\u243?nde, c\u243?mo, ad\u243?nde} y {\i qu\u233?}, se debe clasificar cada palabra del texto en una de las siguientes clases: {\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\f16 O}}. Toda palabra que no es uno de los adverbios considerados. \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\f16 SIN_TILDE}}. Si se trata de un adverbio no interrogativo. \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\f16 CON_TILDE}}. Si se trata de un adverbio interrogativo\~{\up16\chftn}
+{\*\footnote \pard\plain\s246\f13\fs20 {\up16\chftn}Potencialmente podr\'eda tratarse de un adverbio exclamativo.}
+. \par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 El corpus de trabajo se basa en la uni\u243?n de los corpus CESS Treebanks y CoNLL 2002. Para la construcci\u243?n del corpus se utiliza la herramienta Natural Languaje Toolkit (NLTK) 2.0\~{\up16\chftn}
+{\*\footnote \pard\plain\s246\f13\fs20 {\up16\chftn}Disponible para descargar en }
+. El corpus construido consta de un total de {{562136}} tokens, de los cuales {{18677}} son adverbios no interrogativos y {{238}} son adverbios interrogativos. En el cuadro {\field{\*\fldinst{\lang1024 REF BMtable_corpus \\* MERGEFORMAT }}{\fldrslt{1}}} se muestra la proporci\'f3n de las etiquetas asignadas al corpus construido.\par
+{\pard\qj\sl240\slmult1 \sb240 \fi0 \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_corpus}1{\*\bkmkend BMtable_corpus}: Etiquetas asignadas al corpus utilizado.}{\field{\*\fldinst TC "1 Etiquetas asignadas al corpus utilizado." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrt\brdrdb\clbrdrb\brdrs\cellx2300\clbrdrt\brdrdb\clbrdrb\brdrs\cellx4600\clbrdrt\brdrdb\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {{\b Etiqueta}}\cell
+\pard\intbl\qc {{\b Cantidad de tokens}}\cell
+\pard\intbl\qc {{\b Proporci\'f3n del corpus}}\cell
+\row
+\trowd\cellx2300\cellx4600\cellx6900
+\pard\intbl\qc {{\f16 O}}\cell
+\pard\intbl\qr {543221}\cell
+\pard\intbl\qr {96,64%}\cell
+\row
+\trowd\cellx2300\cellx4600\cellx6900
+\pard\intbl\qc {{\f16 SIN_TILDE}}\cell
+\pard\intbl\qr {18677}\cell
+\pard\intbl\qr {3,32%}\cell
+\row
+\trowd\clbrdrb\brdrs\cellx2300\clbrdrb\brdrs\cellx4600\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {{\f16 CON_TILDE}}\cell
+\pard\intbl\qr {238}\cell
+\pard\intbl\qr {0,04%}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 La gran mayor\u237?a de los tokens del corpus (un {{96,64%}}) no son adverbios, y por lo tanto se les asigna la etiqueta {\f16 \fs18 O}. Esto nos asegura que utilizando un clasificador de l\u237?nea base muy simple podemos obtener f\u225?cilmente un {{96,64%}} de precisi\u243?n asignando la etiqueta {\f16 \fs18 O} a todos los tokens de nuestro corpus. A\'fan m\'e1s, resulta trivial determinar si un token es un adverbio del tipo buscado, por lo tanto basta con asignar la etiqueta {\f16 \fs18 SIN_TILDE} a todos los adverbios considerados para clasificar correctamente el {{98,70%}} de los adverbios y obtener un {{99,96%}} de \'e9xito en nuestro clasificador.\par
+\pard\qj\sl240\slmult1 \sb240 \fi0 {\s3\ql\sb240\sa60\keepn\f13\b\fs32 {\*\bkmkstart BMsec_solucion_propuesta}3{\*\bkmkend BMsec_solucion_propuesta}  Restauraci\u243?n de acentos como un problema de clasificaci\u243?n\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 En este trabajo se aborda el problema de la restauraci\'f3n de acentos ortogr\'e1ficos como un problema de clasificaci\'f3n. Con este proposito se introducen dos m\'e9todos utilizados para el reconocimiento de patrones: Conditional random fields y Support vector machines. A continuaci\u243?n se presentan en detalle cada uno de estos m\u233?todos.\par
+\pard\qj\sl240\slmult1 \sb120 \fi0 {\s4\ql\sb240\sa60\keepn\f13\b\fs32 {\*\bkmkstart BMsec_CRF}3.1{\*\bkmkend BMsec_CRF}  Clasificaci\u243?n Utilizando CRF\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Conditional random fields, propuesto por Lafferty et al.\~
+[{\field{\*\fldinst{\lang1024 REF BIB_LAFFERTY01 \\* MERGEFORMAT }}{\fldrslt{11}}}
+], es un modelo estoc\u225?stico para el etiquetado y la segmentaci\u243?n de datos secuenciales. Utiliza un modelo que define una probabilidad condicional {{{\i p}({\i Y}|{\i x})}} sobre secuencias de etiquetas dada la observaci\u243?n de una secuencia particular, {{{\i x}}}. Para etiquetar una nueva secuencia observada {{\field{\*\fldinst{ EQ {{\i x}\\s\\do5({\fs16 *})}}}{\fldrslt }}}, el modelo condicional selecciona la etiqueta de la secuencia {{\field{\*\fldinst{ EQ {{\i y}\\s\\do5({\fs16 *})}}}{\fldrslt }}} que maximiza la probabilidad condicional {{\field{\*\fldinst{ EQ {{\i p}({\i y}\\s\\do5({\fs16 *})|{\i x}\\s\\do5({\fs16 *}))}}}{\fldrslt }}}. Un modelo CRF puede representarse como un grafo no dirigido en el que cada v\u233?rtice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los v\u233?rtices que conecta. De esta manera, sea {{{\i X}}} la variable aleatoria que representa las secuencias de observaci\'f3n, definimos {{{\i G}=({\i V},{\i E})}} un grafo no dirigido en el que existe un nodo {{{\i v}{\f6\'CE}{\i V}}} por cada variable aleatoria representada por el elemento {{\field{\*\fldinst{ EQ {{\i Y}\\s\\do5({\fs16 {\i v}})}}}{\fldrslt }}} de {{{\i Y}}}. \par
+\pard\qj\sl240\slmult1 \fi300 El modelo CRF resulta superior a otros m\u233?todos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajaci\u243?n en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos\~
+[{\field{\*\fldinst{\lang1024 REF BIB_WALLACH04 \\* MERGEFORMAT }}{\fldrslt{18}}}
+].\par
+\pard\qj\sl240\slmult1 \fi300 En este trabajo, para la implementaci\u243?n del clasificador basado en CRF se utiliza la herramienta MALLET 2.0.6, una herramienta desarrollada en Java por Andrew McCallum et al.\~
+[{\field{\*\fldinst{\lang1024 REF BIB_MCCALLUM02 \\* MERGEFORMAT }}{\fldrslt{13}}}
+]. En el cuadro {\field{\*\fldinst{\lang1024 REF BMtable_featuresCRF \\* MERGEFORMAT }}{\fldrslt{2}}} se muestra un resumen de las caracter\u237?sticas implementadas en MALLET y utilizadas para la clasificaci\u243?n mediante CRF; a continuaci\u243?n se presentan en detalle cada una de ellas.\par
+{\pard\qj\sl240\slmult1 \sb240 \fi0 \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_featuresCRF}2{\*\bkmkend BMtable_featuresCRF}: Caracter\u237?sticas utilizadas para la clasificaci\u243?n mediante CRF.}{\field{\*\fldinst TC "2 Caracter\u237?sticas utilizadas para la clasificaci\u243?n mediante CRF." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrt\brdrdb\clbrdrb\brdrs\cellx3450\clbrdrt\brdrdb\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {{\b Caracter\u237?stica}}\cell
+\pard\intbl\qc {{\b Descripci\u243?n}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 ADVERBIO}}\cell
+\pard\intbl\ql {Tokens que son adverbios.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 NOADVERBIO}}\cell
+\pard\intbl\ql {Tokens que no son adverbios.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 CAPITALIZED}}\cell
+\pard\intbl\ql {Tokens cuya primera letra es may\u250?scula.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 FIRST}}\cell
+\pard\intbl\ql {Tokens que aparecen primeros en una oraci\u243?n.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 BEGINNING}}\cell
+\pard\intbl\ql {Adverbios que aparecen en primer o segundo lugar}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {en una oraci\u243?n.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 SIGN-QE}}\cell
+\pard\intbl\ql {Tokens que representan signos de exclamaci\u243?n.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 IN-QE}}\cell
+\pard\intbl\ql {Adverbios en oraciones donde existen ocurrencias}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {de signos de interrogaci\u243?n o exclamaci\u243?n.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 ADVERBIO-QE}}\cell
+\pard\intbl\ql {Adverbios seguidos o precedidos por un signo}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {interrogativo o exclamativo.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 PREV-SINT}}\cell
+\pard\intbl\ql {Los siguientes tokens {{\field{\*\fldinst{ EQ {{\f6\u-3922\'AE}}}}{\fldrslt }}} {\i ,} {\i lo} {\i la} {\i el} {\i los} {\i "}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 NEXT-SINT}}\cell
+\pard\intbl\ql {Los siguientes tokens {{\field{\*\fldinst{ EQ {{\f6\u-3922\'AE}}}}{\fldrslt }}} {\i el} {\i la} {\i los} {\i en} {\i las} {\i ha} {\i "}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 ADVERBIO-SINT}}\cell
+\pard\intbl\ql {Adverbios precedidos por {\f16 PREV-SINT} o}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {sucedidos por {\f16 NEXT-SINT}.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 PREV-CINT}}\cell
+\pard\intbl\ql {Los siguientes tokens {{\field{\*\fldinst{ EQ {{\f6\u-3922\'AE}}}}{\fldrslt }}} {\i por} {\i -} {\i sobre} {\i ver} {\i a} {\i saber} {\i s\u233?}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 NEXT-CINT}}\cell
+\pard\intbl\ql {Los siguientes tokens {{\field{\*\fldinst{ EQ {{\f6\u-3922\'AE}}}}{\fldrslt }}} {\i es} {\i le} {\i significa}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 ADVERBIO-CINT}}\cell
+\pard\intbl\ql {Adverbios precedidos por {\f16 PREV-CINT} o}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {sucedidos por {\f16 NEXT-CINT}.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\i Conjunciones}}\cell
+\pard\intbl\ql {Conjunci\u243?n de todas las caracter\u237?sticas del token anterior}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {y el token actual, y todas las caracter\u237?sticas del token}\cell
+\row
+\trowd\clbrdrb\brdrs\cellx3450\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {actual y el token siguiente.}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 Las caracter\u237?sticas {\f16 \fs18 PREV-SINT}, {\f16 \fs18 NEXT-SINT}, {\f16 \fs18 PREV-CONT} y {\f16 \fs18 NEXT-CONT} se incluyen en el clasificador luego de realizar un estudio sobre los tokens que preceden y suceden a los adverbios corpus. La caracter\u237?stica {\f16 \fs18 PREV-SINT} a los tokens que preceden con mayor ocurrencia a adverbios no interrogativos pero no lo hacen con adverbios interrogativos. De la misma manera la caracter\u237?stica {\f16 \fs18 NEXT-SINT} se agrega a los tokens que suceden con mayor frecuencia a adverbios no interrogativos, pero no lo hacen con adverbios interrogativos. De forma similar, las caracter\u237?sticas {\f16 \fs18 PREV-CONT} y {\f16 \fs18 NEXT-CONT} se agregan pero para adverbios interrogativos.\par
+\pard\qj\sl240\slmult1 \fi300 Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, y optimizando la verosimilitud por etiqueta. Adicionalmente, se prohibe la transici\u243?n de etiquetas {\f16 \fs18 CON_TILDE} a {\f16 \fs18 CON_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oraci\u243?n. \par
+\pard\qj\sl240\slmult1 \sb120 \fi0 {\s4\ql\sb240\sa60\keepn\f13\b\fs32 {\*\bkmkstart BMsec_SVM}3.2{\*\bkmkend BMsec_SVM}  Clasificaci\u243?n Utilizando SVM\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Support vector machines es un m\u233?todo de aprendizaje estad\u237?stico propuesto por Vapnik et al.\~
+[{\field{\*\fldinst{\lang1024 REF BIB_CORTES95 \\* MERGEFORMAT }}{\fldrslt{3}}}
+]. Es sabido que SVM obtiene mejores resultados que m\u233?todos tradicionales -como redes neuronales- a\u250?n en grandes espacios dimensionales con peque\u241?os conjuntos de entrenamiento; por esta raz\u243?n ha sido aplicado con \u233?xito a problemas de detecci\u243?n facial, detecci\u243?n y reconocimiento de objetos, reconocimiento de textos manuscritos, categorizaci\u243?n, predicci\u243?n, entre otros\~
+[{\field{\*\fldinst{\lang1024 REF BIB_BYUN02 \\* MERGEFORMAT }}{\fldrslt{2}}}
+]. \par
+\pard\qj\sl240\slmult1 \fi300 Support vector machines es un clasificador lineal: dada una serie de vectores de entrada, el m\'e9todo intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso m\u225?s simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento {{\field{\*\fldinst{ EQ {{({\i x}\\s\\do5({\fs16 1})\\,{\i y}\\s\\do5({\fs16 1}))\\,...\\,({\i x}\\s\\do5({\fs16 {\i N}})\\,{\i y}\\s\\do5({\fs16 {\i N}}))}}}}{\fldrslt }}}, siendo cada instancia {{\field{\*\fldinst{ EQ {{\i x}\\s\\do5({\fs16 {\i i}})}}}{\fldrslt }}} un vector en {{\field{\*\fldinst{ EQ {{\f6\u-3902\'C2}\\s\\up5({\fs16 {\i N}})}}}{\fldrslt }}} y siendo {{\field{\*\fldinst{ EQ {{\i y}\\s\\do5({\fs16 {\i i}}){\f6\u-3890\'CE}{\f6\u-4051\'2D}1\\,+1}}}{\fldrslt }}} la etiqueta de clase correspondiente. \par
+\pard\qj\sl240\slmult1 \fi300 El algoritmo SVM aprende un hiperplano lineal que separa el conjunto de ejemplos positivos del conjunto de ejemplos negativos con {\i margen} m\u225?ximo. El {\i margen} se define como la distancia del hiperplano al punto m\u225?s cercano de cada uno de los conjuntos de ejemplos. El separador lineal se encuentra definido por un vector de pesos {{{\i w}}} y un sesgo {{{\i b}}} que representa la distancia del hiperplano al origen. La regla de clasificaci\u243?n de SVM es entonces {{{\i f}({\i x},{\i w},{\i b})={\f6\'E1}{\i x}{\f6\'D7}{\i w}{\f6\'F1}+{\i b}}}.\par
+\pard\qj\sl240\slmult1 \fi300 Para la implementaci\'f3n del clasificador basado en SVM se utiliza la herramienta SVM{{\field{\*\fldinst{ EQ {\\s\\up5({\fs16 {\i l}{\i i}{\i g}{\i h}{\i t}})}}}{\fldrslt }}} desarrollada en lenguaje C por Thorsten Joachims\~
+[{\field{\*\fldinst{\lang1024 REF BIB_JOACHIMS99 \\* MERGEFORMAT }}{\fldrslt{9}}}, {\field{\*\fldinst{\lang1024 REF BIB_JOACHIMS08 \\* MERGEFORMAT }}{\fldrslt{10}}}
+]. Junto con SVM{{\field{\*\fldinst{ EQ {\\s\\up5({\fs16 {\i l}{\i i}{\i g}{\i h}{\i t}})}}}{\fldrslt }}} se utiliza SVMTool, una herramienta desarrollada por el grupo de Procesamiento de Lenguaje Natural de la Universidad Polit\u233?cnica de Catalu\u241?a\~
+[{\field{\*\fldinst{\lang1024 REF BIB_GIMENEZ04 \\* MERGEFORMAT }}{\fldrslt{7}}}, {\field{\*\fldinst{\lang1024 REF BIB_GIMENEZ06 \\* MERGEFORMAT }}{\fldrslt{8}}}
+]. SVMTool es un generador de etiquetadores de secuencias para SVM{{\field{\*\fldinst{ EQ {\\s\\up5({\fs16 {\i l}{\i i}{\i g}{\i h}{\i t}})}}}{\fldrslt }}} implementado en lenguaje Perl que facilita la utilizaci\'f3n de SVM{{\field{\*\fldinst{ EQ {\\s\\up5({\fs16 {\i l}{\i i}{\i g}{\i h}{\i t}})}}}{\fldrslt }}} en problemas de etiquetado de secuencias. \par
+\pard\qj\sl240\slmult1 \fi300 Por defecto, la herramienta SVMTool utiliza para la clasificaci\u243?n las caracter\u237?sticas definidas y optimizadas por Gim\u233?nez et al. En este trabajo se toman como base las caracter\'edsticas defecto, calibradas para mejorar su desempe\u241?o en el problema de restauraci\u243?n de acentos ortogr\u225?ficos. En el cuadro {\field{\*\fldinst{\lang1024 REF BMtable_featuresSVM \\* MERGEFORMAT }}{\fldrslt{3}}} se presentan las caracter\u237?sticas de SVMTool utilizadas para la clasificaci\u243?n.\par
+{\pard\qj\sl240\slmult1 \sb240 \fi0 \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_featuresSVM}3{\*\bkmkend BMtable_featuresSVM}: Caracter\u237?sticas utilizadas en el clasificador SVM.}{\field{\*\fldinst TC "3 Caracter\u237?sticas utilizadas en el clasificador SVM." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrt\brdrdb\clbrdrb\brdrs\cellx3450\clbrdrt\brdrdb\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {{\b Caracter\u237?stica}}\cell
+\pard\intbl\qc {{\b Descripci\u243?n}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Tokens}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 0})}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 +1})}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 +2})}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Etiquetas}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {{\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {{\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Bigramas{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 {\i t}})}}}{\fldrslt }}}}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})\\,{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 0}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}},}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 0})\\,{\i t}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 +1})\\,{\i t}\\s\\do5({\fs16 +2}))}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Bigramas{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 {\i e}})}}}{\fldrslt }}}}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})\\,{\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i a}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i a}\\s\\do5({\fs16 +1})\\,{\i a}\\s\\do5({\fs16 +2}))}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Trigramas{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 {\i t}})}}}{\fldrslt }}}}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})\\,{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 0}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})\\,{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}},}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 0})\\,{\i t}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i t}\\s\\do5({\fs16 +1})\\,{\i t}\\s\\do5({\fs16 +2}))}}}{\fldrslt }}},}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i t}\\s\\do5({\fs16 0})\\,{\i t}\\s\\do5({\fs16 +1})\\,{\i t}\\s\\do5({\fs16 +2}))}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 Trigramas{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 {\i e}})}}}{\fldrslt }}}}}\cell
+\pard\intbl\ql {{{\field{\*\fldinst{ EQ {({\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}2})\\,{\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i a}\\s\\do5({\fs16 +1}))}}}{\fldrslt }}}, {{\field{\*\fldinst{ EQ {({\i e}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})\\,{\i a}\\s\\do5({\fs16 +1})\\,{\i a}\\s\\do5({\fs16 +2}))}}}{\fldrslt }}}}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 SA}}\cell
+\pard\intbl\ql {Tokens cuya primera letra es may\u250?scula.}\cell
+\row
+\trowd\cellx3450\cellx6900
+\pard\intbl\qc {{\f16 aa}}\cell
+\pard\intbl\ql {Tokens en los que todas sus letras son min\u250?sculas.}\cell
+\row
+\trowd\clbrdrb\brdrs\cellx3450\clbrdrb\brdrs\cellx6900
+\pard\intbl\qc {{\f16 Oraci\'f3n}}\cell
+\pard\intbl\ql {Puntuaci\u243?n de la oraci\u243?n {{\field{\*\fldinst{ EQ {{\f6\u-3922\'AE}}}}{\fldrslt }}} {\i .} {\i ? } {\i ! }}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 Para la clasificaci\u243?n se utiliza una ventana de {{5}} tokens centrada en el token a etiquetar. As\u237? {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 0})}}}{\fldrslt }}} representa el token a ser etiquetado, {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 +1})}}}{\fldrslt }}} el token que sucede a {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 0})}}}{\fldrslt }}} en la oraci\u243?n, y {{\field{\*\fldinst{ EQ {{\i t}\\s\\do5({\fs16 {\f6\u-4051\'2D}1})}}}{\fldrslt }}} el token que lo precede. La caracter\u237?stica {\f16 \fs18 Tokens} representa los unigramas formados por los tokens de la oraci\u243?n. De forma similar la caracter\u237?stica {\f16 \fs18 Etiquetas} representa las etiquetas de los tokens en la oraci\u243?n; esta caracter\u237?stica toma en cuenta las etiquetas de los dos tokens inmediatamente anteriores al token actual.\par
+\pard\qj\sl240\slmult1 \fi300 Adem\'e1s de los unigramas, para la clasificaci\'f3n se toman en cuenta bigramas y trigramas tanto de tokens (i.e. {\f16 \fs18 Bigramas{{\field{\*\fldinst{ EQ {\\s\\do4({\fs15 {\i t}})}}}{\fldrslt }}}}, {\f16 \fs18 Trigramas{{\field{\*\fldinst{ EQ {\\s\\do4({\fs15 {\i t}})}}}{\fldrslt }}}}) como de etiquetas (i.e. {\f16 \fs18 Bigramas{{\field{\*\fldinst{ EQ {\\s\\do4({\fs15 {\i e}})}}}{\fldrslt }}}} y {\f16 \fs18 Trigramas{{\field{\*\fldinst{ EQ {\\s\\do4({\fs15 {\i e}})}}}{\fldrslt }}}}). Para el caso de los bigramas y trigramas de etiquetas ocurre una situaci\'f3n particular, para formar algunos ngramas se utilizan etiquetas de tokens que se encuentran a la derecha del token que est\u225? siendo etiquetado, es decir, etiquetas que a\u250?n no han sido asignadas. Existen diferentes formas de resolver este problema, Nakagawa et al.\~
+[{\field{\*\fldinst{\lang1024 REF BIB_NAKAGAWA01 \\* MERGEFORMAT }}{\fldrslt{15}}}
+] propone realizar un etiquetado en dos pasadas para conocer las etiquetas a izquierda y derecha de cada token. La herramienta SVMTool implementa la soluci\u243?n propuesta por {Daelemans} et al.\~
+[{\field{\*\fldinst{\lang1024 REF BIB_DAELEMANS96 \\* MERGEFORMAT }}{\fldrslt{5}}}
+] que consiste en utilizar etiquetas de ambig\'fcedad que representan las posibles etiquetas de los tokens no clasificados.\par
+\pard\qj\sl240\slmult1 \fi300 Las caracter\'edstica {\f16 \fs18 Oraci\'f3n} representa informaci\u243?n de puntuaci\u243?n de la oraci\u243?n, e.g. si la oraci\u243?n finaliza con el token {\i \rquote .\rquote }, o {\i \rquote ? \rquote }, o {\i \rquote ! \rquote }.\par
+\pard\qj\sl240\slmult1 \fi300 En SVMTool existen diferentes modelos para realizar el entrenamiento del clasificador. En este trabajo se utiliza el {\i Modelo 0} de SVMTool con dos pasadas combinadas ({\f16 \fs18 LRL}). Tal como lo mencionamos antes, en el {\i Modelo 0} se consideran clases de ambig\'fcedad para el contexto desconocido. En un entrenamiento de dos pasadas primero se realiza un entrenamiento de izquierda a derecha ({\f16 \fs18 LR}) y luego de derecha a izquierda ({\f16 \fs18 RL}). Al momento de la clasificaci\u243?n ambas direcciones son evaluadas y es elegida la etiqueta que presenta mayor confiabilidad.\par
+\pard\qj\sl240\slmult1 \fi300 Por \u250?ltimo, en SVMTool existen dos posibles esquemas de clasificaci\u243?n, el esquema {\i Goloso} y el esquema {\i Por oraci\u243?n}. En el esquema {\i Goloso} a cada token le es asignada la etiqueta que maximiza la funci\u243?n de puntuaci\u243?n del propio token. En el esquema {\i Por oraci\u243?n} a cada token le es asignada la etiqueta que maximiza la sumatoria de las funciones de puntuaci\u243?n de todos los tokens de la oraci\u243?n. Se realizaron experimentos con ambos esquemas de clasificaci\u243?n y el esquema {\i Por oraci\u243?n} arroj\u243? mejores resultados por lo que se decidi\u243? utilizar este esquema.\par
+\pard\qj\sl240\slmult1 \sb240 \fi0 {\s3\ql\sb240\sa60\keepn\f13\b\fs32 {\*\bkmkstart BMsec_Resultados}4{\*\bkmkend BMsec_Resultados}  Evaluaci\u243?n\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Los resultados de los clasificadores son evaluados utilizando las m\u233?tricas de {\i Precisi\u243?n}, {\i Recall} y {\i Medida-F}\~
+[{\field{\*\fldinst{\lang1024 REF BIB_BIRD09 \\* MERGEFORMAT }}{\fldrslt{1}}}
+]:\par
+{\par\par
+\pard\tqc\tx3450\tqr\tx6900\tab {\field{\*\fldinst{ EQ {{\i P}= \\F({\i P}{\i V},{\i P}{\i V}+{\i F}{\i P})}}}{\fldrslt }}\tab{\b0 ({\*\bkmkstart BMeq_precision}1{\*\bkmkend BMeq_precision})}\par
+}{\par\par
+\pard\tqc\tx3450\tqr\tx6900\tab {\field{\*\fldinst{ EQ {{\i R}= \\F({\i P}{\i V},{\i P}{\i V}+{\i F}{\i N})}}}{\fldrslt }}\tab{\b0 ({\*\bkmkstart BMeq_recall}2{\*\bkmkend BMeq_recall})}\par
+}{\par\par
+\pard\tqc\tx3450\tqr\tx6900\tab {\field{\*\fldinst{ EQ {{\i F}\\s\\do5({\fs16 {\f6\u-3999\'61}})= \\F({\i P}{\f6\u-3916\'B4}{\i R},(1{\f6\u-4051\'2D}{\f6\u-3999\'61}){\i P}+({\f6\u-3999\'61}){\i R})}}}{\fldrslt }}\tab{\b0 ({\*\bkmkstart BMeq_medida_f}3{\*\bkmkend BMeq_medida_f})}\par
+}\pard\qj\sl240\slmult1 \fi300 En donde: {\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Positivos Verdaderos} (PV) son elementos de la clase buscada que fueron correctamente identificados.} \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Negativos Verdaderos} (NV) son elementos que no pertenecen a la clase buscada que fueron correctamente ignorados y clasificados en una clase diferente.} \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Falsos Positivos} (FP), o errores de Tipo I, son elementos que pertenecen a otra clase y que fueron incorrectamente clasificados en la clase buscada.} \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Falsos Negativos} (FN), o errores de Tipo II, son elementos que pertenecen a clase buscada y que fueron incorrectamente clasificados en otra clase.} \par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 Para este trabajo se utiliza {{\field{\*\fldinst{ EQ {{\i F}\\s\\do5({\fs16 0.5})}}}{\fldrslt }}}\~
+[{\field{\*\fldinst{\lang1024 REF BIB_MAKHOUL99 \\* MERGEFORMAT }}{\fldrslt{12}}}
+], por lo que la ecuaci\u243?n\~{\field{\*\fldinst{\lang1024 REF BMeq_medida_f \\* MERGEFORMAT }}{\fldrslt{3}}} se reduce a la ecuaci\u243?n\~{\field{\*\fldinst{\lang1024 REF BMeq_medida_f_0_5 \\* MERGEFORMAT }}{\fldrslt{4}}}.\par
+{\par\par
+\pard\tqc\tx3450\tqr\tx6900\tab {\field{\*\fldinst{ EQ {{\i F}\\s\\do5({\fs16 0.5})= \\F(2{\f6\u-3916\'B4}{\i P}{\f6\u-3916\'B4}{\i R},{\i P}+{\i R})}}}{\fldrslt }}\tab{\b0 ({\*\bkmkstart BMeq_medida_f_0_5}4{\*\bkmkend BMeq_medida_f_0_5})}\par
+}\pard\qj\sl240\slmult1 \fi300 Para la evaluaci\u243?n de los clasificadores se dividi\u243? el corpus por oraciones en {{10}} partes de tama\u241?o similar; para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. \par
+\pard\qj\sl240\slmult1 \fi300 Las matrices de confusi\'f3n de los clasificadores muestran los tipos de errores cometidos. Los cuadros {\field{\*\fldinst{\lang1024 REF BMtable_confusion_svm \\* MERGEFORMAT }}{\fldrslt{4}}} y {\field{\*\fldinst{\lang1024 REF BMtable_confusion_crf \\* MERGEFORMAT }}{\fldrslt{5}}} muestran que para ambos clasificadores la gran mayor\'eda de errores son cometidos al clasificar adverbios interrogativos con etiquetas {\f16 \fs18 SIN_TILDE}. El {{98,98%}} de los errores del clasificador SVM y {{95,09%}} del clasificador CRF son debido a este tipo de confusi\'f3n. Adem\u225?s, los errores cometidos al clasificar adverbios no interrogativos se deben solamente a que son etiquetados como adverbios interrogativos. {\par
+\pard\qj\sl240\slmult1 \sb240 \fi0  \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_confusion_svm}4{\*\bkmkend BMtable_confusion_svm}: Matriz de confusi\u243?n del clasificador SVM.}{\field{\*\fldinst TC "4 Matriz de confusi\u243?n del clasificador SVM." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrl\brdrs\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrdb\cellx1725\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx3450\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx5175\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {}\cell
+\pard\intbl\qc {{\b {\f16 \~O\~}}}\cell
+\pard\intbl\qc {{\b {\f16 SIN_TILDE}}}\cell
+\pard\intbl\qc {{\b {\f16 CON_TILDE}}}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 O}}}\cell
+\pard\intbl\qr {486053}\cell
+\pard\intbl\qr {0}\cell
+\pard\intbl\qr {0}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 SIN_TILDE}}}\cell
+\pard\intbl\qr {0}\cell
+\pard\intbl\qr {16695}\cell
+\pard\intbl\qr {3}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 CON_TILDE}}}\cell
+\pard\intbl\qr {0}\cell
+\pard\intbl\qr {194}\cell
+\pard\intbl\qr {44}\cell
+\row
+} \par
+}{\pard\qj\sl240\slmult1 \sb480 \fi0   \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_confusion_crf}5{\*\bkmkend BMtable_confusion_crf}: Matriz de confusi\u243?n del clasificador CRF.}{\field{\*\fldinst TC "5 Matriz de confusi\u243?n del clasificador CRF." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrl\brdrs\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrdb\cellx1725\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx3450\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx5175\clbrdrt\brdrs\clbrdrb\brdrdb\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {}\cell
+\pard\intbl\qc {{\b {\f16 \~O\~}}}\cell
+\pard\intbl\qc {{\b {\f16 SIN_TILDE}}}\cell
+\pard\intbl\qc {{\b {\f16 CON_TILDE}}}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 O}}}\cell
+\pard\intbl\qr {486052}\cell
+\pard\intbl\qr {0}\cell
+\pard\intbl\qr {0}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 SIN_TILDE}}}\cell
+\pard\intbl\qr {0}\cell
+\pard\intbl\qr {16691}\cell
+\pard\intbl\qr {7}\cell
+\row
+\trowd\clbrdrl\brdrs\clbrdrb\brdrs\clbrdrr\brdrdb\cellx1725\clbrdrb\brdrs\clbrdrr\brdrs\cellx3450\clbrdrb\brdrs\clbrdrr\brdrs\cellx5175\clbrdrb\brdrs\clbrdrr\brdrs\cellx6900
+\pard\intbl\qr {{\b {\f16 CON_TILDE}}}\cell
+\pard\intbl\qr {1}\cell
+\pard\intbl\qr {155}\cell
+\pard\intbl\qr {82}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 A continuaci\u243?n se muestran algunos ejemplos de adverbios encontrados en el corpus junto con la etiqueta que el clasificador basado en CRF les asignada a cada uno de ellos. {\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Si de \u233?l careci\u233?ramos, \u191?para qu\'e9/{\f16 \fs18 SIN_TILDE} unas tareas que/{\f16 \fs18 SIN_TILDE} requieren esfuerzo, dedicaci\u243?n, capacidad y que/{\f16 \fs18 SIN_TILDE} -adem\u225?s- no mejoran ninguna econom\u237?a? }}\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i \u191?No se debate permanentemente \endash como/{\f16 \fs18 CON_TILDE} toda religi\u243?n y toda demen\-cia\endash  en el conflicto entre lo real y lo ficticio, lo percibido y lo proyectado, lo que/{\f16 \fs18 SIN_TILDE} constri\u241?e y lo que/{\f16 \fs18 SIN_TILDE} exalta, los milagros y las bromas pesadas? }}\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i -Que/{\f16 \fs18 CON_TILDE} c\u243?mo/{\f16 \fs18 SIN_TILDE} va a llamarse el chiquillo? }}\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i En esta l\u237?nea, Alberto Fern\u225?ndez se ha preguntado que/{\f16 \fs18 SIN_TILDE} \rdblquote si esto es lo que/{\f16 \fs18 SIN_TILDE} ocurri\u243? entonces cuando/{\f16 \fs18 SIN_TILDE} CiU era influyente en Madrid, \u191?qu\'e9/{\f16 \fs18 SIN_TILDE} tiene que/{\f16 \fs18 SIN_TILDE} pasar ahora con un escenario espa\u241?ol totalmente diferente? \rdblquote }}\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i El dirigente popular ha evitado, no obstante, plantear su oferta de di\u225?logo a CiU en el Parlament en forma de ultim\u225?tum y ha asegurado que/{\f16 \fs18 SIN_TILDE} el PP \rdblquote no se precipitar\u225?\rdblquote  y que/{\f16 \fs18 SIN_TILDE} espera a ver \rdblquote qu\u233?/{\f16 \fs18 SIN_TILDE} ficha mueve\rdblquote  la coalici\u243?n que/{\f16 \fs18 SIN_TILDE} lidera Jordi Pujol.}} \par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i Adem\u225?s, confirm\u243? que/{\f16 \fs18 SIN_TILDE} la marca de lujo Rolls Royce, adherida igualmente a BMW, permanecer\u225? en el Reino Unido, por su a\u241?eja tradici\u243?n brit\u225?nica y sus dimensiones, mucho menores que/{\f16 \fs18 SIN_TILDE} Rover, aunque no precis\u243? d\'f3nde/{\f16 \fs18 SIN_TILDE} se instalar\u225? la nueva planta que/{\f16 \fs18 SIN_TILDE} la fabricar\u225?.}}\par
+\pard\qj\sl240\slmult1 \sb50 \li600\fi-300 \bullet\tab {{\i \rdblquote Un experimento probar\u225? la preparaci\u243?n y las capacidades para el contexto militar del futuro, y sirve para que/{\f16 \fs18 SIN_TILDE} veamos c\'f3mo/{\f16 \fs18 SIN_TILDE} cada una de las fuerzas se desempe\u241?ar\u225? en una guerra\rdblquote . }}\par
+}\pard\qj\sl240\slmult1 \sb100 \fi0 Podemos notar que las dos grandes causas de error en la clasificaci\u243?n son: por un lado los adverbios interrogativos indirectos, y por otro lado los adverbios no interrogativos contenidos en frases interrogativas.\par
+\pard\qj\sl240\slmult1 \fi300 En los cuadros\~{\field{\*\fldinst{\lang1024 REF BMtable_metricas_generales \\* MERGEFORMAT }}{\fldrslt{6}}} y\~{\field{\*\fldinst{\lang1024 REF BMtable_metricas_adv \\* MERGEFORMAT }}{\fldrslt{7}}} se eval\u250?an los clasificadores utilizando las m\u233?tricas de desempe\u241?o previamente definidas. En el cuadro\~{\field{\*\fldinst{\lang1024 REF BMtable_metricas_generales \\* MERGEFORMAT }}{\fldrslt{6}}} se presenta el desempe\u241?o de los clasificadores por etiqueta, y en el cuadro\~{\field{\*\fldinst{\lang1024 REF BMtable_metricas_adv \\* MERGEFORMAT }}{\fldrslt{7}}} se presenta el desempe\u241?o de los clasificadores para cada uno de los adverbios.\par
+{\pard\qj\sl240\slmult1 \sb240 \fi0 \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_metricas_generales}6{\*\bkmkend BMtable_metricas_generales}: M\u233?tricas agrupadas por etiqueta.}{\field{\*\fldinst TC "6 M\u233?tricas agrupadas por etiqueta." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clbrdrt\brdrs\cellx985\clmgf\clbrdrt\brdrs\cellx1970\clmrg\clbrdrt\brdrs\cellx2955\clmgf\clbrdrt\brdrs\cellx3940\clmrg\clbrdrt\brdrs\cellx4925\clmgf\clbrdrt\brdrs\cellx5910\clmrg\clbrdrt\brdrs\cellx6895
+\pard\intbl\qc {}\cell
+\pard\intbl\qc {{\b Precisi\u243?n}}\cell
+\pard\intbl{}\cell
+\pard\intbl\qc {{\b Recall}}\cell
+\pard\intbl{}\cell
+\pard\intbl\qc {{\b F{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 0\\,5})}}}{\fldrslt }}}}}\cell
+\pard\intbl{}\cell
+\row
+\trowd\clbrdrb\brdrdb\cellx985\clbrdrb\brdrdb\cellx1970\clbrdrb\brdrdb\cellx2955\clbrdrb\brdrdb\cellx3940\clbrdrb\brdrdb\cellx4925\clbrdrb\brdrdb\cellx5910\clbrdrb\brdrdb\cellx6895
+\pard\intbl\qc {{\b Etiqueta}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\row
+\trowd\cellx985\cellx1970\cellx2955\cellx3940\cellx4925\cellx5910\cellx6895
+\pard\intbl\qc {{\f16 O}}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\row
+\trowd\cellx985\cellx1970\cellx2955\cellx3940\cellx4925\cellx5910\cellx6895
+\pard\intbl\qc {{\f16 SIN_TILDE}}\cell
+\pard\intbl\qr {0.99}\cell
+\pard\intbl\qr {0.99}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {0.99}\cell
+\pard\intbl\qr {{\b 1.00}}\cell
+\row
+\trowd\clbrdrb\brdrs\cellx985\clbrdrb\brdrs\cellx1970\clbrdrb\brdrs\cellx2955\clbrdrb\brdrs\cellx3940\clbrdrb\brdrs\cellx4925\clbrdrb\brdrs\cellx5910\clbrdrb\brdrs\cellx6895
+\pard\intbl\qc {{\f16 CON_TILDE}}\cell
+\pard\intbl\qr {{\b 0.95}}\cell
+\pard\intbl\qr {0.93}\cell
+\pard\intbl\qr {0.18}\cell
+\pard\intbl\qr {{\b 0.34}}\cell
+\pard\intbl\qr {0.31}\cell
+\pard\intbl\qr {{\b 0.50}}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 Ambos clasificadores presentan una alta tasa de {\i Precisi\u243?n}, lo que indica que ambos clasificadores cometen una cantidad muy peque\u241?a de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF tiene una tasa de {\i Recall} significativamente m\u225?s elevada que el clasificador basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto logra clasificar correctamente una mayor cantidad de casos. Esta diferencia en el desempe\u241?o de los clasificadores puede verse reflejada en la m\u233?trica de {\i Medida-F}: el clasificador CRF presenta un valor claramente superior al clasificador SVM.\par
+{\pard\qj\sl240\slmult1 \sb240 \fi0 \par
+\pard\qc\sl240\slmult1 \fi0 {Tabla {\*\bkmkstart BMtable_metricas_adv}7{\*\bkmkend BMtable_metricas_adv}: M\u233?tricas agrupadas por adverbio.}{\field{\*\fldinst TC "7 M\u233?tricas agrupadas por adverbio." \\f t}{\fldrslt }}\par
+{\pard\qc\sl240\slmult1 \fi0 \par
+\trowd\clmgf\clbrdrt\brdrs\cellx862\clmrg\clbrdrt\brdrs\cellx1724\clmgf\clbrdrt\brdrs\cellx2586\clmrg\clbrdrt\brdrs\cellx3448\clmgf\clbrdrt\brdrs\cellx4310\clmrg\clbrdrt\brdrs\cellx5172\clmgf\clbrdrt\brdrs\cellx6034\clmrg\clbrdrt\brdrs\cellx6896
+\pard\intbl\qc {}\cell
+\pard\intbl{}\cell
+\pard\intbl\qc {{\b Precisi\u243?n}}\cell
+\pard\intbl{}\cell
+\pard\intbl\qc {{\b Recall}}\cell
+\pard\intbl{}\cell
+\pard\intbl\qc {{\b F{{\field{\*\fldinst{ EQ {\\s\\do5({\fs16 0\\,5})}}}{\fldrslt }}}}}\cell
+\pard\intbl{}\cell
+\row
+\trowd\clbrdrb\brdrdb\cellx862\clbrdrb\brdrdb\cellx1724\clbrdrb\brdrdb\cellx2586\clbrdrb\brdrdb\cellx3448\clbrdrb\brdrdb\cellx4310\clbrdrb\brdrdb\cellx5172\clbrdrb\brdrdb\cellx6034\clbrdrb\brdrdb\cellx6896
+\pard\intbl\qc {{\b Adverbio}}\cell
+\pard\intbl\qc {{\b Cantidad}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\pard\intbl\qr {{\b SVM}}\cell
+\pard\intbl\qr {{\b CRF}}\cell
+\row
+\trowd\cellx862\cellx1724\cellx2586\cellx3448\cellx4310\cellx5172\cellx6034\cellx6896
+\pard\intbl\qc {qu\u233?}\cell
+\pard\intbl\qr {132}\cell
+\pard\intbl\qr {0.94}\cell
+\pard\intbl\qr {0.94}\cell
+\pard\intbl\qr {0.23}\cell
+\pard\intbl\qr {{\b 0.45}}\cell
+\pard\intbl\qr {0.37}\cell
+\pard\intbl\qr {{\b 0.61}}\cell
+\row
+\trowd\cellx862\cellx1724\cellx2586\cellx3448\cellx4310\cellx5172\cellx6034\cellx6896
+\pard\intbl\qc {c\u243?mo}\cell
+\pard\intbl\qr {69}\cell
+\pard\intbl\qr {{\b 1.00}}\cell
+\pard\intbl\qr {0.89}\cell
+\pard\intbl\qr {0.13}\cell
+\pard\intbl\qr {{\b 0.24}}\cell
+\pard\intbl\qr {0.23}\cell
+\pard\intbl\qr {{\b 0.37}}\cell
+\row
+\trowd\cellx862\cellx1724\cellx2586\cellx3448\cellx4310\cellx5172\cellx6034\cellx6896
+\pard\intbl\qc {d\u243?nde}\cell
+\pard\intbl\qr {17}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {1.00}\cell
+\pard\intbl\qr {0.12}\cell
+\pard\intbl\qr {0.12}\cell
+\pard\intbl\qr {0.21}\cell
+\pard\intbl\qr {{\b 0.21}}\cell
+\row
+\trowd\cellx862\cellx1724\cellx2586\cellx3448\cellx4310\cellx5172\cellx6034\cellx6896
+\pard\intbl\qc {cu\u225?ndo}\cell
+\pard\intbl\qr {4}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\row
+\trowd\clbrdrb\brdrs\cellx862\clbrdrb\brdrs\cellx1724\clbrdrb\brdrs\cellx2586\clbrdrb\brdrs\cellx3448\clbrdrb\brdrs\cellx4310\clbrdrb\brdrs\cellx5172\clbrdrb\brdrs\cellx6034\clbrdrb\brdrs\cellx6896
+\pard\intbl\qc {cu\u225?nto}\cell
+\pard\intbl\qr {2}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\pard\intbl\qr {0.00}\cell
+\row
+} \par
+}\pard\qj\sl240\slmult1 \sb240 \fi0 En el cuadro\~{\field{\*\fldinst{\lang1024 REF BMtable_metricas_adv \\* MERGEFORMAT }}{\fldrslt{7}}} puede verse como los mejores resultados en la m\u233?trica {\i Recall} \endash y por ende tambi\u233?n la m\u233?trica {\i Medida-F}\endash  son obtenidos en la clasificaci\u243?n de los adverbios que cuentan con una mayor cantidad de ejemplos en el corpus. El adverbio {\i qu\u233?} siendo el adverbio con mayor ocurrencias en el corpus es a su vez es el adverbio para el que se obtienen los mejores resultados. \par
+\pard\qj\sl240\slmult1 \sb240 \fi0 {\s3\ql\sb240\sa60\keepn\f13\b\fs32 {\*\bkmkstart BMsec_Conclusiones}5{\*\bkmkend BMsec_Conclusiones}  Conclusiones y trabajo futuro\par
+}\pard\qj\sl240\slmult1 \sb60 \fi0 En este trabajo se plantea el problema de la restauraci\u243?n autom\u225?tica de acentos ortogr\u225?ficos en adverbios interrogativos para el idioma espa\u241?ol; se construye un corpus de aproximadamente 500k palabras uniendo los corpus CESS Treebanks y CoNLL 2002; y se proponen dos clasificadores para resolver dicho problema: un clasificador basado en Support vector machines y otro basado en Conditional random fields. Los resultados obtenidos durante la evaluaci\'f3n muestran que el clasificador CRF se comporta consistentemente mejor que el clasificador SVM. \par
+\pard\qj\sl240\slmult1 \fi300 En la clasificaci\'f3n de adverbios no interrogativos el clasificador CRF mantiene al m\'ednimo el error de clasificaci\'f3n; minimizando la generaci\'f3n de falsos negativos, ofreciendo seguridad en la clasificaci\'f3n, y permitiendo la combinaci\'f3n de este m\u233?todo con otras t\'e9cnicas mediante sucesivas iteraciones. \par
+\pard\qj\sl240\slmult1 \fi300 En la clasificaci\u243?n de adverbios interrogativos el clasificador CRF mejora sensiblemente los resultados obtenidos al aumentar la cantidad de ejemplos en el corpus de entrenamiento. Esto nos indica que para mejorar los resultados experimentales es necesario aumentar el tama\u241?o del corpus considerado. Las principales l\u237?neas de trabajo a futuro incluyen la construcci\u243?n de un corpus de mayor porte, y la utilizaci\u243?n de otr\u225?s t\u233?cnicas \endash como el etiquetado gramatical, el an\u225?lisis morfosint\u225?ctico, etc.\endash  para aumentar la informaci\u243?n de contexto al momento de la clasificaci\u243?n.\par
+{\pard\qj\sl240\slmult1 \sb120 \fi0 {\plain\b\fs32 Referencias}\par
+\pard\qj\sl240\slmult1 \sb60 \li450\fi-450 [{\v\*\bkmkstart BIB_BIRD09}1{\*\bkmkend BIB_BIRD09}]\tab Bird, S., Klein, E., Loper, E.: Natural Language Processing with Python: Analyzing Text with the Natural Language Toolkit. O\rquote Reilly, Beijing (2009)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_BYUN02}2{\*\bkmkend BIB_BYUN02}]\tab Byun, H., Lee, S.W.: Applications of support vector machines for pattern recognition: A survey. En: Lee, S.W., Verri, A. (eds.) Pattern Recognition with Support Vector Machines, Lecture Notes in Computer Science, vol. 2388, pp. 571\endash 591. Springer Berlin / Heidelberg (2002)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_CORTES95}3{\*\bkmkend BIB_CORTES95}]\tab Cortes, C., Vapnik, V.: Support-vector networks. Machine Learning 20, 273\endash 297 (1995)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_CRANDALL95}4{\*\bkmkend BIB_CRANDALL95}]\tab Crandall, D.: Automatic accent restoration in spanish text (1995)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_DAELEMANS96}5{\*\bkmkend BIB_DAELEMANS96}]\tab Daelemans, W., Zavrel, J., Berck, P., Gillis, S.: {MBT}: A memory-based part of speech tagger-generator. En: Ejerhed, E., Dagan, I. (eds.) Proceedings of the Fourth Workshop on Very Large Corpora. pp. 14\endash 27 (1996)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_RAE}6{\*\bkmkend BIB_RAE}]\tab Espa{\'f1}ola, R.A.: Diccionario de la lengua espa{\'f1}ola, vig{\'e9}sima segunda edici{\'f3}n\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_GIMENEZ04}7{\*\bkmkend BIB_GIMENEZ04}]\tab Gim{\'e9}nez, J., M{\'e0}rquez, L.: {SVMTool}: A general pos tagger generator based on support vector machines. En: In Proceedings of the 4th International Conference on Language Resources and Evaluation. pp. 43\endash 46 (2004)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_GIMENEZ06}8{\*\bkmkend BIB_GIMENEZ06}]\tab Gim{\'e9}nez, J., M{\'e0}rquez, L.: SVMTool: Technical manual v1.3 (2006)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_JOACHIMS99}9{\*\bkmkend BIB_JOACHIMS99}]\tab Joachims, T.: Making large-scale {SVM} learning practical. En: Sch{\'f6}lkopf, B., Burges, C., Smola, A. (eds.) Advances in Kernel Methods - Support Vector Learning. MIT Press, Cambridge, MA, USA (1999)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_JOACHIMS08}10{\*\bkmkend BIB_JOACHIMS08}]\tab Joachims, T.: SVMlight: Support Vector Machine (2008), {University of Dortmund}\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_LAFFERTY01}11{\*\bkmkend BIB_LAFFERTY01}]\tab Lafferty, J.D., McCallum, A., Pereira, F.C.N.: Conditional random fields: Probabilistic models for segmenting and labeling sequence data. En: Proceedings of the Eighteenth International Conference on Machine Learning. pp. 282\endash 289. ICML \rquote 01, Morgan Kaufmann Publishers Inc., San Francisco, CA, USA (2001)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_MAKHOUL99}12{\*\bkmkend BIB_MAKHOUL99}]\tab Makhoul, J., Kubala, F., Schwartz, R., Weischedel, R.: Performance measures for information extraction. En: Proceedings,DARPA broadcast news workshop (1999)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_MCCALLUM02}13{\*\bkmkend BIB_MCCALLUM02}]\tab McCallum, A.: {MALLET}: A machine learning for language toolkit (2002), {\f16 http://mallet.cs.umass.edu}\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_MIHALCEA02}14{\*\bkmkend BIB_MIHALCEA02}]\tab Mihalcea, R.: Diacritics restoration: Learning from letters versus learning from words. En: Gelbukh, A.F. (ed.) CICLing. Lecture Notes in Computer Science, vol. 2276, pp. 339\endash 348. Springer (2002)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_NAKAGAWA01}15{\*\bkmkend BIB_NAKAGAWA01}]\tab Nakagawa, T., Kudo, T., Matsumoto, Y.: {Unknown Word Guessing and Part-of-Speech Tagging Using Support Vector Machines}. En: {Proceedings of the Sixth Natural Language Processing Pacific Rim Symposium} (2001)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_SIMARD98}16{\*\bkmkend BIB_SIMARD98}]\tab Simard, M.: {Automatic Insertion of Accents in French Text}. En: {Proceedings of the Conference on Empirical Methods in Natural Language Processing} (1998), {EMNLP}-3\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_VECIANA04}17{\*\bkmkend BIB_VECIANA04}]\tab Veciana, R.: La acentuaci{\'f3}n espa{\'f1}ola: Nuevo manual de las normas acentuales. Universidad de Cantabria (2004)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_WALLACH04}18{\*\bkmkend BIB_WALLACH04}]\tab Wallach, H.M.: Conditional random fields: An introduction. Reporte T\u233?cnico MS-CIS-04-21, University of Pennsylvania, Philadelphia (2004)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_YAROWSKY94_2}19{\*\bkmkend BIB_YAROWSKY94_2}]\tab Yarowsky, D.: A comparison of corpus-based techniques for restoring accents in spanish and french text. En: Proceedings, 2nd Annual Workshop on Very Large Corpora. pp. 19\endash 32 (1994)\par
+\pard\qj\sl240\slmult1 \li450\fi-450 [{\v\*\bkmkstart BIB_YAROWSKY94}20{\*\bkmkend BIB_YAROWSKY94}]\tab Yarowsky, D.: Decision lists for lexical ambiguity resolution: application to accent restoration in spanish and french. En: Proceedings of the 32nd annual meeting on Association for Computational Linguistics. pp. 88\endash 95. ACL \rquote 94, Association for Computational Linguistics, Stroudsburg, PA, USA (1994)\par
+}}}
