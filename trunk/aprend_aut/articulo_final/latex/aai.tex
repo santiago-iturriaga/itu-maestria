@@ -173,7 +173,7 @@ Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, 
 \subsection{Clasificación Utilizando SVM}
 \label{sec:SVM}
 
-Support vector machines es un método de aprendizaje estadístico propuesto por Vapnik et al.~\cite{CORTES95}. Es sabido que SVM obtiene mejores resultados que métodos tradicionales -como redes neuronales- aún en grandes espacios dimensionales con pequeños conjuntos de entrenamiento; por esta razón ha sido aplicado con éxito a problemas de detección facial, detección y reconocimiento de objetos, reconocimiento de textos manuscritos, categorización, predicción, entre otros~\cite{BYUN02}. 
+Support vector machines es un método de aprendizaje estadístico propuesto por Vapnik et al.~\cite{CORTES95}. Es sabido que SVM obtiene mejores resultados que métodos tradicionales ---como redes neuronales--- aún en grandes espacios dimensionales con pequeños conjuntos de entrenamiento; por esta razón ha sido aplicado con éxito a problemas de detección facial, detección y reconocimiento de objetos, reconocimiento de textos manuscritos, categorización, predicción, entre otros~\cite{BYUN02}. 
 
 Support vector machines es un clasificador lineal: dada una serie de vectores de entrada, el m\'etodo intenta dividir linealmente el espacio vectorial creando una serie de regiones, a cada una de las cuales se le asocia una clase de salida. En el caso más simple de dos dimensiones tendremos un conjunto de instancias de entrenamiento ${(x_1, y_1),...,(x_N,y_N)}$, siendo cada instancia $x_i$ un vector en $\Re^N$ y siendo $y_i \in \lbrace-1,+1\rbrace$ la etiqueta de clase correspondiente. 
 
@@ -301,9 +301,9 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 
 A continuación se muestran algunos ejemplos de adverbios encontrados en el corpus junto con la etiqueta que el clasificador basado en CRF les asignada a cada uno de ellos.
 \begin{itemize}
-\item{\emph{Si de él careciéramos, ¿para qu\'e/\texttt{\small SIN\_TILDE} unas tareas que/\texttt{\small SIN\_TILDE} requieren esfuerzo, dedicación, capacidad y que/\texttt{\small SIN\_TILDE} -además- no mejoran ninguna economía?}}
+\item{\emph{Si de él careciéramos, ¿para qu\'e/\texttt{\small SIN\_TILDE} unas tareas que/\texttt{\small SIN\_TILDE} requieren esfuerzo, dedicación, capacidad y que/\texttt{\small SIN\_TILDE} ---además--- no mejoran ninguna economía?}}
 
-\item{\emph{¿No se debate permanentemente --como/\texttt{\small CON\_TILDE} toda religión y toda demen\-cia-- en el conflicto entre lo real y lo ficticio, lo percibido y lo proyectado, lo que/\texttt{\small SIN\_TILDE} constriñe y lo que/\texttt{\small SIN\_TILDE} exalta, los milagros y las bromas pesadas?}}
+\item{\emph{¿No se debate permanentemente ---como/\texttt{\small CON\_TILDE} toda religión y toda de\-men\-cia--- en el conflicto entre lo real y lo ficticio, lo percibido y lo proyectado, lo que/\texttt{\small SIN\_TILDE} constriñe y lo que/\texttt{\small SIN\_TILDE} exalta, los milagros y las bromas pesadas?}}
 
 \item{\emph{-Que/\texttt{\small CON\_TILDE} cómo/\texttt{\small SIN\_TILDE} va a llamarse el chiquillo?}}
 
@@ -376,7 +376,7 @@ Esta diferencia en el desempeño de los clasificadores puede verse reflejada en 
 
 %Sobre esto, habría que comentar sobre el (recall) 0.61 que obtiene CRF en el caso del qué, que justamente es aquel donde hay más ejemplos en el corpus. Esto permite dos conclusiones inciiales: el clasificador  CRF se comporta consistentemente mejor, y si hiciéramos crecer el corpus, seguramente podríamos mejorar los resultados.
 %La otra gran conclusión es que el problema es sin duda el de  los adverbios sin tilde dentro de signos de interrogación, y sugerir alguna idea de trabajo futuro.
-En el cuadro~\ref{table:metricas-adv} puede verse como los mejores resultados en la métrica \emph{Recall} --y por ende también la métrica \emph{Medida-F}-- son obtenidos en la clasificación de los adverbios que cuentan con una mayor cantidad de ejemplos en el corpus. El adverbio \emph{qué} siendo el adverbio con mayor ocurrencias en el corpus es a su vez es el adverbio para el que se obtienen los mejores resultados. 
+En el cuadro~\ref{table:metricas-adv} puede verse como los mejores resultados en la métrica \emph{Recall} ---y por ende también la métrica \emph{Medida-F}--- son obtenidos en la clasificación de los adverbios que cuentan con una mayor cantidad de ejemplos en el corpus. El adverbio \emph{qué} siendo el adverbio con mayor ocurrencias en el corpus es a su vez es el adverbio para el que se obtienen los mejores resultados. 
 
 \section{Conclusiones y trabajo futuro}
 \label{sec:Conclusiones}
@@ -387,7 +387,7 @@ En la clasificaci\'on de adverbios no interrogativos el clasificador CRF mantien
 
 En la clasificación de adverbios interrogativos el clasificador CRF mejora sensiblemente los resultados obtenidos al aumentar la cantidad de ejemplos en el corpus de entrenamiento. Esto nos indica que para mejorar los resultados experimentales es necesario aumentar el tamaño del corpus considerado.% e incluir una mayor cantidad de ejemplos de adverbios interrogativos para el entrenamiento.
 
-Las principales líneas de trabajo a futuro incluyen la construcción de un corpus de mayor porte, y la utilización de otras técnicas --como el etiquetado gramatical, el análisis morfosintáctico, etc.-- para aumentar la información de contexto al momento de la clasificación.
+Las principales líneas de trabajo a futuro incluyen la construcción de un corpus de mayor porte, y la utilización de otras técnicas ---como el etiquetado gramatical, el análisis morfosintáctico, etc.--- para aumentar la información de contexto al momento de la clasificación.
 
 \bibliographystyle{splncs03}
 \bibliography{aai}
