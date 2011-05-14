@@ -2,15 +2,20 @@
 // Parameters : <instance_ETC_file> <num_tasks> <num_machines>
 //	
 
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
+#include <math.h>
+#include <vector>
 
 #define NO_ASIG -1
 #define ASIG 0
 #define SIZE_NOM_ARCH 180
 #define DEBUG 0
+
+using namespace std;
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -175,17 +180,38 @@ int main(int argc, char *argv[]) {
 	// WRR final de la solución.
 	float total_wrr = 0.0;
 
-	int cant_tasks;
+	vector<int> sortedAssignMatrix;
+	sortedAssignMatrix.reserve(NT);
+
 	for (int maquinaId = 0; maquinaId < NM; maquinaId++) {
 		float flowtime = 0.0;
+		sortedAssignMatrix.clear();
 
 		for (int i = 0; i < lastAsig[maquinaId]; i++) {
 			int tareaId;
 			tareaId = asignMatrix[maquinaId][i];
 
+			bool no_asignado = true;
+
+			for (vector<int>::iterator j = sortedAssignMatrix.begin(); no_asignado && (j < sortedAssignMatrix.end()); j++) {
+				if (ETC[*j][maquinaId] > ETC[tareaId][maquinaId]) {
+					sortedAssignMatrix.insert(j, tareaId);
+					no_asignado = false;
+				}
+			}
+
+			if (no_asignado) {
+				sortedAssignMatrix.push_back(tareaId);
+			}
+		}
+
+		for (vector<int>::iterator i = sortedAssignMatrix.begin(); i < sortedAssignMatrix.end(); i++) {
+			int tareaId;
+			tareaId = *i;
+
 			if (ETC[tareaId][maquinaId] > 0.0) {
-				total_wrr += Priority[tareaId] * (flowtime / ETC[tareaId][maquinaId]);
 				flowtime += ETC[tareaId][maquinaId];
+				total_wrr += Priority[tareaId] * (flowtime / ETC[tareaId][maquinaId]);
 			}
 		}
 	}
