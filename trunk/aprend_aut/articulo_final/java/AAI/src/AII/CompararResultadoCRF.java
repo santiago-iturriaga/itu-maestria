@@ -91,6 +91,10 @@ public class CompararResultadoCRF {
 							}
 							tokenConfusion.put(currentToken,
 									tokenConfusion.get(currentToken) + 1);
+							
+							if (!salidaToken.equals("O")) {
+								oracionActual.set(oracionActual.size()-1, oracionActual.get(oracionActual.size()-1) + "/" + salidaToken);
+							}
 						} else {
 							// ERROR!!!
 							tokensErrors.put(currentToken,
@@ -106,6 +110,10 @@ public class CompararResultadoCRF {
 							System.out.println(">>> " + line.split(" ")[0] + ": " + currentToken + " | " + salidaToken);
 							
 							errores = true;
+							
+							if (!salidaToken.equals("O")) {
+								oracionActual.set(oracionActual.size()-1, oracionActual.get(oracionActual.size()-1) + "/!" + salidaToken);
+							}
 						}
 
 						salidaTokenIndex++;
