@@ -47,13 +47,13 @@ public class CompararResultado {
 			
 			while (corpusScanner.hasNext()) {
 				corpusToken = corpusScanner.next();
-				salidaToken = salidaScanner.next();
 				
 				if (corpusTokenIndex % 2 != 0) {
-					//System.out.println("[corpus] " + corpusToken);
+//					System.out.println("[corpus] " + corpusToken);
 					
-//					if (salidaScanner.hasNext()) {
-						//System.out.println("[salida] " + salidaToken);
+					if (salidaScanner.hasNext()) {
+						salidaToken = salidaScanner.next();
+//						System.out.println("[salida] " + salidaToken);
 
 						String currentToken;
 						currentToken = corpusToken.trim().toUpperCase();
@@ -83,10 +83,10 @@ public class CompararResultado {
 						}
 						
 						salidaTokenIndex++;
-//					} else {
-//						System.out.println("Error!!! faltan lineas en " + salida + " ¿?");
-//						System.exit(-1);
-//					}
+					} else {
+						System.out.println("Error!!! faltan lineas en " + salida + " ¿?");
+						System.exit(-1);
+					}
 				}
 				
 				corpusTokenIndex++;

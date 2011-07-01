@@ -52,9 +52,9 @@ public class CompararResultadoCRF {
 				if (line.trim().equals("")) {
 					if (errores) {
 						for (int i = 0; i < oracionActual.size(); i++) {
-							System.out.print(oracionActual.get(i) + " ");
+//							System.out.print(oracionActual.get(i) + " ");
 						}
-						System.out.print("\n");
+//						System.out.print("\n");
 					}
 
 					oracionActual.clear();
@@ -107,7 +107,7 @@ public class CompararResultadoCRF {
 							tokenConfusion.put(salidaToken,
 									tokenConfusion.get(salidaToken) + 1);
 
-							System.out.println(">>> " + line.split(" ")[0] + ": " + currentToken + " | " + salidaToken);
+//							System.out.println(">>> " + line.split(" ")[0] + ": " + currentToken + " | " + salidaToken);
 							
 							errores = true;
 							
