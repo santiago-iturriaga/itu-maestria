@@ -89,7 +89,7 @@ def obtenerMetricasCRF():
     
     metricas_por_adv = {}
 
-    for i in range(9):
+    for i in range(10):
         reference_uri = "/home/santiago/eclipse/java-workspace/AAI/corpus/test_full_" + str(i) + ".txt"
         test_uri = "/home/santiago/eclipse/java-workspace/AAI/model_crf/f_" + str(i) + "_result.txt"
         
@@ -268,7 +268,7 @@ def obtenerMetricasSVM():
     
     metricas_por_adv = {}
 
-    for i in range(9):
+    for i in range(10):
         reference_uri = "/home/santiago/eclipse/java-workspace/AAI/corpus/test_full_" + str(i) + ".txt"
         test_uri = "/home/santiago/eclipse/java-workspace/AAI/model_svm/f" + str(i) + "_result.txt"
         
