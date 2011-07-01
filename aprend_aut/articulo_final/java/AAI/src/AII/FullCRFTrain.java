@@ -90,7 +90,7 @@ public class FullCRFTrain {
 		}
 	}
 
-	public static CRF TrainCRF(String trainingFilename) throws IOException {
+	public static CRF TrainCRF(int i, String trainingFilename) throws IOException {
 		ArrayList<Pipe> pipes = new ArrayList<Pipe>();
 
 		pipes.add(new SimpleTaggerSentence2TokenSequence());
@@ -106,17 +106,136 @@ public class FullCRFTrain {
 		// pipes.add(new RegexMatches("SUFFIX1", Pattern
 		// .compile(".*(r)$")));
 
-		pipes.add(new RegexMatches("PREV-SINT", Pattern
-				.compile("^(,|lo|la|el|los|\")$")));
+		if (i == 0) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(,|en|el|la|\"|lo|y|de|los|para)$")));
 
-		pipes.add(new RegexMatches("PREV-CINT", Pattern
-				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
 
-		pipes.add(new RegexMatches("NEXT-SINT", Pattern
-				.compile("^(el|la|los|en|las|ha|\")$")));
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|en|sobre|¿|y|por|de|sé|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|era|,|\\?|está|se|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 1) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(,|en|el|la|\"|lo|y|de|los|para)$")));
 
-		pipes.add(new RegexMatches("NEXT-CINT", Pattern
-				.compile("^(es|le|significa)$")));
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|en|,|sobre|¿|y|a|por|de|saber)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(\\?|están|está|se|y|es|clase|no|ser)$")));
+			// ====================================================================
+		} else if (i == 2) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|está|se|y|no|significa)$")));
+			// ====================================================================
+		} else if (i == 3) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 4) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|en|sobre|¿|y|por|de|sé|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 5) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(,|en|el|la|\"|lo|y|de|los|para)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 6) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 7) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 8) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+			// ====================================================================
+		} else if (i == 9) {
+			pipes.add(new RegexMatches("PREV-SINT", Pattern
+					.compile("^(dijo|,|en|el|la|\"|lo|y|de|los)$")));
+
+			pipes.add(new RegexMatches("NEXT-SINT", Pattern
+					.compile("^(,|en|el|la|\"|se|las|los|no)$")));
+
+			pipes.add(new RegexMatches("PREV-CINT", Pattern
+					.compile("^(-|,|sobre|¿|y|por|de|sé|saber|para)$")));
+			
+			pipes.add(new RegexMatches("NEXT-CINT", Pattern
+					.compile("^(le|,|\\?|están|se|y|es|no|significa)$")));
+		}
 
 		// pipes.add(new RegexMatches("SIGN-PUNCT",
 		// Pattern.compile("(,|-|:|;|\\.|\\*0\\*)")));
@@ -210,13 +329,15 @@ public class FullCRFTrain {
 	}
 
 	public static void main(String[] args) throws Exception {
-		for (int i = 0; i < 10; i++) {
+		int i = Integer.parseInt(args[0]);
+		
+//		for (int i = 9; i < 10; i++) {
 			String train = "corpus/train_" + i + ".txt";
 			String model = "model_crf/f_" + i + ".model";
 
 			if (!new java.io.File(model).exists()) {
 				CRF modelObj = null;
-				modelObj = TrainCRF(train);
+				modelObj = TrainCRF(i,train);
 
 				ObjectOutputStream s = new ObjectOutputStream(
 						new FileOutputStream(model));
@@ -224,7 +345,7 @@ public class FullCRFTrain {
 				s.close();
 				s = null;
 			}
-		}
+//		}
 	}
 
 }

@@ -123,17 +123,17 @@ public class CRFTrainFinal {
 //		pipes.add(new RegexMatches("SUFFIX1", Pattern
 //				.compile(".*(r)$")));
 		
-		pipes.add(new RegexMatches("PREV-SINT", Pattern
-				.compile("^(,|lo|la|el|los|\")$")));
-
-		pipes.add(new RegexMatches("PREV-CINT", Pattern
-				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
-
-		pipes.add(new RegexMatches("NEXT-SINT", Pattern
-				.compile("^(el|la|los|en|las|ha|\")$")));
-
-		pipes.add(new RegexMatches("NEXT-CINT", Pattern
-				.compile("^(es|le|significa)$")));
+//		pipes.add(new RegexMatches("PREV-SINT", Pattern
+//				.compile("^(,|lo|la|el|los|\")$")));
+//
+//		pipes.add(new RegexMatches("PREV-CINT", Pattern
+//				.compile("^(por|-|sobre|ver|a|saber|sé)$")));
+//
+//		pipes.add(new RegexMatches("NEXT-SINT", Pattern
+//				.compile("^(el|la|los|en|las|ha|\")$")));
+//
+//		pipes.add(new RegexMatches("NEXT-CINT", Pattern
+//				.compile("^(es|le|significa)$")));
 
 //		 pipes.add(new RegexMatches("SIGN-PUNCT",
 //		 Pattern.compile("(,|-|:|;|\\.|\\*0\\*)")));
@@ -168,17 +168,17 @@ public class CRFTrainFinal {
 		pipes.add(new OffsetFeatureConjunction("ADVERBIO-QE", new String[] {
 				"ADVERBIO", "SIGN-QE" }, new int[] { 0, 1 }));
 
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
-				"PREV-SINT", "ADVERBIO" }, new int[] { -1, 0 }));
-
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
-				"PREV-CONT", "ADVERBIO" }, new int[] { -1, 0 }));
-
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
-				"ADVERBIO", "NEXT-SINT" }, new int[] { 0, 1 }));
-
-		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
-				"ADVERBIO", "NEXT-CONT" }, new int[] { 0, 1 }));
+//		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
+//				"PREV-SINT", "ADVERBIO" }, new int[] { -1, 0 }));
+//
+//		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
+//				"PREV-CONT", "ADVERBIO" }, new int[] { -1, 0 }));
+//
+//		pipes.add(new OffsetFeatureConjunction("ADVERBIO-SINT", new String[] {
+//				"ADVERBIO", "NEXT-SINT" }, new int[] { 0, 1 }));
+//
+//		pipes.add(new OffsetFeatureConjunction("ADVERBIO-CONT", new String[] {
+//				"ADVERBIO", "NEXT-CONT" }, new int[] { 0, 1 }));
 
 //		pipes.add(new OffsetFeatureConjunction("ADV-SP-SUX", new String[] {
 //				"ADVERBIO", "SPECIAL-SUFFIX" }, new int[] { 0, 1 }));

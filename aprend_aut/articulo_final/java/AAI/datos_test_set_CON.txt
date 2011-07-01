@@ -1,0 +1,160 @@
+=================================================================================
+Test set: 0
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|en|sobre|¿|y|por|de|sé|para|
+[ NEXT +1 ] ====================================================
+le|era|,|?|está|se|*0*|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 1
+=================================================================================
+[ PREV -1 ] ====================================================
+-|en|,|sobre|¿|y|a|por|de|saber|
+[ NEXT +1 ] ====================================================
+?|están|está|se|*0*|y|es|clase|no|ser|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 2
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|está|se|*0*|y|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 3
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 4
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|en|sobre|¿|y|por|de|sé|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 5
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 6
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 7
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 8
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
+=================================================================================
+Test set: 9
+=================================================================================
+[ PREV -1 ] ====================================================
+-|,|sobre|¿|y|por|de|sé|saber|para|
+[ NEXT +1 ] ====================================================
+le|,|?|están|se|*0*|y|es|no|significa|
+================================================================
+cantidadConTilde: 0
+cantidadSinTilde: 0
+cantidadConTildeConQE: 0
+cantidadSinTildeConQE: 0
+cantidadConCon: 0
+cantidadConSin: 0
+cantidadSinCon: 0
+cantidadSinSin: 0
