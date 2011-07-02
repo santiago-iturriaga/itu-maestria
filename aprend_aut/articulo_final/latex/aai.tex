@@ -1,5 +1,4 @@
-
-%%%%%%%%%%%%%%%%%%%%%%% file typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
+%%% typeinst.tex %%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % This is the LaTeX source for the instructions to authors using
 % the LaTeX document class 'llncs.cls' for contributions to
@@ -31,7 +30,7 @@
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
 
-\hyphenation{es-tre-cha-men-te in-te-rro-ga-ti-vos in-te-rro-ga-ti-vo he-rra-mien-ta he-rra-mien-tas i-dio-ma a-ta-ca-da mo-de-lo de-men-cia}
+\hyphenation{es-tre-cha-men-te in-te-rro-ga-ti-vos in-te-rro-ga-ti-vo he-rra-mien-ta he-rra-mien-tas i-dio-ma a-ta-ca-da mo-de-lo de-men-cia ma-ne-ra}
 
 \begin{document}
 
@@ -61,14 +60,14 @@ Montevideo, Uruguay \\
 
 \begin{abstract}
 %The abstract goes here. DO NOT USE SPECIAL CHARACTERS, SYMBOLS, OR MATH IN YOUR TITLE OR ABSTRACT.
-La omisión de los acentos ortográficos es uno de los errores tipográficos más frecuentes en el idioma español; su restauración automática consiste en la inserción de acentos  omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines} (SVM), aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas t\'ecnicas, siendo sensiblemente superior el resultado obtenido utilizando el clasificador basado en CRF.
+La omisión de acentos ortográficos un error tipográfico muy frecuente en el idioma español; su restauración automática consiste en la inserción de acentos omitidos en los lugares que son necesarios. Los adverbios interrogativos son un caso especialmente dificultoso de este problema, ya que en muchas ocasiones no existen marcas claras que indiquen su presencia. Este trabajo presenta dos técnicas de aprendizaje automático, \emph{Conditional Random Fields} (CRF) y \emph{Support Vector Machines} (SVM), aplicadas a la resolución del problema de la restauración automática de acentos ortográficos para el caso específico de los adverbios interrogativos. Se obtuvieron buenos resultados con ambas técnicas, siendo sensiblemente superior el resultado obtenido utilizando un clasicador basado en CRF, y que utiliza como atributos los tokens que más comúnmente preceden y siguen a los adverbios interrogativos.
 \keywords{crf, svm, restauración automática de acentos ortográficos}
 \end{abstract}
 
 \section{Introducción}
 Dado un texto sin la presencia de acentos ortográficos, el problema de su  restauración automática consiste en insertar acentos ortográficos en los lugares del texto en el que son requeridos por las normas de acentuación. Los acentos ortográficos son muy importantes para determinar el significado de una oración; sin embargo, es muy común omitir este tipo de signo ortográfico en la escritura informal, por ejemplo, en letras mayúsculas.
 
-La acentuación ortográfica en algunas palabras del idioma español sirve solamente como ayuda a la pronunciación. Sin embargo, en otras palabras la acentuación ortográfica elimina la ambigüedad de una oración. Tomando esto en cuenta, podemos clasificar las palabras con acento ortográfico del idioma español de la siguiente manera~\cite{CRANDALL95}:
+La acentuación ortográfica en algunas palabras del idioma español sirve solamente como ayuda a la pronunciación. Sin embargo, en otras palabras la acentuación ortográfica elimina la ambigüedad de una oración. Podemos clasificar las palabras con acento ortográfico del idioma español de la siguiente manera~\cite{CRANDALL95}:
 \begin{enumerate}
 \item{Palabras sin ambigüedad}. Existe una única forma correcta de escribir estas palabras, e.g. \emph{acentuación} siempre debe ser escrita con tilde.
 \item{Palabras con ambigüedad}. Las palabras pertenecientes a esta clase pueden cambiar su significado dependiendo si son escritas con o sin acentuación ortográfica. Por ejemplo: diferentes conjugaciones del mismo verbo (\emph{canto/cantó, hable/hablé}), sustantivos (\emph{papa/papá, secretaria/secretaría}), etc.
@@ -123,9 +122,7 @@ En este trabajo se aborda el problema de la restauraci\'on de acentos ortogr\'af
 \subsection{Clasificación Utilizando CRF}
 \label{sec:CRF}
 
-Conditional random fields, propuesto por Lafferty et al.~\cite{LAFFERTY01}, es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. 
-
-El modelo CRF resulta superior a otros métodos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajación en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos~\cite{WALLACH04}.
+Conditional random fields, propuesto por Lafferty et al.~\cite{LAFFERTY01}, es un modelo estocástico para el etiquetado y la segmentación de datos secuenciales. Utiliza un modelo que define una probabilidad condicional $p(Y|x)$ sobre secuencias de etiquetas dada la observación de una secuencia particular, $x$. Para etiquetar una nueva secuencia observada $x_*$, el modelo condicional selecciona la etiqueta de la secuencia $y_*$ que maximiza la probabilidad condicional $p(y_*|x_*)$. Un modelo CRF puede representarse como un grafo no dirigido en el que cada vértice representa una variable aleatoria y cada arista indica una dependencia entre las variables de los vértices que conecta. De esta manera, sea $X$ la variable aleatoria que representa las secuencias de observaci\'on, definimos $G=(V,E)$ un grafo no dirigido en el que existe un nodo $v \in V$ por cada variable aleatoria representada por el elemento $Y_v$ de $Y$. El modelo CRF resulta superior a otros métodos utilizados para el etiquetado de datos secuenciales, como Hidden Markov Model (HMM) o Maximum Entropy Markov Model (MEMM), debido a la relajación en el supuesto de independencia y debido a que evita el problema de sesgo de etiquetado presentados por estos modelos~\cite{WALLACH04}.
 
 En este trabajo, para la implementación del clasificador basado en CRF se utiliza la herramienta MALLET 2.0.6, una herramienta desarrollada en Java por Andrew McCallum et al.~\cite{MCCALLUM02}. En el cuadro \ref{table:featuresCRF} se muestra un resumen de las características implementadas en MALLET y utilizadas para la clasificación mediante CRF.
 
@@ -150,22 +147,21 @@ En este trabajo, para la implementación del clasificador basado en CRF se utili
 		& de signos de interrogación o exclamación. \\
 		\texttt{ADVERBIO-QE} & Adverbios seguidos o precedidos por un signo \\
 		& interrogativo o exclamativo. \\
-		\texttt{PREV-SINT} & Los siguientes tokens $\rightarrow$ \emph{,} \emph{lo} \emph{la} \emph{el} \emph{los} \emph{"} \\
-		\texttt{NEXT-SINT} & Los siguientes tokens $\rightarrow$ \emph{el} \emph{la} \emph{los} \emph{en} \emph{las} \emph{ha} \emph{"} \\
+		\texttt{PREV-SINT} & Los siguientes tokens $\rightarrow$ e.g.: \emph{,} \emph{lo} \emph{la} \emph{el} \emph{los} \emph{"} \\
+		\texttt{NEXT-SINT} & Los siguientes tokens $\rightarrow$ e.g.: \emph{el} \emph{la} \emph{los} \emph{en} \emph{las} \emph{ha} \emph{"} \\
 		\texttt{ADVERBIO-SINT} & Adverbios precedidos por \texttt{PREV-SINT} o \\
 		& sucedidos por \texttt{NEXT-SINT}. \\
-		\texttt{PREV-CINT} & Los siguientes tokens $\rightarrow$ \emph{por} \emph{-} \emph{sobre} \emph{ver} \emph{a} \emph{saber} \emph{sé} \\
-		\texttt{NEXT-CINT} & Los siguientes tokens $\rightarrow$ \emph{es} \emph{le} \emph{significa} \\
+		\texttt{PREV-CINT} & Los siguientes tokens $\rightarrow$ e.g.: \emph{por} \emph{-} \emph{sobre} \emph{ver} \emph{a} \emph{saber} \emph{sé} \\
+		\texttt{NEXT-CINT} & Los siguientes tokens $\rightarrow$ e.g.: \emph{es} \emph{le} \emph{significa} \\
 		\texttt{ADVERBIO-CINT} & Adverbios precedidos por \texttt{PREV-CINT} o \\
 		& sucedidos por \texttt{NEXT-CINT}. \\
 		\emph{Conjunciones} & Conjunción de todas las características del token anterior \\
-		& y el token actual, y todas las características del token \\
-		& actual y el token siguiente. \\
+		& y el token actual, y las del token actual y el token siguiente. \\
 		\hline
 	\end{tabular}
 \end{table}
 
-Las características \texttt{\small PREV-SINT}, \texttt{\small NEXT-SINT}, \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se incluyen en el clasificador luego de realizar un estudio sobre los tokens que preceden y suceden a los adverbios corpus. La característica \texttt{\small PREV-SINT} es asignada a los tokens que preceden con mayor frecuencia a adverbios no interrogativos, pero no preceden a adverbios interrogativos. De la misma manera la característica \texttt{\small NEXT-SINT} se agrega a los tokens que suceden con mayor frecuencia a adverbios no interrogativos, pero no lo hacen con adverbios interrogativos. De forma similar, se agregaron las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} para adverbios interrogativos. Para determinar el conjunto de tokens de cada una de estas características, se analizaron por separado cada uno de los 9 corpus de entrenamiento. Para cada corpus de entrenamiento se seleccionaron los tokens que cuplen con mayor probabilidad cada una de las características mencionadas. Por último, se construyó un único conjunto de tokens para cada característica, usando los tokens que aparecen repetidos en las carcterísticas de cada uno de los corpus de entrenamiento.
+Las características \texttt{\small PREV-SINT}, \texttt{\small NEXT-SINT}, \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} se incluyen en el clasificador luego un estudio sobre los tokens que preceden y suceden a los adverbios del corpus construido para el problema. La característica \texttt{\small PREV-SINT} es asignada a los tokens que preceden con mayor frecuencia a adverbios no interrogativos, pero no preceden a adverbios interrogativos. La característica \texttt{\small NEXT-SINT} se agrega a los tokens que suceden con mayor frecuencia a adverbios no interrogativos, pero no preceden a adverbios interrogativos. De forma similar, se agregaron las características \texttt{\small PREV-CONT} y \texttt{\small NEXT-CONT} para adverbios interrogativos. Para determinar los tokens de estas características, se analiza por separado cada corpus de entrenamiento. En cada corpus de entrenamiento se seleccionan los tokens que cuplen cada una de las características mencionadas con mayor probabilidad, y se utilizan estos tokens para la definición de cada característica. De esta manera, nos aseguramos que las características utilizadas para cada evaluación son totalmente independientes del corpus utilizado para esa evaluación.
 
 Para el entrenamiento se utiliza un modelo CRF de orden-1 totalmente conectado, y optimizando la verosimilitud por etiqueta. Adicionalmente, se prohíbe la transición de etiquetas \texttt{\small CON\_TILDE} a \texttt{\small CON\_TILDE} ya que no pueden ocurrir dos adverbios interrogativos juntos en una oración. 
 
@@ -185,7 +181,7 @@ Por defecto, la herramienta SVMTool utiliza para la clasificación las caracter�
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
 	\renewcommand{\tabcolsep}{3pt}
-	\caption{Características utilizadas en el clasificador SVM.}
+	\caption{Características utilizadas en el clasificador basado en SVM.}
 	\label{table:featuresSVM}
 	\centering
 	\begin{tabular}{c l}
@@ -208,7 +204,9 @@ Por defecto, la herramienta SVMTool utiliza para la clasificación las caracter�
 	\end{tabular}
 \end{table}
 
-Para la clasificación se utiliza una ventana de $5$ tokens centrada en el token a etiquetar. Así $t_{0}$ representa el token a ser etiquetado, $t_{+1}$ el token que sucede a $t_{0}$ en la oración, y $t_{-1}$ el token que lo precede. La característica \texttt{\small Tokens} representa los unigramas formados por los tokens de la oración. De forma similar la característica \texttt{\small Etiquetas} representa las etiquetas de los tokens en la oración; esta característica toma en cuenta las etiquetas de los dos tokens inmediatamente anteriores al token actual.
+Para la clasificación se utiliza una ventana de $5$ tokens centrada en el token a etiquetar. Así $t_{0}$ representa el token a ser etiquetado, $t_{+1}$ el token que sucede a $t_{0}$ en la oración, y $t_{-1}$ el token que lo precede. La característica \texttt{\small Tokens} representa los unigramas formados por los tokens de la oración. 
+
+La característica \texttt{\small Etiquetas} representa las etiquetas de los tokens en la oración; esta característica toma en cuenta las etiquetas de los dos tokens inmediatamente anteriores al token actual.
 
 Adem\'as de los unigramas, para la clasificaci\'on se toman en cuenta bigramas y trigramas tanto de tokens (i.e. \texttt{\small Bigramas$_{t}$}, \texttt{\small Trigramas$_{t}$}) como de etiquetas (i.e. \texttt{\small Bigramas$_{e}$} y \texttt{\small Trigramas$_{e}$}). Para el caso de los bigramas y trigramas de etiquetas ocurre una situaci\'on particular: para formar algunos ngramas se utilizan etiquetas de tokens que se encuentran a la derecha del token que está siendo etiquetado, es decir, etiquetas que aún no han sido asignadas. Existen diferentes formas de resolver este problema, Nakagawa et al.~\cite{NAKAGAWA01} propone realizar un etiquetado en dos pasadas para conocer las etiquetas a izquierda y derecha de cada token. La herramienta SVMTool implementa la solución propuesta por \hbox{Daelemans} et al.~\cite{DAELEMANS96} que consiste en utilizar etiquetas de ambig\"uedad que representan las posibles etiquetas de los tokens no clasificados.
 
@@ -235,8 +233,8 @@ Los resultados de los clasificadores son evaluados utilizando las métricas de \
 	\label{eq:medida-f}
 	F_{\alpha} = \frac{P \times R}{(1 - \alpha)P + (\alpha)R}
 \end{equation}
-
-En donde:
+\newpage
+Para la definición de las métricas presentadas deben definirse los siguientes coneptos:
 \begin{itemize}
 \item{\emph{Positivos Verdaderos} (PV) son elementos de la clase buscada que fueron correctamente identificados.}
 \item{\emph{Negativos Verdaderos} (NV) son elementos que no pertenecen a la clase buscada que fueron correctamente ignorados y clasificados en una clase diferente.}
@@ -254,14 +252,14 @@ Para este trabajo se utiliza $F_{0.5}$~\cite{MAKHOUL99}, por lo que la ecuación
 Para la evaluación de los clasificadores se dividió el corpus por oraciones en $10$ partes de tamaño similar; para cada clasificador se realizan diez entrenamientos diferentes, variando el conjunto de entrenamiento compuesto por nueve de las diez partes del corpus y validando el resultado con la parte del corpus restante. 
 
 %Al comparar el total de errores obtenidos por cada clasificador luego de las diez evaluaciones cruzadas del corpus, podemos ver que el clasificador CRF obtiene una disminución promedio del $31,51\%$ del error en la clasificación de adverbios (tanto interrogativos como no interrogativos) con respecto al clasificador de línea base, mientras que el clasificador SVM obtiene una disminución promedio de solamente el $17,65\%$. 
-Las matrices de confusi\'on de los clasificadores muestran los tipos de errores cometidos. Los cuadros \ref{table:confusion-svm} y \ref{table:confusion-crf} muestran que para ambos clasificadores la gran mayor\'ia de errores son cometidos al clasificar adverbios interrogativos con etiquetas \texttt{\small SIN\_TILDE}. El $98,98\%$ de los errores del clasificador SVM y $95,09\%$ del clasificador CRF son debido a este tipo de confusi\'on. Además, los errores cometidos al clasificar adverbios no interrogativos se deben solamente a que son etiquetados como adverbios interrogativos.
+Las matrices de confusi\'on de los clasificadores muestran los tipos de errores cometidos. Los cuadros \ref{table:confusion-svm} y \ref{table:confusion-crf} muestran que para ambos clasificadores la gran mayor\'ia de errores son cometidos al clasificar adverbios interrogativos con etiquetas \texttt{\small SIN\_TILDE}. El $98,98\%$ de los errores del clasificador basado en SVM y $95,09\%$ del clasificador basado en CRF son debido a este tipo de confusi\'on. Además, los errores cometidos al clasificar adverbios no interrogativos se deben solamente a que son etiquetados como adverbios interrogativos.
 
 \begin{table}[ht]
 	%\addtolength{\abovecaptionskip}{-2mm}
 	\addtolength{\belowcaptionskip}{-2mm}
  	\renewcommand{\arraystretch}{1.3}
 	\renewcommand{\tabcolsep}{3pt}
-	\caption{Matriz de confusión del clasificador SVM.}
+	\caption{Matriz de confusión del clasificador basado en SVM.}
 	\label{table:confusion-svm}
 	\centering
 	\begin{tabular}{|r||r|r|r|}
@@ -270,9 +268,9 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 			& \multicolumn{1}{c|}{\textbf{\texttt{SIN\_TILDE}}}
 			& \multicolumn{1}{c|}{\textbf{\texttt{CON\_TILDE}}} \\
 		\hline\hline
-		\textbf{\texttt{O}} & 48605,3 & 0,0 & 0,0 \\ \hline
-		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1669,5 & 0,3 \\ \hline
-		\textbf{\texttt{CON\_TILDE}} & 0,0 & 19,4 & 4,4 \\ 
+		\textbf{\texttt{O}} & 54322,1 & 0,0 & 0,0 \\ \hline
+		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1867,4 & 0,3 \\ \hline
+		\textbf{\texttt{CON\_TILDE}} & 0,0 & 19,3 & 4,5 \\ 
 		\hline
 	\end{tabular}
 \end{table}
@@ -282,7 +280,7 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 	\addtolength{\belowcaptionskip}{-2mm}
  	\renewcommand{\arraystretch}{1.3}
 	\renewcommand{\tabcolsep}{3pt}
-	\caption{Matriz de confusión del clasificador CRF.}
+	\caption{Matriz de confusión del clasificador basado en CRF.}
 	\label{table:confusion-crf}
 	\centering
 	\begin{tabular}{|r||r|r|r|}
@@ -291,9 +289,18 @@ Las matrices de confusi\'on de los clasificadores muestran los tipos de errores 
 			& \multicolumn{1}{c|}{\textbf{\texttt{SIN\_TILDE}}}
 			& \multicolumn{1}{c|}{\textbf{\texttt{CON\_TILDE}}} \\
 		\hline\hline
-		\textbf{\texttt{O}} & 48605,2 & 0,0 & 0,0 \\ \hline
-		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1669,1 & 0,7 \\ \hline
-		\textbf{\texttt{CON\_TILDE}} & 0,1 & 15,5 & 8,2 \\ 
+% Original
+%		\textbf{\texttt{O}} & 48605,2 & 0,0 & 0,0 \\ \hline
+%		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1669,1 & 0,7 \\ \hline
+%		\textbf{\texttt{CON\_TILDE}} & 0,1 & 15,5 & 8,2 \\ 
+% Top10
+%		\textbf{\texttt{O}} & 54322,1 & 0,0 & 0,0 \\ \hline
+%		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1867,7 & 0,8 \\ \hline
+%		\textbf{\texttt{CON\_TILDE}} & 0,1 & 16,3 & 7,4 \\ 
+% Best
+		\textbf{\texttt{O}} & 54322,1 & 0,0 & 0,0 \\ \hline
+		\textbf{\texttt{SIN\_TILDE}} & 0,0 & 1867,7 & 0,8 \\ \hline
+		\textbf{\texttt{CON\_TILDE}} & 0,1 & 16,0 & 7,7 \\ 
 		\hline
 	\end{tabular}
 \end{table}
@@ -336,16 +343,25 @@ En los cuadros~\ref{table:metricas-generales} y~\ref{table:metricas-adv} se eval
 			& \multicolumn{1}{r}{\textbf{SVM}} & \multicolumn{1}{r}{\textbf{CRF}}
 			& \multicolumn{1}{r}{\textbf{SVM}} & \multicolumn{1}{r}{\textbf{CRF}} \\
 		\hline\hline
-		\texttt{O} 				& 1.00 	& 1.00			& 1.00 & 1.00 			& 1.00 & 1.00 \\
-		\texttt{SIN\_TILDE} 	& 0.99 & 0.99 			& 1.00 & 1.00 			& 0.99 & \textbf{1.00} \\
-		\texttt{CON\_TILDE} 	& \textbf{0.95} & 0.93 	& 0.18 & \textbf{0.34} 	& 0.31 & \textbf{0.50} \\
+% Original
+%		\texttt{O} 				& 1.00 	& 1.00			& 1.00 & 1.00 			& 1.00 & 1.00 \\
+%		\texttt{SIN\_TILDE} 	& 0.99 & 0.99 			& 1.00 & 1.00 			& 0.99 & \textbf{1.00} \\
+%		\texttt{CON\_TILDE} 	& \textbf{0.95} & 0.93 	& 0.18 & \textbf{0.34} 	& 0.31 & \textbf{0.50} \\
+% Top10
+%		\texttt{O} & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+%		\texttt{SIN\_TILDE} & 0.99 & 0.99 & 1.00 & 1.00 & 0.99 & 1.00 \\
+%		\texttt{CON\_TILDE} & 0.94 & 0.90 & 0.18 & 0.32 & 0.31 & 0.47 \\
+% Best
+		\texttt{O} & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+		\texttt{SIN\_TILDE} & 0.99 & 0.99 & 1.00 & 1.00 & 0.99 & \textbf{1.00} \\
+		\texttt{CON\_TILDE} & \textbf{0.94} & 0.91 & 0.18 & \textbf{0.33} & 0.31 & \textbf{0.48} \\
 		\hline
 	\end{tabular}
 \end{table}
 
-Ambos clasificadores presentan una alta tasa de \emph{Precisión}, lo que indica que se comete una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF presenta una tasa de  \emph{Recall} sensiblemente más elevada que el basado en SVM; esto indica que el clasificador CRF comete una menor cantidad de errores de Tipo II y por lo tanto clasifica correctamente una mayor cantidad de casos. 
+Ambos clasificadores presentan una alta tasa de \emph{Precisión}, lo que indica que se comete una cantidad muy pequeña de errores de Tipo I y por lo tanto ofrecen una certeza muy elevada. El clasificador basado en CRF presenta una tasa de  \emph{Recall} sensiblemente más elevada que el basado en SVM; esto indica que el clasificador basado en CRF comete una menor cantidad de errores de Tipo II y por lo tanto clasifica correctamente una mayor cantidad de casos. 
 
-Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador CRF presenta un valor  claramente superior al clasificador SVM.
+Esta diferencia en el desempeño de los clasificadores puede verse reflejada en la métrica de  \emph{Medida-F}: el clasificador basado en CRF presenta un valor  claramente superior al clasificador basado en SVM.
 
 \begin{table}[ht]
  	\renewcommand{\arraystretch}{1.3}
@@ -364,11 +380,24 @@ Esta diferencia en el desempeño de los clasificadores puede verse reflejada en 
 			& \multicolumn{1}{r}{\textbf{SVM}} & \multicolumn{1}{r}{\textbf{CRF}}
 			& \multicolumn{1}{r}{\textbf{SVM}} & \multicolumn{1}{r}{\textbf{CRF}} \\		
 		\hline\hline
-		qué & 132 	& 0.94 & 0.94 			& 0.23 & \textbf{0.45} 	& 0.37 & \textbf{0.61} \\
-		cómo & 69 	& \textbf{1.00} & 0.89 	& 0.13 & \textbf{0.24} 	& 0.23 & \textbf{0.37} \\
-		dónde & 17 	& 1.00 & 1.00 			& 0.12 & 0.12			& 0.21 & \textbf{0.21} \\
-		cuándo & 4 	& 0.00 & 0.00 			& 0.00 & 0.00 			& 0.00 & 0.00 \\
-		cuánto & 2 	& 0.00 & 0.00 			& 0.00 & 0.00 			& 0.00 & 0.00 \\
+% Original
+%		qué & 132 	& 0.94 & 0.94 			& 0.23 & \textbf{0.45} 	& 0.37 & \textbf{0.61} \\
+%		cómo & 69 	& \textbf{1.00} & 0.89 	& 0.13 & \textbf{0.24} 	& 0.23 & \textbf{0.37} \\
+%		dónde & 17 	& 1.00 & 1.00 			& 0.12 & 0.12			& 0.21 & \textbf{0.21} \\
+%		cuándo & 4 	& 0.00 & 0.00 			& 0.00 & 0.00 			& 0.00 & 0.00 \\
+%		cuánto & 2 	& 0.00 & 0.00 			& 0.00 & 0.00 			& 0.00 & 0.00 \\
+% Top10
+%		qué & 142 & 0.94 & 0.92 & 0.23 & 0.41 & 0.36 & 0.57 \\
+%		cómo & 72 & 1.00 & 0.88 & 0.14 & 0.20 & 0.24 & 0.32 \\
+%		dónde & 18 & 0.67 & 1.00 & 0.11 & 0.17 & 0.19 & 0.29 \\
+%		cuándo & 4 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+%		cuánto & 2 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+% Best
+		qué & 142 & \textbf{0.94} & 0.92 & 0.23 & \textbf{0.42} & 0.36 & \textbf{0.57} \\
+		cómo & 72 & \textbf{1.00} & 0.89 & 0.14 & \textbf{0.23} & 0.24 & \textbf{0.36} \\
+		dónde & 18 & 0.67 & \textbf{1.00} & 0.11 & \textbf{0.17} & 0.19 & \textbf{0.29} \\
+		cuándo & 4 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+		cuánto & 2 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
 		\hline
 	\end{tabular}
 \end{table}
@@ -378,8 +407,8 @@ En el cuadro~\ref{table:metricas-adv} puede verse como los mejores resultados en
 \section{Conclusiones y trabajo futuro}
 \label{sec:Conclusiones}
 
-En este trabajo se plantea el problema de la restauración automática de acentos ortográficos en adverbios interrogativos para el idioma español, un problema que ---según nuestro conocimiento---- no ha sido atacado hasta el momento. Para la resolución del problema planteado se construye un corpus de aproximadamente 500k palabras mediante la unión de los corpus CESS Treebanks y CoNLL 2002. Debido a la falta de trabajos previos que aborden esta problemática, se proponen dos implementaciones su resolución: un clasificador basado en SVM y un clasificador basado en CRF. Los resultados obtenidos durante la evaluaci\'on muestran que la implementación del clasificador basado en CRF se comporta consistentemente mejor que la implementación del clasificador basado en SVM. 
-
+En este trabajo se plantea el problema de la restauración automática de acentos ortográficos en adverbios interrogativos para el idioma español, un problema que ---según nuestro conocimiento---- no ha sido atacado hasta el momento. Para su resolución se construye un corpus de aproximadamente 500k palabras mediante la unión de los corpus CESS Treebanks y CoNLL 2002. Debido a la falta de trabajos previos que aborden esta problemática, se proponen dos implementaciones su resolución: un clasificador basado en SVM y un clasificador basado en CRF. Los resultados obtenidos durante la evaluaci\'on muestran que la implementación del clasificador basado en CRF ---que utiliza como atributos los tokens que más comúnmente preceden y siguen a los adverbios interrogativos--- se comporta consistentemente mejor que la implementación del clasificador basado en SVM. 
+\newpage
 En la clasificaci\'on de adverbios no interrogativos la implementación del clasificador basado en CRF mantiene al m\'inimo el error de clasificaci\'on; minimizando la generaci\'on de falsos negativos, ofreciendo seguridad en la clasificaci\'on, y permitiendo la combinaci\'on de este método con otras t\'ecnicas mediante sucesivas iteraciones. 
 
 En la clasificación de adverbios interrogativos el clasificador basado en CRF mejora sensiblemente los resultados obtenidos al aumentar la cantidad de ejemplos en el corpus de entrenamiento. Esto parece indicar que para mejorar los resultados experimentales es necesario aumentar el tamaño del corpus considerado.
