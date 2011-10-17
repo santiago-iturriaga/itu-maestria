@@ -15,16 +15,16 @@ def obtener_medidas(metrica_contenido, columna):
     
     for valores in metrica_contenido:
         valor = valores[columna]
-        
-        if valor < min:
-            min = valor
-            
-        if valor > max:
-            max = valor
-            
+                   
         if math.isnan(valor):
             nans += 1
         else:
+            if valor < min and valor > 0:
+                min = valor
+                
+            if valor > max:
+                max = valor
+
             total += valor
         
     avg = total / (len(metrica_contenido) - nans)

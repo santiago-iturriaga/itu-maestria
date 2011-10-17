@@ -8,13 +8,10 @@
 
 int main(int argc, char **argv) {
 
-	FILE *fpin, *fp, *fpaux;
+	FILE *fpin, *fp;
 	float f1, f2, f3;
 
-	int tam = 16;
-
 	float p[MAX_POINTS];
-	int cont[tam];
 
 	int cant_p = 0;
 	int i, k;
@@ -28,24 +25,20 @@ int main(int argc, char **argv) {
 		p[i] = 0.0;
 	}
 
-	for (i = 0; i < tam; i++) {
-		cont[i] = 0;
-	}
+	float f4;
 
 	printf("Archivo : %s\n", argv[1]);
 	if ((fpin = fopen(argv[1], "r"))) {
-		while (fscanf(fpin, "%f %f %f", &f1, &f2, &f3) != EOF) {
+		while (fscanf(fpin, "%f %f %f %f", &f1, &f2, &f3, &f4) != EOF) {
 			// Leer punto
 			p[3 * cant_p] = f1;
 			p[3 * cant_p + 1] = f2;
 			p[3 * cant_p + 2] = f3;
-			printf("Leido %f %f %f\n", f1, f2, f3);
+			printf("%f    %f    %f\n", f1, f2, f3);
 			cant_p++;
 		}
 
 		printf("cant_p: %d\n", cant_p);
-
-		fpaux = fopen("FP.out.disc", "w");
 
 		if ((fp = fopen("FP.out", "w"))) {
 			for (i = 0; i < cant_p; i++) {
@@ -75,35 +68,10 @@ int main(int argc, char **argv) {
 				}
 				if (nd == 1) {
 					printf("NO dominado\n");
-					fprintf(fp, "%f %f\n", p[3 * i], p[3 * i + 1]);
-					f3 = p[3 * i + 2];
-					fprintf(fpaux, "%f %f %f\n", p[3 * i], p[3 * i + 1], f3);
-
-					cont[(int) f3] = cont[(int) f3] + 1;
-
-					/*
-					 if (f3 == 0.0){
-					 cont[0] = cont[0]+1;
-					 } else {
-					 if (f3 == 1.0){
-					 cont[1] = cont[1]+1;
-					 } else {
-					 if (f3 == 2.0){
-					 cont[2] = cont[2]+1;
-					 } else {
-					 if (f3 == 3.0){
-					 cont[3] = cont[3]+1;
-					 }
-					 }
-					 }
-					 }
-					 */
+					fprintf(fp, "%f %f %f\n", p[3 * i], p[3 * i + 1], p[3 * i + 2]);
 				}
 			}
 			fclose(fp);
-			for (i = 0; i < tam; i++) {
-				printf("%d - %d\n", i, cont[i]);
-			}
 		}
 
 	} else {
