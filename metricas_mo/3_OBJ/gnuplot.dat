@@ -1,0 +1,23 @@
+set term postscript
+set output "data_12.ps"
+plot "FP_12.out" using 1:2 title 'FP 12'
+
+set term png
+set output "data_12.png"
+replot
+
+set term postscript
+set output "data_13.ps"
+plot "FP_13.out" using 1:2 title 'FP 13'
+
+set term png
+set output "data_13.png"
+replot
+
+set term postscript
+set output "data_23.ps"
+plot "FP_23.out" using 1:2 title 'FP 23'
+
+set term png
+set output "data_23.png"
+replot
