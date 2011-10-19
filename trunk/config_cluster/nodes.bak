@@ -1,0 +1,122 @@
+node02.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     status = opsys=linux,uname=Linux node02.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=? 0,nsessions=? 0,nusers=0,idletime=10707481,totmem=8673960kb,availmem=4143076kb,physmem=8173972kb,ncpus=8,loadave=0.01,netload=5644946680217,state=free,jobs=? 0,rectime=1319027954
+
+node03.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     status = opsys=linux,uname=Linux node03.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=? 0,nsessions=? 0,nusers=0,idletime=4395523,totmem=8673960kb,availmem=3258948kb,physmem=8173972kb,ncpus=8,loadave=0.00,netload=1078267407715,state=free,jobs=? 0,rectime=1319027954
+
+node04.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     status = opsys=linux,uname=Linux node04.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=? 0,nsessions=? 0,nusers=0,idletime=4396495,totmem=8673960kb,availmem=8323648kb,physmem=8173972kb,ncpus=8,loadave=0.00,netload=2673733010888,state=free,jobs=? 0,rectime=1319027954
+
+node05.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     status = opsys=linux,uname=Linux node05.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=? 0,nsessions=? 0,nusers=0,idletime=10773427,totmem=8673960kb,availmem=8345068kb,physmem=8173972kb,ncpus=8,loadave=0.00,netload=13342003739067,state=free,jobs=? 0,rectime=1319027955
+
+node06.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     jobs = 0/3249340.cluster.fing.edu.uy, 1/3249340.cluster.fing.edu.uy, 2/3249340.cluster.fing.edu.uy, 3/3249340.cluster.fing.edu.uy, 4/3249340.cluster.fing.edu.uy, 5/3249340.cluster.fing.edu.uy, 6/3249340.cluster.fing.edu.uy, 7/3249340.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node06.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=15334,nsessions=1,nusers=1,idletime=10773435,totmem=8673960kb,availmem=4728728kb,physmem=8173972kb,ncpus=8,loadave=6.75,netload=11532560053623,state=free,jobs=3249340.cluster.fing.edu.uy,rectime=1319027955
+
+node07.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     jobs = 0/3251490.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node07.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=30181 30439 30590,nsessions=3,nusers=2,idletime=1740940,totmem=8673960kb,availmem=7953428kb,physmem=8173972kb,ncpus=8,loadave=1.02,netload=22070651286103,state=free,jobs=3251490.cluster.fing.edu.uy,rectime=1319027953
+
+node08.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     jobs = 0/3251488.cluster.fing.edu.uy, 1/3251488.cluster.fing.edu.uy, 2/3251488.cluster.fing.edu.uy, 3/3251488.cluster.fing.edu.uy, 4/3251488.cluster.fing.edu.uy, 5/3251488.cluster.fing.edu.uy, 6/3251488.cluster.fing.edu.uy, 7/3251488.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node08.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=32582,nsessions=1,nusers=1,idletime=10773430,totmem=8673960kb,availmem=8143740kb,physmem=8173972kb,ncpus=8,loadave=1.00,netload=32336383786138,state=free,jobs=3251488.cluster.fing.edu.uy,rectime=1319027954
+
+node09.cluster.fing
+     state = free
+     np = 8
+     properties = all,cpu,cpu8,ram8,class0
+     ntype = cluster
+     status = opsys=linux,uname=Linux node09.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=? 0,nsessions=? 0,nusers=0,idletime=10773441,totmem=8673960kb,availmem=8338052kb,physmem=8173972kb,ncpus=8,loadave=0.00,netload=42703969066938,state=free,jobs=? 0,rectime=1319027954
+
+node20.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,ram24,cpu8,class1
+     ntype = cluster
+     jobs = 0/3251488.cluster.fing.edu.uy, 1/3251488.cluster.fing.edu.uy, 2/3251488.cluster.fing.edu.uy, 3/3251488.cluster.fing.edu.uy, 4/3251488.cluster.fing.edu.uy, 5/3251488.cluster.fing.edu.uy, 6/3251488.cluster.fing.edu.uy, 7/3251488.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node20.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=14968,nsessions=1,nusers=1,idletime=8454813,totmem=25176860kb,availmem=24607824kb,physmem=24676872kb,ncpus=16,loadave=0.09,netload=24058994232693,state=free,jobs=3251488.cluster.fing.edu.uy,rectime=1319027953
+
+node21.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,ram24,cpu8,class1
+     ntype = cluster
+     jobs = 0/3251488.cluster.fing.edu.uy, 1/3251488.cluster.fing.edu.uy, 2/3251488.cluster.fing.edu.uy, 3/3251488.cluster.fing.edu.uy, 4/3251488.cluster.fing.edu.uy, 5/3251488.cluster.fing.edu.uy, 6/3251488.cluster.fing.edu.uy, 7/3251488.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node21.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=5617,nsessions=1,nusers=1,idletime=8454890,totmem=25176860kb,availmem=24701536kb,physmem=24676872kb,ncpus=16,loadave=0.06,netload=39058106868233,state=free,jobs=3251488.cluster.fing.edu.uy,rectime=1319027953
+
+node22.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,ram24,cpu8,class1
+     ntype = cluster
+     jobs = 0/3251488.cluster.fing.edu.uy, 1/3251488.cluster.fing.edu.uy, 2/3251488.cluster.fing.edu.uy, 3/3251488.cluster.fing.edu.uy, 4/3251488.cluster.fing.edu.uy, 5/3251488.cluster.fing.edu.uy, 6/3251488.cluster.fing.edu.uy, 7/3251488.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node22.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=9418 9470,nsessions=2,nusers=1,idletime=8454815,totmem=25176860kb,availmem=24669340kb,physmem=24676872kb,ncpus=16,loadave=0.02,netload=35218959090652,state=free,jobs=3251488.cluster.fing.edu.uy,rectime=1319027952
+
+node23.cluster.fing
+     state = job-exclusive
+     np = 8
+     properties = all,cpu,ram24,cpu8,class1
+     ntype = cluster
+     jobs = 0/3251427.cluster.fing.edu.uy, 1/3251427.cluster.fing.edu.uy, 2/3251427.cluster.fing.edu.uy, 3/3251427.cluster.fing.edu.uy, 4/3251427.cluster.fing.edu.uy, 5/3251427.cluster.fing.edu.uy, 6/3251427.cluster.fing.edu.uy, 7/3251427.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node23.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=9258 9259 9260 9261 9262 9263 9264 9265,nsessions=8,nusers=1,idletime=8454812,totmem=25176860kb,availmem=23338460kb,physmem=24676872kb,ncpus=16,loadave=8.06,netload=26284635030544,state=free,jobs=3251427.cluster.fing.edu.uy,rectime=1319027953
+
+node30.cluster.fing
+     state = job-exclusive
+     np = 24
+     properties = all,cpu,cpu24,ram24,class2
+     ntype = cluster
+     jobs = 0/3251394.cluster.fing.edu.uy, 1/3251394.cluster.fing.edu.uy, 2/3251394.cluster.fing.edu.uy, 3/3251394.cluster.fing.edu.uy, 4/3251394.cluster.fing.edu.uy, 5/3251394.cluster.fing.edu.uy, 6/3251394.cluster.fing.edu.uy, 7/3251394.cluster.fing.edu.uy, 8/3251394.cluster.fing.edu.uy, 9/3251394.cluster.fing.edu.uy, 10/3251394.cluster.fing.edu.uy, 11/3251394.cluster.fing.edu.uy, 12/3251394.cluster.fing.edu.uy, 13/3251394.cluster.fing.edu.uy, 14/3251394.cluster.fing.edu.uy, 15/3251394.cluster.fing.edu.uy, 16/3251394.cluster.fing.edu.uy, 17/3251394.cluster.fing.edu.uy, 18/3251394.cluster.fing.edu.uy, 19/3251394.cluster.fing.edu.uy, 20/3251394.cluster.fing.edu.uy, 21/3251394.cluster.fing.edu.uy, 22/3251394.cluster.fing.edu.uy, 23/3251394.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node30.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=2651,nsessions=1,nusers=1,idletime=5521215,totmem=25181620kb,availmem=24368484kb,physmem=24681632kb,ncpus=24,loadave=14.59,netload=59744077196296,state=free,jobs=3251394.cluster.fing.edu.uy,rectime=1319027953
+
+node31.cluster.fing
+     state = job-exclusive
+     np = 24
+     properties = all,cpu,cpu24,ram24,class2
+     ntype = cluster
+     jobs = 0/3251190.cluster.fing.edu.uy, 1/3251190.cluster.fing.edu.uy, 2/3251190.cluster.fing.edu.uy, 3/3251190.cluster.fing.edu.uy, 4/3251190.cluster.fing.edu.uy, 5/3251190.cluster.fing.edu.uy, 6/3251190.cluster.fing.edu.uy, 7/3251190.cluster.fing.edu.uy, 8/3251190.cluster.fing.edu.uy, 9/3251190.cluster.fing.edu.uy, 10/3251190.cluster.fing.edu.uy, 11/3251190.cluster.fing.edu.uy, 12/3251190.cluster.fing.edu.uy, 13/3251190.cluster.fing.edu.uy, 14/3251190.cluster.fing.edu.uy, 15/3251190.cluster.fing.edu.uy, 16/3251427.cluster.fing.edu.uy, 17/3251427.cluster.fing.edu.uy, 18/3251427.cluster.fing.edu.uy, 19/3251427.cluster.fing.edu.uy, 20/3251427.cluster.fing.edu.uy, 21/3251427.cluster.fing.edu.uy, 22/3251427.cluster.fing.edu.uy, 23/3251427.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node31.cluster.fing 2.6.18-194.8.1.el5.centos.plus #1 SMP Wed Jul 7 11:45:38 EDT 2010 x86_64,sessions=18342 18398 18399 18400 18401 18402 18403 18404 18405 24253,nsessions=10,nusers=2,idletime=5521215,totmem=25181620kb,availmem=23161468kb,physmem=24681632kb,ncpus=24,loadave=23.86,netload=47470351430303,state=free,jobs=3251190.cluster.fing.edu.uy 3251427.cluster.fing.edu.uy,rectime=1319027953
+
+node32.cluster.fing
+     state = job-exclusive
+     np = 24
+     properties = cpu,cpu24,ram24,class2,all
+     ntype = cluster
+     jobs = 0/3251393.cluster.fing.edu.uy, 1/3251393.cluster.fing.edu.uy, 2/3251393.cluster.fing.edu.uy, 3/3251393.cluster.fing.edu.uy, 4/3251393.cluster.fing.edu.uy, 5/3251393.cluster.fing.edu.uy, 6/3251393.cluster.fing.edu.uy, 7/3251393.cluster.fing.edu.uy, 8/3251393.cluster.fing.edu.uy, 9/3251393.cluster.fing.edu.uy, 10/3251393.cluster.fing.edu.uy, 11/3251393.cluster.fing.edu.uy, 12/3251393.cluster.fing.edu.uy, 13/3251393.cluster.fing.edu.uy, 14/3251393.cluster.fing.edu.uy, 15/3251393.cluster.fing.edu.uy, 16/3251393.cluster.fing.edu.uy, 17/3251393.cluster.fing.edu.uy, 18/3251393.cluster.fing.edu.uy, 19/3251393.cluster.fing.edu.uy, 20/3251393.cluster.fing.edu.uy, 21/3251393.cluster.fing.edu.uy, 22/3251393.cluster.fing.edu.uy, 23/3251393.cluster.fing.edu.uy
+     status = opsys=linux,uname=Linux node32.cluster.fing 2.6.18-238.12.1.el5.centos.plus #1 SMP Wed Jun 1 11:12:25 EDT 2011 x86_64,sessions=29323,nsessions=1,nusers=1,idletime=5521244,totmem=25180880kb,availmem=24270600kb,physmem=24680892kb,ncpus=24,loadave=16.00,netload=2857092681776,state=free,jobs=3251393.cluster.fing.edu.uy,rectime=1319027953
+
+tesla1.cluster.fing
+     state = offline
+     np = 16
+     properties = all
+     ntype = cluster
+     status = opsys=linux,uname=Linux tesla1.cluster.fing 2.6.18-238.12.1.el5.centos.plus #1 SMP Wed Jun 1 11:12:25 EDT 2011 x86_64,sessions=4668 5420 5630 17759,nsessions=4,nusers=2,idletime=251113,totmem=49948744kb,availmem=45731488kb,physmem=49448756kb,ncpus=16,loadave=0.00,netload=258237258111,state=free,jobs=? 0,rectime=1319027921
+
