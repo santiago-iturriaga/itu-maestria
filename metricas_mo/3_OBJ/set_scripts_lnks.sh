@@ -8,7 +8,8 @@ do
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/mass_cat_obj.sh .
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/mass_fp_obj.sh .
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/mass_plot.obj.sh .
-
+		ln -s /home/siturria/AE/metricas_mo/3_OBJ/todo.sh .
+		ln -s /home/siturria/AE/metricas_mo/3_OBJ/gather_data.py .
     cd ..
 done
 
