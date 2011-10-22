@@ -10,6 +10,8 @@ do
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/mass_plot.obj.sh .
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/todo.sh .
 		ln -s /home/siturria/AE/metricas_mo/3_OBJ/gather_data.py .
+		ln -s /home/siturria/AE/metricas_mo/3_OBJ/best_result.py .
+		ln -s /home/siturria/AE/metricas_mo/3_OBJ/grep_reference.sh .
     cd ..
 done
 
