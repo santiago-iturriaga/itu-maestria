@@ -11,8 +11,6 @@ import subprocess
 import re
 
 if __name__ == '__main__':
-	#call(["mkdir","results"])
-
 	for path in os.listdir("."):
 		best_makespan = float(sys.maxint)
 		best_wrr = float(sys.maxint)
@@ -28,7 +26,7 @@ if __name__ == '__main__':
 			p = subprocess.Popen(["bash", "grep_reference.sh", path], stdout=subprocess.PIPE)
 			out, err = p.communicate()
 
-			regex = re.compile(": (.*)$", re.MULTILINE)
+			regex = re.compile("Min-Min<(.*)\|(.*)\|(.*)>$", re.MULTILINE)
 			found = regex.findall(out)
 
 			if minmin_makespan > found[0]:
@@ -41,8 +39,8 @@ if __name__ == '__main__':
 			fp_file = open("FP_00","r")
 			for line in fp_file:
 				data = str(line).strip().split(" ")
-                                output0.write(data[0] + " " + data[1] + " " + data[2] + "\n")
-                                output1.write(data[0] + " " + data[1] + "\n")
-                                output2.write(data[0] + " " + data[2] + "\n")
-                                output3.write(data[1] + " " + data[2] + "\n")
+                output0.write(data[0] + " " + data[1] + " " + data[2] + "\n")
+                output1.write(data[0] + " " + data[1] + "\n")
+                output2.write(data[0] + " " + data[2] + "\n")
+                output3.write(data[1] + " " + data[2] + "\n")
 				
