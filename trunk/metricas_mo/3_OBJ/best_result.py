@@ -28,20 +28,20 @@ if __name__ == '__main__':
 
             # print out
 
-            regex = re.compile(">\((.*)\|(.*)\|(.*)\)$", re.MULTILINE)
-            found = regex.findall(out)
-
-            makespan = float(found[0][0])
-            wrr = float(found[0][1])
-            energy = float(found[0][2])
-
-            if minmin_makespan > makespan:
-                    minmin_makespan = makespan
-            if minmin_wrr > wrr:
-                    minmin_wrr = wrr
-            if minmin_priority > energy:
-                    minmin_priority = energy
-
+			regex = re.compile(">\((.*)\|(.*)\|(.*)\)$", re.MULTILINE)
+			found = regex.findall(out)
+			
+			makespan = float(found[0][0])
+			wrr = float(found[0][1])
+			energy = float(found[0][2])
+			
+			if minmin_makespan > makespan:
+			        minmin_makespan = makespan
+			if minmin_wrr > wrr:
+			        minmin_wrr = wrr
+			if minmin_priority > energy:
+			        minmin_priority = energy
+			
 			fp_file = open("FP_00","r")
 			for line in fp_file:
 				data = str(line).strip().split(" ")
@@ -49,13 +49,13 @@ if __name__ == '__main__':
 				makespan = float(data[0])
 				wrr = float(data[1])
 				energy = float(data[2])
-
-	            if best_makespan > makespan:
-	                    best_makespan = makespan
-	            if best_wrr > wrr:
-	                    best_wrr = wrr
-	            if best_priority > energy:
-	                    best_priority = energy
+			
+			    if best_makespan > makespan:
+			            best_makespan = makespan
+			    if best_wrr > wrr:
+			            best_wrr = wrr
+			    if best_priority > energy:
+			            best_priority = energy
 				
 			close(fp_file)
 			
