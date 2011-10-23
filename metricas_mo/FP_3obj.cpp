@@ -25,11 +25,9 @@ int main(int argc, char **argv) {
 		p[i] = 0.0;
 	}
 
-	float f4;
-
 	printf("Archivo : %s\n", argv[1]);
 	if ((fpin = fopen(argv[1], "r"))) {
-		while (fscanf(fpin, "%f %f %f %f", &f1, &f2, &f3, &f4) != EOF) {
+		while (fscanf(fpin, "%f %f %f", &f1, &f2, &f3) != EOF) {
 			// Leer punto
 			p[3 * cant_p] = f1;
 			p[3 * cant_p + 1] = f2;
