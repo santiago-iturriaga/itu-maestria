@@ -26,7 +26,7 @@ if __name__ == '__main__':
 			p = subprocess.Popen(["bash", "grep_reference.sh", path], stdout=subprocess.PIPE)
 			out, err = p.communicate()
 
-            # print out
+			# print out
 
 			regex = re.compile(">\((.*)\|(.*)\|(.*)\)$", re.MULTILINE)
 			found = regex.findall(out)
