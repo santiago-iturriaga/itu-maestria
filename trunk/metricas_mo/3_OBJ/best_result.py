@@ -51,11 +51,11 @@ if __name__ == '__main__':
 				energy = float(data[2])
 			
 			    if best_makespan > makespan:
-			            best_makespan = makespan
+					best_makespan = makespan
 			    if best_wrr > wrr:
-			            best_wrr = wrr
+					best_wrr = wrr
 			    if best_priority > energy:
-			            best_priority = energy
+					best_priority = energy
 				
 			close(fp_file)
 			
