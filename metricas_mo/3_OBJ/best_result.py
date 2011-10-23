@@ -26,21 +26,42 @@ if __name__ == '__main__':
 			p = subprocess.Popen(["bash", "grep_reference.sh", path], stdout=subprocess.PIPE)
 			out, err = p.communicate()
 
-			regex = re.compile("Min-Min<(.*)\|(.*)\|(.*)>$", re.MULTILINE)
-			found = regex.findall(out)
+            # print out
 
-			if minmin_makespan > found[0]:
-				minmin_makespan = float(found[0])
-			if minmin_wrr > found[1]:
-				miminn_wrr = float(found[1])
-			if minmin_priority > found[2]:
-				minmin_priority = float(found[2])
+            regex = re.compile(">\((.*)\|(.*)\|(.*)\)$", re.MULTILINE)
+            found = regex.findall(out)
+
+            makespan = float(found[0][0])
+            wrr = float(found[0][1])
+            energy = float(found[0][2])
+
+            if minmin_makespan > makespan:
+                    minmin_makespan = makespan
+            if minmin_wrr > wrr:
+                    minmin_wrr = wrr
+            if minmin_priority > energy:
+                    minmin_priority = energy
 
 			fp_file = open("FP_00","r")
 			for line in fp_file:
 				data = str(line).strip().split(" ")
-                output0.write(data[0] + " " + data[1] + " " + data[2] + "\n")
-                output1.write(data[0] + " " + data[1] + "\n")
-                output2.write(data[0] + " " + data[2] + "\n")
-                output3.write(data[1] + " " + data[2] + "\n")
+				
+				makespan = float(data[0])
+				wrr = float(data[1])
+				energy = float(data[2])
+
+	            if best_makespan > makespan:
+	                    best_makespan = makespan
+	            if best_wrr > wrr:
+	                    best_wrr = wrr
+	            if best_priority > energy:
+	                    best_priority = energy
+				
+			close(fp_file)
+			
+			print "<MinMin / Best>\n"
+			print "Makespan: " + minmin_makespan + " / " + best_makespan + "\n"
+			print "WRR: " + minmin_wrr + " / " + best_wrr + "\n"
+			print "Energy: " + minmin_energy + " / " + best_energy + "\n"
+
 				
