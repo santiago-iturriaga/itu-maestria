@@ -91,7 +91,16 @@ set queue big_jobs queue_type = Execution
 set queue big_jobs max_user_queuable = 100
 set queue big_jobs acl_user_enable = True
 set queue big_jobs acl_users = siturria@node01.cluster.fing
-set queue big_jobs resources_max.walltime = 168:00:00
+set queue big_jobs resources_max.walltime = 48:00:00
+set queue big_jobs acl_group_enable = True
+set queue big_jobs acl_groups = clusterusers
+set queue big_jobs acl_groups += clusterexternos
+set queue big_jobs acl_logic_or = True
+set queue big_jobs acl_group_sloppy = True
+set queue big_jobs kill_delay = 30
+set queue big_jobs keep_completed = 300
+set queue big_jobs enabled = True
+set queue big_jobs started = True
 #
 # Create and define queue small_jobs
 #
