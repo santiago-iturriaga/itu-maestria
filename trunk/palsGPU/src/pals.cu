@@ -144,7 +144,7 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 		// Si la cantidad de tareas no es divisible entre la cantidad de threads
 		// per block, el último bloque puede tener threads sobrantes. En este
 		// caso se pierde la coherencia de los threads del último bloque.
-		if (current_swap < instance->total_tasks) {
+		if (current_swap < instance.total_tasks) {
 
 			// Coordenadas del swap.
 			current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
