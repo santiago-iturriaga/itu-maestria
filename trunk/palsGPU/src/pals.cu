@@ -114,9 +114,13 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
+
+	const int block_size = instance.block_size;	
+	const int tasks_per_thread = instance.tasks_per_thread;
+	const int total_tasks = instance.total_tasks;
 	
-	int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
-	//int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1; 
+	int block_offset_start = block_size * tasks_per_thread * block_idx;
+	//int block_offset_end = block_size * tasks_per_thread * (block_idx + 1) - 1; 
 
 	// Busco el mejor movimiento de cada hilo.
 	int i;
@@ -140,13 +144,13 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
-	for (i = 1; i < instance.tasks_per_thread; i++) {
-		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
+	for (i = 1; i < tasks_per_thread; i++) {
+		current_swap = block_offset_start + (block_size * i) + thread_idx;
 
 		// Si la cantidad de tareas no es divisible entre la cantidad de threads
 		// per block, el último bloque puede tener threads sobrantes. En este
 		// caso se pierde la coherencia de los threads del último bloque.
-		if (current_swap < instance.total_tasks) {
+		if (current_swap < total_tasks) {
 
 			// Coordenadas del swap.
 			current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
