@@ -108,9 +108,15 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 	
+	float o = 0.0;
+	o++;
+
 	int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
-	int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1;
-	
+	int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1; 
+
+	__shared__ float best_delta[block_idx];
+	__shared__ int best_swap[block_idx];
+
 	int i, current_swap;
 	for (i = 0; i < instance.tasks_per_thread; i++) {
 		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
