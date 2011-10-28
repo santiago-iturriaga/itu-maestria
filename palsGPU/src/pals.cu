@@ -105,22 +105,68 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 
 __global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance, float current_makespan)
 {
+	// Configuración optima (¿?):
+	// 128 threads.
+	// 16 registros por thread.
+	// 2K shared memory por block.
+
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 	
-	float o = 0.0;
-	o++;
-
 	int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
-	int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1; 
+	//int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1; 
 
+	// Busco el mejor movimiento de cada hilo.
+	int i;
+	int current_swap;
+	int current_swap_coord_x;
+	int current_swap_coord_y;
+	int current_swap_delta;
+	float best_swap;
+	float best_swap_delta;
+
+	// Siempre debería haber al menos un task_per_thread.
+	current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
+	
+	// Coordenadas del swap.
+	x = (int)floor((float)current_swap / (float)task_count);
+	y = (int)fmod((float)current_swap, (float)task_count);
+
+	// El primer task_per_thread siempre debería tener un swap válido.
+	best_swap = current_swap;
+	//best_swap_delta = 
+
+	// Para todos los demás task_per_thread.
+	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
+	for (i = 1; i < instance.tasks_per_thread; i++) {
+		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
+
+		// Si la cantidad de tareas no es divisible entre la cantidad de threads
+		// per block, el último bloque puede tener threads sobrantes. En este
+		// caso se pierde la coherencia de los threads del último bloque.
+		if (current_swap < instance->total_tasks) {
+
+			// Coordenadas del swap.
+			current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
+			current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
+		
+			// Prefiero calcular cosas inutiles con tal de mantener la coherencia entre threads.
+			//if (x < y) {
+	
+				//current_swap_delta = 
+	
+				if (current_swap_delta < best_swap_delta) {
+					best_swap = current_swap;
+					best_swap_delta = current_swap_delta;
+				}
+		
+			//}
+		}
+	}
+
+	// Copio el mejor movimiento de cada hilo a la memoria shared.
 	__shared__ float best_delta[block_idx];
 	__shared__ int best_swap[block_idx];
-
-	int i, current_swap;
-	for (i = 0; i < instance.tasks_per_thread; i++) {
-		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
-	}
 
 	// Write data to global memory
 	//idx = 0;
