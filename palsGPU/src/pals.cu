@@ -118,6 +118,9 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
 	const int total_tasks = instance.total_tasks;
+	const float *gpu_etc_matrix = instance.gpu_etc_matrix;
+	const int *gpu_task_assignment = instance.gpu_task_assignment;
+	const float *gpu_machine_compute_time = instance.gpu_machine_compute_time;
 	
 	int block_offset_start = block_size * tasks_per_thread * block_idx;
 	//int block_offset_end = block_size * tasks_per_thread * (block_idx + 1) - 1; 
@@ -125,22 +128,34 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	// Busco el mejor movimiento de cada hilo.
 	int i;
 	int current_swap;
-	int current_swap_coord_x;
-	int current_swap_coord_y;
-	int current_swap_delta;
-	float best_swap;
+	/*int current_swap_coord_x;
+	int current_swap_coord_y;*/
+	float current_swap_delta;
+	int best_swap;
 	float best_swap_delta;
 
 	// Siempre debería haber al menos un task_per_thread.
-	current_swap = block_offset_start + thread_idx; // block = 0
+	current_swap = block_offset_start + thread_idx; // i = 0
 	
 	// Coordenadas del swap.
-	current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
-	current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
+	//current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
+	//current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
 
 	// El primer task_per_thread siempre debería tener un swap válido.
+	// Calculo el delta de ese primer swap y lo dejo como mejor.
 	best_swap = current_swap;
-	//best_swap_delta = 
+		
+	int machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
+	
+	best_swap_delta = gpu_machine_compute_time[machine]; // Makespan de la máquina a.
+	best_swap_delta -= gpu_etc_matrix[machine][(int)floor((float)current_swap / (float)task_count)]; // Resto del ETC de x en a.
+	best_swap_delta += gpu_etc_matrix[machine][(int)fmod((float)current_swap, (float)task_count)];; // Sumo el ETC de y en a.
+	
+	machine = gpu_task_assignment[(int)fmod((float)current_swap, (float)task_count)]; // Máquina b.
+	
+	best_swap_delta += gpu_machine_compute_time[machine]; // Makespan de la máquian b.
+	best_swap_delta -= gpu_etc_matrix[machine][(int)fmod((float)current_swap, (float)task_count)]; // Resto el ETC de y en b.
+	best_swap_delta += gpu_etc_matrix[machine][(int)floor((float)current_swap / (float)task_count)]; // Sumo el ETC de x en b.
 
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
@@ -151,17 +166,26 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 		// per block, el último bloque puede tener threads sobrantes. En este
 		// caso se pierde la coherencia de los threads del último bloque.
 		if (current_swap < total_tasks) {
-
-			// Coordenadas del swap.
-			current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
-			current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
-		
+	
 			// Prefiero calcular cosas inutiles con tal de mantener la coherencia entre threads.
 			//if (x < y) {
 	
-				//current_swap_delta = 
+				// Calculo el delta del swap i.
+				int machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
+	
+				//current_swap_delta = gpu_machine_compute_time[machine]; // Makespan de la máquina a.
+				current_swap_delta -= gpu_etc_matrix[machine][(int)floor((float)current_swap / (float)task_count)]; // Resto del ETC de x en a.
+				current_swap_delta += gpu_etc_matrix[machine][(int)fmod((float)current_swap, (float)task_count)];; // Sumo el ETC de y en a.
+	
+				machine = gpu_task_assignment[(int)fmod((float)current_swap, (float)task_count)]; // Máquina b.
+	
+				//current_swap_delta += gpu_machine_compute_time[machine]; // Makespan de la máquian b.
+				current_swap_delta -= gpu_etc_matrix[machine][(int)fmod((float)current_swap, (float)task_count)]; // Resto el ETC de y en b.
+				current_swap_delta += gpu_etc_matrix[machine][(int)floor((float)current_swap / (float)task_count)]; // Sumo el ETC de x en b.
 	
 				if (current_swap_delta < best_swap_delta) {
+					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
+					
 					best_swap = current_swap;
 					best_swap_delta = current_swap_delta;
 				}
@@ -171,7 +195,25 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	}
 
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
-	__shared__ float block_bests_delta[THREADS_PER_BLOCK];
-	__shared__ int block_bests_delta_swap[THREADS_PER_BLOCK];
+	__shared__ float block_best_swaps[THREADS_PER_BLOCK];
+	__shared__ int block_best_swaps_delta[THREADS_PER_BLOCK];
+
+	block_best_swaps[thread_idx] = best_swap;
+	block_best_swaps_delta[thread_idx] = best_swap_delta;
+	
+	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
+					 // mejores swaps esten copiados a la memoria compartida.
+	
+	int index;
+	for (i = 1; i < THREADS_PER_BLOCK; i *= 2) {
+		index = 2 * i * tid;
+		
+		if (index < THREADS_PER_BLOCK) {
+			if (block_best_swaps_delta[index] >;
+			 += sdata[index + s];
+		}
+		
+		__syncthreads();
+	}
 
 }
