@@ -9,34 +9,39 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 
 void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance) {
 	// Pedido de memoria en el dispositivo y copiado de datos.
+	
+	// Copio la matriz de ETC.
 	int etc_matrix_size = sizeof(float) * etc_matrix->tasks_count * etc_matrix->machines_count;
 	cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size);
 	cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice);	
 		
+	// Copio la asignación de tareas a máquinas actuales.
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
 	cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size);
 	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
 	
+	// Copio el expected compute time acumulado de cada máquina.
 	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count;
 	cudaMalloc((void**)&(instance->gpu_machine_compute_time), machine_compute_time_size);
 	cudaMemcpy(instance->gpu_machine_compute_time, s->machine_compute_time, machine_compute_time_size, cudaMemcpyHostToDevice);
 	
 	// Cantidad de hilos por bloque.
-	instance->block_size = 512;
+	instance->block_size = 128;
 	// Cantidad de swaps evalúa cada hilo.
 	instance->tasks_per_thread = 4;
 	// Cantidad total de swaps a evaluar.
 	instance->total_tasks = etc_matrix->tasks_count * etc_matrix->tasks_count;
+	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
+	//       Hay que arreglar esto y arreglar la función de coordenadas.
 	
 	// Cantidad de bloques necesarios para evaluar todos los swaps.
-	//int number_of_blocks = (int)(ceil(etc_matrix->tasks_count / instance->block_size) * ceil(etc_matrix->tasks_count / instance->tasks_per_thread));
 	int number_of_blocks = (int)ceil((etc_matrix->tasks_count * etc_matrix->tasks_count) / (instance->block_size * instance->tasks_per_thread));
 	instance->number_of_blocks = number_of_blocks;
 	
-	fprintf(stdout, "[INFO] Block threads   : %i\n", instance->block_size);
-	fprintf(stdout, "[INFO] Tasks per thread: %i\n", instance->tasks_per_thread);
-	fprintf(stdout, "[INFO] Total tasks     : %i\n", instance->total_tasks);
-	fprintf(stdout, "[INFO] Number of blocks: %i\n", instance->number_of_blocks);
+	fprintf(stdout, "[INFO] Block size (block threads)   : %i\n", instance->block_size);
+	fprintf(stdout, "[INFO] Tasks per thread             : %i\n", instance->tasks_per_thread);
+	fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
+	fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
 	
 	int best_swaps_size = sizeof(int) * number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
@@ -53,12 +58,13 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 	dim3 grid(instance->number_of_blocks, 1, 1);
 	dim3 threads(instance->block_size, 1, 1);
 
-	/*pals_kernel<<< grid, threads >>>(
+	pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		etc_matrix->machines_count, 
 		*instance,
-		s->makespan);*/
-		
+		s->makespan);
+
+	/*		
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
@@ -74,6 +80,7 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 				s->makespan);
 		}
 	}
+	*/
 
 	//cudaMemcpy(cpu_odata,gpu_odata,nBytes,cudaMemcpyDeviceToHost);
 }
@@ -89,7 +96,7 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	
 	int i, current_swap;
 	for (i = 0; i < instance.tasks_per_thread; i++) {
-		current_swap = block_offset_start + (instance.block_size * i) + thread_id;
+		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
 		fprintf(stdout, "[DEBUG] >>>         [proceso swap: %i]\n", current_swap);
 		fprintf(stdout, "[DEBUG] >>>         [proceso swap x: %i]\n", (int)floor((float)current_swap / (float)task_count));
 		fprintf(stdout, "[DEBUG] >>>         [proceso swap y: %i]\n", (int)fmod((float)current_swap, (float)task_count));
@@ -106,7 +113,7 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	
 	int i, current_swap;
 	for (i = 0; i < instance.tasks_per_thread; i++) {
-		current_swap = block_offset_start + (instance.tasks_per_thread * instance.block_size);
+		current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
 	}
 
 	// Write data to global memory
