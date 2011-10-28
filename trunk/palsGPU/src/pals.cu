@@ -129,8 +129,8 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	current_swap = block_offset_start + (instance.block_size * i) + thread_idx;
 	
 	// Coordenadas del swap.
-	x = (int)floor((float)current_swap / (float)task_count);
-	y = (int)fmod((float)current_swap, (float)task_count);
+	current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
+	current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
 
 	// El primer task_per_thread siempre debería tener un swap válido.
 	best_swap = current_swap;
