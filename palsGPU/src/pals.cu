@@ -4,6 +4,8 @@
 
 #include "pals.h"
 
+#define THREADS_PER_BLOCK 128
+
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct pals_instance instance, float current_makespan);
 __global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance, float current_makespan);
 
@@ -26,7 +28,7 @@ void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instan
 	cudaMemcpy(instance->gpu_machine_compute_time, s->machine_compute_time, machine_compute_time_size, cudaMemcpyHostToDevice);
 	
 	// Cantidad de hilos por bloque.
-	instance->block_size = 128;
+	instance->block_size = THREADS_PER_BLOCK;
 	// Cantidad de swaps evalúa cada hilo.
 	instance->tasks_per_thread = 4;
 	// Cantidad total de swaps a evaluar.
@@ -165,7 +167,7 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	}
 
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
-	__shared__ float block_bests_delta[block_idx];
-	__shared__ int block_bests_delta_swap[block_idx];
+	__shared__ float block_bests_delta[THREADS_PER_BLOCK];
+	__shared__ int block_bests_delta_swap[THREADS_PER_BLOCK];
 
 }
