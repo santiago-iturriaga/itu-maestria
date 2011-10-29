@@ -7,7 +7,8 @@
 #define THREADS_PER_BLOCK 128
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance);
-__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance);
+__global__ void pals_kernel(int task_count, int machine_count, int block_size, int tasks_per_thread, int total_tasks, 
+	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_best_swaps, float *gpu_best_swaps_delta);
 
 void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance) {
 	// Pedido de memoria en el dispositivo y copiado de datos.
@@ -99,7 +100,10 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 	pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		etc_matrix->machines_count, 
-		*instance);
+		instance->block_size, instance->tasks_per_thread, 
+		instance->total_tasks, instance->gpu_etc_matrix, 
+		instance->gpu_task_assignment, instance->gpu_best_swaps, 
+		instance->gpu_best_swaps_delta);
 
 	// No es necesario --------------------------------------
 	int aux_swaps[instance->number_of_blocks];
@@ -191,7 +195,9 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	fprintf(stdout, "[DEBUG] >>>         [swap delta: %f]\n", best_swap_delta);
 }
 
-__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance)
+__global__ void pals_kernel(int task_count, int machine_count, int block_size,
+	int tasks_per_thread, int total_tasks, float *gpu_etc_matrix, int *gpu_task_assignment, 
+	int *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	// Configuración optima (¿?):
 	// 128 threads.
@@ -201,11 +207,13 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 
+	/*
 	const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
 	const int total_tasks = instance.total_tasks;
 	const float *gpu_etc_matrix = instance.gpu_etc_matrix;
 	const int *gpu_task_assignment = instance.gpu_task_assignment;
+	*/
 	
 	int block_offset_start = block_size * tasks_per_thread * block_idx;
 
@@ -239,8 +247,8 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 
 	if (thread_idx == 0) {
-		instance.gpu_best_swaps[block_idx] = machine; //best_swap;
-		instance.gpu_best_swaps_delta[block_idx] = gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; //best_swap_delta;
+		gpu_best_swaps[block_idx] = machine; //best_swap;
+		gpu_best_swaps_delta[block_idx] = gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; //best_swap_delta;
 	}
 
 	/*

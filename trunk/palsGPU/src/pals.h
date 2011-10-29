@@ -16,7 +16,7 @@ struct pals_instance {
 	int *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	int *gpu_best_swaps;
-	int *gpu_best_swaps_delta;
+	float *gpu_best_swaps_delta;
 	
 	int block_size;
 	int tasks_per_thread;
