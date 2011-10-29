@@ -14,6 +14,9 @@ local: src/main.cu src/pals.cu src/load_params.cu src/load_instance.cu \
 	$(NVCCLocal) -g --ptxas-options=-v  src/pals.cu src/load_instance.cu src/load_params.cu src/main.cu \
 		src/etc_matrix.cu src/solution.cu src/mct.cu -o bin/pals_gpu
 		
+mem: src/pals.cu
+	$(NVCCLocal) -ptx src/pals.cu -o mem.out
+		
 clean: bin/pals_gpu
 	rm bin/pals_gpu
 
