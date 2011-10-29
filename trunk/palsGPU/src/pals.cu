@@ -85,6 +85,8 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 		*instance,
 		s->makespan);*/
 	
+	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", instance->gpu_task_assignment[0]);
+	
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
