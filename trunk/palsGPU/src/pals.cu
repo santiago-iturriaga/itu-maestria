@@ -79,11 +79,7 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 	dim3 grid(instance->number_of_blocks, 1, 1);
 	dim3 threads(instance->block_size, 1, 1);
 
-	/*pals_kernel<<< grid, threads >>>(
-		etc_matrix->tasks_count, 
-		etc_matrix->machines_count, 
-		*instance);*/
-	
+	/*
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
@@ -98,8 +94,13 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 				*etc_matrix, *s, *instance);
 		}
 	}
+	*/
 
-	/*
+	pals_kernel<<< grid, threads >>>(
+		etc_matrix->tasks_count, 
+		etc_matrix->machines_count, 
+		*instance);
+
 	// No es necesario --------------------------------------
 	int aux_swaps[instance->number_of_blocks];
 	for (int i = 0; i < instance->number_of_blocks; i++) {
@@ -124,7 +125,6 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 		fprintf(stdout, "   Swap ID %d, swap delta = %f\n", aux_swaps[i], aux_swaps_delta[i]);
 	}
 	// No es necesario --------------------------------------
-	*/
 }
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance) {
@@ -238,8 +238,10 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	best_swap_delta -= gpu_etc_matrix[machine * ((int)fmod((float)current_swap, (float)task_count))]; // Resto el ETC de y en b.
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 
-	instance.gpu_best_swaps[block_idx] = best_swap;
-	instance.gpu_best_swaps_delta[block_idx] = best_swap_delta;
+	if (thread_idx == 0) {
+		instance.gpu_best_swaps[block_idx] = best_swap;
+		instance.gpu_best_swaps_delta[block_idx] = best_swap_delta;
+	}
 
 	/*
 	// Para todos los demás task_per_thread.
