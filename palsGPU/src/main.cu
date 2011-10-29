@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 		int task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
 		int machine_b = current_solution->task_assignment[task_y];
 	
-		fprintf(stdout, "   Swap ID %d. Delta. Task %d in %d swaps with task %d in %d.\n", 
+		fprintf(stdout, "   Swap ID %d. Delta %f. Task %d in %d swaps with task %d in %d.\n", 
 			current_swap, best_swaps_delta[i], task_x, machine_a, task_y, machine_b);
 	}
 	// No es necesario --------------------------------------
