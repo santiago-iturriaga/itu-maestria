@@ -46,27 +46,12 @@ void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instan
 	fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
 	fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
 	
+	// Pido memoria para guardar el resultado.
 	int best_swaps_size = sizeof(int) * number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
-	
-	// No es necesario --------------------------------------
-	int aux_swaps[number_of_blocks];
-	for (int i = 0; i < number_of_blocks; i++) {
-		aux_swaps[i] = 0;
-	}		
-	cudaMemcpy(instance->gpu_best_swaps, aux_swaps, best_swaps_size, cudaMemcpyHostToDevice);
-	// No es necesario --------------------------------------
 		
 	int best_swaps_delta_size = sizeof(float) * number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
-	
-	// No es necesario --------------------------------------
-	float aux_swaps_delta[number_of_blocks];
-	for (int i = 0; i < number_of_blocks; i++) {
-		aux_swaps_delta[i] = 0.0;
-	}		
-	cudaMemcpy(instance->gpu_best_swaps_delta, aux_swaps_delta, best_swaps_delta_size, cudaMemcpyHostToDevice);
-	// No es necesario --------------------------------------
 }
 
 void pals_finalize(struct pals_instance *instance) {
@@ -76,7 +61,9 @@ void pals_finalize(struct pals_instance *instance) {
 	cudaFree(instance->gpu_best_swaps);
 }
 
-void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance) {
+void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance, 
+	int best_swaps[], float best_swaps_delta[]) {
+	
 	dim3 grid(instance->number_of_blocks, 1, 1);
 	dim3 threads(instance->block_size, 1, 1);
 
@@ -105,30 +92,9 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 		instance->gpu_task_assignment, instance->gpu_best_swaps, 
 		instance->gpu_best_swaps_delta);
 
-	// No es necesario --------------------------------------
-	int aux_swaps[instance->number_of_blocks];
-	for (int i = 0; i < instance->number_of_blocks; i++) {
-		aux_swaps[i] = -1;
-	}
-	// No es necesario --------------------------------------		
-	
-	cudaMemcpy(aux_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
-	
-	// No es necesario --------------------------------------
-	float aux_swaps_delta[instance->number_of_blocks];
-	for (int i = 0; i < instance->number_of_blocks; i++) {
-		aux_swaps_delta[i] = -1.0;
-	}		
-	// No es necesario --------------------------------------
-		
-	cudaMemcpy(aux_swaps_delta, instance->gpu_best_swaps_delta, sizeof(float) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
-
-	// No es necesario --------------------------------------
-	fprintf(stdout, "[DEBUG] Mejores swaps:\n");
-	for (int i = 0; i < instance->number_of_blocks; i++) {
-		fprintf(stdout, "   Swap ID %d, swap delta = %f\n", aux_swaps[i], aux_swaps_delta[i]);
-	}
-	// No es necesario --------------------------------------
+	// Copio los mejores movimientos desde el dispositivo.
+	cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(best_swaps_delta, instance->gpu_best_swaps_delta, sizeof(float) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
 }
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance) {
@@ -257,7 +223,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 		if (current_swap < total_tasks) {
 	
 			// Prefiero calcular cosas inutiles con tal de mantener la coherencia entre threads.
-			//if (x < y) {
+			//if ((x < y) && (machine_a != machine_b)) {
 
 				// Calculo el delta del swap i.
 				current_swap_delta = 0.0;

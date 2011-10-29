@@ -59,11 +59,29 @@ int main(int argc, char** argv)
 		
 	// Inicializo la memoria en el dispositivo.
 	pals_init(etc_matrix, current_solution, &instance);
+
+	int best_swaps[instance.number_of_blocks];
+	float best_swaps_delta[instance.number_of_blocks];
 		
 	// Ejecuto GPUPALS.
 	//for () {
-	pals_wrapper(etc_matrix, current_solution, &instance);
+	pals_wrapper(etc_matrix, current_solution, &instance, best_swaps, best_swaps_delta);
 	//}
+	
+	// No es necesario --------------------------------------
+	fprintf(stdout, "[DEBUG] Mejores swaps:\n");
+	for (int i = 0; i < instance.number_of_blocks; i++) {
+		int current_swap = best_swaps[i];
+	
+		int task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
+		int machine_a = current_solution->task_assignment[task_x];
+		int task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
+		int machine_b = current_solution->task_assignment[task_y];
+	
+		fprintf(stdout, "   Swap ID %d. Delta %f\n. Task %d from %d swaps with task %d in %d.", 
+			current_swap, best_swaps_delta[i], task_x, machine_a, task_y, machine_b);
+	}
+	// No es necesario --------------------------------------
 	
 	// Libero la memoria del dispositivo.
 	pals_finalize(&instance);
