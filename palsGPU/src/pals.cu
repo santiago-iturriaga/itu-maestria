@@ -6,8 +6,8 @@
 
 #define THREADS_PER_BLOCK 128
 
-void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct pals_instance instance, float current_makespan);
-__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance, float current_makespan);
+void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance);
+__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance);
 
 void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance) {
 	// Pedido de memoria en el dispositivo y copiado de datos.
@@ -82,10 +82,9 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 	/*pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		etc_matrix->machines_count, 
-		*instance,
-		s->makespan);*/
+		*instance);*/
 	
-	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", instance->gpu_task_assignment[0]);
+	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", s->task_assignment[0]);
 	
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
@@ -98,8 +97,7 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 				thread_id,
 				etc_matrix->tasks_count, 
 				etc_matrix->machines_count, 
-				*instance,
-				s->makespan);
+				*etc_matrix, *s, *instance);
 		}
 	}
 
@@ -131,15 +129,15 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 	*/
 }
 
-void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct pals_instance instance, float current_makespan) {
+void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance) {
 	const unsigned int thread_idx = thread_id;
 	const unsigned int block_idx = block_id;
 	
 	const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
 	const int total_tasks = instance.total_tasks;
-	const float *gpu_etc_matrix = instance.gpu_etc_matrix;
-	const int *gpu_task_assignment = instance.gpu_task_assignment;
+	const float *gpu_etc_matrix = etc.data;
+	const int *gpu_task_assignment = s.task_assignment;
 	
 	int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
 	int block_offset_end = instance.block_size * instance.tasks_per_thread * (block_idx + 1) - 1;
@@ -193,7 +191,7 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	fprintf(stdout, "[DEBUG] >>>         [swap delta: %f]\n", best_swap_delta);
 }
 
-__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance, float current_makespan)
+__global__ void pals_kernel(int task_count, int machine_count, struct pals_instance instance)
 {
 	// Configuración optima (¿?):
 	// 128 threads.
