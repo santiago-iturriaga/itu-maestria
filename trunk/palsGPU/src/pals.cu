@@ -246,11 +246,6 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	best_swap_delta -= gpu_etc_matrix[machine * ((int)fmod((float)current_swap, (float)task_count))]; // Resto el ETC de y en b.
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 
-	if (thread_idx == 0) {
-		gpu_best_swaps[block_idx] = machine; //best_swap;
-		gpu_best_swaps_delta[block_idx] = gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; //best_swap_delta;
-	}
-
 	/*
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
@@ -288,6 +283,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 			//}
 		}
 	}
+	*/
 
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
@@ -313,7 +309,8 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 		__syncthreads();
 	}
 
-	instance.gpu_best_swaps[block_idx] = block_best_swaps[0];
-	instance.gpu_best_swaps_delta[block_idx] = block_best_swaps_delta[0];
-	*/
+	if (thread_idx == 0) {
+		gpu_best_swaps[block_idx] = block_best_swaps[0]; //best_swap;
+		gpu_best_swaps_delta[block_idx] = block_best_swaps_delta[0]; //best_swap_delta;
+	}
 }
