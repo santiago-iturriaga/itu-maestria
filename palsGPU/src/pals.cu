@@ -173,6 +173,9 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	best_swap = current_swap;
 	best_swap_delta = 0.0;
 		
+	fprintf(stdout, "[DEBUG] >>>         [task x: %d]\n", (int)floor((float)current_swap / (float)task_count));
+	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", gpu_task_assignment[(int)floor((float)current_swap / (float)task_count))]);
+		
 	int machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
 	
 	best_swap_delta -= gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Resto del ETC de x en a.
