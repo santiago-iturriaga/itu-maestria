@@ -69,18 +69,40 @@ int main(int argc, char** argv)
 	//}
 	
 	// No es necesario --------------------------------------
+	int current_swap;
+	int task_x;
+	int machine_a;
+	int task_y;
+	int machine_b;
+	
 	fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 	for (int i = 0; i < instance.number_of_blocks; i++) {
-		int current_swap = best_swaps[i];
-	
-		int task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
-		int machine_a = current_solution->task_assignment[task_x];
-		int task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
-		int machine_b = current_solution->task_assignment[task_y];
+		current_swap = best_swaps[i];
+		task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
+		machine_a = current_solution->task_assignment[task_x];
+		task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
+		machine_b = current_solution->task_assignment[task_y];
 	
 		fprintf(stdout, "   Swap ID %d. Delta %f. Task %d in %d swaps with task %d in %d.\n", 
 			current_swap, best_swaps_delta[i], task_x, machine_a, task_y, machine_b);
 	}
+	fprintf(stdout, "[DEBUG] Ejecuto el primer swap:\n");
+	
+	current_swap = best_swaps[0];
+	task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
+	machine_a = current_solution->task_assignment[task_x];
+	task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
+	machine_b = current_solution->task_assignment[task_y];
+
+	fprintf(stdout, "   Swap ID %d. Delta %f. Task %d in %d swaps with task %d in %d.\n", 
+		current_swap, best_swaps_delta[0], task_x, machine_a, task_y, machine_b);
+	
+	float swap_delta = 0.0;
+	swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
+	swap_delta += get_etc_value(etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
+	swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
+	swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
+	fprintf(stdout, "   Computed Delta %f.\n", swap_delta);
 	// No es necesario --------------------------------------
 	
 	// Libero la memoria del dispositivo.
