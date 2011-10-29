@@ -88,14 +88,16 @@ int main(int argc, char** argv)
 	}
 	fprintf(stdout, "[DEBUG] Ejecuto el primer swap:\n");
 	
-	current_swap = best_swaps[0];
+	int index = instance.number_of_blocks - 1;
+	current_swap = best_swaps[index];
+		
 	task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
 	machine_a = current_solution->task_assignment[task_x];
 	task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
 	machine_b = current_solution->task_assignment[task_y];
 
 	fprintf(stdout, "   Swap ID %d. Delta %f. Task %d in %d swaps with task %d in %d.\n", 
-		current_swap, best_swaps_delta[0], task_x, machine_a, task_y, machine_b);
+		current_swap, best_swaps_delta[index], task_x, machine_a, task_y, machine_b);
 	
 	float swap_delta = 0.0;
 	swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
