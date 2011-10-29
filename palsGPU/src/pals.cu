@@ -84,8 +84,6 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 		etc_matrix->machines_count, 
 		*instance);*/
 	
-	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", s->task_assignment[0]);
-	
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
@@ -175,6 +173,8 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 		
 	fprintf(stdout, "[DEBUG] >>>         [task x: %d]\n", (int)floor((float)current_swap / (float)task_count));
 	fprintf(stdout, "[DEBUG] >>>         [machine a: %d]\n", gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]);
+	fprintf(stdout, "[DEBUG] >>>         [task y: %d]\n", (int)fmod((float)current_swap, (float)task_count));
+	fprintf(stdout, "[DEBUG] >>>         [machine b: %d]\n", gpu_task_assignment[(int)fmod((float)current_swap, (float)task_count)]);
 		
 	int machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
 	
