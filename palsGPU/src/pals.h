@@ -37,6 +37,6 @@ void pals_finalize(struct pals_instance *instance);
 /*
  * Ejecuta PALS en el dispositivo.
  */
-void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance);
+void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance, int best_swaps[], float best_swaps_delta[]);
 
 #endif /* PALS_H_ */
