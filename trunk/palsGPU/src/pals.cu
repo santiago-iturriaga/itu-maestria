@@ -239,8 +239,8 @@ __global__ void pals_kernel(int task_count, int machine_count, struct pals_insta
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 
 	if (thread_idx == 0) {
-		instance.gpu_best_swaps[block_idx] = best_swap;
-		instance.gpu_best_swaps_delta[block_idx] = best_swap_delta;
+		instance.gpu_best_swaps[block_idx] = machine; //best_swap;
+		instance.gpu_best_swaps_delta[block_idx] = gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; //best_swap_delta;
 	}
 
 	/*
