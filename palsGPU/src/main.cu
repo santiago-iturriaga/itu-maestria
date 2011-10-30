@@ -66,7 +66,13 @@ int main(int argc, char** argv)
 		// =============================================================
 		// Serial
 		// =============================================================
+		int best_swap_task_a;
+		int best_swap_task_b;
+		float best_swap_delta;
 		
+		pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
+		
+		fprintf(stdout, "[DEBUG] Best swap: task %d for task %d. Gain %f.\n", best_swap_task_a, best_swap_task_b, best_swap_delta);
 	} else if (input.pals_flavour == PALS_GPU) {
 		// =============================================================
 		// CUDA
@@ -124,7 +130,7 @@ int main(int argc, char** argv)
 		double elapsed;
 		elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
 				- ts.tv_nsec) / 1000.0);
-		fprintf(stdout, "[TIMMING] Elapsed PALS time: %f ms\n", elapsed);
+		fprintf(stdout, "[TIMMING] Elapsed PALS time: %f microsegs.\n", elapsed);
 	}
 	// Timming -----------------------------------------------------
 
