@@ -4,7 +4,8 @@
 
 #include "pals.h"
 
-#define THREADS_PER_BLOCK 128
+#define THREADS_PER_BLOCK 1 
+//128
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance);
 __global__ void pals_kernel(int task_count, int machine_count, int block_size, int tasks_per_thread, int total_tasks, 
@@ -31,7 +32,7 @@ void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instan
 	// Cantidad de hilos por bloque.
 	instance->block_size = THREADS_PER_BLOCK;
 	// Cantidad de swaps evalúa cada hilo.
-	instance->tasks_per_thread = 4;
+	instance->tasks_per_thread = 65535; //4;
 	// Cantidad total de swaps a evaluar.
 	instance->total_tasks = etc_matrix->tasks_count * etc_matrix->tasks_count;
 	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
