@@ -21,6 +21,24 @@
 #include "solution.h"
 #include "config.h"
 
+void timming_start(timespec &ts) {
+	if (TIMMING) {
+		clock_gettime(CLOCK_REALTIME, &ts);
+	}
+}
+
+void timming_end(char *message, timespec &ts) {
+	if (TIMMING) {
+		timespec ts_end;
+		clock_gettime(CLOCK_REALTIME, &ts_end);
+
+		double elapsed;
+		elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
+				- ts.tv_nsec) / 1000.0);
+		fprintf(stdout, "[TIMMING] %s: %f microsegs.\n", message, elapsed);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	// =============================================================
@@ -78,18 +96,36 @@ int main(int argc, char** argv)
 		// CUDA
 		// =============================================================
 		struct pals_gpu_instance instance;
+
+		// Timming -----------------------------------------------------
+		timespec ts_init;
+		timming_start(ts_init);
+		// Timming -----------------------------------------------------
 				
 		// Inicializo la memoria en el dispositivo.
 		pals_gpu_init(etc_matrix, current_solution, &instance);
 
+		// Timming -----------------------------------------------------
+		timming_end("pals_gpu_init", ts_init);
+		// Timming -----------------------------------------------------
+
 		int best_swap_count;
 		int best_swaps[instance.number_of_blocks];
 		float best_swaps_delta[instance.number_of_blocks];
+
+		// Timming -----------------------------------------------------
+		timespec ts_wrapper;
+		timming_start(ts_wrapper);
+		// Timming -----------------------------------------------------
 		
 		// Ejecuto GPUPALS.
 		//for () {
 		pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
 		//}
+		
+		// Timming -----------------------------------------------------
+		timming_end("pals_gpu_wrapper", ts_wrapper);
+		// Timming -----------------------------------------------------
 	
 		// Debug ------------------------------------------------------------------------------------------
 		/*if (DEBUG) {
@@ -119,8 +155,17 @@ int main(int argc, char** argv)
 		}*/
 		// Debug ------------------------------------------------------------------------------------------
 	
+		// Timming -----------------------------------------------------
+		timespec ts_finalize;
+		timming_start(ts_finalize);
+		// Timming -----------------------------------------------------
+	
 		// Libero la memoria del dispositivo.
 		pals_gpu_finalize(&instance);
+		
+		// Timming -----------------------------------------------------
+		timming_end("pals_gpu_finalize", ts_finalize);
+		// Timming -----------------------------------------------------
 	}
 	// Timming -----------------------------------------------------
 	if (TIMMING) {
