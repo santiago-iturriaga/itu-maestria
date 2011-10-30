@@ -68,7 +68,13 @@ int main(int argc, char** argv)
 	pals_wrapper(etc_matrix, current_solution, &instance, best_swaps, best_swaps_delta);
 	//}
 	
-	// No es necesario --------------------------------------
+	// Debug ------------------------------------------------------------------------------------------
+	int current_swap;
+	int task_x;
+	int machine_a;
+	int task_y;
+	int machine_b;
+	
 	fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 	for (int i = 0; i < instance.number_of_blocks; i++) {
 		current_swap = best_swaps[i];
@@ -86,7 +92,7 @@ int main(int argc, char** argv)
 		fprintf(stdout, "   Swap ID %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
 			current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 	}
-	// No es necesario --------------------------------------
+	// Debug ------------------------------------------------------------------------------------------
 	
 	// Libero la memoria del dispositivo.
 	pals_finalize(&instance);
