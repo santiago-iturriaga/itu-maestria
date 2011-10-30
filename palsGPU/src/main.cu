@@ -54,6 +54,14 @@ int main(int argc, char** argv)
 	
 	validate_solution(etc_matrix, current_solution);
 
+	// Timming -----------------------------------------------------
+	timespec ts;
+
+	if (TIMMING) {
+		clock_gettime(CLOCK_REALTIME, &ts);
+	}
+	// Timming -----------------------------------------------------
+	
 	if (input.pals_flavour == PALS_Serial) {
 		// =============================================================
 		// Serial
@@ -64,7 +72,7 @@ int main(int argc, char** argv)
 		// CUDA
 		// =============================================================
 		struct pals_gpu_instance instance;
-		
+				
 		// Inicializo la memoria en el dispositivo.
 		pals_gpu_init(etc_matrix, current_solution, &instance);
 
@@ -108,6 +116,17 @@ int main(int argc, char** argv)
 		// Libero la memoria del dispositivo.
 		pals_gpu_finalize(&instance);
 	}
+	// Timming -----------------------------------------------------
+	if (TIMMING) {
+		timespec ts_end;
+		clock_gettime(CLOCK_REALTIME, &ts_end);
+
+		double elapsed;
+		elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
+				- ts.tv_nsec) / 1000.0);
+		fprintf(stdout, "[TIMMING] Elapsed PALS time: %f ms\n", elapsed);
+	}
+	// Timming -----------------------------------------------------
 
 	// =============================================================
 	// Free memory
