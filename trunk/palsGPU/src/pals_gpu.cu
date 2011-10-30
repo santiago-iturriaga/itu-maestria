@@ -7,6 +7,7 @@
 #include "pals_gpu.h"
 
 #define THREADS_PER_BLOCK 128
+#define MIN_TASKS_PER_THREAD 4
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, 
 	struct pals_gpu_instance instance);
@@ -17,19 +18,22 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size, i
 void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {
 	// Cantidad de hilos por bloque.
 	instance->block_size = THREADS_PER_BLOCK;
-	// Cantidad de swaps evalúa cada hilo.
-	instance->tasks_per_thread = 4;
 	// Cantidad total de swaps a evaluar.
 	instance->total_tasks = (unsigned long)etc_matrix->tasks_count * (unsigned long)etc_matrix->tasks_count;
 	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
 	//       Hay que arreglar esto y arreglar la función de coordenadas.
-	
-	// Cantidad de bloques necesarios para evaluar todos los swaps.
-	int number_of_blocks = (int)ceil(
-		((unsigned long)etc_matrix->tasks_count * (unsigned long)etc_matrix->tasks_count) / 
-		((unsigned long)instance->block_size * (unsigned long)instance->tasks_per_thread));
+
+	int tasks_per_thread = (int)ceil(instance->total_tasks / (unsigned long)(65536 * THREADS_PER_BLOCK));
+	if (tasks_per_thread < MIN_TASKS_PER_THREAD) {
+		// Cantidad de swaps evalúa cada hilo.
+		instance->tasks_per_thread = MIN_TASKS_PER_THREAD;
 		
-	instance->number_of_blocks = number_of_blocks;
+		// Cantidad de bloques necesarios para evaluar todos los swaps.
+		instance->number_of_blocks = (int)ceil(instance->total_tasks / (unsigned long)(THREADS_PER_BLOCK * MIN_TASKS_PER_THREAD));
+	} else {
+		instance->number_of_blocks = 65536;
+		instance->tasks_per_thread = tasks_per_thread;
+	}
 	
 	if (DEBUG) {
 		fprintf(stdout, "[INFO] Block size (block threads)   : %d\n", instance->block_size);
@@ -63,10 +67,10 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	timming_start(ts_4);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(int) * number_of_blocks;	
+	int best_swaps_size = sizeof(int) * instance->number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
 		
-	int best_swaps_delta_size = sizeof(float) * number_of_blocks;	
+	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
 	
 	timming_end("gpu_best_swaps", ts_4);
