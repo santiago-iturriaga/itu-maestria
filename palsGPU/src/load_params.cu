@@ -14,9 +14,15 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->machines_count = atoi(argv[3]);
 		fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
 
+		input->pals_flavour = atoi(argv[4]);
+		fprintf(stdout, "[PARAMS] PALS falvour: %d\n", input->pals_flavour);
+		
 		return EXIT_SUCCESS;
 	} else {
-		fprintf(stdout, "Help: %s <instance_path> <tasks count> <machines count>\n", argv[0]);
+		fprintf(stdout, "Usage:\n");	
+		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour>\n\n", argv[0]);
+		fprintf(stdout, "       pals flavour = 0 serial | 1 gpu\n");
+		fprintf(stdout, "\n");
 
 		return EXIT_FAILURE;
 	}
