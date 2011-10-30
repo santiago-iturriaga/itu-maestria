@@ -25,7 +25,10 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	//       Hay que arreglar esto y arreglar la función de coordenadas.
 	
 	// Cantidad de bloques necesarios para evaluar todos los swaps.
-	int number_of_blocks = (int)ceil((etc_matrix->tasks_count * etc_matrix->tasks_count) / (instance->block_size * instance->tasks_per_thread));
+	int number_of_blocks = (int)ceil(
+		((unsigned long)etc_matrix->tasks_count * (unsigned long)etc_matrix->tasks_count) / 
+		((unsigned long)instance->block_size * (unsigned long)instance->tasks_per_thread));
+		
 	instance->number_of_blocks = number_of_blocks;
 	
 	if (DEBUG) {
