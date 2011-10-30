@@ -14,7 +14,7 @@
 struct pals_gpu_instance {
 	float *gpu_etc_matrix;
 	int *gpu_task_assignment;
-	int *gpu_best_swaps;
+	unsigned long int *gpu_best_swaps;
 	float *gpu_best_swaps_delta;
 	
 	int block_size;
@@ -37,6 +37,6 @@ void pals_gpu_finalize(struct pals_gpu_instance *instance);
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance, 
-	int &best_swaps_count, int best_swaps[], float best_swaps_delta[]);
+	int &best_swaps_count, unsigned long int best_swaps[], float best_swaps_delta[]);
 
 #endif /* PALS_GPU_H_ */
