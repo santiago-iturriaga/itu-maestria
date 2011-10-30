@@ -14,7 +14,6 @@
 /*
  * Ejecuta PALS serial en la CPU.
  */
-void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s, int &best_swaps_count, 
-	int best_swaps[], float best_swaps_delta[]);
+void pals_serial(struct matrix *etc_matrix, struct solution *s, int &best_swap_task_a, int &best_swap_task_b, float &best_swap_delta);
 
 #endif /* PALS_SERIAL_H_ */
