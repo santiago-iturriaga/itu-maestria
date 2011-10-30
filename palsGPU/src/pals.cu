@@ -94,8 +94,11 @@ void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_ins
 		instance->gpu_best_swaps_delta);
 
 	// Copio los mejores movimientos desde el dispositivo.
-	cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
-	cudaMemcpy(best_swaps_delta, instance->gpu_best_swaps_delta, sizeof(float) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
+	/*cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(best_swaps_delta, instance->gpu_best_swaps_delta, sizeof(float) * instance->number_of_blocks, cudaMemcpyDeviceToHost);*/
+
+	cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * 4, cudaMemcpyDeviceToHost);
+	cudaMemcpy(best_swaps_delta, instance->gpu_best_swaps_delta, sizeof(float) * 5, cudaMemcpyDeviceToHost);
 }
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, struct pals_instance instance) {
@@ -215,8 +218,8 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 	*/
 
-	int current_swap_coord_x = (int)(current_swap / task_count); //174;
-	int current_swap_coord_y = (int)(current_swap % task_count); //0;
+	int current_swap_coord_x = current_swap / task_count; //174;
+	int current_swap_coord_y = current_swap % task_count; //0;
 
 	int machine_a = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
