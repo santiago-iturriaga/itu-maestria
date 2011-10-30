@@ -103,7 +103,6 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	
 	const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
-	const int total_tasks = instance.total_tasks;
 	const float *gpu_etc_matrix = etc.data;
 	const int *gpu_task_assignment = s.task_assignment;
 	
@@ -123,9 +122,7 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	block_offset_start = block_size * tasks_per_thread * block_idx;
 
 	// Busco el mejor movimiento de cada hilo.
-	int i;
 	int current_swap;
-	float current_swap_delta;
 	int best_swap;
 	float best_swap_delta;
 
@@ -181,7 +178,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	const int *gpu_task_assignment = instance.gpu_task_assignment;
 	*/
 	
-	int block_offset_start = block_size * tasks_per_thread * block_idx;
+	const int block_offset_start = block_size * tasks_per_thread * block_idx;
 
 	// Busco el mejor movimiento de cada hilo.
 	int i;
@@ -242,7 +239,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 
 				current_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 	
-				if (current_swap_delta < best_swap_delta) {
+				if (current_swap_delta <= best_swap_delta) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
 					
 					best_swap = current_swap;
