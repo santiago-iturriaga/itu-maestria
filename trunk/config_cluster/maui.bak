@@ -99,11 +99,11 @@ SRCFG[eolica] RESOURCES=PROCS:8
 SRCFG[eolica] NODEFEATURES=class0
 SRCFG[eolica] USERLIST=aguti
 
-SRCFG[jamal] PERIOD=INFINITY
-SRCFG[jamal] TPN=1
-SRCFG[jamal] TASKCOUNT=1
-SRCFG[jamal] RESOURCES=PROCS:24
-SRCFG[jamal] USERLIST=jamal,sergion,siturria
+#SRCFG[jamal] PERIOD=INFINITY
+#SRCFG[jamal] TPN=1
+#SRCFG[jamal] TASKCOUNT=1
+#SRCFG[jamal] RESOURCES=PROCS:24
+#SRCFG[jamal] USERLIST=jamal,sergion,siturria
 
 #SRCFG[situ] PERIOD=INFINITY
 #SRCFG[situ] TPN=1
