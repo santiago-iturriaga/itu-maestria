@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	// =============================================================
 	// Loading problem instance
 	// =============================================================
-	if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance ... ");
+	if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance...\n");
 	
 	// Se pide el espacio de memoria para la matriz de ETC.
 	struct matrix *etc_matrix = create_etc_matrix(&input);
@@ -47,24 +47,21 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	if (DEBUG) fprintf(stdout, "<OK>\n");
 	//show_etc_matrix(etc_matrix);
 
 	// =============================================================
 	// Candidate solution
 	// =============================================================
-	if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution ... ");
+	if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
 	struct solution *current_solution = create_empty_solution(etc_matrix);
 	compute_mct(etc_matrix, current_solution);
 	
 	validate_solution(etc_matrix, current_solution);
 
-	if (DEBUG) fprintf(stdout, "<OK>\n");
-
 	// =============================================================
 	// PALS
 	// =============================================================
-	if (DEBUG) fprintf(stdout, "[DEBUG] Executing PALS ... ");
+	if (DEBUG) fprintf(stdout, "[DEBUG] Executing PALS...\n");
 	
 	// Timming -----------------------------------------------------
 	timespec ts;
@@ -161,8 +158,6 @@ int main(int argc, char** argv)
 	// Timming -----------------------------------------------------
 	timming_end("Elapsed PALS time", ts);
 	// Timming -----------------------------------------------------
-
-	if (DEBUG) fprintf(stdout, "<OK>\n");
 
 	// =============================================================
 	// Free memory
