@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		//}
 	
 		// Debug ------------------------------------------------------------------------------------------
-		if (DEBUG) {
+		/*if (DEBUG) {
 			int current_swap;
 			int task_x;
 			int machine_a;
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 				fprintf(stdout, "   Swap ID %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
 					current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
-		}
+		}*/
 		// Debug ------------------------------------------------------------------------------------------
 	
 		// Libero la memoria del dispositivo.
