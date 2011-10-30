@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "config.h"
+#include "utils.h"
 #include "pals_gpu.h"
 
 #define THREADS_PER_BLOCK 128
@@ -16,21 +17,36 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size, i
 void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {
 	// Pedido de memoria en el dispositivo y copiado de datos.
 	
-	// Copio la matriz de ETC.
-	int etc_matrix_size = sizeof(float) * etc_matrix->tasks_count * etc_matrix->machines_count;
-	cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size);
-	cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice);	
-		
-	// Copio la asignación de tareas a máquinas actuales.
-	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
-	cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size);
-	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
+	timespec ts_1;
+	timming_start(ts_1);
 	
 	// Copio el expected compute time acumulado de cada máquina.
 	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count;
 	cudaMalloc((void**)&(instance->gpu_machine_compute_time), machine_compute_time_size);
 	cudaMemcpy(instance->gpu_machine_compute_time, s->machine_compute_time, machine_compute_time_size, cudaMemcpyHostToDevice);
 	
+	timming_end("gpu_machine_compute_time", ts_1);
+
+	timespec ts_2;
+	timming_start(ts_2);
+	
+	// Copio la matriz de ETC.
+	int etc_matrix_size = sizeof(float) * etc_matrix->tasks_count * etc_matrix->machines_count;
+	cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size);
+	cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice);	
+
+	timming_end("gpu_etc_matrix", ts_2);
+
+	timespec ts_3;
+	timming_start(ts_3);
+		
+	// Copio la asignación de tareas a máquinas actuales.
+	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
+	cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size);
+	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
+
+	timming_end("gpu_task_assignment", ts_3);
+
 	// Cantidad de hilos por bloque.
 	instance->block_size = THREADS_PER_BLOCK;
 	// Cantidad de swaps evalúa cada hilo.
@@ -50,6 +66,9 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 		fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
 		fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
 	}
+
+	timespec ts_4;
+	timming_start(ts_4);
 	
 	// Pido memoria para guardar el resultado.
 	int best_swaps_size = sizeof(int) * number_of_blocks;	
@@ -57,6 +76,8 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 		
 	int best_swaps_delta_size = sizeof(float) * number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
+	
+	timming_end("gpu_best_swaps", ts_4);
 }
 
 void pals_gpu_finalize(struct pals_gpu_instance *instance) {
