@@ -214,8 +214,8 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
 	*/
 
-	int current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
-	int current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
+	int current_swap_coord_x = 174;
+	int current_swap_coord_y = 0;
 
 	int machine = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
