@@ -38,7 +38,8 @@ int get_matrix_coord(struct matrix *etc_matrix, int machine, int task) {
 }
 
 void set_etc_value(struct matrix *etc_matrix, int machine, int task, float value) {
-	assert(value > 0.0);
+	// TODO: Ojo! esto no debería ser válido. Pero queda comentado porque la instancia de 65536x2048 tiene 0.0.
+	// assert(value > 0.0);
 	
 	etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)] = value;
 }

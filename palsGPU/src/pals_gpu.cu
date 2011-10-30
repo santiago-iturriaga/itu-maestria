@@ -15,8 +15,27 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size, i
 	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_best_swaps, float *gpu_best_swaps_delta);
 
 void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {
-	// Pedido de memoria en el dispositivo y copiado de datos.
+	// Cantidad de hilos por bloque.
+	instance->block_size = THREADS_PER_BLOCK;
+	// Cantidad de swaps evalúa cada hilo.
+	instance->tasks_per_thread = 4;
+	// Cantidad total de swaps a evaluar.
+	instance->total_tasks = etc_matrix->tasks_count * etc_matrix->tasks_count;
+	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
+	//       Hay que arreglar esto y arreglar la función de coordenadas.
 	
+	// Cantidad de bloques necesarios para evaluar todos los swaps.
+	int number_of_blocks = (int)ceil((etc_matrix->tasks_count * etc_matrix->tasks_count) / (instance->block_size * instance->tasks_per_thread));
+	instance->number_of_blocks = number_of_blocks;
+	
+	if (DEBUG) {
+		fprintf(stdout, "[INFO] Block size (block threads)   : %i\n", instance->block_size);
+		fprintf(stdout, "[INFO] Tasks per thread             : %i\n", instance->tasks_per_thread);
+		fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
+		fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
+	}
+
+	// Pedido de memoria en el dispositivo y copiado de datos.
 	timespec ts_1;
 	timming_start(ts_1);
 	
@@ -46,26 +65,6 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
 
 	timming_end("gpu_task_assignment", ts_3);
-
-	// Cantidad de hilos por bloque.
-	instance->block_size = THREADS_PER_BLOCK;
-	// Cantidad de swaps evalúa cada hilo.
-	instance->tasks_per_thread = 4;
-	// Cantidad total de swaps a evaluar.
-	instance->total_tasks = etc_matrix->tasks_count * etc_matrix->tasks_count;
-	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
-	//       Hay que arreglar esto y arreglar la función de coordenadas.
-	
-	// Cantidad de bloques necesarios para evaluar todos los swaps.
-	int number_of_blocks = (int)ceil((etc_matrix->tasks_count * etc_matrix->tasks_count) / (instance->block_size * instance->tasks_per_thread));
-	instance->number_of_blocks = number_of_blocks;
-	
-	if (DEBUG) {
-		fprintf(stdout, "[INFO] Block size (block threads)   : %i\n", instance->block_size);
-		fprintf(stdout, "[INFO] Tasks per thread             : %i\n", instance->tasks_per_thread);
-		fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
-		fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
-	}
 
 	timespec ts_4;
 	timming_start(ts_4);
