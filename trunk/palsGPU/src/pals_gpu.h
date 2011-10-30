@@ -14,13 +14,12 @@
 struct pals_gpu_instance {
 	float *gpu_etc_matrix;
 	int *gpu_task_assignment;
-	float *gpu_machine_compute_time;
 	int *gpu_best_swaps;
 	float *gpu_best_swaps_delta;
 	
 	int block_size;
 	int tasks_per_thread;
-	int total_tasks;
+	unsigned long total_tasks;
 	int number_of_blocks;
 };
 

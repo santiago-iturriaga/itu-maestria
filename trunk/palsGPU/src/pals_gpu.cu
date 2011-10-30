@@ -11,8 +11,8 @@
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, 
 	struct pals_gpu_instance instance);
 
-__global__ void pals_kernel(int task_count, int machine_count, int block_size, int tasks_per_thread, int total_tasks, 
-	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_best_swaps, float *gpu_best_swaps_delta);
+__global__ void pals_kernel(int task_count, int machine_count, int block_size, int tasks_per_thread, float *gpu_etc_matrix, 
+	int *gpu_task_assignment, int *gpu_best_swaps, float *gpu_best_swaps_delta);
 
 void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {
 	// Cantidad de hilos por bloque.
@@ -20,7 +20,7 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	// Cantidad de swaps evalúa cada hilo.
 	instance->tasks_per_thread = 4;
 	// Cantidad total de swaps a evaluar.
-	instance->total_tasks = etc_matrix->tasks_count * etc_matrix->tasks_count;
+	instance->total_tasks = (unsigned long)etc_matrix->tasks_count * (unsigned long)etc_matrix->tasks_count;
 	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
 	//       Hay que arreglar esto y arreglar la función de coordenadas.
 	
@@ -29,23 +29,13 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	instance->number_of_blocks = number_of_blocks;
 	
 	if (DEBUG) {
-		fprintf(stdout, "[INFO] Block size (block threads)   : %i\n", instance->block_size);
-		fprintf(stdout, "[INFO] Tasks per thread             : %i\n", instance->tasks_per_thread);
-		fprintf(stdout, "[INFO] Total tasks                  : %i\n", instance->total_tasks);
-		fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
+		fprintf(stdout, "[INFO] Block size (block threads)   : %d\n", instance->block_size);
+		fprintf(stdout, "[INFO] Tasks per thread             : %d\n", instance->tasks_per_thread);
+		fprintf(stdout, "[INFO] Total tasks                  : %ld\n", instance->total_tasks);
+		fprintf(stdout, "[INFO] Number of blocks (grid size) : %d\n", instance->number_of_blocks);
 	}
 
 	// Pedido de memoria en el dispositivo y copiado de datos.
-	timespec ts_1;
-	timming_start(ts_1);
-	
-	// Copio el expected compute time acumulado de cada máquina.
-	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count;
-	cudaMalloc((void**)&(instance->gpu_machine_compute_time), machine_compute_time_size);
-	cudaMemcpy(instance->gpu_machine_compute_time, s->machine_compute_time, machine_compute_time_size, cudaMemcpyHostToDevice);
-	
-	timming_end("gpu_machine_compute_time", ts_1);
-
 	timespec ts_2;
 	timming_start(ts_2);
 	
@@ -82,7 +72,6 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 void pals_gpu_finalize(struct pals_gpu_instance *instance) {
 	cudaFree(instance->gpu_etc_matrix);
 	cudaFree(instance->gpu_task_assignment);
-	cudaFree(instance->gpu_machine_compute_time);
 	cudaFree(instance->gpu_best_swaps);
 }
 
@@ -112,9 +101,11 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 	pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		etc_matrix->machines_count, 
-		instance->block_size, instance->tasks_per_thread, 
-		instance->total_tasks, instance->gpu_etc_matrix, 
-		instance->gpu_task_assignment, instance->gpu_best_swaps, 
+		instance->block_size, 
+		instance->tasks_per_thread, 
+		instance->gpu_etc_matrix, 
+		instance->gpu_task_assignment, 
+		instance->gpu_best_swaps, 
 		instance->gpu_best_swaps_delta);
 
 	// Copio los mejores movimientos desde el dispositivo.
@@ -125,7 +116,7 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 }
 
 __global__ void pals_kernel(int task_count, int machine_count, int block_size,
-	int tasks_per_thread, int total_tasks, float *gpu_etc_matrix, int *gpu_task_assignment, 
+	int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
 	int *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	// Configuración optima (¿?):
@@ -182,13 +173,13 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	for (i = 1; i < tasks_per_thread; i++) {
 		current_swap = block_offset_start + (block_size * i) + thread_idx;
 
+		current_swap_coord_x = current_swap / task_count;
+		current_swap_coord_y = current_swap % task_count;
+
 		// Si la cantidad de tareas no es divisible entre la cantidad de threads
 		// per block, el último bloque puede tener threads sobrantes. En este
 		// caso se pierde la coherencia de los threads del último bloque.
-		if (current_swap < total_tasks) {
-
-			current_swap_coord_x = current_swap / task_count;
-			current_swap_coord_y = current_swap % task_count;
+		if (current_swap_coord_x < task_count) {
 	
 			// Prefiero calcular cosas inutiles con tal de mantener la coherencia entre threads.
 			//if ((x < y) && (machine_a != machine_b)) {
