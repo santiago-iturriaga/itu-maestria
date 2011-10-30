@@ -169,7 +169,6 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 
 	best_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 
-	/*
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
 	for (i = 1; i < tasks_per_thread; i++) {
@@ -204,14 +203,13 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 				if (current_swap_delta < best_swap_delta) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
 					
-					best_swap = current_swap;
+					best_swap = i;
 					best_swap_delta = current_swap_delta;
 				}
 		
 			//}
 		}
 	}
-	*/
 
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
