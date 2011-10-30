@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 int load_params(int argc, char **argv, struct params *input) {
-	if (argc == 4) {
+	if (argc == 5) {
 		input->instance_path = argv[1];
 		fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
 
