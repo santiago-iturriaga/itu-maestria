@@ -8,10 +8,10 @@
 #include "etc_matrix.h"
 #include "solution.h"
 
-#ifndef PALS_H_
-#define PALS_H_
+#ifndef PALS_GPU_H_
+#define PALS_GPU_H_
 
-struct pals_instance {
+struct pals_gpu_instance {
 	float *gpu_etc_matrix;
 	int *gpu_task_assignment;
 	float *gpu_machine_compute_time;
@@ -27,16 +27,17 @@ struct pals_instance {
 /*
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
-void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance);
+void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance);
 
 /*
  * Libera la memoria del dispositivo.
  */
-void pals_finalize(struct pals_instance *instance);
+void pals_gpu_finalize(struct pals_gpu_instance *instance);
 
 /*
  * Ejecuta PALS en el dispositivo.
  */
-void pals_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_instance *instance, int best_swaps[], float best_swaps_delta[]);
+void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance, 
+	int &best_swaps_count, int best_swaps[], float best_swaps_delta[]);
 
-#endif /* PALS_H_ */
+#endif /* PALS_GPU_H_ */
