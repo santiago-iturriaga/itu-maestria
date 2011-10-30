@@ -8,6 +8,7 @@
 
 #define THREADS_PER_BLOCK 128
 #define MIN_TASKS_PER_THREAD 4
+#define MAX_BLOCKS_COUNT 1024
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, 
 	struct pals_gpu_instance instance);
@@ -23,7 +24,7 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	// TODO: En realidad la cantidad de tasks esta dada por: (n*n)-((n+1)*(n))/2.
 	//       Hay que arreglar esto y arreglar la función de coordenadas.
 
-	int tasks_per_thread = (int)ceil(instance->total_tasks / (unsigned long)(65536 * THREADS_PER_BLOCK));
+	int tasks_per_thread = (int)ceil(instance->total_tasks / (unsigned long)(MAX_BLOCKS_COUNT * THREADS_PER_BLOCK));
 	if (tasks_per_thread < MIN_TASKS_PER_THREAD) {
 		// Cantidad de swaps evalúa cada hilo.
 		instance->tasks_per_thread = MIN_TASKS_PER_THREAD;
@@ -31,7 +32,7 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 		// Cantidad de bloques necesarios para evaluar todos los swaps.
 		instance->number_of_blocks = (int)ceil(instance->total_tasks / (unsigned long)(THREADS_PER_BLOCK * MIN_TASKS_PER_THREAD));
 	} else {
-		instance->number_of_blocks = 65536;
+		instance->number_of_blocks = MAX_BLOCKS_COUNT;
 		instance->tasks_per_thread = tasks_per_thread;
 	}
 	
