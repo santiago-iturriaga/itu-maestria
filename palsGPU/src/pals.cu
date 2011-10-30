@@ -204,17 +204,16 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 		
 	int machine_a = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
-	float best_swap_delta_xa = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
-	float best_swap_delta_ya = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+	float current_swap_delta_xa = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+	float current_swap_delta_ya = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
 	int machine_b = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-	float best_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
-	float best_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
+	float current_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+	float current_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
-	best_swap_delta = best_swap_delta_ya - best_swap_delta_xa + best_swap_delta_xb - best_swap_delta_yb;
+	best_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 
-	/*
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
 	for (i = 1; i < tasks_per_thread; i++) {
@@ -230,16 +229,18 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 
 				// Calculo el delta del swap i.
 				current_swap_delta = 0.0;
-				
-				machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
 	
-				current_swap_delta -= gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Resto del ETC de x en a.
-				current_swap_delta += gpu_etc_matrix[machine * ((int)fmod((float)current_swap, (float)task_count))];; // Sumo el ETC de y en a.
+				machine_a = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
-				machine = gpu_task_assignment[(int)fmod((float)current_swap, (float)task_count)]; // Máquina b.
+				current_swap_delta_xa = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+				current_swap_delta_ya = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
-				current_swap_delta -= gpu_etc_matrix[machine * ((int)fmod((float)current_swap, (float)task_count))]; // Resto el ETC de y en b.
-				current_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
+				machine_b = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
+	
+				current_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+				current_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
+
+				current_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 	
 				if (current_swap_delta < best_swap_delta) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
@@ -251,7 +252,6 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 			//}
 		}
 	}
-	*/
 
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
