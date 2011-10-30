@@ -191,8 +191,8 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	current_swap = block_offset_start + thread_idx; // i = 0
 	
 	// Coordenadas del swap.
-	int current_swap_coord_x = current_swap / task_count; //174;
-	int current_swap_coord_y = current_swap % task_count; //0;
+	int current_swap_coord_x = current_swap / task_count;
+	int current_swap_coord_y = current_swap % task_count;
 
 	// El primer task_per_thread siempre debería tener un swap válido.
 	// Calculo el delta de ese primer swap y lo dejo como mejor.
@@ -220,6 +220,9 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 		// per block, el último bloque puede tener threads sobrantes. En este
 		// caso se pierde la coherencia de los threads del último bloque.
 		if (current_swap < total_tasks) {
+
+			current_swap_coord_x = current_swap / task_count;
+			current_swap_coord_y = current_swap % task_count;
 	
 			// Prefiero calcular cosas inutiles con tal de mantener la coherencia entre threads.
 			//if ((x < y) && (machine_a != machine_b)) {
