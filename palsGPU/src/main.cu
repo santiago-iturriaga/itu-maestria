@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 
 		int best_swap_count;
-		unsigned long int best_swaps[instance.number_of_blocks];
+		long best_swaps[instance.number_of_blocks];
 		float best_swaps_delta[instance.number_of_blocks];
 
 		// Timming -----------------------------------------------------
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 	
 		// Debug ------------------------------------------------------------------------------------------
 		if (DEBUG) {
-			unsigned long int current_swap;
+			long current_swap;
 			int task_x;
 			int machine_a;
 			int task_y;
