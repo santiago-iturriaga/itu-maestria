@@ -228,7 +228,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	
 	int machine_b = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-	float best_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Resto el ETC de y en b.
+	float best_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
 	float best_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
 	//if (thread_idx == 0) {

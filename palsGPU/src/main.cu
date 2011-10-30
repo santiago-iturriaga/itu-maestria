@@ -57,11 +57,6 @@ int main(int argc, char** argv)
 	// =============================================================
 	struct pals_instance instance;
 		
-	int a, b;
-	a = 44544 / 256;
-	b = 44544 % 256;
-	printf(">>>>>>>>> %d %d\n", a,b);
-		
 	// Inicializo la memoria en el dispositivo.
 	pals_init(etc_matrix, current_solution, &instance);
 
