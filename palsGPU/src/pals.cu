@@ -202,6 +202,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	best_swap = current_swap;
 	best_swap_delta = 0.0;
 		
+	/*
 	int machine = gpu_task_assignment[(int)floor((float)current_swap / (float)task_count)]; // Máquina a.
 	
 	best_swap_delta -= gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Resto del ETC de x en a.
@@ -211,6 +212,25 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	
 	best_swap_delta -= gpu_etc_matrix[machine * ((int)fmod((float)current_swap, (float)task_count))]; // Resto el ETC de y en b.
 	best_swap_delta += gpu_etc_matrix[machine * ((int)floor((float)current_swap / (float)task_count))]; // Sumo el ETC de x en b.
+	*/
+
+	int current_swap_coord_x = (int)floor((float)current_swap / (float)task_count);
+	int current_swap_coord_y = (int)fmod((float)current_swap, (float)task_count);
+
+	int machine = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
+	
+	best_swap_delta -= gpu_etc_matrix[(machine * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+	best_swap_delta += gpu_etc_matrix[(machine * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+	
+	machine = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
+	
+	best_swap_delta -= gpu_etc_matrix[(machine * task_count) + current_swap_coord_y]; // Resto el ETC de y en b.
+	best_swap_delta += gpu_etc_matrix[(machine * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
+
+	if (thread_idx == 0) {
+		gpu_best_swaps[block_idx] = best_swap;
+		gpu_best_swaps_delta[block_idx] = best_swap_delta;
+	}
 
 	/*
 	// Para todos los demás task_per_thread.
@@ -251,6 +271,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	}
 	*/
 
+	/*
 	// Copio el mejor movimiento de cada hilo a la memoria shared.
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
 	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
@@ -260,6 +281,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	
 	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
 					 // mejores swaps esten copiados a la memoria compartida.
+	*/
 	
 	/*
 	// Aplico reduce para quedarme con el mejor delta.
@@ -277,8 +299,10 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	}
 	*/
 
+	/*
 	if (thread_idx == 0) {
 		gpu_best_swaps[block_idx] = block_best_swaps[0]; //best_swap;
 		gpu_best_swaps_delta[block_idx] = block_best_swaps_delta[0]; //best_swap_delta;
 	}
+	*/
 }
