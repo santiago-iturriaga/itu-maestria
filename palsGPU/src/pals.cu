@@ -48,10 +48,10 @@ void pals_init(struct matrix *etc_matrix, struct solution *s, struct pals_instan
 	fprintf(stdout, "[INFO] Number of blocks (grid size) : %i\n", instance->number_of_blocks);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(int) * number_of_blocks;	
+	int best_swaps_size = sizeof(int) * 4; //number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
 		
-	int best_swaps_delta_size = sizeof(float) * number_of_blocks;	
+	int best_swaps_delta_size = sizeof(float) * 5; //number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
 }
 
