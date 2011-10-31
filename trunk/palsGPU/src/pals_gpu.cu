@@ -134,14 +134,6 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
-
-	/*
-	const int block_size = instance.block_size;	
-	const int tasks_per_thread = instance.tasks_per_thread;
-	const int total_tasks = instance.total_tasks;
-	const float *gpu_etc_matrix = instance.gpu_etc_matrix;
-	const int *gpu_task_assignment = instance.gpu_task_assignment;
-	*/
 	
 	const int block_offset_start = block_size * tasks_per_thread * block_idx;
 
@@ -163,7 +155,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 
 	// El primer task_per_thread siempre debería tener un swap válido.
 	// Calculo el delta de ese primer swap y lo dejo como mejor.
-	best_swap = thread_idx;
+	best_swap = 0;
 	best_swap_delta = 0.0;
 		
 	aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
@@ -208,10 +200,9 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 				if (current_swap_delta < best_swap_delta) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
 					
-					best_swap = (block_size * i) + thread_idx;
+					best_swap = i;
 					best_swap_delta = current_swap_delta;
 				}
-		
 			//}
 		}
 	}
@@ -220,7 +211,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
 	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
 
-	block_best_swaps[thread_idx] = best_swap;
+	block_best_swaps[thread_idx] = (THREADS_PER_BLOCK * thread_idx) + i;
 	block_best_swaps_delta[thread_idx] = best_swap_delta;
 	
 	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
