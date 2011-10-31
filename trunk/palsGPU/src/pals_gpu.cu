@@ -8,7 +8,8 @@
 
 #define THREADS_PER_BLOCK 128
 #define MIN_TASKS_PER_THREAD 4
-#define MAX_BLOCKS 65536
+#define MAX_BLOCKS 1024
+//65536
 
 void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_count, struct matrix etc, struct solution s, 
 	struct pals_gpu_instance instance);
