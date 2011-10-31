@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		int best_swap_task_b;
 		float best_swap_delta;
 		
-		for (for i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
 		}
 		
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 		
 		// Ejecuto GPUPALS.
-		for (for i = 0; i < 10; i++) {
+		for (int i = 0; i < 10; i++) {
 			pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
 		}
 		
