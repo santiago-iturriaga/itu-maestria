@@ -124,16 +124,17 @@ int main(int argc, char** argv)
 			int machine_b;
 	
 			fprintf(stdout, "[DEBUG] Mejores swaps:\n");
-			for (int block_idx = 0; block_idx < instance.number_of_blocks; block_idx++) {
-				int thread_idx = best_swaps[block_idx] / instance.tasks_per_thread;
-				int task_idx = best_swaps[block_idx] % instance.tasks_per_thread;
-			
-				current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (instance.block_size * task_idx) + thread_idx;
+			for (int i = 0; i < instance.number_of_blocks; i++) {
+				int block_idx = i;
+				int thread_idx = best_swaps[i] / instance.tasks_per_thread;
+				int task_idx = best_swaps[i] % instance.tasks_per_thread;
+				int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
 				
-				task_x = current_swap / etc_matrix->tasks_count;
-				task_y = current_swap % etc_matrix->tasks_count;
+				current_swap = block_offset_start + (instance.block_size * task_idx) + thread_idx;
 				
+				task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
 				machine_a = current_solution->task_assignment[task_x];
+				task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
 				machine_b = current_solution->task_assignment[task_y];
 	
 				float swap_delta = 0.0;
@@ -143,7 +144,7 @@ int main(int argc, char** argv)
 				swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 	
 				fprintf(stdout, "   Swap ID %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-					current_swap, best_swaps_delta[block_idx], swap_delta, task_x, machine_a, task_y, machine_b);
+					current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
 		}
 		// Debug ------------------------------------------------------------------------------------------
