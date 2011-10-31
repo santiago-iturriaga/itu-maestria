@@ -135,7 +135,7 @@ __global__ void pals_kernel(int task_count, int block_size,
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 
-	const float block_offset_start = ((block_size * tasks_per_thread) / task_count) * block_idx;
+	const float block_offset_start = block_size * tasks_per_thread * block_idx;
 
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
 	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
@@ -145,7 +145,7 @@ __global__ void pals_kernel(int task_count, int block_size,
 	float auxf;
 
 	// Coordenadas del swap.
-	auxf = block_offset_start + (thread_idx/task_count);
+	auxf = (block_offset_start + thread_idx) / task_count;
 	int current_swap_coord_x = (int)auxf;
 	int current_swap_coord_y = (int)((current_swap_coord_x - auxf) * task_count);
 
@@ -167,7 +167,7 @@ __global__ void pals_kernel(int task_count, int block_size,
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
 	for (i = 1; i < tasks_per_thread; i++) {
-		auxf = block_offset_start  + (((block_size * i) + thread_idx) / task_count);
+		auxf = (block_offset_start  + (block_size * i) + thread_idx) / task_count;
 		current_swap_coord_x = (int)auxf;
 		current_swap_coord_y = (int)((current_swap_coord_x - auxf) * task_count);
 
