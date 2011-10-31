@@ -235,14 +235,17 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	
 	const float block_offset_start = block_size * tasks_per_thread * block_idx;
 
-	// Busco el mejor movimiento de cada hilo.
-	int i, aux;
-	float auxf;
-
 	// Coordenadas del swap.
-	auxf = (block_offset_start + thread_idx) / task_count;
+	float auxf = (block_offset_start + thread_idx) / task_count;
 	int current_swap_coord_x = (int)auxf;
 	int current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
+	
+	fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
+	
+	int current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (instance.block_size * 0) + thread_idx;
+	
+	current_swap_coord_x = (int)(current_swap / task_count);
+	current_swap_coord_y = (int)(current_swap % task_count);
 	
 	fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
 	
