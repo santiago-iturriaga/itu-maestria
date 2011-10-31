@@ -146,7 +146,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	const int block_offset_start = block_size * tasks_per_thread * block_idx;
 
 	// Busco el mejor movimiento de cada hilo.
-	int i;
+	int i, aux;
 	int current_swap;
 	float current_swap_delta;
 	int best_swap;
@@ -164,15 +164,15 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	best_swap = 0;
 	best_swap_delta = 0.0;
 		
-	int machine_a = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
+	aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
-	float current_swap_delta_xa = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
-	float current_swap_delta_ya = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+	float current_swap_delta_xa = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+	float current_swap_delta_ya = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
-	int machine_b = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
+	aux = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-	float current_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
-	float current_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
+	float current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+	float current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
 	best_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 
@@ -195,15 +195,15 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 				// Calculo el delta del swap i.
 				current_swap_delta = 0.0;
 	
-				machine_a = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
+				aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
-				current_swap_delta_xa = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
-				current_swap_delta_ya = gpu_etc_matrix[(machine_a * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+				current_swap_delta_xa = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+				current_swap_delta_ya = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
-				machine_b = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
+				aux = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-				current_swap_delta_xb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
-				current_swap_delta_yb = gpu_etc_matrix[(machine_b * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
+				current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+				current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
 				current_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 	
@@ -230,12 +230,12 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	
 	// Aplico reduce para quedarme con el mejor delta.
 	for (i = 1; i < THREADS_PER_BLOCK; i *= 2) {
-		current_swap = 2 * i * thread_idx;
+		aux = 2 * i * thread_idx;
 		
-		if (current_swap < THREADS_PER_BLOCK) {
-			if (block_best_swaps_delta[current_swap] > block_best_swaps_delta[current_swap + i]) {
-				block_best_swaps_delta[current_swap] = block_best_swaps_delta[current_swap + i];
-				block_best_swaps[current_swap] = block_best_swaps[current_swap + i];
+		if (aux < THREADS_PER_BLOCK) {
+			if (block_best_swaps_delta[aux] > block_best_swaps_delta[aux + i]) {
+				block_best_swaps_delta[aux] = block_best_swaps_delta[aux + i];
+				block_best_swaps[aux] = block_best_swaps[aux + i];
 			}
 		}
 		
