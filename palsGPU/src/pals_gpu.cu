@@ -90,6 +90,7 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 	dim3 grid(instance->number_of_blocks, 1, 1);
 	dim3 threads(instance->block_size, 1, 1);
 
+	/*
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
@@ -104,6 +105,7 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 				*etc_matrix, *s, *instance);
 		}
 	}
+	*/
 
 	pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
