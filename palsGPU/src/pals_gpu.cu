@@ -105,14 +105,14 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 		}
 	}
 
-	/*pals_kernel<<< grid, threads >>>(
+	pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		instance->block_size, 
 		instance->tasks_per_thread, 
 		instance->gpu_etc_matrix, 
 		instance->gpu_task_assignment, 
 		instance->gpu_best_swaps, 
-		instance->gpu_best_swaps_delta);*/
+		instance->gpu_best_swaps_delta);
 
 	// Copio los mejores movimientos desde el dispositivo.
 	cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
@@ -241,7 +241,7 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 		int current_swap_coord_x = (int)auxf;
 		int current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
 	
-		fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
+		fprintf(stdout, "[%f] %d x %d\n", (block_offset_start + (instance.block_size * i) + thread_idx), current_swap_coord_x, current_swap_coord_y);
 	}
 
 	/*	
