@@ -132,7 +132,7 @@ int main(int argc, char** argv)
 				float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;							
 				current_swap = block_offset_start + (instance.block_size * task_idx) + thread_idx;
 				
-				float auxf = (block_offset_start  + (instance.block_size * i) + thread_idx) / etc_matrix->tasks_count;
+				float auxf = (block_offset_start  + (instance.block_size * task_idx) + thread_idx) / etc_matrix->tasks_count;
 				task_x = (int)auxf;
 				task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
 				
