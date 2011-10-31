@@ -76,7 +76,9 @@ int main(int argc, char** argv)
 		int best_swap_task_b;
 		float best_swap_delta;
 		
-		pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
+		for (for i = 0; i < 10; i++) {
+			pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
+		}
 		
 		fprintf(stdout, "[DEBUG] Best swap: task %d for task %d. Gain %f.\n", best_swap_task_a, best_swap_task_b, best_swap_delta);
 	} else if (input.pals_flavour == PALS_GPU) {
@@ -107,16 +109,16 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 		
 		// Ejecuto GPUPALS.
-		//for () {
-		pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
-		//}
+		for (for i = 0; i < 10; i++) {
+			pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
+		}
 		
 		// Timming -----------------------------------------------------
 		timming_end("pals_gpu_wrapper", ts_wrapper);
 		// Timming -----------------------------------------------------
 	
 		// Debug ------------------------------------------------------------------------------------------
-		/*if (DEBUG) {
+		if (DEBUG) {
 			int current_swap;
 			int task_x;
 			int machine_a;
@@ -151,7 +153,7 @@ int main(int argc, char** argv)
 				fprintf(stdout, "   Swap ID %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
 					current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
-		}*/
+		}
 		// Debug ------------------------------------------------------------------------------------------
 	
 		// Timming -----------------------------------------------------
