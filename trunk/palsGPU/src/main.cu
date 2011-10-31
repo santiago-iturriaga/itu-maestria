@@ -128,13 +128,18 @@ int main(int argc, char** argv)
 				int block_idx = i;
 				int thread_idx = best_swaps[i] / instance.tasks_per_thread;
 				int task_idx = best_swaps[i] % instance.tasks_per_thread;
-				int block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;
-				
+			
+				float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;							
 				current_swap = block_offset_start + (instance.block_size * task_idx) + thread_idx;
 				
-				task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
+				float auxf = (block_offset_start  + (instance.block_size * i) + thread_idx) / etc_matrix->tasks_count;
+				task_x = (int)auxf;
+				task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
+				
+				//task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
+				//task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
+
 				machine_a = current_solution->task_assignment[task_x];
-				task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
 				machine_b = current_solution->task_assignment[task_y];
 	
 				float swap_delta = 0.0;
