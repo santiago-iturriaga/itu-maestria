@@ -163,7 +163,7 @@ __global__ void pals_kernel(int task_count, int block_size,
 	float current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
 	float current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
-	block_best_swaps[thread_idx] = 0;
+	block_best_swaps[thread_idx] = tasks_per_thread * thread_idx;
 	block_best_swaps_delta[thread_idx] = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 
 	// Para todos los demás task_per_thread.
@@ -200,7 +200,7 @@ __global__ void pals_kernel(int task_count, int block_size,
 				if (current_swap_delta < block_best_swaps_delta[thread_idx]) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
 					
-					block_best_swaps[thread_idx] = i;
+					block_best_swaps[thread_idx] = (tasks_per_thread * thread_idx) + i;
 					block_best_swaps_delta[thread_idx] = current_swap_delta;
 				}
 		
