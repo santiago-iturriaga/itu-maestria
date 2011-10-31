@@ -211,7 +211,7 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
 	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
 
-	block_best_swaps[thread_idx] = (THREADS_PER_BLOCK * thread_idx) + i;
+	block_best_swaps[thread_idx] = (tasks_per_thread * thread_idx) + best_swap;
 	block_best_swaps_delta[thread_idx] = best_swap_delta;
 	
 	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 

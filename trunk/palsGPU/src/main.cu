@@ -125,10 +125,10 @@ int main(int argc, char** argv)
 	
 			fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 			for (int block_idx = 0; block_idx < instance.number_of_blocks; block_idx++) {
-				int thead_idx = best_swaps[block_idx] / THREADS_PER_BLOCK;
-				int task_idx = best_swaps[block_idx] % THREADS_PER_BLOCK;
+				int thread_idx = best_swaps[block_idx] / instance.tasks_per_thread;
+				int task_idx = best_swaps[block_idx] % instance.tasks_per_thread;
 			
-				current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (block_size * i) + thread_idx;
+				current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (instance.block_size * task_idx) + thread_idx;
 				
 				task_x = current_swap / etc_matrix->tasks_count;
 				task_y = current_swap % etc_matrix->tasks_count;
