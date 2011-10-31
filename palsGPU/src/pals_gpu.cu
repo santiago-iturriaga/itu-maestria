@@ -162,19 +162,17 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	// El primer task_per_thread siempre debería tener un swap válido.
 	// Calculo el delta de ese primer swap y lo dejo como mejor.
 	best_swap = 0;
-	best_swap_delta = 0.0;
-		
+	best_swap_delta = 0.0;	
+			
 	aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
-	
-	float current_swap_delta_xa = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
-	float current_swap_delta_ya = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+
+	best_swap_delta -= gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+	best_swap_delta += gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
 	aux = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-	float current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
-	float current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
-
-	best_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
+	best_swap_delta -= gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+	best_swap_delta += gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
@@ -197,15 +195,13 @@ __global__ void pals_kernel(int task_count, int machine_count, int block_size,
 	
 				aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
 	
-				current_swap_delta_xa = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
-				current_swap_delta_ya = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
+				current_swap_delta -= gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto del ETC de x en a.
+				current_swap_delta += gpu_etc_matrix[(aux * task_count) + current_swap_coord_y];; // Sumo el ETC de y en a.
 	
 				aux = gpu_task_assignment[current_swap_coord_y]; // Máquina b.
 	
-				current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
-				current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
-
-				current_swap_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
+				current_swap_delta -= gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
+				current_swap_delta += gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 	
 				if (current_swap_delta < best_swap_delta) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
