@@ -235,20 +235,23 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	
 	const float block_offset_start = block_size * tasks_per_thread * block_idx;
 
-	// Coordenadas del swap.
-	float auxf = (block_offset_start + thread_idx) / task_count;
-	int current_swap_coord_x = (int)auxf;
-	int current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
+	for (int i = 0; i < instance.tasks_per_thread; i++) {
+		// Coordenadas del swap.
+		float auxf = (block_offset_start + (instance.block_size * i) + thread_idx) / task_count;
+		int current_swap_coord_x = (int)auxf;
+		int current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
 	
-	fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
-	
+		fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
+	}
+
+	/*	
 	int current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (instance.block_size * 0) + thread_idx;
 	
 	current_swap_coord_x = (int)(current_swap / task_count);
 	current_swap_coord_y = (int)(current_swap % task_count);
 	
 	fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
-	
+	*/
 	/*const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
 	const float *gpu_etc_matrix = etc.data;
