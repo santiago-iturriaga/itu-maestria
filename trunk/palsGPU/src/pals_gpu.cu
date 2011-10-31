@@ -45,6 +45,18 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	}
 
 	// Pedido de memoria en el dispositivo y copiado de datos.
+	timespec ts_4;
+	timming_start(ts_4);
+	
+	// Pido memoria para guardar el resultado.
+	int best_swaps_size = sizeof(int) * instance->number_of_blocks;	
+	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
+		
+	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
+	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
+	
+	timming_end("gpu_best_swaps", ts_4);
+		
 	timespec ts_2;
 	timming_start(ts_2);
 	
@@ -64,18 +76,6 @@ void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gp
 	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
 
 	timming_end("gpu_task_assignment", ts_3);
-
-	timespec ts_4;
-	timming_start(ts_4);
-	
-	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(int) * instance->number_of_blocks;	
-	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
-		
-	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
-	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
-	
-	timming_end("gpu_best_swaps", ts_4);
 }
 
 void pals_gpu_finalize(struct pals_gpu_instance *instance) {
