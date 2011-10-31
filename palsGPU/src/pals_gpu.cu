@@ -142,7 +142,6 @@ __global__ void pals_kernel(int task_count, int block_size,
 
 	// Busco el mejor movimiento de cada hilo.
 	int i, aux;
-	int current_swap;
 	float auxf;
 
 	// Coordenadas del swap.
@@ -169,11 +168,8 @@ __global__ void pals_kernel(int task_count, int block_size,
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
 	for (i = 1; i < tasks_per_thread; i++) {
 		auxf = block_offset_start  + ((block_size * i)/task_count) + (thread_idx/task_count);
-		int current_swap_coord_x = (int)auxf;
-		int current_swap_coord_y = (int)(((int)auxf - auxf) * task_count);
-
-		current_swap_coord_x = current_swap / task_count;
-		current_swap_coord_y = current_swap % task_count;
+		current_swap_coord_x = (int)auxf;
+		current_swap_coord_y = (int)(((int)auxf - auxf) * task_count);
 
 		// Si la cantidad de tareas no es divisible entre la cantidad de threads
 		// per block, el último bloque puede tener threads sobrantes. En este
