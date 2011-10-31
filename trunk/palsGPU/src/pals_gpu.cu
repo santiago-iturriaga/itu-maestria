@@ -90,7 +90,6 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 	dim3 grid(instance->number_of_blocks, 1, 1);
 	dim3 threads(instance->block_size, 1, 1);
 
-	/*
 	for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
 		fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
 		
@@ -105,16 +104,15 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 				*etc_matrix, *s, *instance);
 		}
 	}
-	*/
 
-	pals_kernel<<< grid, threads >>>(
+	/*pals_kernel<<< grid, threads >>>(
 		etc_matrix->tasks_count, 
 		instance->block_size, 
 		instance->tasks_per_thread, 
 		instance->gpu_etc_matrix, 
 		instance->gpu_task_assignment, 
 		instance->gpu_best_swaps, 
-		instance->gpu_best_swaps_delta);
+		instance->gpu_best_swaps_delta);*/
 
 	// Copio los mejores movimientos desde el dispositivo.
 	cudaMemcpy(best_swaps, instance->gpu_best_swaps, sizeof(int) * instance->number_of_blocks, cudaMemcpyDeviceToHost);
@@ -234,6 +232,22 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	
 	const int block_size = instance.block_size;	
 	const int tasks_per_thread = instance.tasks_per_thread;
+	
+	const float block_offset_start = block_size * tasks_per_thread * block_idx;
+
+	// Busco el mejor movimiento de cada hilo.
+	int i, aux;
+	float auxf;
+
+	// Coordenadas del swap.
+	auxf = (block_offset_start + thread_idx) / task_count;
+	int current_swap_coord_x = (int)auxf;
+	int current_swap_coord_y = (int)((current_swap_coord_x - auxf) * task_count);
+	
+	fprintf(stdout, "%d x %d\n", current_swap_coord_x, current_swap_coord_y);
+	
+	/*const int block_size = instance.block_size;	
+	const int tasks_per_thread = instance.tasks_per_thread;
 	const float *gpu_etc_matrix = etc.data;
 	const int *gpu_task_assignment = s.task_assignment;
 	
@@ -276,5 +290,5 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 
 	fprintf(stdout, "[DEBUG] >>>         [rango asignado al bloque: %i-%i]\n", block_offset_start, block_offset_end);
 	fprintf(stdout, "[DEBUG] >>>         [swap      : %d]\n", best_swap);
-	fprintf(stdout, "[DEBUG] >>>         [swap delta: %f]\n", best_swap_delta);
+	fprintf(stdout, "[DEBUG] >>>         [swap delta: %f]\n", best_swap_delta);*/
 }
