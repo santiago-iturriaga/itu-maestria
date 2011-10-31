@@ -19,7 +19,7 @@ struct pals_gpu_instance {
 	
 	int block_size;
 	int tasks_per_thread;
-	long total_tasks;
+	unsigned long total_tasks;
 	int number_of_blocks;
 };
 
