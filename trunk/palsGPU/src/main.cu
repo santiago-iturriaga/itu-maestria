@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 		int best_swap_task_b;
 		float best_swap_delta;
 		
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < PALS_COUNT; i++) {
 			pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
 		}
 		
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 		
 		// Ejecuto GPUPALS.
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < PALS_COUNT; i++) {
 			pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
 		}
 		
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 	
 		// Debug ------------------------------------------------------------------------------------------
 		if (DEBUG) {
-			int current_swap;
+			unsigned long current_swap;
 			int task_x, task_y;
 			int machine_a, machine_b;
 	
@@ -129,7 +129,8 @@ int main(int argc, char** argv)
 				int thread_idx = best_swaps[i] / instance.tasks_per_thread;
 				int task_idx = best_swaps[i] % instance.tasks_per_thread;
 			
-				current_swap = (instance.block_size * instance.tasks_per_thread * block_idx) + (instance.block_size * task_idx) + thread_idx;
+				current_swap = ((unsigned long)instance.block_size * (unsigned long)instance.tasks_per_thread * (unsigned long)block_idx) 
+					+ ((unsigned long)instance.block_size * (unsigned long)task_idx) + (unsigned long)thread_idx;
 
 				float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;											
 				float auxf = (block_offset_start  + (instance.block_size * task_idx) + thread_idx) / etc_matrix->tasks_count;
@@ -150,8 +151,8 @@ int main(int argc, char** argv)
 				swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
 				swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 	
-				fprintf(stdout, "   Swap ID %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-					current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+				fprintf(stdout, "   GPU Result %d. Swap ID %ld. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
+					best_swaps[i], current_swap, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
 		}
 		// Debug ------------------------------------------------------------------------------------------
