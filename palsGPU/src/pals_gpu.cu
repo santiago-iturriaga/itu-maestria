@@ -137,9 +137,12 @@ __global__ void pals_kernel(int task_count, int block_size,
 
 	const float block_offset_start = block_size * tasks_per_thread * block_idx;
 
+	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
+	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
+
 	// Busco el mejor movimiento de cada hilo.
-	int i, aux, best_i;
-	float auxf, best_delta;
+	int i, aux;
+	float auxf;
 
 	// Coordenadas del swap.
 	auxf = (block_offset_start + thread_idx) / task_count;
@@ -163,8 +166,8 @@ __global__ void pals_kernel(int task_count, int block_size,
 	float current_swap_delta_xb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_x]; // Resto el ETC de y en b.
 	float current_swap_delta_yb = gpu_etc_matrix[(aux * task_count) + current_swap_coord_y]; // Sumo el ETC de x en b.
 
-	best_i = 0;
-	best_delta = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
+	block_best_swaps[thread_idx] = tasks_per_thread * thread_idx;
+	block_best_swaps_delta[thread_idx] = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 
 	// Para todos los demás task_per_thread.
 	// En caso de que task_per_thread = 1, esto nunca se ejecuta y nunca hay divergencia de código.
@@ -199,22 +202,16 @@ __global__ void pals_kernel(int task_count, int block_size,
 
 				auxf = current_swap_delta_ya - current_swap_delta_xa + current_swap_delta_xb - current_swap_delta_yb;
 	
-				if (auxf < best_delta) {
+				if (auxf < block_best_swaps_delta[thread_idx]) {
 					// Si es mejor que el mejor delta que tenía hasta el momento, lo guardo.
 					
-					best_i = i;
-					best_delta = auxf;
+					block_best_swaps[thread_idx] = (tasks_per_thread * thread_idx) + i;
+					block_best_swaps_delta[thread_idx] = auxf;
 				}
 		
 			//}
 		}
 	}
-	
-	__shared__ int block_best_swaps[THREADS_PER_BLOCK];
-	__shared__ float block_best_swaps_delta[THREADS_PER_BLOCK];
-
-	block_best_swaps[thread_idx] = (tasks_per_thread * thread_idx) + best_i;
-	block_best_swaps_delta[thread_idx] = auxf;
 	
 	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
 					 // mejores swaps esten copiados a la memoria compartida.
