@@ -149,6 +149,11 @@ __global__ void pals_kernel(int task_count, int block_size,
 	int current_swap_coord_x = (int)auxf;
 	int current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
 
+	if (current_swap_coord_x >= task_count) current_swap_coord_x = task_count - 1;
+	if (current_swap_coord_y >= task_count) current_swap_coord_y = task_count - 1;
+	if (current_swap_coord_x < 0) current_swap_coord_x = 0;
+	if (current_swap_coord_y < 0) current_swap_coord_y = 0;
+
 	// El primer task_per_thread siempre debería tener un swap válido.
 	// Calculo el delta de ese primer swap y lo dejo como mejor.		
 	aux = gpu_task_assignment[current_swap_coord_x]; // Máquina a.
@@ -170,6 +175,11 @@ __global__ void pals_kernel(int task_count, int block_size,
 		auxf = (block_offset_start  + (block_size * i) + thread_idx) / task_count;
 		current_swap_coord_x = (int)auxf;
 		current_swap_coord_y = (int)((auxf - current_swap_coord_x) * task_count);
+
+		if (current_swap_coord_x >= task_count) current_swap_coord_x = task_count - 1;
+		if (current_swap_coord_y >= task_count) current_swap_coord_y = task_count - 1;
+		if (current_swap_coord_x < 0) current_swap_coord_x = 0;
+		if (current_swap_coord_y < 0) current_swap_coord_y = 0;
 
 		// Si la cantidad de tareas no es divisible entre la cantidad de threads
 		// per block, el último bloque puede tener threads sobrantes. En este

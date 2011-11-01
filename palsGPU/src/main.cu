@@ -138,8 +138,10 @@ int main(int argc, char** argv)
 				task_x = (int)auxf;
 				task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
 				
-				//task_x = (int)floor((float)current_swap / (float)etc_matrix->tasks_count);
-				//task_y = (int)fmod((float)current_swap, (float)etc_matrix->tasks_count);
+				if (task_x >= task_count) task_x = task_count - 1;
+				if (task_y >= task_count) task_y = task_count - 1;
+				if (task_x < 0) task_x = 0;
+				if (task_y < 0) task_y = 0;
 
 				machine_a = current_solution->task_assignment[task_x];
 				machine_b = current_solution->task_assignment[task_y];
