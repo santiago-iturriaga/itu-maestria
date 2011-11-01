@@ -120,10 +120,8 @@ int main(int argc, char** argv)
 		// Debug ------------------------------------------------------------------------------------------
 		if (DEBUG) {
 			int current_swap;
-			int task_x;
-			int machine_a;
-			int task_y;
-			int machine_b;
+			int task_x, task_y;
+			int machine_a, machine_b;
 	
 			fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 			for (int i = 0; i < instance.number_of_blocks; i++) {
@@ -138,8 +136,8 @@ int main(int argc, char** argv)
 				task_x = (int)auxf;
 				task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
 				
-				if (task_x >= task_count) task_x = task_count - 1;
-				if (task_y >= task_count) task_y = task_count - 1;
+				if (task_x >= etc_matrix->tasks_count) task_x = etc_matrix->tasks_count - 1;
+				if (task_y >= etc_matrix->tasks_count) task_y = etc_matrix->tasks_count - 1;
 				if (task_x < 0) task_x = 0;
 				if (task_y < 0) task_y = 0;
 
