@@ -152,7 +152,8 @@ int main(int argc, char** argv)
 				swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 	
 				fprintf(stdout, "   GPU Result %d. Swap ID %ld. Task x %d, Task y %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-					best_swaps[i], current_swap, task_x, task_y, best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+					best_swaps[i], current_swap, (int)auxf, (int)((auxf - task_x) * etc_matrix->tasks_count), 
+					best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
 		}
 		// Debug ------------------------------------------------------------------------------------------
