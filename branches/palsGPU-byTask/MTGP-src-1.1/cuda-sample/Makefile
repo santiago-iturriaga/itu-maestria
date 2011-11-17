@@ -2,7 +2,7 @@
 
 #DEBUG = -DDEBUG -g -O0
 
-#ARCH = -arch=compute_11
+ARCH = -arch=compute_11
 #ARCH = -arch=compute_13
 #VERB = -Xptxas=-v
 
@@ -13,7 +13,8 @@ MTGP32_INC = ../mtgp32-fast.h ../mtgp32-fast.c mtgp-util.cuh mtgp-util.cu
 MTGP64_INC = ../mtgp64-fast.h ../mtgp64-fast.c mtgp-util.cuh mtgp-util.cu
 MTGP32_SRC = ../mtgp32-fast.c mtgp-util.cu
 MTGP64_SRC = ../mtgp64-fast.c mtgp-util.cu
-CUDALINK = -lcuda
+CUDALINK = 
+#-lcuda
 
 .SUFFIXES:	.cu .cubin .ptx .bin
 
