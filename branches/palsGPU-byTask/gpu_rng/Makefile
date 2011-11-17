@@ -35,7 +35,7 @@
 ################################################################################
 
 # include local settings
-include ../local.mk
+#include ../local.mk
 
 # create a static library
 STATIC_LIB := 

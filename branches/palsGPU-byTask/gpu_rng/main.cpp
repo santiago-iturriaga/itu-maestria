@@ -78,6 +78,11 @@ int main(int argc, const char **argv)
 
   for (unsigned int j = 0; j < loop; ++j) {
     r48.generate(size);
+    r48.get(res, size);
+
+    /*for (unsigned int jj = 0; jj < size; jj++) {
+      printf("[%i] %i\n", j, res[jj]);
+    }*/
   }
 
   tE = clock();
@@ -85,9 +90,9 @@ int main(int argc, const char **argv)
 
   tS = clock();
 
-  for (unsigned int j = 0; j < loop; ++j) {
+  /*for (unsigned int j = 0; j < loop; ++j) {
     r48.get(res, size);
-  }
+  }*/
 
   tE = clock();
   printf("Transfer: %f ms\n", ((double)( tE - tS ) * 1000.0 / CLOCKS_PER_SEC) );
