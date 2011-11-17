@@ -67,7 +67,7 @@ struct RNG_rand48 {
   unsigned int A0, A1, C0, C1;
 
   /// magic constants for rand48
-  unsigned long long a = 0x5DEECE66DLL, c = 0xB;
+  unsigned long long a, c;
 }; 
 
 /// CUDA-safe constructor

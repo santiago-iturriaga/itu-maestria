@@ -21,6 +21,7 @@
 #include "solution.h"
 #include "config.h"
 #include "utils.h"
+#include "random.h"
 
 int main(int argc, char** argv)
 {
@@ -85,6 +86,28 @@ int main(int argc, char** argv)
 		// =============================================================
 		// CUDA
 		// =============================================================
+		// number of random numbers has to be a multiple of the number of threads for now
+		const unsigned int size = 1 * (6 * 1024);
+		const unsigned int loop = 1;
+		
+		int *res = new int[size];
+		
+		fprintf(stdout, "[DEBUG] Generando %d números aleatorios...\n", size);
+		
+		RNG_rand48 r48;
+		RNG_rand48_init(r48, 1, size);
+		
+		for (unsigned int j = 0; j < loop; j++) {
+			RNG_rand48_generate(r48);
+			RNG_rand48_get(r48, res);
+			
+			for (unsigned int jj = 0; jj < size; jj++) {
+      			printf("[%i] %i\n", j, res[jj]);
+		    }
+		}
+		
+		free(res);
+		
 		struct pals_gpu_instance instance;
 
 		// Timming -----------------------------------------------------
@@ -118,6 +141,7 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 	
 		// Debug ------------------------------------------------------------------------------------------
+		/*
 		if (DEBUG) {
 			unsigned long current_swap;
 			int task_x, task_y;
@@ -156,6 +180,7 @@ int main(int argc, char** argv)
 					best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 			}
 		}
+		*/
 		// Debug ------------------------------------------------------------------------------------------
 	
 		// Timming -----------------------------------------------------

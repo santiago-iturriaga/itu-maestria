@@ -119,6 +119,8 @@ __global__ static void RNG_rand48_get_int(uint2 *state, int *res, int num_blocks
 
 void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
 {
+  rand_state.a = 0x5DEECE66DLL;
+  rand_state.c = 0xB;
   rand_state.rand_num_count = count;
 
   // setup execution grid to get max performance
@@ -136,8 +138,8 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
   unsigned long long A, C;
   A = 1LL; C = 0LL;
   for (unsigned int i = 0; i < rand_state.nThreads; ++i) {
-    C += A*c;
-    A *= a;
+    C += A * rand_state.c;
+    A *= rand_state.a;
   }
   rand_state.A0 = A & 0xFFFFFFLL;
   rand_state.A1 = (A >> 24) & 0xFFFFFFLL;
