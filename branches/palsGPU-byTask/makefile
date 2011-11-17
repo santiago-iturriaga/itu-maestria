@@ -6,10 +6,10 @@ all: pals
 
 pals: src/main.cu src/pals_gpu.cu src/pals_serial.cu src/load_params.cu \
 		src/load_instance.cu src/etc_matrix.cu src/solution.cu src/mct.cu \
-		src/utils.cu
+		src/utils.cu src/random.cu
 	$(NVCC) -g --ptxas-options=-v  src/pals_gpu.cu src/pals_serial.cu src/load_instance.cu \
 		src/load_params.cu src/main.cu src/etc_matrix.cu src/solution.cu src/mct.cu src/utils.cu \
-		-o bin/pals
+		src/random.cu -o bin/pals
 
 local: src/main.cu src/pals_serial.cu src/pals_gpu.cu src/load_params.cu \
 		src/load_instance.cu src/etc_matrix.cu src/solution.cu src/mct.cu \
