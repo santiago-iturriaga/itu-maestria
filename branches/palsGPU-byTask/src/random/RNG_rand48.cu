@@ -25,7 +25,7 @@
   MA 02111-1307 USA
 */
 
-#include "random.h"
+#include "RNG_rand48.h"
 
 /************************************************
  * GPU kernels
