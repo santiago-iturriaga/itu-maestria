@@ -20,8 +20,9 @@
 #include "config.h"
 #include "utils.h"
 
-#include "pals/pals_gpu.h"
 #include "pals/pals_serial.h"
+#include "pals/pals_gpu.h"
+#include "pals/pals_gpu_randTask.h"
 
 #include "random/RNG_rand48.h"
 
@@ -214,27 +215,57 @@ void pals_gpu(struct params &input, struct matrix *etc_matrix, struct solution *
 }
 
 void pals_gpu_randTask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
-	// number of random numbers has to be a multiple of the number of threads for now
-	const unsigned int size = 1 * (6 * 1024);
-	const unsigned int loop = 1;
-	
-	int *res = new int[size];
+	// Number of random numbers has to be a multiple of the number of threads for now.
+	// r_task (1024) + r_mov/swp (1024) + r_dst (1024*256)
+	// 1024 * (1 + 1 + 256) = 1024 * (258) = 1024 * 6 * 43
+	const unsigned int size = 43 * (6 * 1024);
+	const int seed = 1;
 	
 	fprintf(stdout, "[DEBUG] Generando %d números aleatorios...\n", size);
 	
 	RNG_rand48 r48;
-	RNG_rand48_init(r48, 1, size);
+	RNG_rand48_init(r48, seed, size);	
+	RNG_rand48_generate(r48);
 	
-	for (unsigned int j = 0; j < loop; j++) {
-		RNG_rand48_generate(r48);
-		RNG_rand48_get(r48, res);
-		
-		for (unsigned int jj = 0; jj < size; jj++) {
-  			printf("[%i] %i\n", j, res[jj]);
-	    }
+	struct pals_gpu_randTask_instance instance;
+
+	// Timming -----------------------------------------------------
+	timespec ts_init;
+	timming_start(ts_init);
+	// Timming -----------------------------------------------------
+			
+	// Inicializo la memoria en el dispositivo.
+	// pals_gpu_randTask_init(etc_matrix, current_solution, &instance);
+
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_randTask_init", ts_init);
+	// Timming -----------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_wrapper;
+	timming_start(ts_wrapper);
+	// Timming -----------------------------------------------------
+	
+	// Ejecuto GPUPALS.
+	for (int i = 0; i < PALS_COUNT; i++) {
+		// pals_gpu_randTask_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
 	}
 	
-	free(res);
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_randTask_wrapper", ts_wrapper);
+	// Timming -----------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_finalize;
+	timming_start(ts_finalize);
+	// Timming -----------------------------------------------------
+
+	// Libero la memoria del dispositivo.
+	// pals_gpu_randTask_finalize(&instance);
+	
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_randTask_finalize", ts_finalize);
+	// Timming -----------------------------------------------------		
 }
 
 void pals_gpu_randMachine(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {

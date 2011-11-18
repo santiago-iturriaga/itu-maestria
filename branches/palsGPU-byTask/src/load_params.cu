@@ -1,7 +1,7 @@
-#include "load_params.h"
-
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
 	if (argc == 5) {

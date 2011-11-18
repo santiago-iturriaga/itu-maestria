@@ -1,6 +1,6 @@
-#include "solution.h"
-
 #include <assert.h>
+
+#include "solution.h"
 
 struct solution* create_empty_solution(struct matrix *etc_matrix) {
 	struct solution *new_solution;

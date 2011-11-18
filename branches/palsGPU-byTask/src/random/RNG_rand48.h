@@ -42,31 +42,31 @@
 struct RNG_rand48 {
   int stride;
 
-  /// current random numbers per thread
+  /// current random numbers per thread.
   void *state;
   
-  /// generated random numbers
+  /// generated random numbers on the GPU.
   void *res;
 
-  /// number of threads in each block
+  /// number of threads in each block.
   int threadsX;
   
-  /// number of blocks of threads
+  /// number of blocks of threads.
   int blocksX;
 
-  /// random numbers to generate
+  /// random numbers to generate.
   int rand_num_count;
 
-  /// total number of threads
+  /// total number of threads.
   int nThreads;
   
-  /// random numbers to generate per thread
+  /// random numbers to generate per thread.
   int num_blocks;
 
-  /** strided iteration constants (48-bit, distributed on 2x 24-bit) */
+  /// strided iteration constants (48-bit, distributed on 2x 24-bit).
   unsigned int A0, A1, C0, C1;
 
-  /// magic constants for rand48
+  /// magic constants for rand48.
   unsigned long long a, c;
 }; 
 
