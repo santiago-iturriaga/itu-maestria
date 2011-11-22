@@ -9,30 +9,30 @@ pals: src/main.cu \
 		src/solution.cu src/mct.cu src/utils.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_randTask.cu \
+		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu 
 	$(NVCC) -g --ptxas-options=-v src/main.cu \
 		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
 		src/solution.cu src/mct.cu src/utils.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_randTask.cu \
+		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
 			-o bin/pals
 
-pals_local: src/main.cu \
+local: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/mct.cu src/utils.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_randTask.cu \
+		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu 
 	$(NVCCLocal) -g --ptxas-options=-v src/main.cu \
 		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
 		src/solution.cu src/mct.cu src/utils.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_randTask.cu \
+		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
 			-o bin/pals
 

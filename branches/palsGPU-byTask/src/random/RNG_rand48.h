@@ -46,7 +46,7 @@ struct RNG_rand48 {
   void *state;
   
   /// generated random numbers on the GPU.
-  void *res;
+  int *res;
 
   /// number of threads in each block.
   int threadsX;

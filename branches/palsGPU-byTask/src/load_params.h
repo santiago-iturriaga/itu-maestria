@@ -17,7 +17,7 @@ struct params {
 	char *instance_path;
 	int machines_count;
 	int tasks_count;
-	
+	int seed;
 	int pals_flavour;
 };
 

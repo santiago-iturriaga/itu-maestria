@@ -17,6 +17,9 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->pals_flavour = atoi(argv[4]);
 		fprintf(stdout, "[PARAMS] PALS falvour: %d\n", input->pals_flavour);
 
+		input->pals_flavour = atoi(argv[5]);
+		fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+
 		// Input validation.
 		if (input->tasks_count < 1) {
 			fprintf(stderr, "[ERROR] Invalid tasks count.\n");
@@ -36,7 +39,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		return EXIT_SUCCESS;
 	} else {
 		fprintf(stdout, "Usage:\n");	
-		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour>\n\n", argv[0]);
+		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour> [seed]\n\n", argv[0]);
 		fprintf(stdout, "       pals flavour = 0 serial full\n");
 		fprintf(stdout, "                      1 gpu full\n");
 		fprintf(stdout, "                      2 gpu rand task\n");
