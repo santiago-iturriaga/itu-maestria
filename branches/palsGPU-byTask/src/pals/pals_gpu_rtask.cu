@@ -255,9 +255,9 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 		raux2 = gpu_random_numbers[r_block_offset_start + loop + 1];
 				
 		// Tipo de movimiento.	
-		//if (raux1 | 0x1 == raux1) { // Comparación a nivel de bit para saber si es par o impar.
-			// Si es impar... movimiento SWAP.
-			/*
+		if (raux1 | 0x1 == raux1) { // Comparación a nivel de bit para saber si es par o impar.
+			// Si es impar... 
+			// Movimiento SWAP.
 			raux1 = raux1 % tasks_count;
 					
 			raux2 = raux2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
@@ -281,8 +281,8 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 				(PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
-			*/
-		//} else {
+		} else {
+			// Si es par...
 			// Movimiento MOVE.
 			raux1 = raux1 % tasks_count;
 			aux = gpu_task_assignment[raux1]; // Máquina a.
@@ -302,7 +302,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 				(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
-		//}
+		}
 		
 		__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
 					 	 // swaps esten copiados a la memoria compartida.

@@ -265,12 +265,17 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
 		for (int i = 0; i < result.move_count; i++) {
-			if (result.move_type[i] == 0) {
+			if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
 				int machine_a = current_solution->task_assignment[result.origin[i]];
 				int machine_b = current_solution->task_assignment[result.destination[i]];
 			
 				fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
 					result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
+			} else if (result.move_type[i] == PALS_GPU_RTASK_MOVE) {
+				int machine_a = current_solution->task_assignment[result.origin[i]];
+			
+				fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+					result.origin[i], machine_a, result.destination[i], result.delta[i]);
 			}
 		}
 	}
