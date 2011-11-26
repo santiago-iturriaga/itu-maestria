@@ -47,7 +47,12 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 /*
  * Libera la memoria del dispositivo.
  */
-void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance *instance);
+void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance);
+
+/*
+ * Limpia la memoria pedida para un resultado.
+ */
+void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result);
 
 /*
  * Ejecuta PALS en el dispositivo.

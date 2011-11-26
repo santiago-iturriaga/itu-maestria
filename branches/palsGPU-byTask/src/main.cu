@@ -282,13 +282,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	// Debug ------------------------------------------------------------------------------------------
 
+	// Limpio el objeto resultado.
+	pals_gpu_rtask_clean_result(result);
+
 	// Timming -----------------------------------------------------
 	timespec ts_finalize;
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
 
 	// Libero la memoria del dispositivo.
-	pals_gpu_rtask_finalize(&instance);
+	pals_gpu_rtask_finalize(instance);
 	
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_randTask_finalize", ts_finalize);

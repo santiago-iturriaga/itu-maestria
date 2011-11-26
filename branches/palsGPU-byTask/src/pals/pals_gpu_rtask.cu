@@ -88,10 +88,17 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	timming_end(".. gpu_task_assignment", ts_3);
 }
 
-void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance *instance) {
-	cudaFree(instance->gpu_etc_matrix);
-	cudaFree(instance->gpu_task_assignment);
-	cudaFree(instance->gpu_best_swaps);
+void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
+	cudaFree(instance.gpu_etc_matrix);
+	cudaFree(instance.gpu_task_assignment);
+	cudaFree(instance.gpu_best_swaps);
+}
+
+void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result) {
+	free(result.move_type);
+	free(result.origin);
+	free(result.destination);
+	free(result.delta);
 }
 
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
@@ -102,14 +109,19 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Sorteo de numeros aleatorios.
 	// ==============================================================================
 	
+	timespec ts_rand;
+	timming_start(ts_rand);
+	
 	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
 	const unsigned int size = PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__LOOPS_PER_THREAD * 2;
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] Generando %d números aleatorios...\n", size);
+	fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
 	
 	RNG_rand48 r48;
 	RNG_rand48_init(r48, seed, size);	
 	RNG_rand48_generate(r48);
+	
+	timming_end(".. RNG_rand48", ts_rand);
 	
 	// ==============================================================================
 	// Ejecución del algoritmo.
