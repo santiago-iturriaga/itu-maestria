@@ -278,7 +278,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			task_x = raux1 % etc_matrix->tasks_count;
 			
 			int raux2 = result.rands_nums[r_block_offset_start + loop + 1];
-			task_y = raux2 % (etc_matrix->tasks_count - 1 - instance.threads_per_block);
+			task_y = raux2 % (etc_matrix->tasks_count - 1 - instance.threads_per_block) + thread_idx;
 			
 			if (task_y >= task_x) {
 				task_y = task_y + 1;
@@ -297,10 +297,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 			fprintf(stdout, "   GPU Result %d. Delta %f (%f).\n", 
 				result.best_swaps[i], result.best_swaps_delta[i], swap_delta);
-			fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d.\n", 
-				result.taskx[i], 0, result.tasky[i], 0);
-			fprintf(stdout, "   >> [CPU] Task %d in %d swaps with task %d in %d.\n", 
-				task_x, machine_a, task_y, machine_b);
+			fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
+				result.taskx[i], 0, result.tasky[i], 0, 0, result.thread[i], result.loop[i]);
+			fprintf(stdout, "   >> [CPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
+				task_x, machine_a, task_y, machine_b, block_idx, thread_idx, loop);
 		}
 	}
 	// Debug ------------------------------------------------------------------------------------------
