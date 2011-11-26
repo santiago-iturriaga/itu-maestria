@@ -171,7 +171,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
 
-	if (move_type == 0) { // Movement type: SWAP
+	if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
 		int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 		int task_x = random_1;
 	
@@ -199,7 +199,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f (%f).\n",
 				task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
 		} // <======= DEBUG
-	} else if (move_type == 1) { // Movement type: MOVE
+	} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
 		int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 		int task_x = random_1;
 		int machine_a = s->task_assignment[task_x];
