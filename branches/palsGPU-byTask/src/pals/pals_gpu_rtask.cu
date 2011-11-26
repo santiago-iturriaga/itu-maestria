@@ -34,7 +34,8 @@
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int number_of_blocks, 
 	int threads_per_block, int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
-	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta);
+	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta,
+	int *gpu_taskx, int *gpu_tasky, int *gpu_loop, int *gpu_thread);
 
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rtask_instance *instance) {	
 	// Asignación del paralelismo del algoritmo.
@@ -95,7 +96,26 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance *instance) {
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
 	struct pals_gpu_rtask_instance &instance, int seed, 
 	struct pals_gpu_rtask_result &result) {
+
+	// ==============================================================================
+	// DEBUG: tareas evaluadas.
+	int *gpu_taskx;
+	int taskx_size = sizeof(int) * PALS_GPU_RTASK__BLOCKS;
+	cudaMalloc((void**)&(gpu_taskx), taskx_size);
+
+	int *gpu_tasky;
+	int tasky_size = sizeof(int) * PALS_GPU_RTASK__BLOCKS;
+	cudaMalloc((void**)&(gpu_tasky), tasky_size);
 	
+	int *gpu_loop;
+	int loop_size = sizeof(int) * PALS_GPU_RTASK__BLOCKS;
+	cudaMalloc((void**)&(gpu_loop), loop_size);
+	
+	int *gpu_thread;
+	int thread_size = sizeof(int) * PALS_GPU_RTASK__BLOCKS;
+	cudaMalloc((void**)&(gpu_thread), thread_size);
+	// ==============================================================================
+		
 	// ==============================================================================
 	// Sorteo de numeros aleatorios.
 	// ==============================================================================
@@ -126,7 +146,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_task_assignment, 
 		r48.res,
 		instance.gpu_best_swaps, 
-		instance.gpu_best_swaps_delta);
+		instance.gpu_best_swaps_delta,
+		gpu_taskx, gpu_tasky, gpu_loop, gpu_thread);
 
 	result.best_swaps = (int*)malloc(sizeof(int) * instance.number_of_blocks);
 	result.best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
@@ -136,6 +157,24 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	cudaMemcpy(result.best_swaps, instance.gpu_best_swaps, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(result.best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(result.rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost);
+
+	// ==============================================================================
+	// DEBUG: tareas evaluadas.	
+	result.taskx = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	result.tasky = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	result.loop = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	result.thread = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	
+	cudaMemcpy(result.taskx, gpu_taskx, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(result.tasky, gpu_tasky, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(result.loop, gpu_loop, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(result.thread, gpu_thread, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
+	
+	cudaFree(gpu_taskx);
+	cudaFree(gpu_tasky);
+	cudaFree(gpu_loop);
+	cudaFree(gpu_thread);
+	// ==============================================================================
 	
 	// Libera la memoria del dispositivo con los números aleatorios.
 	RNG_rand48_cleanup(r48);
@@ -143,12 +182,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int number_of_blocks, 
 	int threads_per_block, int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
-	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta)
+	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta,
+	int *gpu_taskx, int *gpu_tasky, int *gpu_loop, int *gpu_thread)
 {
-	//PALS_GPU_RTASK__BLOCKS 			1024
-	//PALS_GPU_RTASK__THREADS 			128
-	//PALS_GPU_RTASK__LOOPS_PER_THREAD 	48
-
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 
@@ -196,6 +232,13 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 
 			block_swaps[thread_idx] = (loop * PALS_GPU_RTASK__THREADS) + thread_idx;
 			block_swaps_delta[thread_idx] = current_swap_delta;
+			
+			if (thread_idx == 0) {
+				gpu_taskx[block_idx] = raux1;
+				gpu_tasky[block_idx] = raux2;
+				gpu_loop[block_idx] = loop;
+				gpu_thread[block_idx] = thread_idx;
+			}
 		//} else {
 			// Movimiento MOVE.
 			// TODO: hacer!!!
@@ -204,7 +247,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 		__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
 					 	 // swaps esten copiados a la memoria compartida.
 	
-		// Aplico reduce para quedarme con el mejor delta.
+		/*// Aplico reduce para quedarme con el mejor delta.
 		for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
 			aux = 2 * i * thread_idx;
 		
@@ -216,10 +259,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 			}
 		
 			__syncthreads();
-		}
+		}*/
 		
 		if (thread_idx == 0) {
-			if ((loop == 0) || (block_best_swap_delta > block_swaps_delta[0])) {
+			if ((loop == 0) /*|| (block_best_swap_delta > block_swaps_delta[0])*/) {
 				block_best_swap = block_swaps[thread_idx];
 				block_best_swap_delta = block_swaps_delta[thread_idx];
 			}
@@ -227,7 +270,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 	}
 	
 	if (thread_idx == 0) {
-		gpu_best_swaps[block_idx] = (int)block_best_swap; //best_swap;
+		gpu_best_swaps[block_idx] = block_best_swap; //best_swap;
 		gpu_best_swaps_delta[block_idx] = block_best_swap_delta; //best_swap_delta;
 	}
 }

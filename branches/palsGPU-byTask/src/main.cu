@@ -294,8 +294,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
 			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 
-			fprintf(stdout, "   GPU Result %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-				result.best_swaps[i], result.best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+			fprintf(stdout, "   GPU Result %d. Delta %f (%f).\n", 
+				result.best_swaps[i], result.best_swaps_delta[i], swap_delta);
+			fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d.\n", 
+				result.taskx[i], 0, result.tasky[i], 0);
+			fprintf(stdout, "   >> [CPU] Task %d in %d swaps with task %d in %d.\n", 
+				task_x, machine_a, task_y, machine_b);
 		}
 	}
 	// Debug ------------------------------------------------------------------------------------------
