@@ -159,8 +159,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	}
 	
 	// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
-	int move_type = best_swaps[block_idx] / PALS_GPU_RTASK__MOV_TYPE_OFFSET;
-	int move_offset = best_swaps[block_idx] % PALS_GPU_RTASK__MOV_TYPE_OFFSET;
+	int mov_type_offset = PALS_GPU_RTASK__MOV_TYPE_OFFSET;
+    int swap = best_swaps[block_idx];
+
+    int move_type = swap / mov_type_offset;
+    int move_offset = swap % mov_type_offset;
 	
 	int thread_idx = move_offset % PALS_GPU_RTASK__THREADS;
 	int loop_idx = move_offset / PALS_GPU_RTASK__THREADS;
