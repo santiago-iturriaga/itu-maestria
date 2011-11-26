@@ -263,44 +263,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 	// Debug ------------------------------------------------------------------------------------------
 	if (DEBUG) {
-		int task_x, task_y;
-		int machine_a, machine_b;
-
 		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
-		for (int i = 0; i < 1 /*instance.number_of_blocks*/; i++) {
-			int block_idx = i;
-			int thread_idx = result.best_swaps[i] % instance.threads_per_block;
-			int loop = result.best_swaps[i] / instance.threads_per_block;
-
-			int r_block_offset_start = block_idx * (2 * instance.tasks_per_thread);
-
-			int raux1 = result.rands_nums[r_block_offset_start + loop];
-			task_x = raux1 % etc_matrix->tasks_count;
+		for (int i = 0; i < result.move_count; i++) {
+			if (result.move_type[i] == 0) {
+				int machine_a = current_solution->task_assignment[result.origin[i]];
+				int machine_b = current_solution->task_assignment[result.destination[i]];
 			
-			int raux2 = result.rands_nums[r_block_offset_start + loop + 1];
-			task_y = raux2 % (etc_matrix->tasks_count - 1 - instance.threads_per_block) + thread_idx;
-			
-			if (task_y >= task_x) {
-				task_y = task_y + 1;
-				
-				if (task_y == etc_matrix->tasks_count) task_y = 0;
+				fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+					result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
 			}
-		
-			machine_a = current_solution->task_assignment[task_x];
-			machine_b = current_solution->task_assignment[task_y];
-
-			float swap_delta = 0.0;
-			swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
-			swap_delta += get_etc_value(etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
-			swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
-			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
-
-			fprintf(stdout, "   GPU Result %d. Delta %f (%f).\n", 
-				result.best_swaps[i], result.best_swaps_delta[i], swap_delta);
-			//fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
-			//	result.taskx[i], 0, result.tasky[i], 0, 0, result.thread[i], result.loop[i]);
-			fprintf(stdout, "   >> [CPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
-				task_x, machine_a, task_y, machine_b, block_idx, thread_idx, loop);
 		}
 	}
 	// Debug ------------------------------------------------------------------------------------------

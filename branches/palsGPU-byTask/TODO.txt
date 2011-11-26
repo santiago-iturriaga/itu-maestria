@@ -1,3 +1,4 @@
+- Usar short para almacenar los movimientos en la gpu
 - Hacer el merge con el trunk
 - Hacer movimiento "mover"
 - Hacer reduce del mejor movimiento

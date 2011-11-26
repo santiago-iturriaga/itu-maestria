@@ -25,15 +25,18 @@ struct pals_gpu_rtask_instance {
 };
 
 struct pals_gpu_rtask_result {
-	int *best_swaps;
-	float *best_swaps_delta;
-	int *rands_nums;
+	short move_count;
 
-	// Debug...	
-	/*int *taskx;
-	int *tasky;
-	int *loop;
-	int *thread;*/
+	/** Move type:
+	
+		0 = swap
+		1 = move
+	**************/
+	char *move_type;
+
+	int *origin;
+	int *destination;
+	float *delta;
 };
 
 /*
