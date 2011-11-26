@@ -25,6 +25,8 @@ struct pals_gpu_rtask_instance {
 	int threads_per_block;
 	int tasks_per_thread;
 	int total_tasks;
+	
+	short result_count;
 };
 
 struct pals_gpu_rtask_result {
