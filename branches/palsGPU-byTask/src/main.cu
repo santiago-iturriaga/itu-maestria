@@ -272,6 +272,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			int thread_idx = result.best_swaps[i] % instance.tasks_per_thread;
 			int loop = result.best_swaps[i] / instance.tasks_per_thread;
 
+			fprintf(stdout, "> %d / %d = %d\n", result.best_swaps[i], instance.tasks_per_thread, loop);
+
 			int r_block_offset_start = block_idx * (2 * instance.tasks_per_thread);
 
 			int raux1 = result.rands_nums[r_block_offset_start + loop];
