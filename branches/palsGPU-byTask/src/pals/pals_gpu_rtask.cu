@@ -171,25 +171,25 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
 
-	int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
-	int task_x = random_1;
+	if (move_type == 0) { // Movement type: SWAP
+		int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
+		int task_x = random_1;
 	
-	int random_2 = rands_nums[r_block_offset_start + loop_idx + 1];
-	int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS) + thread_idx;
+		int random_2 = rands_nums[r_block_offset_start + loop_idx + 1];
+		int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS) + thread_idx;
 	
-	if (task_y >= task_x) {
-		task_y = task_y + 1;
+		if (task_y >= task_x) {
+			task_y = task_y + 1;
 		
-		if (task_y == etc_matrix->tasks_count) task_y = 0;
-	}
+			if (task_y == etc_matrix->tasks_count) task_y = 0;
+		}
 
-	result.move_type[0] = move_type;
-	result.origin[0] = task_x;
-	result.destination[0] = task_y;
-	result.delta[0] = best_swaps_delta[block_idx];
-
-	if (DEBUG) { // =======> DEBUG
-		if (move_type == 0) {
+		result.move_type[0] = move_type; // SWAP
+		result.origin[0] = task_x;
+		result.destination[0] = task_y;
+		result.delta[0] = best_swaps_delta[block_idx];
+			
+		if (DEBUG) { // =======> DEBUG
 			int machine_a = s->task_assignment[task_x];
 			int machine_b = s->task_assignment[task_y];
 
@@ -201,9 +201,36 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 			fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f (%f).\n",
 				task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
-		}
-	} // <======= DEBUG
+		} // <======= DEBUG
+	} else if (move_type == 1) { // Movement type: MOVE
+		int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
+		int task_x = random_1;
+		int machine_a = s->task_assignment[task_x];
+
+		int random_2 = rands_nums[r_block_offset_start + loop_idx + 1];
+		int machine_b = random_2 % (etc_matrix->machines_count - 1) + thread_idx;
+	
+		if (machine_b >= machine_a) {
+			machine_b = machine_b + 1;
 		
+			if (machine_b == etc_matrix->machines_count) machine_b = 0;
+		}
+
+		result.move_type[0] = move_type; // MOVE
+		result.origin[0] = task_x;
+		result.destination[0] = machine_b;
+		result.delta[0] = best_swaps_delta[block_idx];
+			
+		if (DEBUG) { // =======> DEBUG
+			float swap_delta = 0.0;
+			swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
+			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
+
+			fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f (%f).\n",
+				task_x, machine_a, machine_b, best_swaps_delta[block_idx], swap_delta);
+		} // <======= DEBUG
+	}
+	
 	// Libera la memoria del dispositivo con los números aleatorios.
 	RNG_rand48_cleanup(r48);
 }
