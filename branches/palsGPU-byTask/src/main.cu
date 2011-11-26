@@ -269,8 +269,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 		for (int i = 0; i < instance.number_of_blocks; i++) {
 			int block_idx = i;
-			int thread_idx = result.best_swaps[i] % instance.tasks_per_thread;
-			int loop = result.best_swaps[i] / instance.tasks_per_thread;
+			int thread_idx = result.best_swaps[i] % instance.threads_per_block;
+			int loop = result.best_swaps[i] / instance.threads_per_block;
 
 			fprintf(stdout, "> %d / %d = %d\n", result.best_swaps[i], instance.tasks_per_thread, loop);
 
