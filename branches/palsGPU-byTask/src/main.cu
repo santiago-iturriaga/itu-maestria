@@ -285,7 +285,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			
 			task_y = rands_nums[r_block_offset_start + loop + 1];
 			task_y = (int)(((float)(etc_matrix->tasks_count-1-instance.threads_per_block) 
-				/ (float)INT_MAX) * (float)(raux2-1-instance.threads_per_block));
+				/ (float)INT_MAX) * (float)(raux2));
 			task_y = raux2 + thread_idx;
 			
 			if (task_y >= task_x) {

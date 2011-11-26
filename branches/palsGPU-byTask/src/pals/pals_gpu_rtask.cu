@@ -165,7 +165,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 			//assert(raux1 < tasks_count);
 			
 			raux2 = gpu_random_numbers[r_block_offset_start + loop + 1];
-			raux2 = (int)(((float)(tasks_count-1-PALS_GPU_RTASK__THREADS) / (float)INT_MAX) * (float)(raux2-1-PALS_GPU_RTASK__THREADS));
+			raux2 = (int)(((float)(tasks_count-1-PALS_GPU_RTASK__THREADS) / (float)INT_MAX) * (float)(raux2));
 			raux2 = raux2 + thread_idx;
 			
 			if (raux2 >= raux1) {
