@@ -263,7 +263,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 	// Debug ------------------------------------------------------------------------------------------
 	if (DEBUG) {
-		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
+		fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
 		for (int i = 0; i < result.move_count; i++) {
 			if (result.move_type[i] == 0) {
 				int machine_a = current_solution->task_assignment[result.origin[i]];

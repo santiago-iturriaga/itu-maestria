@@ -8,6 +8,9 @@
 #include "../etc_matrix.h"
 #include "../solution.h"
 
+#define PALS_GPU_RTASK_SWAP 0
+#define PALS_GPU_RTASK_MOVE 1
+
 #ifndef PALS_GPU_RTASK_H_
 #define PALS_GPU_RTASK_H_
 
@@ -27,13 +30,7 @@ struct pals_gpu_rtask_instance {
 struct pals_gpu_rtask_result {
 	short move_count;
 
-	/** Move type:
-	
-		0 = swap
-		1 = move
-	**************/
 	char *move_type;
-
 	int *origin;
 	int *destination;
 	float *delta;
