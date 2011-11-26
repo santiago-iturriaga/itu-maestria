@@ -111,7 +111,7 @@ int main(int argc, char** argv)
 	}
 	
 	// Timming -----------------------------------------------------
-	timming_end("Elapsed PALS time", ts);
+	timming_end("FULL Elapsed PALS time", ts);
 	// Timming -----------------------------------------------------
 
 	// =============================================================
@@ -238,7 +238,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	pals_gpu_rtask_init(etc_matrix, current_solution, &instance);
 
 	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_rtask_init", ts_init);
+	timming_end(">> pals_gpu_rtask_init", ts_init);
 	// Timming -----------------------------------------------------
 
 	// Timming -----------------------------------------------------
@@ -258,7 +258,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	//}
 	
 	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_rtask_wrapper", ts_wrapper);
+	timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
 	// Timming -----------------------------------------------------
 
 	// Debug ------------------------------------------------------------------------------------------
@@ -316,7 +316,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	pals_gpu_rtask_finalize(&instance);
 	
 	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_randTask_finalize", ts_finalize);
+	timming_end(">> pals_gpu_randTask_finalize", ts_finalize);
 	// Timming -----------------------------------------------------		
 }
 
