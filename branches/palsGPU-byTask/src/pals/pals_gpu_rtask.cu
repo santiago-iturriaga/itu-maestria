@@ -33,8 +33,7 @@
 */
 
 __global__ void pals_rtask_kernel(int tasks_count, int tasks_per_thread, float *gpu_etc_matrix, 
-	int *gpu_task_assignment, int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta);
-	
+	int *gpu_task_assignment, int *gpu_random_numbers, short *gpu_best_swaps, float *gpu_best_swaps_delta);	
 	
 
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rtask_instance *instance) {	
@@ -58,13 +57,13 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	timming_start(ts_4);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(int) * instance->number_of_blocks;	
+	int best_swaps_size = sizeof(short) * instance->number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
 		
 	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
 	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
 	
-	timming_end("gpu_best_swaps", ts_4);
+	timming_end(".. gpu_best_swaps", ts_4);
 		
 	timespec ts_2;
 	timming_start(ts_2);
@@ -74,7 +73,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size);
 	cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice);	
 
-	timming_end("gpu_etc_matrix", ts_2);
+	timming_end(".. gpu_etc_matrix", ts_2);
 
 	timespec ts_3;
 	timming_start(ts_3);
@@ -84,7 +83,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size);
 	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
 
-	timming_end("gpu_task_assignment", ts_3);
+	timming_end(".. gpu_task_assignment", ts_3);
 }
 
 void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance *instance) {
@@ -104,7 +103,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
 	const unsigned int size = PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__LOOPS_PER_THREAD * 2;
 	
-	fprintf(stdout, "[DEBUG] Generando %d números aleatorios...\n", size);
+	if (DEBUG) fprintf(stdout, "[DEBUG] Generando %d números aleatorios...\n", size);
 	
 	RNG_rand48 r48;
 	RNG_rand48_init(r48, seed, size);	
@@ -127,12 +126,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_swaps_delta);
 
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
-	int *best_swaps = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	short *best_swaps = (short*)malloc(sizeof(short) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
 	int *rands_nums = (int*)malloc(sizeof(int) * size);
 
 	// Copio los mejores movimientos desde el dispositivo.
-	cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
+	cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(short) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost);
 
@@ -185,7 +184,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	result.destination[0] = task_y;
 	result.delta[0] = best_swaps_delta[block_idx];
 
-	// =======> DEBUG
+	if (DEBUG) { // =======> DEBUG
 	int machine_a = s->task_assignment[task_x];
 	int machine_b = s->task_assignment[task_y];
 
@@ -197,7 +196,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f (%f).\n",
 		task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
-	// <======= DEBUG
+	} // <======= DEBUG
 		
 	// Libera la memoria del dispositivo con los números aleatorios.
 	RNG_rand48_cleanup(r48);
@@ -206,7 +205,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 __global__ void pals_rtask_kernel(int tasks_count, int tasks_per_thread, 
 	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_random_numbers, 
-	int *gpu_best_swaps, float *gpu_best_swaps_delta)
+	short *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
@@ -290,7 +289,7 @@ __global__ void pals_rtask_kernel(int tasks_count, int tasks_per_thread,
 	}
 	
 	if (thread_idx == 0) {
-		gpu_best_swaps[block_idx] = (int)block_best_swap; //best_swap;
+		gpu_best_swaps[block_idx] = block_best_swap; //best_swap;
 		gpu_best_swaps_delta[block_idx] = block_best_swap_delta; //best_swap_delta;
 	}
 }
