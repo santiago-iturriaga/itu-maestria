@@ -27,13 +27,13 @@ struct pals_gpu_rtask_instance {
 struct pals_gpu_rtask_result {
 	int *best_swaps;
 	float *best_swaps_delta;
+	int *rands_nums;
 
 	// Debug...	
-	int *rands_nums;	
-	int *taskx;
+	/*int *taskx;
 	int *tasky;
 	int *loop;
-	int *thread;
+	int *thread;*/
 };
 
 /*
