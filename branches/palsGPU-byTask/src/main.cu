@@ -241,10 +241,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timming_end("pals_gpu_rtask_init", ts_init);
 	// Timming -----------------------------------------------------
 
-	int best_swaps[instance.number_of_blocks];
-	float best_swaps_delta[instance.number_of_blocks];
-	int rands_nums[instance.number_of_blocks * instance.tasks_per_thread * 2];
-
 	// Timming -----------------------------------------------------
 	timespec ts_wrapper;
 	timming_start(ts_wrapper);
@@ -252,10 +248,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
+	struct pals_gpu_rtask_result result;
 	
 	//for (int i = 0; i < PALS_COUNT; i++) {
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, &instance, seed, 
-			rands_nums, best_swaps, best_swaps_delta);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, seed, result);
 		
 		// TODO: Evalúo las soluciones...
 		// seed++;
@@ -273,12 +269,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
 		for (int i = 0; i < instance.number_of_blocks; i++) {
 			int block_idx = i;
-			int thread_idx = best_swaps[i] % instance.tasks_per_thread;
-			int loop = best_swaps[i] / instance.tasks_per_thread;
+			int thread_idx = result.best_swaps[i] % instance.tasks_per_thread;
+			int loop = result.best_swaps[i] / instance.tasks_per_thread;
 
 			int r_block_offset_start = block_idx * (2 * instance.tasks_per_thread);
-			int raux1 = rands_nums[r_block_offset_start + loop];
-			int raux2 = rands_nums[r_block_offset_start + loop + 1];
+			int raux1 = result.rands_nums[r_block_offset_start + loop];
+			int raux2 = result.rands_nums[r_block_offset_start + loop + 1];
 
 			task_x = (int)(((float)etc_matrix->tasks_count / (float)INT_MAX) * (float)raux1);			
 			task_y = (int)(((float)(etc_matrix->tasks_count-1-instance.threads_per_block) / (float)INT_MAX) * (float)(raux2)) + thread_idx;
@@ -299,7 +295,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 
 			fprintf(stdout, "   GPU Result %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-				best_swaps[i], best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+				result.best_swaps[i], result.best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
 		}
 	}
 	// Debug ------------------------------------------------------------------------------------------

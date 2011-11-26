@@ -12,9 +12,6 @@
 #define PALS_GPU_RTASK_H_
 
 struct pals_gpu_rtask_instance {
-	int random_nums_count;
-	int *gpu_random_nums;
-
 	float *gpu_etc_matrix;
 	int *gpu_task_assignment;
 	int *gpu_best_swaps;
@@ -24,6 +21,12 @@ struct pals_gpu_rtask_instance {
 	int threads_per_block;
 	int tasks_per_thread;
 	int total_tasks;
+};
+
+struct pals_gpu_rtask_result {
+	int *rands_nums;
+	int *best_swaps;
+	float *best_swaps_delta;
 };
 
 /*
@@ -41,7 +44,7 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance *instance);
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance *instance, int seed, int rands_nums[], 
-	int best_swaps[], float best_swaps_delta[]);
+	struct pals_gpu_rtask_instance &instance, int seed, 
+	struct pals_gpu_rtask_result &result);
 
 #endif /* PALS_GPU_H_ */
