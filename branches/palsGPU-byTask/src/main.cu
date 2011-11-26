@@ -262,6 +262,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------
 
 	// Debug ------------------------------------------------------------------------------------------
+	/*
 	if (DEBUG) {
 		int task_x, task_y;
 		int machine_a, machine_b;
@@ -297,12 +298,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 			fprintf(stdout, "   GPU Result %d. Delta %f (%f).\n", 
 				result.best_swaps[i], result.best_swaps_delta[i], swap_delta);
-			/*fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
-				result.taskx[i], 0, result.tasky[i], 0, 0, result.thread[i], result.loop[i]);*/
+			//fprintf(stdout, "   >> [GPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
+			//	result.taskx[i], 0, result.tasky[i], 0, 0, result.thread[i], result.loop[i]);
 			fprintf(stdout, "   >> [CPU] Task %d in %d swaps with task %d in %d. Block %d. Thread %d. Loop %d.\n", 
 				task_x, machine_a, task_y, machine_b, block_idx, thread_idx, loop);
 		}
 	}
+	*/
 	// Debug ------------------------------------------------------------------------------------------
 
 	// Timming -----------------------------------------------------
