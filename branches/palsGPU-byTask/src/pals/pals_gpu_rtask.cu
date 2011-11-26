@@ -147,7 +147,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 	__shared__ int block_best_swap;
 	__shared__ float block_best_swap_delta;
 	
-	__shared__ short block_swaps[PALS_GPU_RTASK__THREADS];
+	__shared__ int block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
 	// Offset de los random numbers asignados al block (2 rand x loop).
@@ -165,7 +165,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 			//assert(raux1 < tasks_count);
 			
 			raux2 = gpu_random_numbers[r_block_offset_start + loop + 1];
-			raux2 = (int)(((float)(tasks_count-1-PALS_GPU_RTASK__THREADS) / (float)INT_MAX) * (float)(raux2));
+			raux2 = (int)(((float)(tasks_count-1-PALS_GPU_RTASK__THREADS) / (float)INT_MAX) * (float)raux2);
 			raux2 = raux2 + thread_idx;
 			
 			if (raux2 >= raux1) {
@@ -176,10 +176,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 			//assert(raux2 < tasks_count);
 			
 			// Calculo el delta del swap sorteado.
-			float current_swap_delta;
+			float current_swap_delta = 0.0;
 
 			aux = gpu_task_assignment[raux1]; // Máquina a.
-			current_swap_delta = 0.0 - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
+			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux2]; // Sumo el ETC de y en a.
 	
 			aux = gpu_task_assignment[raux2]; // Máquina b.	
