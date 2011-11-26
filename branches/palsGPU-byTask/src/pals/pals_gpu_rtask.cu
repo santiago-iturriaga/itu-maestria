@@ -34,10 +34,11 @@
 
 //#define INT_HALF_MAX						1073741823
 
-__global__ void pals_rtask_kernel(int machines_count, int tasks_count, int number_of_blocks, 
-	int threads_per_block, int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
-	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta
+__global__ void pals_rtask_kernel(int tasks_count, int tasks_per_thread, float *gpu_etc_matrix, 
+	int *gpu_task_assignment, int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta
 	/*,int *gpu_taskx, int *gpu_tasky, int *gpu_loop, int *gpu_thread*/);
+
+//__global__ void pals_rtask_reduce(int count, int *gpu_best_swaps, float *gpu_best_swaps_delta);
 
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rtask_instance *instance) {	
 	// Asignación del paralelismo del algoritmo.
@@ -140,10 +141,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	dim3 threads(instance.threads_per_block, 1, 1);
 
 	pals_rtask_kernel<<< grid, threads >>>(
-		etc_matrix->machines_count,
 		etc_matrix->tasks_count,
-		instance.number_of_blocks, 
-		instance.threads_per_block, 
 		instance.tasks_per_thread, 
 		instance.gpu_etc_matrix, 
 		instance.gpu_task_assignment, 
@@ -160,6 +158,19 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	cudaMemcpy(result.best_swaps, instance.gpu_best_swaps, sizeof(int) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(result.best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
 	cudaMemcpy(result.rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost);
+
+	// Hack un poco feo para encontrar el mejor (lo más prolijo sería usar la GPU).
+	int mejor = 0;
+	for (int i = 1; i < instance.number_of_blocks; i++) {
+		if (result.best_swaps_delta[i] < result.best_swaps_delta[mejor]) {
+			mejor = i;
+		}
+	}
+	
+	if (mejor != 0) {
+		result.best_swaps[0] = result.best_swaps[mejor];
+		result.best_swaps_delta[0] = result.best_swaps_delta[mejor];
+	}
 
 	// ==============================================================================
 	// DEBUG: tareas evaluadas.	
@@ -183,13 +194,61 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	RNG_rand48_cleanup(r48);
 }
 
-__global__ void pals_rtask_kernel(int machines_count, int tasks_count, int number_of_blocks, 
-	int threads_per_block, int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
-	int *gpu_random_numbers, int *gpu_best_swaps, float *gpu_best_swaps_delta
+/*
+__global__ void pals_rtask_reduce(
+	int in_count, int *gpu_in_best_swaps, float *gpu_in_best_swaps_delta,
+	int *gpu_out_best_swaps, float *gpu_out_best_swaps_delta)
+{
+	const unsigned int thread_idx = threadIdx.x;
+	const unsigned int block_idx = blockIdx.x;
+	//const unsigned int block_count = gridDim.x;
+	const unsigned int thread_count = blockDim.x;
+
+	const int block_offset = block_idx * thread_count;
+	
+	__shared__ int block_swaps[thread_count];
+	__shared__ float block_swaps_delta[thread_count];
+	
+	int thread_offset = block_offset + thread_idx;
+	if (thread_offset < count) {
+		block_swaps[thread_idx] = gpu_best_swaps[thread_offset];
+		block_swaps_delta[thread_idx] = gpu_best_swaps_delta[thread_offset];
+	}
+	
+	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
+				 	 // swaps esten copiados a la memoria compartida.
+
+	// Aplico reduce para quedarme con el mejor delta.
+	int aux;
+	for (int i = 1; i < thread_count; i *= 2) {
+		aux = 2 * i * thread_idx;
+	
+		if (aux < thread_count) {
+			if (block_swaps_delta[aux] > block_swaps_delta[aux + i]) {
+				block_swaps_delta[aux] = block_swaps_delta[aux + i];
+				block_swaps[aux] = block_swaps[aux + i];
+			}
+		}
+	
+		__syncthreads();
+	}
+	
+	if (thread_idx == 0) {
+		gpu_out_best_swaps[block_idx] = block_swaps[0];
+		gpu_out_best_swaps_delta[block_idx] = block_swaps_delta[0];
+	}
+}
+*/
+
+__global__ void pals_rtask_kernel(int tasks_count, int tasks_per_thread, 
+	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_random_numbers, 
+	int *gpu_best_swaps, float *gpu_best_swaps_delta
 	/*,int *gpu_taskx, int *gpu_tasky, int *gpu_loop, int *gpu_thread*/)
 {
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
+	//const unsigned int block_count = gridDim.x;
+	//const unsigned int thread_count = blockDim.x;
 
 	__shared__ short block_best_swap;
 	__shared__ float block_best_swap_delta;
@@ -206,11 +265,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 		raux1 = gpu_random_numbers[r_block_offset_start + loop];
 	
 		// Tipo de movimiento.	
-		//if (raux1 % 2 == 0) { //TODO: el módulo es muy ineficiente.
-			// Movimiento SWAP.
+		//if (raux1 | 0x1 == raux1) { // Comparación a nivel de bit para saber si es par o impar.
+			// Si es impar... movimiento SWAP.
 
 			raux1 = raux1 % tasks_count;
-			//assert(raux1 < tasks_count);
 					
 			raux2 = gpu_random_numbers[r_block_offset_start + loop + 1];
 			raux2 = raux2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
@@ -221,7 +279,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 				
 				if (raux2 == tasks_count) raux2 = 0;
 			}
-			//assert(raux2 < tasks_count);
 			
 			// Calculo el delta del swap sorteado.
 			float current_swap_delta = 0.0;

@@ -262,13 +262,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------
 
 	// Debug ------------------------------------------------------------------------------------------
-	/*
 	if (DEBUG) {
 		int task_x, task_y;
 		int machine_a, machine_b;
 
 		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
-		for (int i = 0; i < instance.number_of_blocks; i++) {
+		for (int i = 0; i < 1 /*instance.number_of_blocks*/; i++) {
 			int block_idx = i;
 			int thread_idx = result.best_swaps[i] % instance.threads_per_block;
 			int loop = result.best_swaps[i] / instance.threads_per_block;
@@ -304,7 +303,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				task_x, machine_a, task_y, machine_b, block_idx, thread_idx, loop);
 		}
 	}
-	*/
 	// Debug ------------------------------------------------------------------------------------------
 
 	// Timming -----------------------------------------------------
