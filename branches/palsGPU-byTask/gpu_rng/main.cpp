@@ -80,9 +80,9 @@ int main(int argc, const char **argv)
     r48.generate(size);
     r48.get(res, size);
 
-    /*for (unsigned int jj = 0; jj < size; jj++) {
+    for (unsigned int jj = 0; jj < size; jj++) {
       printf("[%i] %i\n", j, res[jj]);
-    }*/
+    }
   }
 
   tE = clock();
