@@ -178,11 +178,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int random_2 = rands_nums[r_block_offset_start + loop_idx + 1];
 		int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS) + thread_idx;
 	
-		if (task_y >= task_x) {
-			task_y = task_y + 1;
-		
-			if (task_y == etc_matrix->tasks_count) task_y = 0;
-		}
+		if (task_y >= task_x) task_y = task_y + 1;
+		if (task_y >= etc_matrix->tasks_count) task_y = task_y % etc_matrix->tasks_count;
 
 		result.move_type[0] = move_type; // SWAP
 		result.origin[0] = task_x;
@@ -266,11 +263,8 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			raux2 = raux2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
 			raux2 = raux2 + thread_idx;
 			
-			if (raux2 >= raux1) {
-				raux2 = raux2 + 1;
-				
-				if (raux2 == tasks_count) raux2 = 0;
-			}
+			if (raux2 >= raux1) raux2 = raux2 + 1;
+			if (raux2 >= tasks_count) raux2 = raux2 % tasks_count;
 			
 			// Calculo el delta del swap sorteado.
 			float current_swap_delta = 0.0;
@@ -296,11 +290,8 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			raux2 = raux2 % (machines_count - 1);
 			raux2 = raux2 + thread_idx;
 			
-			if (raux2 >= aux) {
-				raux2 = raux2 + 1;
-				
-				if (raux2 == machines_count) raux2 = 0;
-			}
+			if (raux2 >= aux) raux2 = raux2 + 1;
+			if (raux2 >= machines_count) raux2 = raux2 % machines_count;
 			
 			// Calculo el delta del swap sorteado.
 			float current_swap_delta = 0.0;
