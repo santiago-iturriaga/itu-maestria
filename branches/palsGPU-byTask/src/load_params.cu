@@ -4,7 +4,7 @@
 #include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
-	if (argc == 5) {
+	if (argc == 6) {
 		input->instance_path = argv[1];
 		fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
 
@@ -17,7 +17,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->pals_flavour = atoi(argv[4]);
 		fprintf(stdout, "[PARAMS] PALS falvour: %d\n", input->pals_flavour);
 
-		input->pals_flavour = atoi(argv[5]);
+		input->seed = atoi(argv[5]);
 		fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
 
 		// Input validation.
