@@ -263,10 +263,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 		}*/
 		
 		if (thread_idx == 0) {
-			if ((loop == 0) /*|| (block_best_swap_delta > block_swaps_delta[0])*/) {
+			//if ((loop == 0) /*|| (block_best_swap_delta > block_swaps_delta[0])*/) {
 				block_best_swap = block_swaps[thread_idx];
 				block_best_swap_delta = block_swaps_delta[thread_idx];
-			}
+			//}
 		}
 	}
 	
