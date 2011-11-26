@@ -32,7 +32,8 @@
 #define PALS_GPU_RTASK__THREADS 			16
 #define PALS_GPU_RTASK__LOOPS_PER_THREAD 	8
 
-#define INT_HALF_MAX						1073741823
+
+//#define INT_HALF_MAX						1073741823
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int number_of_blocks, 
 	int threads_per_block, int tasks_per_thread, float *gpu_etc_matrix, int *gpu_task_assignment, 
@@ -191,10 +192,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 
-	__shared__ int block_best_swap;
+	__shared__ short block_best_swap;
 	__shared__ float block_best_swap_delta;
 	
-	__shared__ int block_swaps[PALS_GPU_RTASK__THREADS];
+	__shared__ short block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
 	// Offset de los random numbers asignados al block (2 rand x loop).
@@ -234,7 +235,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux2]; // Resto el ETC de y en b.
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
-			block_swaps[thread_idx] = (loop * PALS_GPU_RTASK__THREADS) + thread_idx;
+			block_swaps[thread_idx] = (short)((loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
 			
 			/*if (thread_idx == 0) {
@@ -277,7 +278,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int numbe
 	}
 	
 	if (thread_idx == 0) {
-		gpu_best_swaps[block_idx] = block_best_swap; //best_swap;
+		gpu_best_swaps[block_idx] = (int)block_best_swap; //best_swap;
 		gpu_best_swaps_delta[block_idx] = block_best_swap_delta; //best_swap_delta;
 	}
 }
