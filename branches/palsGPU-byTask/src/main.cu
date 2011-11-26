@@ -273,11 +273,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			int loop = result.best_swaps[i] / instance.tasks_per_thread;
 
 			int r_block_offset_start = block_idx * (2 * instance.tasks_per_thread);
-			int raux1 = result.rands_nums[r_block_offset_start + loop];
-			int raux2 = result.rands_nums[r_block_offset_start + loop + 1];
 
-			task_x = (int)(((float)etc_matrix->tasks_count / (float)INT_MAX) * (float)raux1);			
-			task_y = (int)(((float)(etc_matrix->tasks_count-1-instance.threads_per_block) / (float)INT_MAX) * (float)(raux2)) + thread_idx;
+			int raux1 = result.rands_nums[r_block_offset_start + loop];
+			task_x = raux1 % etc_matrix->tasks_count;
+			
+			int raux2 = result.rands_nums[r_block_offset_start + loop + 1];
+			task_y = raux2 % (etc_matrix->tasks_count - 1 - instance.threads_per_block);
 			
 			if (task_y >= task_x) {
 				task_y = task_y + 1;
