@@ -145,9 +145,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 	if (instance.result_count > instance.number_of_blocks) instance.result_count = instance.number_of_blocks;
 	
-	// Voy a retornar un (1) solo movimiento. El mejor.
 	result.move_count = instance.result_count;
-
 	result.move_type = (char*)malloc(sizeof(char) * instance.result_count);
 	result.origin = (int*)malloc(sizeof(int) * instance.result_count);
 	result.destination = (int*)malloc(sizeof(int) * instance.result_count);
