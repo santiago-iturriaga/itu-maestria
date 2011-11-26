@@ -161,10 +161,10 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 	// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
 	int mov_type_offset = PALS_GPU_RTASK__MOV_TYPE_OFFSET;
-    int swap = best_swaps[block_idx];
+	int swap = best_swaps[block_idx];
 
-    int move_type = swap / mov_type_offset;
-    int move_offset = swap % mov_type_offset;
+	int move_type = swap / mov_type_offset;
+	int move_offset = swap % mov_type_offset;
 	
 	int thread_idx = move_offset % PALS_GPU_RTASK__THREADS;
 	int loop_idx = move_offset / PALS_GPU_RTASK__THREADS;
@@ -210,11 +210,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int random_2 = rands_nums[r_block_offset_start + loop_idx + 1];
 		int machine_b = random_2 % (etc_matrix->machines_count - 1) + thread_idx;
 	
-		if (machine_b >= machine_a) {
-			machine_b = machine_b + 1;
-		
-			if (machine_b == etc_matrix->machines_count) machine_b = 0;
-		}
+		if (machine_b >= machine_a) machine_b = machine_b + 1;
+		if (machine_b >= etc_matrix->machines_count) machine_b = machine_b % etc_matrix->machines_count;
 
 		result.move_type[0] = move_type; // MOVE
 		result.origin[0] = task_x;
