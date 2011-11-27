@@ -12,6 +12,7 @@
 #include <math.h>
 #include <cuda.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include "load_params.h"
 #include "load_instance.h"
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
 	} else if (input.pals_flavour == PALS_GPU_randTask) {
 	
 		pals_gpu_rtask(input, etc_matrix, current_solution);
-		
+			
 	} else if (input.pals_flavour == PALS_GPU_randMachine) {
 	
 		pals_gpu_rmachine(input, etc_matrix, current_solution);
