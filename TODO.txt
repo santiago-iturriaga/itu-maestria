@@ -1,0 +1,4 @@
+- Hacer el merge con el trunk
+- Hacer movimiento "mover"
+- Evaluar para 4k y 8k
+- Hacer movimiento de lo cargado en GPU y hacer loop
