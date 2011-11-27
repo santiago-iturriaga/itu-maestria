@@ -1,6 +1,6 @@
+- Tunning?
 - Hacer el merge con el trunk
 - Evaluar para 4k y 8k
-- Hacer movimiento de lo cargado en GPU y hacer loop
 
 ---
 
@@ -12,5 +12,4 @@
 - Events
 - Memory bandwidth
   * Programming guide 5.1.2
-- cudaMemset
 - Memoria dinámica para mantener un modelo por máquina en memoria?

@@ -24,13 +24,7 @@
 
 #define PALS_GPU_RTASK__BLOCKS 				1024
 #define PALS_GPU_RTASK__THREADS 			128
-#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	48
-
-/*
-#define PALS_GPU_RTASK__BLOCKS 				16
-#define PALS_GPU_RTASK__THREADS 			16
-#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	8
-*/
+#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	64
 
 #define PALS_GPU_RTASK__MOV_TYPE_OFFSET		PALS_GPU_RTASK__THREADS * PALS_GPU_RTASK__LOOPS_PER_THREAD
 
@@ -315,12 +309,12 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 
 	// Offset de los random numbers asignados al block (2 rand x loop).
 	const int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
-		
+	
 	for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS_PER_THREAD; loop++) {
 		// El primer rand. num. es tiempre task 1.
 		int raux1, raux2, aux;
 		raux1 = gpu_random_numbers[r_block_offset_start + loop];
-		raux2 = gpu_random_numbers[r_block_offset_start + loop + 1];
+		raux2 = gpu_random_numbers[r_block_offset_start + loop + PALS_GPU_RTASK__THREADS];
 				
 		// Tipo de movimiento.	
 		if (raux1 | 0x1 == raux1) { // Comparación a nivel de bit para saber si es par o impar.
