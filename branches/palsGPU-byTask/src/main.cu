@@ -284,18 +284,23 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 			pals_gpu_rtask_move(instance, task_x, machine_b);
 			pals_gpu_rtask_move(instance, task_y, machine_a);
+			
+			current_solution->task_assignment[task_x] = machine_b;
+			current_solution->task_assignment[task_y] = machine_a;
 		} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
 			int task_x = result.origin[0];
 			int machine_b = result.destination[0];
 	
 			pals_gpu_rtask_move(instance, task_x, machine_b);
+			
+			current_solution->task_assignment[task_x] = machine_b;
 		}
 
 		// Limpio el objeto resultado.
 		pals_gpu_rtask_clean_result(result);
 
 		// Nuevo seed.		
-		seed++;
+		// seed++;
 	}
 	
 	// Timming -----------------------------------------------------
