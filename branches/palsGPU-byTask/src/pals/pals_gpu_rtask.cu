@@ -60,10 +60,16 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	
 	// Pido memoria para guardar el resultado.
 	int best_swaps_size = sizeof(short) * instance->number_of_blocks;	
-	cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size);
+	if (cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps (%d bytes).\n", best_swaps_size);
+		exit(EXIT_FAILURE);
+	}
 		
 	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
-	cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size);
+	if (cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps_delta (%d bytes).\n", best_swaps_delta_size);
+		exit(EXIT_FAILURE);
+	}
 	
 	timming_end(".. gpu_best_swaps", ts_4);
 		
@@ -72,8 +78,15 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	
 	// Copio la matriz de ETC.
 	int etc_matrix_size = sizeof(float) * etc_matrix->tasks_count * etc_matrix->machines_count;
-	cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size);
-	cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice);	
+	if (cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria etc_matrix (%d bytes).\n", etc_matrix_size);
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando etc_matrix al dispositivo (%d bytes).\n", etc_matrix_size);
+		exit(EXIT_FAILURE);
+	}
 
 	timming_end(".. gpu_etc_matrix", ts_2);
 
@@ -82,16 +95,34 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 		
 	// Copio la asignación de tareas a máquinas actuales.
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
-	cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size);
-	cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice);	
+	if (cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
+		exit(EXIT_FAILURE);
+	}
 
 	timming_end(".. gpu_task_assignment", ts_3);
 }
 
 void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
-	cudaFree(instance.gpu_etc_matrix);
-	cudaFree(instance.gpu_task_assignment);
-	cudaFree(instance.gpu_best_swaps);
+	if (cudaFree(instance.gpu_etc_matrix) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para etc_matrix.\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaFree(instance.gpu_task_assignment) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para task_assignment.\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaFree(instance.gpu_best_swaps) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para best_swaps.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result) {
@@ -146,9 +177,20 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	int *rands_nums = (int*)malloc(sizeof(int) * size);
 
 	// Copio los mejores movimientos desde el dispositivo.
-	cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(short) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
-	cudaMemcpy(best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, cudaMemcpyDeviceToHost);
-	cudaMemcpy(rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost);
+	if (cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(short) * instance.number_of_blocks, cudaMemcpyDeviceToHost) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps).\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaMemcpy(best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, cudaMemcpyDeviceToHost) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps_delta).\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (cudaMemcpy(rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	// =====================================================================
 	// Se cargan los resultados a la respuesta.
@@ -201,6 +243,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.destination[i] = task_y;
 			result.delta[i] = best_swaps_delta[block_idx];
 			
+			/*
 			if (DEBUG) { // =======> DEBUG
 				int machine_a = s->task_assignment[task_x];
 				int machine_b = s->task_assignment[task_y];
@@ -214,6 +257,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 				fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f (%f).\n",
 					task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
 			} // <======= DEBUG
+			*/
 		} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
 			int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 			int task_x = random_1;
@@ -230,6 +274,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.destination[i] = machine_b;
 			result.delta[i] = best_swaps_delta[block_idx];
 			
+			/*
 			if (DEBUG) { // =======> DEBUG
 				float swap_delta = 0.0;
 				swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
@@ -238,6 +283,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 				fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f (%f).\n",
 					task_x, machine_a, machine_b, best_swaps_delta[block_idx], swap_delta);
 			} // <======= DEBUG
+			*/
 		}
 	}
 	
@@ -245,6 +291,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	RNG_rand48_cleanup(r48);
 }
 
+void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine) {
+	if (cudaMemset(instance.gpu_task_assignment, to_machine, 1) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Error moviendo la task %d a la máquina %d.\n", task, to_machine);
+		exit(EXIT_FAILURE);
+	}
+}
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks_per_thread, 
 	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_random_numbers, 

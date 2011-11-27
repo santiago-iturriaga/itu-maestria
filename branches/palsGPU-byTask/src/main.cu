@@ -251,39 +251,56 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	int seed = input.seed;
 	struct pals_gpu_rtask_result result;
 	
-	//for (int i = 0; i < PALS_COUNT; i++) {
+	for (int i = 0; i < PALS_COUNT; i++) {
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, seed, result);
-		
-		// TODO: Evalúo las soluciones...
-		// seed++;
-	//}
+
+		// Debug ------------------------------------------------------------------------------------------
+		if (DEBUG) {
+			fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
+			for (int i = 0; i < result.move_count; i++) {
+				if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
+					int machine_a = current_solution->task_assignment[result.origin[i]];
+					int machine_b = current_solution->task_assignment[result.destination[i]];
+			
+					fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+						result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
+				} else if (result.move_type[i] == PALS_GPU_RTASK_MOVE) {
+					int machine_a = current_solution->task_assignment[result.origin[i]];
+			
+					fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+						result.origin[i], machine_a, result.destination[i], result.delta[i]);
+				}
+			}
+		}
+		// Debug ------------------------------------------------------------------------------------------
+
+		// Aplico el mejor movimiento.
+		if (result.move_type[0] == PALS_GPU_RTASK_SWAP) {
+			int task_x = result.origin[0];
+			int task_y = result.destination[0];
+			
+			int machine_a = current_solution->task_assignment[result.origin[0]];
+			int machine_b = current_solution->task_assignment[result.destination[0]];
+	
+			pals_gpu_rtask_move(instance, task_x, machine_b);
+			pals_gpu_rtask_move(instance, task_y, machine_a);
+		} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
+			int task_x = result.origin[0];
+			int machine_b = result.destination[0];
+	
+			pals_gpu_rtask_move(instance, task_x, machine_b);
+		}
+
+		// Limpio el objeto resultado.
+		pals_gpu_rtask_clean_result(result);
+
+		// Nuevo seed.		
+		seed++;
+	}
 	
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
 	// Timming -----------------------------------------------------
-
-	// Debug ------------------------------------------------------------------------------------------
-	if (DEBUG) {
-		fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
-		for (int i = 0; i < result.move_count; i++) {
-			if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
-				int machine_a = current_solution->task_assignment[result.origin[i]];
-				int machine_b = current_solution->task_assignment[result.destination[i]];
-			
-				fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-					result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
-			} else if (result.move_type[i] == PALS_GPU_RTASK_MOVE) {
-				int machine_a = current_solution->task_assignment[result.origin[i]];
-			
-				fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-					result.origin[i], machine_a, result.destination[i], result.delta[i]);
-			}
-		}
-	}
-	// Debug ------------------------------------------------------------------------------------------
-
-	// Limpio el objeto resultado.
-	pals_gpu_rtask_clean_result(result);
 
 	// Timming -----------------------------------------------------
 	timespec ts_finalize;

@@ -61,4 +61,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, int seed, 
 	struct pals_gpu_rtask_result &result);
 
+/*
+ * Mueve una tarea en la memoria del dispositivo.
+ */
+void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine);
+
 #endif /* PALS_GPU_H_ */

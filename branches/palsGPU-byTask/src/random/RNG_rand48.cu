@@ -25,6 +25,9 @@
   MA 02111-1307 USA
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "RNG_rand48.h"
 
 /************************************************
@@ -132,7 +135,10 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
   
   uint2* seeds = new uint2[ rand_state.nThreads ];
 
-  cudaMalloc((void**) &(rand_state.state), sizeof(uint2) * rand_state.nThreads);
+  if (cudaMalloc((void**) &(rand_state.state), sizeof(uint2) * rand_state.nThreads) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Solicitando memoria rand_state.state.\n");
+    exit(EXIT_FAILURE);
+  }
 
   // calculate strided iteration constants
   unsigned long long A, C;
@@ -155,15 +161,24 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
     seeds[i].y = (x >> 24) & 0xFFFFFFLL;
   }
 
-  cudaMemcpy(rand_state.state, seeds, sizeof(uint2) * rand_state.nThreads, cudaMemcpyHostToDevice);
+  if (cudaMemcpy(rand_state.state, seeds, sizeof(uint2) * rand_state.nThreads, cudaMemcpyHostToDevice) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Copiando rand_state.state al dispositivo.\n");
+    exit(EXIT_FAILURE);
+  }
 
   delete[] seeds;
   
-  cudaMalloc( (void**) &(rand_state.res), sizeof(int) * rand_state.nThreads * rand_state.num_blocks);
+  if (cudaMalloc( (void**) &(rand_state.res), sizeof(int) * rand_state.nThreads * rand_state.num_blocks) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Solicitando memoria rand_state.res.\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 void RNG_rand48_cleanup(struct RNG_rand48 &rand_state) {
-  cudaFree((void*) rand_state.state);
+  if (cudaFree((void*) rand_state.state) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Liberando memoria rand_state.state.\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 void RNG_rand48_generate(struct RNG_rand48 &rand_state)
@@ -181,6 +196,9 @@ void RNG_rand48_generate(struct RNG_rand48 &rand_state)
 
 void RNG_rand48_get(struct RNG_rand48 &rand_state, int *r)
 {
-   cudaMemcpy( r, rand_state.res, sizeof(int) * rand_state.rand_num_count, cudaMemcpyDeviceToHost );
+   if (cudaMemcpy( r, rand_state.res, sizeof(int) * rand_state.rand_num_count, cudaMemcpyDeviceToHost ) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Copiando rand_state.state al host.\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
