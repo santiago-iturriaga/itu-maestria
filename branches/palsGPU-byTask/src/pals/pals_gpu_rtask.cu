@@ -243,7 +243,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.destination[i] = task_y;
 			result.delta[i] = best_swaps_delta[block_idx];
 			
-			if (DEBUG) { // =======> DEBUG
+			// =======> DEBUG
+			/*if (DEBUG) { 
 				int machine_a = s->task_assignment[task_x];
 				int machine_b = s->task_assignment[task_y];
 
@@ -255,7 +256,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 				fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f (%f).\n",
 					task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
-			} // <======= DEBUG
+			} */
+			// <======= DEBUG
 		} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
 			int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 			int task_x = random_1;
@@ -272,14 +274,16 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.destination[i] = machine_b;
 			result.delta[i] = best_swaps_delta[block_idx];
 			
-			if (DEBUG) { // =======> DEBUG
+			// =======> DEBUG
+			/*if (DEBUG) {
 				float swap_delta = 0.0;
 				swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
 				swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 
 				fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f (%f).\n",
 					task_x, machine_a, machine_b, best_swaps_delta[block_idx], swap_delta);
-			} // <======= DEBUG
+			} */
+			// <======= DEBUG
 		}
 	}
 	
