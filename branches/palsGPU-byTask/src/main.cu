@@ -248,9 +248,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------
 
 	// ===========> DEBUG
-	if (DEBUG) {
+	/*if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
-	}
+	}*/
 	// <=========== DEBUG
 	
 	// Ejecuto GPUPALS.
@@ -372,10 +372,14 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	
 	// ===========> DEBUG
-	if (DEBUG) {
+	/*if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
-	}
+	}*/
 	// <=========== DEBUG
+	
+	if (DEBUG) {
+		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
+	}
 	
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
