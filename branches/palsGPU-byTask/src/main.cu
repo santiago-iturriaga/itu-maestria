@@ -348,6 +348,20 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Nuevo seed.		
 		seed++;
 	}
+
+	// Reconstruye el compute time de cada máquina.
+	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
+	for (int i = 0; i < etc_matrix->machines_count; i++) {
+		current_solution->machine_compute_time[i] = 0.0;
+	}
+	
+	for (int i = 0; i < etc_matrix->tasks_count; i++) {
+		int assigned_machine = current_solution->task_assignment[i];
+	
+		current_solution->machine_compute_time[assigned_machine] =
+			current_solution->machine_compute_time[assigned_machine] + 
+			get_etc_value(etc_matrix, assigned_machine, i);
+	}	
 	
 	// Actualiza el makespan de la solución.
 	current_solution->makespan = current_solution->machine_compute_time[0];
