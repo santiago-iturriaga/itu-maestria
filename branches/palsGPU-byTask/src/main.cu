@@ -299,10 +299,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			
 			// Actualizo los compute time de cada máquina luego del move en el host.
 			current_solution->machine_compute_time[machine_a] = 
+				current_solution->machine_compute_time[machine_a] +
 				get_etc_value(etc_matrix, machine_a, task_y) - 
 				get_etc_value(etc_matrix, machine_a, task_x);
 
 			current_solution->machine_compute_time[machine_b] = 
+				current_solution->machine_compute_time[machine_b] +
 				get_etc_value(etc_matrix, machine_b, task_x) - 
 				get_etc_value(etc_matrix, machine_b, task_y);
 				
