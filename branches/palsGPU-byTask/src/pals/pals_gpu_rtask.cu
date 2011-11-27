@@ -288,7 +288,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 }
 
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine) {
-	if (cudaMemset(instance.gpu_task_assignment, to_machine, 1) != cudaSuccess) {
+	if (cudaMemset(&(instance.gpu_task_assignment[task]), to_machine, 1) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Error moviendo la task %d a la máquina %d.\n", task, to_machine);
 		exit(EXIT_FAILURE);
 	}
