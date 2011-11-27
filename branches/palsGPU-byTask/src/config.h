@@ -8,6 +8,8 @@
 //#define PALS_COUNT 3
 //#define PALS_COUNT 25
 
+#define PALS_RTASK_RESULT_COUNT 3
+
 #endif //CONFIG_H_
 
 

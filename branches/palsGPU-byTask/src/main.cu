@@ -237,7 +237,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			
 	// Inicializo la memoria en el dispositivo.
 	pals_gpu_rtask_init(etc_matrix, current_solution, &instance);
-	instance.result_count = 3;
+	instance.result_count = PALS_RTASK_RESULT_COUNT;
 
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_rtask_init", ts_init);
