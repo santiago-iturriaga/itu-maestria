@@ -246,6 +246,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timespec ts_wrapper;
 	timming_start(ts_wrapper);
 	// Timming -----------------------------------------------------
+
+	// ===========> DEBUG
+	if (DEBUG) {
+		validate_solution(etc_matrix, current_solution);
+	}
+	// <=========== DEBUG
 	
 	// Ejecuto GPUPALS.
 	int seed = input.seed;

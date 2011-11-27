@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "config.h"
 #include "solution.h"
 
 struct solution* create_empty_solution(struct matrix *etc_matrix) {
@@ -64,10 +65,18 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
 		float aux_compute_time;
 		aux_compute_time = 0.0;
 	
+		int assigned_tasks_count = 0;
+	
 		for (int task = 0; task < etc_matrix->tasks_count; task++) {
 			if (s->task_assignment[task] == machine) {
 				aux_compute_time += get_etc_value(etc_matrix, machine, task);
+				assigned_tasks_count++;
 			}
+		}
+
+		if (DEBUG) {
+			fprintf(stdout, "[DEBUG] Machine %d >> assigned tasks %d, compute time %f, expected compute time %f.\n",
+				machine, assigned_tasks_count, aux_compute_time, s->machine_compute_time[machine]);
 		}
 		
 		assert(s->machine_compute_time[machine] == aux_compute_time);
