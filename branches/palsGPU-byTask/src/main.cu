@@ -25,6 +25,7 @@
 #include "pals/pals_serial.h"
 #include "pals/pals_gpu.h"
 #include "pals/pals_gpu_rtask.h"
+#include "pals/pals_gpu_rmachine.h"
 
 /// Búsqueda serial sobre el todo el dominio del problema.
 void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
@@ -89,24 +90,30 @@ int main(int argc, char** argv)
 	
 	if (input.pals_flavour == PALS_Serial) {
 		// =============================================================
-		// Serial
+		// Serial. Versión de búsqueda completa.
 		// =============================================================
 		
 		pals_serial(input, etc_matrix, current_solution);
 		
 	} else if (input.pals_flavour == PALS_GPU) {
 		// =============================================================
-		// CUDA
+		// CUDA. Versión de búsqueda completa.
 		// =============================================================		
 		
 		pals_gpu(input, etc_matrix, current_solution);
 		
 	} else if (input.pals_flavour == PALS_GPU_randTask) {
-	
+		// =============================================================
+		// CUDA. Búsqueda aleatoria por tarea.
+		// =============================================================
+			
 		pals_gpu_rtask(input, etc_matrix, current_solution);
 			
 	} else if (input.pals_flavour == PALS_GPU_randMachine) {
-	
+		// =============================================================
+		// CUDA. Búsqueda aleatoria por máquina.
+		// =============================================================
+			
 		pals_gpu_rmachine(input, etc_matrix, current_solution);
 		
 	}
@@ -395,11 +402,183 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	pals_gpu_rtask_finalize(instance);
 	
 	// Timming -----------------------------------------------------
-	timming_end(">> pals_gpu_randTask_finalize", ts_finalize);
+	timming_end(">> pals_gpu_rmachine_finalize", ts_finalize);
 	// Timming -----------------------------------------------------		
 }
 
 void pals_gpu_rmachine(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
-	// No implementado.
+	// ==============================================================================
+	// PALS aleatorio por tarea.
+	// ==============================================================================
+	
+	struct pals_gpu_rmachine_instance instance;
+
+	// Timming -----------------------------------------------------
+	timespec ts_init;
+	timming_start(ts_init);
+	// Timming -----------------------------------------------------
+			
+	// Inicializo la memoria en el dispositivo.
+	pals_gpu_rmachine_init(etc_matrix, current_solution, &instance);
+	//instance.result_count = PALS_RTASK_RESULT_COUNT;
+
+	// Timming -----------------------------------------------------
+	timming_end(">> pals_gpu_rmachine_init", ts_init);
+	// Timming -----------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_wrapper;
+	timming_start(ts_wrapper);
+	// Timming -----------------------------------------------------
+
+	// ===========> DEBUG
+	/*if (DEBUG) {
+		validate_solution(etc_matrix, current_solution);
+	}*/
+	// <=========== DEBUG
+	
+	// Ejecuto GPUPALS.
+	int seed = input.seed;
+	struct pals_gpu_rmachine_result result;
+	
+	for (int i = 0; i < PALS_COUNT; i++) {
+		pals_gpu_rmachine_wrapper(etc_matrix, current_solution, instance, seed, result);
+
+		// Debug ------------------------------------------------------------------------------------------
+		if (DEBUG) {
+			fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
+			for (int i = 0; i < result.move_count; i++) {
+				if (result.move_type[i] == PALS_GPU_RMACHINE_SWAP) {
+					int machine_a = current_solution->task_assignment[result.origin[i]];
+					int machine_b = current_solution->task_assignment[result.destination[i]];
+			
+					fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+						result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
+				} else if (result.move_type[i] == PALS_GPU_RMACHINE_MOVE) {
+					int machine_a = current_solution->task_assignment[result.origin[i]];
+			
+					fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+						result.origin[i], machine_a, result.destination[i], result.delta[i]);
+				}
+			}
+		}
+		// Debug ------------------------------------------------------------------------------------------
+
+		// Aplico el mejor movimiento.
+		if (result.move_type[0] == PALS_GPU_RMACHINE_SWAP) {
+			int task_x = result.origin[0];
+			int task_y = result.destination[0];
+			
+			int machine_a = current_solution->task_assignment[result.origin[0]];
+			int machine_b = current_solution->task_assignment[result.destination[0]];
+	
+			//========> DEBUG
+			/*if (DEBUG) {
+				fprintf(stdout, "[DEBUG] PRE Machine A CT: %f\n", current_solution->machine_compute_time[machine_a]);
+				fprintf(stdout, "[DEBUG] PRE Machine B CT: %f\n", current_solution->machine_compute_time[machine_b]);
+			}*/
+			//<======== DEBUG
+	
+			// Actualizo la asignación de cada tarea en el dispositivo.
+			// pals_gpu_rmachine_move(instance, task_x, machine_b);
+			// pals_gpu_rmachine_move(instance, task_y, machine_a);
+			
+			// Actualizo la asignación de cada tarea en el host.
+			current_solution->task_assignment[task_x] = machine_b;
+			current_solution->task_assignment[task_y] = machine_a;
+			
+			// Actualizo los compute time de cada máquina luego del move en el host.
+			current_solution->machine_compute_time[machine_a] = 
+				current_solution->machine_compute_time[machine_a] +
+				get_etc_value(etc_matrix, machine_a, task_y) - 
+				get_etc_value(etc_matrix, machine_a, task_x);
+
+			current_solution->machine_compute_time[machine_b] = 
+				current_solution->machine_compute_time[machine_b] +
+				get_etc_value(etc_matrix, machine_b, task_x) - 
+				get_etc_value(etc_matrix, machine_b, task_y);
+				
+			//========> DEBUG
+			/*if (DEBUG) {
+				fprintf(stdout, "[DEBUG] AFTER Machine A CT: %f\n", current_solution->machine_compute_time[machine_a]);
+				fprintf(stdout, "[DEBUG] AFETR Machine B CT: %f\n", current_solution->machine_compute_time[machine_b]);
+			}*/
+			//<======== DEBUG
+		} else if (result.move_type[0] == PALS_GPU_RMACHINE_MOVE) {
+			int task_x = result.origin[0];
+			
+			int machine_a = current_solution->task_assignment[task_x];
+			int machine_b = result.destination[0];
+	
+			// Actualizo la asignación de la tarea en el device.
+			// pals_gpu_rmachine_move(instance, task_x, machine_b);
+			
+			// Actualizo la asignación de la tarea en el host.
+			current_solution->task_assignment[task_x] = machine_b;
+			
+			// Actualizo los compute time de cada máquina luego del move en el host.
+			current_solution->machine_compute_time[machine_a] = 
+				current_solution->machine_compute_time[machine_a] - 
+				get_etc_value(etc_matrix, machine_a, task_x);
+
+			current_solution->machine_compute_time[machine_b] = 
+				current_solution->machine_compute_time[machine_b] +
+				get_etc_value(etc_matrix, machine_b, task_x);
+		}
+
+		// Limpio el objeto resultado.
+		pals_gpu_rmachine_clean_result(result);
+
+		// Nuevo seed.		
+		seed++;
+	}
+
+	// Reconstruye el compute time de cada máquina.
+	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
+	for (int i = 0; i < etc_matrix->machines_count; i++) {
+		current_solution->machine_compute_time[i] = 0.0;
+	}
+	
+	for (int i = 0; i < etc_matrix->tasks_count; i++) {
+		int assigned_machine = current_solution->task_assignment[i];
+	
+		current_solution->machine_compute_time[assigned_machine] =
+			current_solution->machine_compute_time[assigned_machine] + 
+			get_etc_value(etc_matrix, assigned_machine, i);
+	}	
+	
+	// Actualiza el makespan de la solución.
+	current_solution->makespan = current_solution->machine_compute_time[0];
+	for (int i = 1; i < etc_matrix->machines_count; i++) {
+		if (current_solution->makespan < current_solution->machine_compute_time[i]) {
+			current_solution->makespan = current_solution->machine_compute_time[i];
+		}
+	}
+	
+	// ===========> DEBUG
+	/*if (DEBUG) {
+		validate_solution(etc_matrix, current_solution);
+	}*/
+	// <=========== DEBUG
+	
+	if (DEBUG) {
+		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
+	}
+	
+	// Timming -----------------------------------------------------
+	timming_end(">> pals_gpu_rmachine_wrapper", ts_wrapper);
+	// Timming -----------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_finalize;
+	timming_start(ts_finalize);
+	// Timming -----------------------------------------------------
+
+	// Libero la memoria del dispositivo.
+	pals_gpu_rmachine_finalize(instance);
+	
+	// Timming -----------------------------------------------------
+	timming_end(">> pals_gpu_rmachine_finalize", ts_finalize);
+	// Timming -----------------------------------------------------		
 }
 

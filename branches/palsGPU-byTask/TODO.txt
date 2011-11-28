@@ -1,3 +1,4 @@
+- Operaciones Async de acceso a memoria
 - Tunning?
 - Hacer el merge con el trunk
 - Evaluar para 4k y 8k
