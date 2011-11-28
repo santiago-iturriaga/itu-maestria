@@ -29,7 +29,7 @@
 #define PALS_GPU_RTASK__MOV_TYPE_OFFSET		PALS_GPU_RTASK__THREADS * PALS_GPU_RTASK__LOOPS_PER_THREAD
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks_per_thread, float *gpu_etc_matrix, 
-	int *gpu_task_assignment, int *gpu_random_numbers, short *gpu_best_swaps, float *gpu_best_swaps_delta);	
+	int *gpu_task_assignment, int *gpu_random_numbers, ushort *gpu_best_swaps, float *gpu_best_swaps_delta);	
 	
 
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rtask_instance *instance) {	
@@ -53,7 +53,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	timming_start(ts_4);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(short) * instance->number_of_blocks;	
+	int best_swaps_size = sizeof(ushort) * instance->number_of_blocks;	
 	if (cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps (%d bytes).\n", best_swaps_size);
 		exit(EXIT_FAILURE);
@@ -166,12 +166,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_swaps_delta);
 
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
-	short *best_swaps = (short*)malloc(sizeof(short) * instance.number_of_blocks);
+	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
 	int *rands_nums = (int*)malloc(sizeof(int) * size);
 
 	// Copio los mejores movimientos desde el dispositivo.
-	if (cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(short) * instance.number_of_blocks, cudaMemcpyDeviceToHost) != cudaSuccess) {
+	if (cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(ushort) * instance.number_of_blocks, cudaMemcpyDeviceToHost) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps).\n");
 		exit(EXIT_FAILURE);
 	}
@@ -294,17 +294,17 @@ void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks_per_thread, 
 	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_random_numbers, 
-	short *gpu_best_swaps, float *gpu_best_swaps_delta)
+	ushort *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 	//const unsigned int block_count = gridDim.x;
 	//const unsigned int thread_count = blockDim.x;
 
-	__shared__ short block_best_swap;
+	__shared__ ushort block_best_swap;
 	__shared__ float block_best_swap_delta;
 	
-	__shared__ short block_swaps[PALS_GPU_RTASK__THREADS];
+	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
 	// Offset de los random numbers asignados al block (2 rand x loop).
@@ -339,7 +339,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux2]; // Resto el ETC de y en b.
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
-			block_swaps[thread_idx] = (short)(
+			block_swaps[thread_idx] = (ushort)(
 				(PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
@@ -360,7 +360,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
-			block_swaps[thread_idx] = (short)(
+			block_swaps[thread_idx] = (ushort)(
 				(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
