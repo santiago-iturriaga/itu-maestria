@@ -14,13 +14,9 @@
 // NOTA. Debido al uso del generador de números aleatorios RNG_rand48:
 // PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__LOOPS_PER_THREAD = debe ser mútiplo de 6144 (1024*6).
 // ==============================================================================================
-//#define PALS_GPU_RTASK__BLOCKS 		1024
-//#define PALS_GPU_RTASK__THREADS		256
-//#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	24
-
 //#define PALS_GPU_RTASK__BLOCKS 		2048
 //#define PALS_GPU_RTASK__THREADS 		128
-//#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	24
+//#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	128
 
 #define PALS_GPU_RTASK__BLOCKS 			1024
 #define PALS_GPU_RTASK__THREADS 		128
