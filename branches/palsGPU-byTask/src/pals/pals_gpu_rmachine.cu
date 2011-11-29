@@ -29,9 +29,8 @@ __global__ void pals_rmachine_kernel(int machines_count, int tasks_count, int ta
 	
 
 void pals_gpu_rmachine_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rmachine_instance *instance) {	
-	/*
 	// Asignación del paralelismo del algoritmo.
-	instance->number_of_blocks = PALS_GPU_RTASK__BLOCKS;
+	/*instance->number_of_blocks = PALS_GPU_RTASK__BLOCKS;
 	instance->threads_per_block = PALS_GPU_RTASK__THREADS;
 	instance->tasks_per_thread = PALS_GPU_RTASK__LOOPS_PER_THREAD;
 	
@@ -79,36 +78,12 @@ void pals_gpu_rmachine_init(struct matrix *etc_matrix, struct solution *s, struc
 		exit(EXIT_FAILURE);
 	}
 
-	timming_end(".. gpu_etc_matrix", ts_2);
-
-	timespec ts_3;
-	timming_start(ts_3);
-		
-	// Copio la asignación de tareas a máquinas actuales.
-	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
-	if (cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size) != cudaSuccess) {
-		fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
-		exit(EXIT_FAILURE);
-	}
-	
-	if (cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice) != cudaSuccess) {
-		fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
-		exit(EXIT_FAILURE);
-	}
-
-	timming_end(".. gpu_task_assignment", ts_3);
-	*/
+	timming_end(".. gpu_etc_matrix", ts_2);*/
 }
 
 void pals_gpu_rmachine_finalize(struct pals_gpu_rmachine_instance &instance) {
-	/*
 	if (cudaFree(instance.gpu_etc_matrix) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para etc_matrix.\n");
-		exit(EXIT_FAILURE);
-	}
-	
-	if (cudaFree(instance.gpu_task_assignment) != cudaSuccess) {
-		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para task_assignment.\n");
 		exit(EXIT_FAILURE);
 	}
 	
@@ -116,7 +91,6 @@ void pals_gpu_rmachine_finalize(struct pals_gpu_rmachine_instance &instance) {
 		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para best_swaps.\n");
 		exit(EXIT_FAILURE);
 	}
-	*/
 }
 
 void pals_gpu_rmachine_clean_result(struct pals_gpu_rmachine_result &result) {
@@ -132,7 +106,6 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rmachine_instance &instance, int seed, 
 	struct pals_gpu_rmachine_result &result) {
 	
-	/*
 	// ==============================================================================
 	// Sorteo de numeros aleatorios.
 	// ==============================================================================
@@ -141,7 +114,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	timming_start(ts_rand);
 	
 	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
-	const unsigned int size = PALS_GPU_RMACHINE__BLOCKS * PALS_GPU_RMACHINE__LOOPS_PER_THREAD * 2;
+	const unsigned int size = PALS_GPU_RMACHINE__BLOCKS * PALS_GPU_RMACHINE__LOOPS_PER_THREAD * 4;
 	
 	fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
 	
@@ -158,6 +131,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	dim3 grid(instance.number_of_blocks, 1, 1);
 	dim3 threads(instance.threads_per_block, 1, 1);
 
+	/*
 	pals_rmachine_kernel<<< grid, threads >>>(
 		etc_matrix->machines_count,
 		etc_matrix->tasks_count,
@@ -167,7 +141,8 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 		r48.res,
 		instance.gpu_best_swaps, 
 		instance.gpu_best_swaps_delta);
-
+	*/
+	
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
 	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
@@ -210,6 +185,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 		}
 	}
 	
+	/*
 	for (int i = 0; i < instance.result_count; i++) {
 		int block_idx = (best_block_idx + i) % instance.number_of_blocks;
 	
@@ -283,10 +259,11 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 			// <======= DEBUG
 		}
 	}
+	*/
 	
 	// Libera la memoria del dispositivo con los números aleatorios.
 	RNG_rand48_cleanup(r48);
-	*/
+	
 }
 
 __global__ void pals_rmachine_kernel(int machines_count, int tasks_count, int tasks_per_thread, 
