@@ -250,11 +250,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timming_end(">> pals_gpu_rtask_init", ts_init);
 	// Timming -----------------------------------------------------
 
-	// Timming -----------------------------------------------------
-	timespec ts_wrapper;
-	timming_start(ts_wrapper);
-	// Timming -----------------------------------------------------
-
 	// ===========> DEBUG
 	/*if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
@@ -266,6 +261,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	struct pals_gpu_rtask_result result;
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
+		// Timming -----------------------------------------------------
+		timespec ts_wrapper;
+		timming_start(ts_wrapper);
+		// Timming -----------------------------------------------------
+
+		fprintf(stdout, "[DEBUG] Iteracion %d =====================\n", i);
+
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, seed, result);
 
 		// Debug ------------------------------------------------------------------------------------------
@@ -355,6 +357,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 		// Nuevo seed.		
 		seed++;
+
+		// Timming -----------------------------------------------------
+		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
+		// Timming -----------------------------------------------------
 	}
 
 	// Reconstruye el compute time de cada máquina.
@@ -388,10 +394,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
 	}
-	
-	// Timming -----------------------------------------------------
-	timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
-	// Timming -----------------------------------------------------
 
 	// Timming -----------------------------------------------------
 	timespec ts_finalize;
