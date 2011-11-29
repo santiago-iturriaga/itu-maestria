@@ -22,6 +22,8 @@
 #include "config.h"
 #include "utils.h"
 
+#include "random/RNG_rand48.h"
+
 #include "pals/pals_serial.h"
 #include "pals/pals_gpu.h"
 #include "pals/pals_gpu_rtask.h"
@@ -260,7 +262,25 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	int seed = input.seed;
 	struct pals_gpu_rtask_result result;
 	
+	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
+	const unsigned int size = instance.number_of_blocks * instance.tasks_per_thread * 2;
+
+	RNG_rand48 r48;
+	RNG_rand48_init(r48, size);	
+	
 	for (int i = 0; i < PALS_COUNT; i++) {
+		// ==============================================================================
+		// Sorteo de numeros aleatorios.
+		// ==============================================================================
+	
+		timespec ts_rand;
+		timming_start(ts_rand);
+	
+		fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
+		RNG_rand48_generate(r48, seed);
+	
+		timming_end(">> RNG_rand48", ts_rand);
+	
 		// Timming -----------------------------------------------------
 		timespec ts_wrapper;
 		timming_start(ts_wrapper);
@@ -268,7 +288,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 		fprintf(stdout, "[DEBUG] Iteracion %d =====================\n", i);
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, seed, result);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, r48, result);
 
 		// Debug ------------------------------------------------------------------------------------------
 		if (DEBUG) {
@@ -362,6 +382,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
 		// Timming -----------------------------------------------------
 	}
+	
+	// Libera la memoria del dispositivo con los números aleatorios.
+	RNG_rand48_cleanup(r48);
 
 	// Reconstruye el compute time de cada máquina.
 	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.

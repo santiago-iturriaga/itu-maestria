@@ -127,26 +127,8 @@ void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result) {
 }
 
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, int seed, 
+	struct pals_gpu_rtask_instance &instance, struct RNG_rand48 &r48, 
 	struct pals_gpu_rtask_result &result) {
-	
-	// ==============================================================================
-	// Sorteo de numeros aleatorios.
-	// ==============================================================================
-	
-	timespec ts_rand;
-	timming_start(ts_rand);
-	
-	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
-	const unsigned int size = PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__LOOPS_PER_THREAD * 2;
-	
-	fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
-	
-	RNG_rand48 r48;
-	RNG_rand48_init(r48, seed, size);	
-	RNG_rand48_generate(r48);
-	
-	timming_end(".. RNG_rand48", ts_rand);
 	
 	// ==============================================================================
 	// Ejecución del algoritmo.
@@ -168,7 +150,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
 	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
-	int *rands_nums = (int*)malloc(sizeof(int) * size);
+	int *rands_nums = (int*)malloc(sizeof(int) * r48.rand_num_count);
 
 	// Copio los mejores movimientos desde el dispositivo.
 	if (cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(ushort) * instance.number_of_blocks, cudaMemcpyDeviceToHost) != cudaSuccess) {
@@ -181,7 +163,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		exit(EXIT_FAILURE);
 	}
 
-	if (cudaMemcpy(rands_nums, r48.res, sizeof(int) * size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+	if (cudaMemcpy(rands_nums, r48.res, sizeof(int) * r48.rand_num_count, cudaMemcpyDeviceToHost) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -280,9 +262,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			// <======= DEBUG
 		}
 	}
-	
-	// Libera la memoria del dispositivo con los números aleatorios.
-	RNG_rand48_cleanup(r48);
 }
 
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine) {

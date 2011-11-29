@@ -106,6 +106,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rmachine_instance &instance, int seed, 
 	struct pals_gpu_rmachine_result &result) {
 	
+	/*
 	// ==============================================================================
 	// Sorteo de numeros aleatorios.
 	// ==============================================================================
@@ -130,7 +131,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 	dim3 grid(instance.number_of_blocks, 1, 1);
 	dim3 threads(instance.threads_per_block, 1, 1);
-
+	*/
 	/*
 	pals_rmachine_kernel<<< grid, threads >>>(
 		etc_matrix->machines_count,
@@ -142,7 +143,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_swaps, 
 		instance.gpu_best_swaps_delta);
 	*/
-	
+	/*
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
 	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
@@ -185,7 +186,6 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 		}
 	}
 	
-	/*
 	for (int i = 0; i < instance.result_count; i++) {
 		int block_idx = (best_block_idx + i) % instance.number_of_blocks;
 	
@@ -262,7 +262,7 @@ void pals_gpu_rmachine_wrapper(struct matrix *etc_matrix, struct solution *s,
 	*/
 	
 	// Libera la memoria del dispositivo con los números aleatorios.
-	RNG_rand48_cleanup(r48);
+	//RNG_rand48_cleanup(r48);
 	
 }
 
