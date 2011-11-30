@@ -5,8 +5,8 @@
  *      Author: santiago
  */
 
-#include "etc_matrix.h"
-#include "solution.h"
+#include "../etc_matrix.h"
+#include "../solution.h"
 
 #ifndef PALS_SERIAL_H_
 #define PALS_SERIAL_H_

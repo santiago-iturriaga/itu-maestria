@@ -2,8 +2,8 @@
 #include <cuda.h>
 #include <math.h>
 
-#include "config.h"
-#include "utils.h"
+#include "../config.h"
+#include "../utils.h"
 #include "pals_gpu.h"
 
 #define THREADS_PER_BLOCK 128

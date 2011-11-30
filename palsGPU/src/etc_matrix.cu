@@ -15,10 +15,20 @@
 struct matrix* create_etc_matrix(struct params *input) {
 	struct matrix *etc_matrix;
 	etc_matrix = (struct matrix*)malloc(sizeof(struct matrix));
+
+	if (etc_matrix == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el struct etc_matrix.\n");
+		exit(EXIT_FAILURE);
+	}
 		
 	etc_matrix->tasks_count = input->tasks_count;
 	etc_matrix->machines_count = input->machines_count;
 	etc_matrix->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
+	
+	if (etc_matrix->data == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el etc_matrix->data.\n");
+		exit(EXIT_FAILURE);
+	}
 	
 	return etc_matrix;
 }
