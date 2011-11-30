@@ -42,7 +42,7 @@ struct pals_gpu_rtask_result {
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance *instance);
+	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result);
 
 /*
  * Libera la memoria del dispositivo.

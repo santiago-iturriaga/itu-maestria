@@ -30,20 +30,22 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 	int *gpu_task_assignment, int *gpu_random_numbers, ushort *gpu_best_swaps, float *gpu_best_swaps_delta);	
 	
 
-void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_rtask_instance *instance) {	
+void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, 
+	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
+	
 	// Asignación del paralelismo del algoritmo.
-	instance->number_of_blocks = PALS_GPU_RTASK__BLOCKS;
-	instance->threads_per_block = PALS_GPU_RTASK__THREADS;
-	instance->tasks_per_thread = PALS_GPU_RTASK__LOOPS_PER_THREAD;
+	instance.number_of_blocks = PALS_GPU_RTASK__BLOCKS;
+	instance.threads_per_block = PALS_GPU_RTASK__THREADS;
+	instance.tasks_per_thread = PALS_GPU_RTASK__LOOPS_PER_THREAD;
 	
 	// Cantidad total de movimientos a evaluar.
-	instance->total_tasks = PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__THREADS * PALS_GPU_RTASK__LOOPS_PER_THREAD;
+	instance.total_tasks = PALS_GPU_RTASK__BLOCKS * PALS_GPU_RTASK__THREADS * PALS_GPU_RTASK__LOOPS_PER_THREAD;
 	
 	if (DEBUG) {
-		fprintf(stdout, "[INFO] Number of blocks (grid size)   : %d\n", instance->number_of_blocks);
-		fprintf(stdout, "[INFO] Threads per block (block size) : %d\n", instance->threads_per_block);	
-		fprintf(stdout, "[INFO] Tasks per thread               : %d\n", instance->tasks_per_thread);
-		fprintf(stdout, "[INFO] Total tasks                    : %d\n", instance->total_tasks);
+		fprintf(stdout, "[INFO] Number of blocks (grid size)   : %d\n", instance.number_of_blocks);
+		fprintf(stdout, "[INFO] Threads per block (block size) : %d\n", instance.threads_per_block);	
+		fprintf(stdout, "[INFO] Tasks per thread               : %d\n", instance.tasks_per_thread);
+		fprintf(stdout, "[INFO] Total tasks                    : %d\n", instance.total_tasks);
 	}
 
 	// Pedido de memoria en el dispositivo y copiado de datos.
@@ -51,14 +53,14 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	timming_start(ts_4);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(ushort) * instance->number_of_blocks;	
-	if (cudaMalloc((void**)&(instance->gpu_best_swaps), best_swaps_size) != cudaSuccess) {
+	int best_swaps_size = sizeof(ushort) * instance.number_of_blocks;	
+	if (cudaMalloc((void**)&(instance.gpu_best_swaps), best_swaps_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps (%d bytes).\n", best_swaps_size);
 		exit(EXIT_FAILURE);
 	}
 		
-	int best_swaps_delta_size = sizeof(float) * instance->number_of_blocks;	
-	if (cudaMalloc((void**)&(instance->gpu_best_swaps_delta), best_swaps_delta_size) != cudaSuccess) {
+	int best_swaps_delta_size = sizeof(float) * instance.number_of_blocks;	
+	if (cudaMalloc((void**)&(instance.gpu_best_swaps_delta), best_swaps_delta_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps_delta (%d bytes).\n", best_swaps_delta_size);
 		exit(EXIT_FAILURE);
 	}
@@ -70,12 +72,12 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 	
 	// Copio la matriz de ETC.
 	int etc_matrix_size = sizeof(float) * etc_matrix->tasks_count * etc_matrix->machines_count;
-	if (cudaMalloc((void**)&(instance->gpu_etc_matrix), etc_matrix_size) != cudaSuccess) {
+	if (cudaMalloc((void**)&(instance.gpu_etc_matrix), etc_matrix_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria etc_matrix (%d bytes).\n", etc_matrix_size);
 		exit(EXIT_FAILURE);
 	}
 	
-	if (cudaMemcpy(instance->gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice) != cudaSuccess) {
+	if (cudaMemcpy(instance.gpu_etc_matrix, etc_matrix->data, etc_matrix_size, cudaMemcpyHostToDevice) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Copiando etc_matrix al dispositivo (%d bytes).\n", etc_matrix_size);
 		exit(EXIT_FAILURE);
 	}
@@ -87,17 +89,25 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, struct p
 		
 	// Copio la asignación de tareas a máquinas actuales.
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;	
-	if (cudaMalloc((void**)&(instance->gpu_task_assignment), task_assignment_size) != cudaSuccess) {
+	if (cudaMalloc((void**)&(instance.gpu_task_assignment), task_assignment_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
 	}
 	
-	if (cudaMemcpy(instance->gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice) != cudaSuccess) {
+	if (cudaMemcpy(instance.gpu_task_assignment, s->task_assignment, task_assignment_size, cudaMemcpyHostToDevice) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
 	}
 
 	timming_end(".. gpu_task_assignment", ts_3);
+	
+	if (instance.result_count > instance.number_of_blocks) instance.result_count = instance.number_of_blocks;
+	
+	result.move_count = instance.result_count;
+	result.move_type = (char*)malloc(sizeof(char) * instance.result_count);
+	result.origin = (int*)malloc(sizeof(int) * instance.result_count);
+	result.destination = (int*)malloc(sizeof(int) * instance.result_count);
+	result.delta = (float*)malloc(sizeof(float) * instance.result_count);
 }
 
 void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
@@ -131,6 +141,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// ==============================================================================
 	// Ejecución del algoritmo.
 	// ==============================================================================	
+	
+	// Timming -----------------------------------------------------
+	timespec ts_pals;
+	timming_start(ts_pals);
+	// Timming -----------------------------------------------------
 	
 	dim3 grid(instance.number_of_blocks, 1, 1);
 	dim3 threads(instance.threads_per_block, 1, 1);
@@ -166,19 +181,20 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		exit(EXIT_FAILURE);
 	}
 
+	// Timming -----------------------------------------------------
+	timming_end(".. pals_gpu_rtask_pals", ts_pals);
+	// Timming -----------------------------------------------------
+
 	// =====================================================================
 	// Se cargan los resultados a la respuesta.
 	// (lo mejor sería usar la GPU para generar el resultado).
 	// =====================================================================
-	
-	if (instance.result_count > instance.number_of_blocks) instance.result_count = instance.number_of_blocks;
-	
-	result.move_count = instance.result_count;
-	result.move_type = (char*)malloc(sizeof(char) * instance.result_count);
-	result.origin = (int*)malloc(sizeof(int) * instance.result_count);
-	result.destination = (int*)malloc(sizeof(int) * instance.result_count);
-	result.delta = (float*)malloc(sizeof(float) * instance.result_count);
 
+	// Timming -----------------------------------------------------
+	timespec ts_pals_post;
+	timming_start(ts_pals_post);
+	// Timming -----------------------------------------------------
+	
 	// Busco el block que encontró el mejor movimiento.
 	int best_block_idx = 0;
 	for (int i = 1; i < instance.number_of_blocks; i++) {
@@ -257,6 +273,10 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			// <======= DEBUG
 		}
 	}
+	
+	// Timming -----------------------------------------------------
+	timming_end(".. pals_gpu_rtask_pals_post", ts_pals_post);
+	// Timming -----------------------------------------------------
 }
 
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine) {

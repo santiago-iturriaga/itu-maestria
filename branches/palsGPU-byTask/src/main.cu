@@ -238,6 +238,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// ==============================================================================
 	
 	struct pals_gpu_rtask_instance instance;
+	struct pals_gpu_rtask_result result;
 
 	// Timming -----------------------------------------------------
 	timespec ts_init;
@@ -245,8 +246,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------
 			
 	// Inicializo la memoria en el dispositivo.
-	pals_gpu_rtask_init(etc_matrix, current_solution, &instance);
 	instance.result_count = PALS_RTASK_RESULT_COUNT;
+	pals_gpu_rtask_init(etc_matrix, current_solution, instance, result);
 
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_rtask_init", ts_init);
@@ -260,7 +261,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
-	struct pals_gpu_rtask_result result;
 	
 	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
 	const unsigned int size = instance.number_of_blocks * instance.tasks_per_thread * 2;
@@ -288,6 +288,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, r48, result);
+
+		// Timming -----------------------------------------------------
+		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
+		// Timming -----------------------------------------------------
+
+		// Timming -----------------------------------------------------
+		timespec ts_post;
+		timming_start(ts_post);
+		// Timming -----------------------------------------------------
 
 		// Debug ------------------------------------------------------------------------------------------
 		if (DEBUG) {
@@ -371,16 +380,21 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				get_etc_value(etc_matrix, machine_b, task_x);
 		}
 
-		// Limpio el objeto resultado.
-		pals_gpu_rtask_clean_result(result);
+		// Timming -----------------------------------------------------
+		timming_end(">> pals_gpu_rtask_post", ts_post);
+		// Timming -----------------------------------------------------
 
 		// Nuevo seed.		
 		seed++;
-
-		// Timming -----------------------------------------------------
-		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
-		// Timming -----------------------------------------------------
 	}
+	
+	// Timming -----------------------------------------------------
+	timespec ts_finalize;
+	timming_start(ts_finalize);
+	// Timming -----------------------------------------------------
+	
+	// Limpio el objeto resultado.
+	pals_gpu_rtask_clean_result(result);
 	
 	// Libera la memoria del dispositivo con los números aleatorios.
 	RNG_rand48_cleanup(r48);
@@ -416,11 +430,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
 	}
-
-	// Timming -----------------------------------------------------
-	timespec ts_finalize;
-	timming_start(ts_finalize);
-	// Timming -----------------------------------------------------
 
 	// Libero la memoria del dispositivo.
 	pals_gpu_rtask_finalize(instance);
