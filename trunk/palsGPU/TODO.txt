@@ -1,0 +1,15 @@
+- Tunning?
+- Hacer el merge con el trunk
+- Evaluar para 4k y 8k
+
+---
+
+- Pragma unroll (#48?)
+- Multiple devices?
+  * Programming guide 4.5.2.2
+- Vector types
+- Async memory init?
+- Events
+- Memory bandwidth
+  * Programming guide 5.1.2
+- Memoria dinámica para mantener un modelo por máquina en memoria?

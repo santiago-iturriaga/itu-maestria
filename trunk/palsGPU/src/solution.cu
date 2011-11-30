@@ -1,19 +1,35 @@
-#include "solution.h"
-
 #include <assert.h>
+
+#include "config.h"
+#include "solution.h"
 
 struct solution* create_empty_solution(struct matrix *etc_matrix) {
 	struct solution *new_solution;
 	new_solution = (struct solution*)(malloc(sizeof(struct solution)));
 	
+	if (new_solution == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para new_solution.\n");
+		exit(EXIT_FAILURE);
+	}
+	
 	new_solution->makespan = 0.0;
 	new_solution->task_assignment = (int*)(malloc(sizeof(int) * etc_matrix->tasks_count));
+	
+	if (new_solution->task_assignment == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->task_assignment.\n");
+		exit(EXIT_FAILURE);
+	}
 	
 	for (int task = 0; task < etc_matrix->tasks_count; task++) {
 		new_solution->task_assignment[task] = -1; /* not yet assigned */
 	}
 
 	new_solution->machine_compute_time = (float*)(malloc(sizeof(float) * etc_matrix->machines_count));
+	
+	if (new_solution->machine_compute_time == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->machine_compute_time.\n");
+		exit(EXIT_FAILURE);
+	}
 	
 	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
 		new_solution->machine_compute_time[machine] = 0.0;
@@ -49,11 +65,19 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
 		float aux_compute_time;
 		aux_compute_time = 0.0;
 	
+		int assigned_tasks_count = 0;
+	
 		for (int task = 0; task < etc_matrix->tasks_count; task++) {
 			if (s->task_assignment[task] == machine) {
 				aux_compute_time += get_etc_value(etc_matrix, machine, task);
+				assigned_tasks_count++;
 			}
 		}
+
+		/*if (DEBUG) {
+			fprintf(stdout, "[DEBUG] Machine %d >> assigned tasks %d, compute time %f, expected compute time %f.\n",
+				machine, assigned_tasks_count, aux_compute_time, s->machine_compute_time[machine]);
+		}*/
 		
 		assert(s->machine_compute_time[machine] == aux_compute_time);
 	}

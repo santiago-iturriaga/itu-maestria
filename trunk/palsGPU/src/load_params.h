@@ -10,12 +10,14 @@
 
 #define PALS_Serial 0
 #define PALS_GPU 1
+#define PALS_GPU_randTask 2
+#define PALS_GPU_randMachine 3
 
 struct params {
 	char *instance_path;
 	int machines_count;
 	int tasks_count;
-	
+	int seed;
 	int pals_flavour;
 };
 
