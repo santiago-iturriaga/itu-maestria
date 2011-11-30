@@ -286,6 +286,9 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
+	// Tipo de movimiento.	
+	const char movement_type = (block_idx & 0x1); // Comparación a nivel de bit para saber si es par o impar.
+
 	// Offset de los random numbers asignados al block (2 rand x loop).
 	const int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
 	
@@ -296,7 +299,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 		raux2 = gpu_random_numbers[r_block_offset_start + loop + PALS_GPU_RTASK__BLOCKS];
 				
 		// Tipo de movimiento.	
-		if (raux1 | 0x1 == raux1) { // Comparación a nivel de bit para saber si es par o impar.
+		if (movement_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 			// Si es impar... 
 			// Movimiento SWAP.
 			raux1 = raux1 % tasks_count;

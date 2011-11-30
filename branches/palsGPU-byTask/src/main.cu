@@ -269,6 +269,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	RNG_rand48_init(r48, size);	
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
+		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
 		// ==============================================================================
 		// Sorteo de numeros aleatorios.
 		// ==============================================================================
@@ -285,8 +286,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timespec ts_wrapper;
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
-
-		fprintf(stdout, "[DEBUG] Iteracion %d =====================\n", i);
 
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, r48, result);
 
@@ -427,7 +426,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	pals_gpu_rtask_finalize(instance);
 	
 	// Timming -----------------------------------------------------
-	timming_end(">> pals_gpu_rmachine_finalize", ts_finalize);
+	timming_end(">> pals_gpu_rtask_finalize", ts_finalize);
 	// Timming -----------------------------------------------------		
 }
 
