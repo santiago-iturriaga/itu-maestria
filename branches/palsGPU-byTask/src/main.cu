@@ -29,6 +29,8 @@
 #include "pals/pals_gpu_rtask.h"
 #include "pals/pals_gpu_rmachine.h"
 
+#define PALS_RTASK_RANDS 6144
+
 /// Búsqueda serial sobre el todo el dominio del problema.
 void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
 
@@ -262,11 +264,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
 	
-	// Evals 49.152 rands => 6.291.456 movimientos (1024*24*256)(debe ser múltiplo de 6144).
-	const unsigned int size = instance.number_of_blocks * instance.tasks_per_thread * 2;
+	// Cantidad de números aleatorios por invocación.
+	const unsigned int size = instance.number_of_blocks * 2;
 
 	RNG_rand48 r48;
-	RNG_rand48_init(r48, size);	
+	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
+	
+	const short cant_iter_generadas = PALS_RTASK_RANDS / size;
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
 		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
@@ -277,8 +281,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timespec ts_rand;
 		timming_start(ts_rand);
 	
-		fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
-		RNG_rand48_generate(r48, seed);
+		if (i % cant_iter_generadas == 0) {
+			fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
+			RNG_rand48_generate(r48, seed);
+		}
 	
 		timming_end(">> RNG_rand48", ts_rand);
 	
@@ -287,7 +293,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, r48, result);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, &(r48.res[i * size]), result);
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);

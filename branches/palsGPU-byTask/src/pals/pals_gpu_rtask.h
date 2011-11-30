@@ -23,7 +23,6 @@ struct pals_gpu_rtask_instance {
 	
 	int number_of_blocks;
 	int threads_per_block;
-	int tasks_per_thread;
 	int total_tasks;
 	
 	short result_count;
@@ -58,7 +57,7 @@ void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result);
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, struct RNG_rand48 &r48, 
+	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers, 
 	struct pals_gpu_rtask_result &result);
 
 /*
