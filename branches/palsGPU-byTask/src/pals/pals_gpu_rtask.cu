@@ -18,15 +18,13 @@
 //#define PALS_GPU_RTASK__THREADS 		128
 //#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	128
 
-//#define PALS_GPU_RTASK__BLOCKS 			1024
+//#define PALS_GPU_RTASK__BLOCKS 		1024
 //#define PALS_GPU_RTASK__THREADS 		128
 //#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	64
 
 #define PALS_GPU_RTASK__BLOCKS 			8
 #define PALS_GPU_RTASK__THREADS 		128
 #define PALS_GPU_RTASK__LOOPS_PER_THREAD 	6
-
-#define PALS_GPU_RTASK__MOV_TYPE_OFFSET		PALS_GPU_RTASK__THREADS * PALS_GPU_RTASK__LOOPS_PER_THREAD
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks_per_thread, float *gpu_etc_matrix, 
 	int *gpu_task_assignment, int *gpu_random_numbers, ushort *gpu_best_swaps, float *gpu_best_swaps_delta);	
@@ -193,18 +191,15 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int block_idx = (best_block_idx + i) % instance.number_of_blocks;
 	
 		// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
-		int mov_type_offset = PALS_GPU_RTASK__MOV_TYPE_OFFSET;
-		int swap = best_swaps[block_idx];
-
-		int move_type = swap / mov_type_offset;
-		int move_offset = swap % mov_type_offset;
+		int move_offset = best_swaps[block_idx];
+		int move_type = (block_idx % 2);
 	
 		int thread_idx = move_offset % PALS_GPU_RTASK__THREADS;
 		int loop_idx = move_offset / PALS_GPU_RTASK__THREADS;
 
 		int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
 
-		if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
+		if (move_type == 0) { // Movement type: SWAP
 			int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 			int task_x = random_1;
 	
@@ -214,7 +209,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			if (task_y >= task_x) task_y = task_y + 1;
 			if (task_y >= etc_matrix->tasks_count) task_y = task_y % etc_matrix->tasks_count;
 
-			result.move_type[i] = move_type; // SWAP
+			result.move_type[i] = PALS_GPU_RTASK_SWAP; // SWAP
 			result.origin[i] = task_x;
 			result.destination[i] = task_y;
 			result.delta[i] = best_swaps_delta[block_idx];
@@ -234,7 +229,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 					task_x, machine_a, task_y, machine_b, best_swaps_delta[block_idx], swap_delta);
 			}
 			// <======= DEBUG
-		} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
+		} else { // Movement type: MOVE
 			int random_1 = rands_nums[r_block_offset_start + loop_idx] % etc_matrix->tasks_count;
 			int task_x = random_1;
 			int machine_a = s->task_assignment[task_x];
@@ -245,7 +240,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			if (machine_b >= machine_a) machine_b = machine_b + 1;
 			if (machine_b >= etc_matrix->machines_count) machine_b = machine_b % etc_matrix->machines_count;
 
-			result.move_type[i] = move_type; // MOVE
+			result.move_type[i] = PALS_GPU_RTASK_MOVE; // MOVE
 			result.origin[i] = task_x;
 			result.destination[i] = machine_b;
 			result.delta[i] = best_swaps_delta[block_idx];
@@ -287,11 +282,12 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
 	// Tipo de movimiento.	
-	const char movement_type = (block_idx & 0x1); // Comparación a nivel de bit para saber si es par o impar.
+	const int movement_type = (block_idx % 2);
 
 	// Offset de los random numbers asignados al block (2 rand x loop).
 	const int r_block_offset_start = block_idx * (2 * PALS_GPU_RTASK__LOOPS_PER_THREAD);
-	
+
+	#pragma unroll 6	
 	for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS_PER_THREAD; loop++) {
 		// El primer rand. num. es tiempre task 1.
 		int raux1, raux2, aux;
@@ -299,7 +295,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 		raux2 = gpu_random_numbers[r_block_offset_start + loop + PALS_GPU_RTASK__BLOCKS];
 				
 		// Tipo de movimiento.	
-		if (movement_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
+		if (movement_type == 0) {
 			// Si es impar... 
 			// Movimiento SWAP.
 			raux1 = raux1 % tasks_count;
@@ -322,7 +318,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
 			block_swaps[thread_idx] = (ushort)(
-				(PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
 		} else {
@@ -343,7 +338,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, int tasks
 			current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
 			block_swaps[thread_idx] = (ushort)(
-				(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
 				(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
 			block_swaps_delta[thread_idx] = current_swap_delta;
 		}
