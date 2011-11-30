@@ -203,9 +203,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		}
 	}
 	
-	for (int i = 0; i < instance.result_count; i++) {
-		int block_idx = (best_block_idx + i) % instance.number_of_blocks;
-	
+	for (int block_idx = 0; block_idx < instance.number_of_blocks; block_idx++) {	
 		// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
 		int move_offset = best_swaps[block_idx];
 		int move_type = (block_idx % 2);
@@ -225,10 +223,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			if (task_y >= task_x) task_y = task_y + 1;
 			if (task_y >= etc_matrix->tasks_count) task_y = task_y % etc_matrix->tasks_count;
 
-			result.move_type[i] = PALS_GPU_RTASK_SWAP; // SWAP
-			result.origin[i] = task_x;
-			result.destination[i] = task_y;
-			result.delta[i] = best_swaps_delta[block_idx];
+			if (best_block_idx == block_idx) {
+				result.move_type[0] = PALS_GPU_RTASK_SWAP; // SWAP
+				result.origin[0] = task_x;
+				result.destination[0] = task_y;
+				result.delta[0] = best_swaps_delta[block_idx];
+			}
 			
 			// =======> DEBUG
 			if (DEBUG) { 
@@ -256,10 +256,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			if (machine_b >= machine_a) machine_b = machine_b + 1;
 			if (machine_b >= etc_matrix->machines_count) machine_b = machine_b % etc_matrix->machines_count;
 
-			result.move_type[i] = PALS_GPU_RTASK_MOVE; // MOVE
-			result.origin[i] = task_x;
-			result.destination[i] = machine_b;
-			result.delta[i] = best_swaps_delta[block_idx];
+			if (best_block_idx == block_idx) {
+				result.move_type[0] = PALS_GPU_RTASK_MOVE; // MOVE
+				result.origin[0] = task_x;
+				result.destination[0] = machine_b;
+				result.delta[0] = best_swaps_delta[block_idx];
+			}
 			
 			// =======> DEBUG
 			if (DEBUG) {
