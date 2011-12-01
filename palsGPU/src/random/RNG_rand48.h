@@ -71,13 +71,13 @@ struct RNG_rand48 {
 }; 
 
 /// CUDA-safe constructor
-void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count);
+void RNG_rand48_init(struct RNG_rand48 &rand_state, int count);
 
 /// CUDA-safe destructor
 void RNG_rand48_cleanup(struct RNG_rand48 &rand_state);
 
 /// generate n random numbers as 31-bit integers like lrand48
-void RNG_rand48_generate(struct RNG_rand48 &rand_state);
+void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed);
 
 /** get the first n of the previously generated numbers into array r.
   r must be large enough to contain all the numbers, and enough
