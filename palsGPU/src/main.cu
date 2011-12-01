@@ -264,7 +264,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	int seed = input.seed;
 	
 	// Cantidad de números aleatorios por invocación.
-	const unsigned int size = instance.number_of_blocks * 2;
+	const unsigned int size = instance.number_of_blocks * instance.tasks_per_thread  * 2;
 
 	RNG_rand48 r48;
 	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
@@ -273,6 +273,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
 		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
+
 		// ==============================================================================
 		// Sorteo de numeros aleatorios.
 		// ==============================================================================
@@ -281,7 +282,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_rand);
 	
 		if (i % cant_iter_generadas == 0) {
-			fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", size);
+			fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 			RNG_rand48_generate(r48, seed);
 		}
 	
