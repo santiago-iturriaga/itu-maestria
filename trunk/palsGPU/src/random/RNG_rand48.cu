@@ -120,7 +120,7 @@ __global__ static void RNG_rand48_get_int(uint2 *state, int *res, int num_blocks
  * RNG_rand48 implementation
  ************************************************/
 
-void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
+void RNG_rand48_init(struct RNG_rand48 &rand_state, int count)
 {
   rand_state.a = 0x5DEECE66DLL;
   rand_state.c = 0xB;
@@ -132,8 +132,6 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
 
   rand_state.nThreads = rand_state.threadsX * rand_state.blocksX;
   rand_state.num_blocks = (rand_state.rand_num_count + rand_state.nThreads-1) / rand_state.nThreads;
-  
-  uint2* seeds = new uint2[ rand_state.nThreads ];
 
   if (cudaMalloc((void**) &(rand_state.state), sizeof(uint2) * rand_state.nThreads) != cudaSuccess) {
     fprintf(stderr, "[ERROR] Solicitando memoria rand_state.state.\n");
@@ -151,6 +149,28 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
   rand_state.A1 = (A >> 24) & 0xFFFFFFLL;
   rand_state.C0 = C & 0xFFFFFFLL;
   rand_state.C1 = (C >> 24) & 0xFFFFFFLL;
+  
+  if (cudaMalloc( (void**) &(rand_state.res), sizeof(int) * rand_state.nThreads * rand_state.num_blocks) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Solicitando memoria rand_state.res.\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+void RNG_rand48_cleanup(struct RNG_rand48 &rand_state) {
+  if (cudaFree((void*) rand_state.state) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Liberando memoria rand_state.state.\n");
+    exit(EXIT_FAILURE);
+  }
+  
+   if (cudaFree((void*) rand_state.res) != cudaSuccess) {
+    fprintf(stderr, "[ERROR] Liberando memoria rand_state.res.\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed)
+{ 
+  uint2* seeds = new uint2[ rand_state.nThreads ];
 
   // prepare first nThreads random numbers from seed
   unsigned long long x = (((unsigned long long)seed) << 16) | 0x330E;
@@ -167,22 +187,7 @@ void RNG_rand48_init(struct RNG_rand48 &rand_state, int seed, int count)
   }
 
   delete[] seeds;
-  
-  if (cudaMalloc( (void**) &(rand_state.res), sizeof(int) * rand_state.nThreads * rand_state.num_blocks) != cudaSuccess) {
-    fprintf(stderr, "[ERROR] Solicitando memoria rand_state.res.\n");
-    exit(EXIT_FAILURE);
-  }
-}
 
-void RNG_rand48_cleanup(struct RNG_rand48 &rand_state) {
-  if (cudaFree((void*) rand_state.state) != cudaSuccess) {
-    fprintf(stderr, "[ERROR] Liberando memoria rand_state.state.\n");
-    exit(EXIT_FAILURE);
-  }
-}
-
-void RNG_rand48_generate(struct RNG_rand48 &rand_state)
-{ 
   dim3 grid( rand_state.blocksX, 1, 1);
   dim3 threads( rand_state.threadsX, 1, 1);
 
