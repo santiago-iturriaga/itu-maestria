@@ -264,7 +264,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	int seed = input.seed;
 	
 	// Cantidad de números aleatorios por invocación.
-	const unsigned int size = instance.number_of_blocks * instance.tasks_per_thread  * 2;
+	const unsigned int size = instance.number_of_blocks * 2;
 
 	RNG_rand48 r48;
 	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
