@@ -214,12 +214,10 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int move_type = swap / PALS_GPU_RTASK__THREADS;
 		int thread_idx = swap % PALS_GPU_RTASK__THREADS;
 
-		int r_block_offset_start = block_idx * 2;
-
 		if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
-			int task_x = rands_nums[r_block_offset_start] % etc_matrix->tasks_count;
+			int task_x = rands_nums[block_idx] % etc_matrix->tasks_count;
 	
-			int random_2 = rands_nums[r_block_offset_start + 1];
+			int random_2 = rands_nums[block_idx + PALS_GPU_RTASK__BLOCKS];
 			int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS);
 			task_y = task_y + thread_idx;
 	
@@ -247,11 +245,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			}
 			// <======= DEBUG
 		} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
-			int random_1 = rands_nums[r_block_offset_start] % etc_matrix->tasks_count;
+			int random_1 = rands_nums[block_idx] % etc_matrix->tasks_count;
 			int task_x = random_1;
 			int machine_a = s->task_assignment[task_x];
 
-			int random_2 = rands_nums[r_block_offset_start + 1];
+			int random_2 = rands_nums[block_idx + PALS_GPU_RTASK__BLOCKS];
 			int machine_b = (random_2 % (etc_matrix->machines_count - 1)) + thread_idx;
 	
 			if (machine_b >= machine_a) machine_b = machine_b + 1;
@@ -299,13 +297,10 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
-	// Offset de los random numbers asignados al block (2 rand x loop).
-	const int r_block_offset_start = block_idx * 2;
-	
 	// El primer rand. num. es tiempre task 1.
 	int raux1, raux2, aux;
-	raux1 = gpu_random_numbers[r_block_offset_start];
-	raux2 = gpu_random_numbers[r_block_offset_start + 1];
+	raux1 = gpu_random_numbers[block_idx];
+	raux2 = gpu_random_numbers[block_idx + PALS_GPU_RTASK__BLOCKS];
 
 	//const int mov_type = block_idx % 2;
 			
