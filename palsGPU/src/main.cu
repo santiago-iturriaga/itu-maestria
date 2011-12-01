@@ -293,7 +293,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, &(r48.res[i * size]), result);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, &(r48.res[(i % cant_iter_generadas) * size]), result);
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
