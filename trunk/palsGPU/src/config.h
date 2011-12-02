@@ -5,8 +5,8 @@
 #define TIMMING 1
 
 //#define PALS_COUNT 1
-#define PALS_COUNT 5
-//#define PALS_COUNT 25
+//#define PALS_COUNT 5
+#define PALS_COUNT 25
 //#define PALS_COUNT 1000000
 
 #define PALS_RTASK_RESULT_COUNT 3
