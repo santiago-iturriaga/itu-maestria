@@ -199,10 +199,6 @@ void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed)
 
   // call GPU kernel
   RNG_rand48_get_int<<< grid, threads >>>((uint2 *)(rand_state.state), (int *)(rand_state.res), rand_state.num_blocks, A, C);
-  
-  // Copio a memoria constante los números generados.
-  assert(rand_state.rand_num_count <= 16384);
-  cudaMemcpyToSymbol(RNG_rand48_cmem, rand_state.res, sizeof(int) * rand_state.rand_num_count, 0, cudaMemcpyDeviceToDevice);
 }
 
 void RNG_rand48_get(struct RNG_rand48 &rand_state, int *r)

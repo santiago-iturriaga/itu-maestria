@@ -220,7 +220,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
 			int task_x = rands_nums[block_idx] % etc_matrix->tasks_count;
 	
-			int random_2 = rands_nums[block_idx + PALS_GPU_RTASK__BLOCKS];
+			int random_2 = rands_nums[block_idx + 1];
 			int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS);
 			task_y = task_y + thread_idx;
 	
@@ -252,7 +252,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			int task_x = random_1;
 			int machine_a = s->task_assignment[task_x];
 
-			int random_2 = rands_nums[block_idx + PALS_GPU_RTASK__BLOCKS];
+			int random_2 = rands_nums[block_idx + 1];
 			int machine_b = (random_2 % (etc_matrix->machines_count - 1)) + thread_idx;
 	
 			if (machine_b >= machine_a) machine_b = machine_b + 1;
@@ -294,22 +294,22 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 {
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
-	//const unsigned int block_count = gridDim.x;
-	//const unsigned int thread_count = blockDim.x;
+
+	const int mov_type = block_idx % 2;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
-	// El primer rand. num. es tiempre task 1.
-	int raux1, raux2, aux;
-	//TODO: MEMORIA CON CACHÉ!!!
-	//raux1 = gpu_random_numbers[block_idx];
-	//raux2 = gpu_random_numbers[block_idx + PALS_GPU_RTASK__BLOCKS];
+	__shared__ int raux1, raux2;
 	
-	raux1 = RNG_rand48_cmem[block_idx];
-	raux2 = RNG_rand48_cmem[block_idx + PALS_GPU_RTASK__BLOCKS];
+	if (threadIdx.x == 0) {
+		raux1 = gpu_random_numbers[block_idx];
+		raux2 = gpu_random_numbers[block_idx + 1];
+	}
+	
+	__syncthreads();
 
-	const int mov_type = block_idx % 2;
+	int aux;
 			
 	// Tipo de movimiento.	
 	if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
@@ -358,8 +358,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		block_swaps_delta[thread_idx] = current_swap_delta;
 	}
 	
-	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
-				 	 // swaps esten copiados a la memoria compartida.
+	__syncthreads();
 
 	// Aplico reduce para quedarme con el mejor delta.
 	for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
