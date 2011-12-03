@@ -174,7 +174,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}*/
 	// <=========== DEBUG
 	
-	float makespan_inicial = current_solution.makespan;
+	float makespan_inicial = current_solution->makespan;
 	
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
