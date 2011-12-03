@@ -4,7 +4,7 @@
 #include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
-	if (argc == 6) {
+	if (argc >= 5) {
 		input->instance_path = argv[1];
 		fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
 
@@ -17,8 +17,30 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->pals_flavour = atoi(argv[4]);
 		fprintf(stdout, "[PARAMS] PALS falvour: %d\n", input->pals_flavour);
 
-		input->seed = atoi(argv[5]);
-		fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+		if (input->pals_flavour == PALS_Serial) {
+			fprintf(stdout, "                       PALS_Serial\n");
+		} else if (input->pals_flavour == PALS_GPU) {
+			fprintf(stdout, "                       PALS_GPU\n");
+		} else if (input->pals_flavour == PALS_GPU_randTask) {
+			fprintf(stdout, "                       PALS_GPU_randTask\n");
+		} else if (input->pals_flavour == PALS_GPU_randMachine) {
+			fprintf(stdout, "                       PALS_GPU_randMachine\n");
+		}
+
+		if (argc >= 6) {
+			input->seed = atoi(argv[5]);
+			fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+		} else {
+			input->seed = 0;
+			input->gpu_device = 0;
+		}
+
+		if (argc >= 7) {
+			input->gpu_device = atoi(argv[6]);
+			fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
+		} else {
+			input->gpu_device = 0;
+		}
 
 		// Input validation.
 		if (input->tasks_count < 1) {
@@ -39,7 +61,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		return EXIT_SUCCESS;
 	} else {
 		fprintf(stdout, "Usage:\n");	
-		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour> [seed]\n\n", argv[0]);
+		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour> [seed] [gpu device]\n\n", argv[0]);
 		fprintf(stdout, "       pals flavour = 0 serial full\n");
 		fprintf(stdout, "                      1 gpu full\n");
 		fprintf(stdout, "                      2 gpu rand task\n");

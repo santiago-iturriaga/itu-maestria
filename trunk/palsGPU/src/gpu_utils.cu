@@ -53,7 +53,7 @@ void gpu_show_devices() {
 	gpu_get_devices(devices, size);
 	
 	for (int i = 0; i < size; i++) {
-		fprintf(stdout, "[[-- DEVICE 1 --]]\n");
+		fprintf(stdout, "[[-- DEVICE %d --]]\n", i);
 		fprintf(stdout, "Name: %s\n", devices[i].name);
 		fprintf(stdout, "Clock: %d\n", devices[i].clockRate);
 	}
