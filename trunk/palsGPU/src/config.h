@@ -11,7 +11,7 @@
 //#define PALS_COUNT 100000
 //#define PALS_COUNT 1000000
 
-#define PALS_RTASK_RESULT_COUNT 3
+#define PALS_RTASK_RESULT_COUNT 1
 
 #endif //CONFIG_H_
 

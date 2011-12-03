@@ -174,6 +174,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}*/
 	// <=========== DEBUG
 	
+	float makespan_inicial = current_solution.makespan;
+	
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
 	
@@ -348,6 +350,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// <=========== DEBUG
 	
 	if (DEBUG) {
+		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
 	}
 
