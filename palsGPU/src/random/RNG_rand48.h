@@ -39,6 +39,8 @@
     is however int *.
 */
 
+__constant__ int RNG_rand48_cmem[16384];
+
 struct RNG_rand48 {
   int stride;
 

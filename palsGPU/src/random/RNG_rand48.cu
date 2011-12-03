@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "RNG_rand48.h"
 
@@ -107,6 +108,7 @@ __global__ static void RNG_rand48_get_int(uint2 *state, int *res, int num_blocks
   for (i = 0; i < num_blocks; ++i) {
     // get upper 31 (!) bits of the 2x 24bits
     res[nOutIdx] = ( lstate.x >> 17 ) | ( lstate.y << 7);
+    
     nOutIdx += nThreads;
     // this actually iterates the RNG
     lstate = RNG_rand48_iterate_single(lstate, A, C);
@@ -197,6 +199,10 @@ void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed)
 
   // call GPU kernel
   RNG_rand48_get_int<<< grid, threads >>>((uint2 *)(rand_state.state), (int *)(rand_state.res), rand_state.num_blocks, A, C);
+  
+  // Copio a memoria constante los números generados.
+  assert(rand_state.rand_num_count <= 16384);
+  cudaMemcpyToSymbol(RNG_rand48_cmem, rand_state.res, sizeof(int) * rand_state.rand_num_count, 0, cudaMemcpyDeviceToDevice);
 }
 
 void RNG_rand48_get(struct RNG_rand48 &rand_state, int *r)
