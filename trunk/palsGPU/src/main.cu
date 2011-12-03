@@ -113,7 +113,6 @@ int main(int argc, char** argv)
 		// CUDA. Versión de búsqueda completa.
 		// =============================================================		
 		
-		gpu_show_devices();
 		gpu_set_device(input.gpu_device);
 		pals_gpu(input, etc_matrix, current_solution);
 		
@@ -122,7 +121,6 @@ int main(int argc, char** argv)
 		// CUDA. Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		gpu_show_devices();
 		gpu_set_device(input.gpu_device);
 		pals_gpu_rtask(input, etc_matrix, current_solution);
 			
@@ -131,7 +129,6 @@ int main(int argc, char** argv)
 		// CUDA. Búsqueda aleatoria por máquina.
 		// =============================================================
 		
-		gpu_show_devices();
 		gpu_set_device(input.gpu_device);			
 		//pals_gpu_rmachine(input, etc_matrix, current_solution);
 		
