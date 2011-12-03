@@ -303,8 +303,11 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 	// El primer rand. num. es tiempre task 1.
 	int raux1, raux2, aux;
 	//TODO: MEMORIA CON CACHÉ!!!
-	raux1 = gpu_random_numbers[block_idx];
-	raux2 = gpu_random_numbers[block_idx + PALS_GPU_RTASK__BLOCKS];
+	//raux1 = gpu_random_numbers[block_idx];
+	//raux2 = gpu_random_numbers[block_idx + PALS_GPU_RTASK__BLOCKS];
+	
+	raux1 = RNG_rand48_cmem[block_idx];
+	raux2 = RNG_rand48_cmem[block_idx + PALS_GPU_RTASK__BLOCKS];
 
 	const int mov_type = block_idx % 2;
 			
