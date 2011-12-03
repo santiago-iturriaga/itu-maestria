@@ -292,25 +292,29 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 	float *gpu_etc_matrix, int *gpu_task_assignment, int *gpu_random_numbers, 
 	ushort *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
-	const unsigned int thread_idx = threadIdx.x;
-	const unsigned int block_idx = blockIdx.x;
+	unsigned int thread_idx = threadIdx.x;
+	unsigned int block_idx = blockIdx.x;
 
-	const int mov_type = block_idx % 2;
+	int mov_type = block_idx % 2;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
-	__shared__ int raux1, raux2;
+	__shared__ int sraux1, sraux2;
 	
 	if (threadIdx.x == 0) {
-		raux1 = gpu_random_numbers[block_idx];
-		raux2 = gpu_random_numbers[block_idx + 1];
+		sraux1 = gpu_random_numbers[block_idx];
+		sraux2 = gpu_random_numbers[block_idx + 1];
 	}
 	
 	__syncthreads();
-
+	
+	int raux1 = sraux1;
+	int raux2 = sraux2;
 	int aux;
-			
+	
+	float current_swap_delta = 0.0;
+					
 	// Tipo de movimiento.	
 	if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 		// Si es impar... 
@@ -324,8 +328,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		if (raux2 >= tasks_count) raux2 = raux2 % tasks_count;
 		
 		// Calculo el delta del swap sorteado.
-		float current_swap_delta = 0.0;
-
 		aux = gpu_task_assignment[raux1]; // Máquina a.
 		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
 		current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux2]; // Sumo el ETC de y en a.
@@ -349,7 +351,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		if (raux2 >= machines_count) raux2 = raux2 % machines_count;
 		
 		// Calculo el delta del swap sorteado.
-		float current_swap_delta = 0.0;
 		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
 		current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
