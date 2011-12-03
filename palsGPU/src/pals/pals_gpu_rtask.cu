@@ -295,7 +295,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
 
-	int mov_type = block_idx % 2;
+	short mov_type = (short)(block_idx & 0x1);
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -357,8 +357,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
 		current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
-		block_swaps[thread_idx] = (ushort)(
-			(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
+		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = current_swap_delta;
 	}
 	
