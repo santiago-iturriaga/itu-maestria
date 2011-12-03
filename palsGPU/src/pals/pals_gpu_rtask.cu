@@ -311,7 +311,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 	
 	int raux1 = sraux1;
 	int raux2 = sraux2;
-	int aux;
+	int aux1, aux2;
 	
 	float current_swap_delta = 0.0;
 					
@@ -328,13 +328,16 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		if (raux2 >= tasks_count) raux2 = raux2 % tasks_count;
 		
 		// Calculo el delta del swap sorteado.
-		aux = gpu_task_assignment[raux1]; // Máquina a.
-		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
-		current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux2]; // Sumo el ETC de y en a.
+		aux1 = gpu_task_assignment[raux1]; // Máquina a.
+		aux2 = gpu_task_assignment[raux2]; // Máquina b.
 
-		aux = gpu_task_assignment[raux2]; // Máquina b.	
-		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux2]; // Resto el ETC de y en b.
-		current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux * tasks_count) + raux1]; // Sumo el ETC de x en b.
+		if (aux1 != aux2) {		
+			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
+			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux1 * tasks_count) + raux2]; // Sumo el ETC de y en a.
+
+			current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux2 * tasks_count) + raux2]; // Resto el ETC de y en b.
+			current_swap_delta = current_swap_delta + gpu_etc_matrix[(aux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
+		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = current_swap_delta;
@@ -342,16 +345,16 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		// Si es par...
 		// Movimiento MOVE.
 		raux1 = raux1 % tasks_count;
-		aux = gpu_task_assignment[raux1]; // Máquina a.
+		aux1 = gpu_task_assignment[raux1]; // Máquina a.
 							
 		raux2 = raux2 % (machines_count - 1);
 		raux2 = raux2 + thread_idx;
 		
-		if (raux2 >= aux) raux2 = raux2 + 1;
+		if (raux2 >= aux1) raux2 = raux2 + 1;
 		if (raux2 >= machines_count) raux2 = raux2 % machines_count;
 		
 		// Calculo el delta del swap sorteado.
-		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux * tasks_count) + raux1]; // Resto del ETC de x en a.
+		current_swap_delta = current_swap_delta - gpu_etc_matrix[(aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
 		current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
 		block_swaps[thread_idx] = (ushort)(
@@ -363,12 +366,12 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 
 	// Aplico reduce para quedarme con el mejor delta.
 	for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
-		aux = 2 * i * thread_idx;
+		aux1 = 2 * i * thread_idx;
 	
-		if (aux < PALS_GPU_RTASK__THREADS) {
-			if (block_swaps_delta[aux] > block_swaps_delta[aux + i]) {
-				block_swaps_delta[aux] = block_swaps_delta[aux + i];
-				block_swaps[aux] = block_swaps[aux + i];
+		if (aux1 < PALS_GPU_RTASK__THREADS) {
+			if (block_swaps_delta[aux1] > block_swaps_delta[aux1 + i]) {
+				block_swaps_delta[aux1] = block_swaps_delta[aux1 + i];
+				block_swaps[aux1] = block_swaps[aux1 + i];
 			}
 		}
 	
