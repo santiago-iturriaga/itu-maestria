@@ -15,16 +15,16 @@ int load_params(int argc, char **argv, struct params *input) {
 		fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
 
 		input->pals_flavour = atoi(argv[4]);
-		fprintf(stdout, "[PARAMS] PALS falvour: %d\n", input->pals_flavour);
+		fprintf(stdout, "[PARAMS] PALS falvour: %d", input->pals_flavour);
 
 		if (input->pals_flavour == PALS_Serial) {
-			fprintf(stdout, "                       PALS_Serial\n");
+			fprintf(stdout, " (PALS_Serial)\n");
 		} else if (input->pals_flavour == PALS_GPU) {
-			fprintf(stdout, "                       PALS_GPU\n");
+			fprintf(stdout, " (PALS_GPU)\n");
 		} else if (input->pals_flavour == PALS_GPU_randTask) {
-			fprintf(stdout, "                       PALS_GPU_randTask\n");
+			fprintf(stdout, " (PALS_GPU_randTask)\n");
 		} else if (input->pals_flavour == PALS_GPU_randMachine) {
-			fprintf(stdout, "                       PALS_GPU_randMachine\n");
+			fprintf(stdout, " (PALS_GPU_randMachine)\n");
 		}
 
 		if (argc >= 6) {
