@@ -21,6 +21,7 @@
 #include "solution.h"
 #include "config.h"
 #include "utils.h"
+#include "gpu_utils.h"
 
 #include "random/RNG_rand48.h"
 
@@ -76,8 +77,17 @@ int main(int argc, char** argv)
 	// =============================================================
 	if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
 
+	// Timming -----------------------------------------------------
+	timespec ts_mct;
+	timming_start(ts_mct);
+	// Timming -----------------------------------------------------
+
 	struct solution *current_solution = create_empty_solution(etc_matrix);
 	compute_mct(etc_matrix, current_solution);
+	
+	// Timming -----------------------------------------------------
+	timming_end(">> MCT Time", ts_mct);
+	// Timming -----------------------------------------------------
 	
 	validate_solution(etc_matrix, current_solution);
 
@@ -103,6 +113,7 @@ int main(int argc, char** argv)
 		// CUDA. Versión de búsqueda completa.
 		// =============================================================		
 		
+		gpu_show_devices();
 		pals_gpu(input, etc_matrix, current_solution);
 		
 	} else if (input.pals_flavour == PALS_GPU_randTask) {
@@ -110,13 +121,15 @@ int main(int argc, char** argv)
 		// CUDA. Búsqueda aleatoria por tarea.
 		// =============================================================
 			
+		gpu_show_devices();
 		pals_gpu_rtask(input, etc_matrix, current_solution);
 			
 	} else if (input.pals_flavour == PALS_GPU_randMachine) {
 		// =============================================================
 		// CUDA. Búsqueda aleatoria por máquina.
 		// =============================================================
-			
+		
+		gpu_show_devices();	
 		//pals_gpu_rmachine(input, etc_matrix, current_solution);
 		
 	}
@@ -132,105 +145,6 @@ int main(int argc, char** argv)
 	free_solution(current_solution);
 
 	return EXIT_SUCCESS;
-}
-
-void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
-	int best_swap_task_a;
-	int best_swap_task_b;
-	float best_swap_delta;
-	
-	for (int i = 0; i < PALS_COUNT; i++) {
-		pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
-	}
-	
-	fprintf(stdout, "[DEBUG] Best swap: task %d for task %d. Gain %f.\n", best_swap_task_a, best_swap_task_b, best_swap_delta);
-}
-
-void pals_gpu(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
-	struct pals_gpu_instance instance;
-
-	// Timming -----------------------------------------------------
-	timespec ts_init;
-	timming_start(ts_init);
-	// Timming -----------------------------------------------------
-			
-	// Inicializo la memoria en el dispositivo.
-	pals_gpu_init(etc_matrix, current_solution, &instance);
-
-	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_init", ts_init);
-	// Timming -----------------------------------------------------
-
-	int best_swap_count;
-	int best_swaps[instance.number_of_blocks];
-	float best_swaps_delta[instance.number_of_blocks];
-
-	// Timming -----------------------------------------------------
-	timespec ts_wrapper;
-	timming_start(ts_wrapper);
-	// Timming -----------------------------------------------------
-	
-	// Ejecuto GPUPALS.
-	// for (int i = 0; i < PALS_COUNT; i++) {
-	pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
-	// }
-	
-	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_wrapper", ts_wrapper);
-	// Timming -----------------------------------------------------
-
-	// Debug ------------------------------------------------------------------------------------------
-	if (DEBUG) {
-		unsigned long current_swap;
-		int task_x, task_y;
-		int machine_a, machine_b;
-
-		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
-		for (int i = 0; i < instance.number_of_blocks; i++) {
-			int block_idx = i;
-			int thread_idx = best_swaps[i] / instance.tasks_per_thread;
-			int task_idx = best_swaps[i] % instance.tasks_per_thread;
-		
-			current_swap = ((unsigned long)instance.block_size * (unsigned long)instance.tasks_per_thread * (unsigned long)block_idx) 
-				+ ((unsigned long)instance.block_size * (unsigned long)task_idx) + (unsigned long)thread_idx;
-
-			float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;											
-			float auxf = (block_offset_start  + (instance.block_size * task_idx) + thread_idx) / etc_matrix->tasks_count;
-			task_x = (int)auxf;
-			task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
-			
-			if (task_x >= etc_matrix->tasks_count) task_x = etc_matrix->tasks_count - 1;
-			if (task_y >= etc_matrix->tasks_count) task_y = etc_matrix->tasks_count - 1;
-			if (task_x < 0) task_x = 0;
-			if (task_y < 0) task_y = 0;
-
-			machine_a = current_solution->task_assignment[task_x];
-			machine_b = current_solution->task_assignment[task_y];
-
-			float swap_delta = 0.0;
-			swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
-			swap_delta += get_etc_value(etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
-			swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
-			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
-
-			fprintf(stdout, "   GPU Result %d. Swap ID %ld. Task x %d, Task y %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
-				best_swaps[i], current_swap, (int)auxf, (int)((auxf - task_x) * etc_matrix->tasks_count), 
-				best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
-		}
-	}
-	// Debug ------------------------------------------------------------------------------------------
-
-	// Timming -----------------------------------------------------
-	timespec ts_finalize;
-	timming_start(ts_finalize);
-	// Timming -----------------------------------------------------
-
-	// Libero la memoria del dispositivo.
-	pals_gpu_finalize(&instance);
-	
-	// Timming -----------------------------------------------------
-	timming_end("pals_gpu_finalize", ts_finalize);
-	// Timming -----------------------------------------------------	
 }
 
 void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {	
@@ -305,7 +219,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		// Debug ------------------------------------------------------------------------------------------
-		/*if (DEBUG) {
+		if (DEBUG) {
 			fprintf(stdout, "[DEBUG] Mejores movimientos:\n");
 			for (int i = 0; i < result.move_count; i++) {
 				if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
@@ -321,7 +235,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						result.origin[i], machine_a, result.destination[i], result.delta[i]);
 				}
 			}
-		}*/
+		}
 		// Debug ------------------------------------------------------------------------------------------
 
 		// Aplico el mejor movimiento.
@@ -445,3 +359,101 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------		
 }
 
+void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
+	int best_swap_task_a;
+	int best_swap_task_b;
+	float best_swap_delta;
+	
+	for (int i = 0; i < PALS_COUNT; i++) {
+		pals_serial(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
+	}
+	
+	fprintf(stdout, "[DEBUG] Best swap: task %d for task %d. Gain %f.\n", best_swap_task_a, best_swap_task_b, best_swap_delta);
+}
+
+void pals_gpu(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
+	struct pals_gpu_instance instance;
+
+	// Timming -----------------------------------------------------
+	timespec ts_init;
+	timming_start(ts_init);
+	// Timming -----------------------------------------------------
+			
+	// Inicializo la memoria en el dispositivo.
+	pals_gpu_init(etc_matrix, current_solution, &instance);
+
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_init", ts_init);
+	// Timming -----------------------------------------------------
+
+	int best_swap_count;
+	int best_swaps[instance.number_of_blocks];
+	float best_swaps_delta[instance.number_of_blocks];
+
+	// Timming -----------------------------------------------------
+	timespec ts_wrapper;
+	timming_start(ts_wrapper);
+	// Timming -----------------------------------------------------
+	
+	// Ejecuto GPUPALS.
+	// for (int i = 0; i < PALS_COUNT; i++) {
+	pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
+	// }
+	
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_wrapper", ts_wrapper);
+	// Timming -----------------------------------------------------
+
+	// Debug ------------------------------------------------------------------------------------------
+	if (DEBUG) {
+		unsigned long current_swap;
+		int task_x, task_y;
+		int machine_a, machine_b;
+
+		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
+		for (int i = 0; i < instance.number_of_blocks; i++) {
+			int block_idx = i;
+			int thread_idx = best_swaps[i] / instance.tasks_per_thread;
+			int task_idx = best_swaps[i] % instance.tasks_per_thread;
+		
+			current_swap = ((unsigned long)instance.block_size * (unsigned long)instance.tasks_per_thread * (unsigned long)block_idx) 
+				+ ((unsigned long)instance.block_size * (unsigned long)task_idx) + (unsigned long)thread_idx;
+
+			float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;											
+			float auxf = (block_offset_start  + (instance.block_size * task_idx) + thread_idx) / etc_matrix->tasks_count;
+			task_x = (int)auxf;
+			task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
+			
+			if (task_x >= etc_matrix->tasks_count) task_x = etc_matrix->tasks_count - 1;
+			if (task_y >= etc_matrix->tasks_count) task_y = etc_matrix->tasks_count - 1;
+			if (task_x < 0) task_x = 0;
+			if (task_y < 0) task_y = 0;
+
+			machine_a = current_solution->task_assignment[task_x];
+			machine_b = current_solution->task_assignment[task_y];
+
+			float swap_delta = 0.0;
+			swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
+			swap_delta += get_etc_value(etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
+			swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
+			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
+
+			fprintf(stdout, "   GPU Result %d. Swap ID %ld. Task x %d, Task y %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
+				best_swaps[i], current_swap, (int)auxf, (int)((auxf - task_x) * etc_matrix->tasks_count), 
+				best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+		}
+	}
+	// Debug ------------------------------------------------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_finalize;
+	timming_start(ts_finalize);
+	// Timming -----------------------------------------------------
+
+	// Libero la memoria del dispositivo.
+	pals_gpu_finalize(&instance);
+	
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_finalize", ts_finalize);
+	// Timming -----------------------------------------------------	
+}
