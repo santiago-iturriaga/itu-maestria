@@ -114,6 +114,7 @@ int main(int argc, char** argv)
 		// =============================================================		
 		
 		gpu_show_devices();
+		gpu_set_device(input.gpu_device);
 		pals_gpu(input, etc_matrix, current_solution);
 		
 	} else if (input.pals_flavour == PALS_GPU_randTask) {
@@ -122,6 +123,7 @@ int main(int argc, char** argv)
 		// =============================================================
 			
 		gpu_show_devices();
+		gpu_set_device(input.gpu_device);
 		pals_gpu_rtask(input, etc_matrix, current_solution);
 			
 	} else if (input.pals_flavour == PALS_GPU_randMachine) {
@@ -129,7 +131,8 @@ int main(int argc, char** argv)
 		// CUDA. Búsqueda aleatoria por máquina.
 		// =============================================================
 		
-		gpu_show_devices();	
+		gpu_show_devices();
+		gpu_set_device(input.gpu_device);			
 		//pals_gpu_rmachine(input, etc_matrix, current_solution);
 		
 	}
