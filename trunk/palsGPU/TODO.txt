@@ -13,3 +13,10 @@
 - Memory bandwidth
   * Programming guide 5.1.2
 - Memoria dinámica para mantener un modelo por máquina en memoria?
+
+---
+TIEMPOS!
+
+100k x (128x128) = 1638M en ~9.5s
+50k x (128x128) =  819M en ~4.7s
+

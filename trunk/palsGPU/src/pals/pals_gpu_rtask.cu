@@ -22,7 +22,7 @@
 //#define PALS_GPU_RTASK__THREADS 		128
 //#define PALS_GPU_RTASK__LOOPS_PER_THREAD 	64
 
-#define PALS_GPU_RTASK__BLOCKS 			8
+#define PALS_GPU_RTASK__BLOCKS 			128
 #define PALS_GPU_RTASK__THREADS 		128
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
