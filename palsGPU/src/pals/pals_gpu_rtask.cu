@@ -302,13 +302,14 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 
 	// El primer rand. num. es tiempre task 1.
 	int raux1, raux2, aux;
+	//TODO: MEMORIA CON CACHÉ!!!
 	raux1 = gpu_random_numbers[block_idx];
 	raux2 = gpu_random_numbers[block_idx + PALS_GPU_RTASK__BLOCKS];
 
-	//const int mov_type = block_idx % 2;
+	const int mov_type = block_idx % 2;
 			
 	// Tipo de movimiento.	
-	//if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
+	if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 		// Si es impar... 
 		// Movimiento SWAP.
 		raux1 = raux1 % tasks_count;
@@ -332,7 +333,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = current_swap_delta;
-	/*} else {
+	} else {
 		// Si es par...
 		// Movimiento MOVE.
 		raux1 = raux1 % tasks_count;
@@ -350,10 +351,9 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count,
 		current_swap_delta = current_swap_delta + gpu_etc_matrix[(raux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
 		block_swaps[thread_idx] = (ushort)(
-			(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__MOV_TYPE_OFFSET) +
-			(loop * PALS_GPU_RTASK__THREADS) + thread_idx);
+			(PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = current_swap_delta;
-	}*/
+	}
 	
 	__syncthreads(); // Sincronizo todos los threads para asegurarme que todos los 
 				 	 // swaps esten copiados a la memoria compartida.
