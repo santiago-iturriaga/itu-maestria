@@ -150,13 +150,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// PALS aleatorio por tarea.
 	// ==============================================================================
 	
-	struct pals_gpu_rtask_instance instance;
-	struct pals_gpu_rtask_result result;
-
 	// Timming -----------------------------------------------------
 	timespec ts_init;
 	timming_start(ts_init);
 	// Timming -----------------------------------------------------
+
+	struct pals_gpu_rtask_instance instance;
+	struct pals_gpu_rtask_result result;
 			
 	// Inicializo la memoria en el dispositivo.
 	instance.result_count = PALS_RTASK_RESULT_COUNT;
@@ -185,6 +185,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
 	
 	const short cant_iter_generadas = PALS_RTASK_RANDS / size;
+
+	struct pals_gpu_rtask_update update;	
+	update.task_x = -1;
+	update.task_x_machine = -1;
+	update.task_y = -1;
+	update.task_y_machine = -1;
+	update.machine_a = -1;
+	update.machine_a_ct = -1;
+	update.machine_b = -1;
+	update.machine_b_ct = -1;
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
 		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
@@ -208,7 +218,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, &(r48.res[(i % cant_iter_generadas) * size]), result);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, update, instance, 
+			&(r48.res[(i % cant_iter_generadas) * size]), result);
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -226,10 +237,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			
 			int machine_a = current_solution->task_assignment[result.origin[0]];
 			int machine_b = current_solution->task_assignment[result.destination[0]];
-	
-			// Actualizo la asignación de cada tarea en el dispositivo.
-			pals_gpu_rtask_move(instance, task_x, machine_b);
-			pals_gpu_rtask_move(instance, task_y, machine_a);
 			
 			// Actualizo la asignación de cada tarea en el host.
 			current_solution->task_assignment[task_x] = machine_b;
@@ -246,19 +253,26 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				get_etc_value(etc_matrix, machine_b, task_x) - 
 				get_etc_value(etc_matrix, machine_b, task_y);
 
+			// Actualizo la asignación de cada tarea en el dispositivo.
+			update.task_x = task_x;
+			update.task_x_machine = machine_b;
+						
+			update.task_y = task_y;
+			update.task_y_machine = machine_a;
+			
+			update.machine_a = machine_a;
+			update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
+			
+			update.machine_b = machine_b;
+			update.machine_b_ct = current_solution->machine_compute_time[machine_b];
+
 		} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
 			int task_x = result.origin[0];		
 			int machine_a = current_solution->task_assignment[task_x];
 			
 			//int machine_a = current_solution->task_assignment[task_x];
 			int machine_b = result.destination[0];
-	
-			// Actualizo la asignación de la tarea en el device.
-			pals_gpu_rtask_move(instance, task_x, machine_b);
-			
-			// Actualizo la asignación de la tarea en el host.
-			current_solution->task_assignment[task_x] = machine_b;
-			
+					
 			// Actualizo los compute time de cada máquina luego del move en el host.
 			current_solution->machine_compute_time[machine_a] = 
 				current_solution->machine_compute_time[machine_a] - 
@@ -267,6 +281,19 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			current_solution->machine_compute_time[machine_b] = 
 				current_solution->machine_compute_time[machine_b] +
 				get_etc_value(etc_matrix, machine_b, task_x);
+				
+			// Actualizo la asignación de cada tarea en el dispositivo.
+			update.task_x = task_x;
+			update.task_x_machine = machine_b;
+						
+			update.task_y = -1; /* No hay tarea Y involucrada. */
+			update.task_y_machine = -1;
+			
+			update.machine_a = machine_a;
+			update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
+			
+			update.machine_b = machine_b;
+			update.machine_b_ct = current_solution->machine_compute_time[machine_b];
 		}
 		
 		// Actualiza el makespan de la solución.

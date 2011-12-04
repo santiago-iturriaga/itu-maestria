@@ -29,6 +29,20 @@ struct pals_gpu_rtask_instance {
 	short result_count;
 };
 
+struct pals_gpu_rtask_update {
+	int task_x;
+	int task_x_machine;
+	
+	int task_y;
+	int task_y_machine;
+	
+	int machine_a;
+	float machine_a_ct;
+	
+	int machine_b;
+	float machine_b_ct;
+};
+
 struct pals_gpu_rtask_result {
 	short move_count;
 
@@ -58,8 +72,8 @@ void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result);
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers, 
-	struct pals_gpu_rtask_result &result);
+	struct pals_gpu_rtask_update &update, struct pals_gpu_rtask_instance &instance, 
+	int *gpu_random_numbers, struct pals_gpu_rtask_result &result);
 
 /*
  * Mueve una tarea en la memoria del dispositivo.

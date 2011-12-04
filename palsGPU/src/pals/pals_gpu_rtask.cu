@@ -13,13 +13,18 @@
 #define PALS_GPU_RTASK__BLOCKS 			128
 #define PALS_GPU_RTASK__THREADS 		128
 
-__global__ void pals_rtask_kernel(int machines_count, int tasks_count, float current_makespan,
-	float *gpu_etc_matrix, int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers, 
-	ushort *gpu_best_swaps, float *gpu_best_swaps_delta)
+__global__ void pals_rtask_kernel(
+	int machines_count, int tasks_count, float current_makespan,
+	float *gpu_etc_matrix, int *gpu_task_assignment, float *gpu_machine_compute_time, 
+	int *gpu_random_numbers, ushort *gpu_best_swaps, float *gpu_best_swaps_delta, 
+	int task_x, int task_x_machine, 
+	int task_y, int task_y_machine, 
+	int machine_a, float machine_a_ct,
+	int machine_b, float machine_b_ct)
 {
 	unsigned int thread_idx = threadIdx.x;
-	const unsigned int block_idx = blockIdx.x;
-	const unsigned int mov_type = block_idx & 0x1;
+	unsigned int block_idx = blockIdx.x;
+	unsigned int mov_type = block_idx & 0x1;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -29,6 +34,20 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 	if (threadIdx.x == 0) {
 		sraux1 = gpu_random_numbers[block_idx];
 		sraux2 = gpu_random_numbers[block_idx + 1];
+		
+		// ================================================
+		// Aplico los movimientos de la iteración anterior.
+		// ================================================
+		if ((task_x >= 0) && (machine_a >= 0)  && (machine_b >= 0)) {
+			gpu_task_assignment[task_x] = task_x_machine;
+			
+			gpu_machine_compute_time[machine_a] = machine_a_ct;
+			gpu_machine_compute_time[machine_b] = machine_b_ct;
+					
+			if (task_y >= 0) {
+				gpu_task_assignment[task_y] = task_y_machine;
+			}
+		}
 	}
 	
 	__syncthreads();
@@ -45,6 +64,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 		// Movimiento SWAP.
 		
 		// ================= Obtengo las tareas sorteadas.
+		// TODO: OPTIMIZAR MODULOS!!!
 		raux1 = raux1 % tasks_count;
 				
 		raux2 = raux2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
@@ -287,8 +307,8 @@ void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result) {
 }
 
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers,
-	struct pals_gpu_rtask_result &result) {
+	struct pals_gpu_rtask_update &update, struct pals_gpu_rtask_instance &instance, 
+	int *gpu_random_numbers, struct pals_gpu_rtask_result &result) {
 
 	// Timming -----------------------------------------------------
 	timespec ts_pals_pre;
@@ -320,7 +340,15 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_machine_compute_time, 
 		gpu_random_numbers,
 		instance.gpu_best_swaps, 
-		instance.gpu_best_swaps_delta);
+		instance.gpu_best_swaps_delta,
+		update.task_x,
+		update.task_x_machine,
+		update.task_y,
+		update.task_y_machine,
+		update.machine_a,
+		update.machine_a_ct,
+		update.machine_b,
+		update.machine_b_ct);
 
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
 	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
@@ -381,6 +409,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
 	int swap = best_swaps[block_idx];
 
+	// TODO: OPTIMIZAR!!! (pasar todo como struct? intentar meter todo dentro de un mismo array?)
 	int move_type = swap / PALS_GPU_RTASK__THREADS;
 	int thread_idx = swap % PALS_GPU_RTASK__THREADS;
 
