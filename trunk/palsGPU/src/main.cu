@@ -168,9 +168,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------
 
 	// ===========> DEBUG
-	/*if (DEBUG) {
+	if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
-	}*/
+	}
 	// <=========== DEBUG
 	
 	float makespan_inicial = current_solution->makespan;
@@ -324,7 +324,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", update.task_y, update.task_y_machine);
 				fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", update.machine_a, update.machine_a_ct);
 				fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", update.machine_b, update.machine_b_ct);
-				fprintf(stdout, "   current_makespan: %f.\n", current_solution->makespan);
+				fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
 			}
 		
 			// Actualiza el makespan de la solución.
@@ -341,6 +341,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 			if (DEBUG) {
 				fprintf(stdout, "   new_makespan: %f (machine %d).\n", current_solution->makespan, machine);
+			}
+		} else {
+			if (DEBUG) {
+				fprintf(stdout, "   current_makespan: %f.\n", current_solution->makespan);
 			}
 		}
 
@@ -377,6 +381,43 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
 	
+	if (DEBUG) {
+		// Validación de la memoria del dispositivo.
+		fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
+
+		int aux_task_assignment[etc_matrix->tasks_count];
+	
+		if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, (int)(etc_matrix->tasks_count * sizeof(int)), 
+			cudaMemcpyDeviceToHost) != cudaSuccess) {
+			
+			fprintf(stderr, "[ERROR] Copiando task_assignment al host (%d bytes).\n", (int)(etc_matrix->tasks_count * sizeof(int)));
+			exit(EXIT_FAILURE);
+		}
+
+		for (int i = 0; i < etc_matrix->tasks_count; i++) {
+			if (current_solution->task_assignment[i] != aux_task_assignment[i]) {
+				fprintf(stdout, "[INFO] task assignment diff => task %d on host: %d, on device: %d\n",
+					i, current_solution->task_assignment[i], aux_task_assignment[i]);
+			}
+		}
+
+		float aux_machine_compute_time[etc_matrix->machines_count];
+	
+		if (cudaMemcpy(aux_machine_compute_time, instance.gpu_machine_compute_time, (int)(etc_matrix->machines_count * sizeof(float)), 
+			cudaMemcpyDeviceToHost) != cudaSuccess) {
+			
+			fprintf(stderr, "[ERROR] Copiando machine_compute_time al host (%d bytes).\n", (int)(etc_matrix->machines_count * sizeof(float)));
+			exit(EXIT_FAILURE);
+		}
+
+		for (int i = 0; i < etc_matrix->machines_count; i++) {
+			if (current_solution->machine_compute_time[i] != aux_machine_compute_time[i]) {
+				fprintf(stdout, "[INFO] machine CT diff => machine %d on host: %f, on device: %f\n",
+					i, current_solution->machine_compute_time[i], aux_machine_compute_time[i]);
+			}
+		}
+	}
+	
 	// Limpio el objeto resultado.
 	pals_gpu_rtask_clean_result(result);
 	
@@ -406,9 +447,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	
 	// ===========> DEBUG
-	/*if (DEBUG) {
+	if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
-	}*/
+	}
 	// <=========== DEBUG
 	
 	if (DEBUG) {
