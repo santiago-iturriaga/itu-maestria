@@ -157,6 +157,10 @@ int main(int argc, char** argv)
 		
 		compute_minmin(etc_matrix, current_solution);
 		
+	} else if (input.algorithm == MCT) {
+		
+		compute_mct(etc_matrix, current_solution);
+		
 	}
 	
 	// Timming -----------------------------------------------------

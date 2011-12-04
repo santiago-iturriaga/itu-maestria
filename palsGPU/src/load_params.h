@@ -13,6 +13,7 @@
 #define PALS_GPU_randTask 2
 #define PALS_GPU_randMachine 3
 #define MinMin 4
+#define MCT 5
 
 struct params {
 	char *instance_path;
