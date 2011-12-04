@@ -238,6 +238,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			int machine_a = current_solution->task_assignment[result.origin[0]];
 			int machine_b = current_solution->task_assignment[result.destination[0]];
 			
+			if (DEBUG) {
+				fprintf(stdout, ">> [pre-update]:\n");
+				fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+				fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+			}
+			
 			// Actualizo la asignación de cada tarea en el host.
 			current_solution->task_assignment[task_x] = machine_b;
 			current_solution->task_assignment[task_y] = machine_a;
@@ -254,6 +260,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				get_etc_value(etc_matrix, machine_b, task_y);
 
 			// Actualizo la asignación de cada tarea en el dispositivo.
+			pals_gpu_rtask_move(instance, task_x, machine_b);
+			pals_gpu_rtask_move(instance, task_y, machine_a);	
+			pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
+			pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+			
 			update.task_x = task_x;
 			update.task_x_machine = machine_b;
 						
@@ -273,6 +284,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			//int machine_a = current_solution->task_assignment[task_x];
 			int machine_b = result.destination[0];
 					
+			if (DEBUG) {
+				fprintf(stdout, ">> [pre-update]:\n");
+				fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+				fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+			}
+					
 			// Actualizo los compute time de cada máquina luego del move en el host.
 			current_solution->machine_compute_time[machine_a] = 
 				current_solution->machine_compute_time[machine_a] - 
@@ -283,6 +300,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				get_etc_value(etc_matrix, machine_b, task_x);
 				
 			// Actualizo la asignación de cada tarea en el dispositivo.
+			pals_gpu_rtask_move(instance, task_x, machine_b);
+			pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
+			pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+			
 			update.task_x = task_x;
 			update.task_x_machine = machine_b;
 						

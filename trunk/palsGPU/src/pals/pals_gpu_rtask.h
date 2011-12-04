@@ -80,4 +80,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
  */
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine);
 
+void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time);
+
 #endif /* PALS_GPU_H_ */
