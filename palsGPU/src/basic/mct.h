@@ -2,8 +2,8 @@
  * MCT heuristic basic implementation.
  */
 
-#include "etc_matrix.h"
-#include "solution.h"
+#include "../etc_matrix.h"
+#include "../solution.h"
 
 #ifndef MCT_H_
 #define MCT_H_
