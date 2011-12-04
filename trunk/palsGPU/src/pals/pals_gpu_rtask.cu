@@ -329,7 +329,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	// Copio los mejores movimientos desde el dispositivo.
 	if (cudaMemcpyAsync(best_swaps, instance.gpu_best_swaps, 
-		sizeof(int) * instance.number_of_blocks, 
+		sizeof(ushort) * instance.number_of_blocks, 
 		cudaMemcpyDeviceToHost, 0) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps).\n");
