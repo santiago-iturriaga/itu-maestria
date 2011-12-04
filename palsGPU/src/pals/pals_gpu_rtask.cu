@@ -494,14 +494,24 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 }
 
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine) {
-	if (cudaMemset(&(instance.gpu_task_assignment[task]), to_machine, 1) != cudaSuccess) {
+	/*if (cudaMemset(&(instance.gpu_task_assignment[task]), to_machine, sizeof(int)) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Error moviendo la task %d a la máquina %d.\n", task, to_machine);
+		exit(EXIT_FAILURE);
+	}*/
+	
+	if (cudaMemcpy(&(instance.gpu_task_assignment[task]), &to_machine, sizeof(int), cudaMemcpyHostToDevice) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Error moviendo la task %d a la máquina %d.\n", task, to_machine);
 		exit(EXIT_FAILURE);
 	}
 }
 
 void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time) {
-	if (cudaMemset(&(instance.gpu_machine_compute_time[machine]), compute_time, 1) != cudaSuccess) {
+	/*if (cudaMemset(&(instance.gpu_machine_compute_time[machine]), compute_time, 1) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Error actualizando el compute time de la máquina %d.\n", machine);
+		exit(EXIT_FAILURE);
+	}*/
+	
+	if (cudaMemcpy(&(instance.gpu_machine_compute_time[machine]), &machine, sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Error actualizando el compute time de la máquina %d.\n", machine);
 		exit(EXIT_FAILURE);
 	}
