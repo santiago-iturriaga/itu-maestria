@@ -261,10 +261,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					get_etc_value(etc_matrix, machine_b, task_y);
 
 				// Actualizo la asignación de cada tarea en el dispositivo.
-				pals_gpu_rtask_move(instance, task_x, machine_b);
+				/*pals_gpu_rtask_move(instance, task_x, machine_b);
 				pals_gpu_rtask_move(instance, task_y, machine_a);	
 				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
-				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);*/
 			
 				update.task_x = task_x;
 				update.task_x_machine = machine_b;
@@ -301,9 +301,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					get_etc_value(etc_matrix, machine_b, task_x);
 				
 				// Actualizo la asignación de cada tarea en el dispositivo.
-				pals_gpu_rtask_move(instance, task_x, machine_b);
+				/*pals_gpu_rtask_move(instance, task_x, machine_b);
 				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
-				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);*/
 			
 				update.task_x = task_x;
 				update.task_x_machine = machine_b;
