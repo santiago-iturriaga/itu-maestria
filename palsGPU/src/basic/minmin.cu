@@ -57,4 +57,15 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 		solution->machine_compute_time[best_machine] = solution->machine_compute_time[best_machine] + 
 			get_etc_value(etc_matrix, best_machine, best_task);
 	}
+	
+	// Actualiza el makespan de la solución.
+	solution->makespan = solution->machine_compute_time[0];
+	
+	for (int i = 1; i < etc_matrix->machines_count; i++) {
+		if (solution->makespan < solution->machine_compute_time[i]) {
+			solution->makespan = solution->machine_compute_time[i];
+		}
+	}
+	
+	fprintf(stdout, "[DEBUG] Solution makespan: %f.\n", solution->makespan);
 }
