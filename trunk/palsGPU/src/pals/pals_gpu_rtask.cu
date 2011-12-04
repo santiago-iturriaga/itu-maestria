@@ -15,13 +15,13 @@
 
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float current_makespan,
 	float *gpu_etc_matrix, int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers, 
-	int *gpu_best_swaps, float *gpu_best_swaps_delta)
+	ushort *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 	const unsigned int mov_type = block_idx & 0x1;
 
-	__shared__ int block_swaps[PALS_GPU_RTASK__THREADS];
+	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
 	__shared__ int sraux1, sraux2;
@@ -87,7 +87,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 			}
 		}
 
-		block_swaps[thread_idx] = ((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
+		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
 	} else {
 		// Si es par...
@@ -126,7 +126,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 			float_aux2 = 0.0;
 		}
 
-		block_swaps[thread_idx] = ((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
+		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
 	}
 	
@@ -175,7 +175,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	timming_start(ts_1);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(int) * instance.number_of_blocks;	
+	int best_swaps_size = sizeof(ushort) * instance.number_of_blocks;	
 	if (cudaMalloc((void**)&(instance.gpu_best_swaps), best_swaps_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps (%d bytes).\n", best_swaps_size);
 		exit(EXIT_FAILURE);
@@ -323,7 +323,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_swaps_delta);
 
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
-	int *best_swaps = (int*)malloc(sizeof(int) * instance.number_of_blocks);
+	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
 	int *rands_nums = (int*)malloc(sizeof(int) * instance.number_of_blocks * 2);
 
