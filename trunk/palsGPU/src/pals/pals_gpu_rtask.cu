@@ -90,8 +90,17 @@ __global__ void pals_rtask_kernel(
 			} else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {	
 				// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
 				
-				eval = eval + (machine_a_ct_new - machine_a_ct_old);
-				eval = eval + (machine_b_ct_new - machine_b_ct_old);
+				if (machine_a_ct_old+1 >= current_makespan) {
+					eval = eval + (machine_a_ct_new - machine_a_ct_old);
+				} else {
+					eval = eval + 1/(machine_a_ct_new - machine_a_ct_old);
+				}
+				
+				if (machine_b_ct_old+1 >= current_makespan) {
+					eval = eval + (machine_b_ct_new - machine_b_ct_old);
+				} else {
+					eval = eval + 1/(machine_b_ct_new - machine_b_ct_old);
+				}
 				
 			} else {
 				// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
