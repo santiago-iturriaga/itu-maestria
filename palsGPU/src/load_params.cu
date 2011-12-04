@@ -14,17 +14,19 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->machines_count = atoi(argv[3]);
 		fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
 
-		input->pals_flavour = atoi(argv[4]);
-		fprintf(stdout, "[PARAMS] PALS falvour: %d", input->pals_flavour);
+		input->algorithm = atoi(argv[4]);
+		fprintf(stdout, "[PARAMS] Algorithm: %d", input->algorithm);
 
-		if (input->pals_flavour == PALS_Serial) {
+		if (input->algorithm == PALS_Serial) {
 			fprintf(stdout, " (PALS_Serial)\n");
-		} else if (input->pals_flavour == PALS_GPU) {
+		} else if (input->algorithm == PALS_GPU) {
 			fprintf(stdout, " (PALS_GPU)\n");
-		} else if (input->pals_flavour == PALS_GPU_randTask) {
+		} else if (input->algorithm == PALS_GPU_randTask) {
 			fprintf(stdout, " (PALS_GPU_randTask)\n");
-		} else if (input->pals_flavour == PALS_GPU_randMachine) {
+		} else if (input->algorithm == PALS_GPU_randMachine) {
 			fprintf(stdout, " (PALS_GPU_randMachine)\n");
+		} else if (input->algorithm == MinMin) {
+			fprintf(stdout, " (Min-Min)\n");
 		}
 
 		if (argc >= 6) {
@@ -53,19 +55,20 @@ int load_params(int argc, char **argv, struct params *input) {
 			return EXIT_FAILURE;
 		}
 
-		if ((input->pals_flavour < 0)||(input->pals_flavour > 3)) {
-			fprintf(stderr, "[ERROR] Invalid PALS falvour.\n");
+		if ((input->algorithm < 0)||(input->algorithm > 4)) {
+			fprintf(stderr, "[ERROR] Invalid algorithm.\n");
 			return EXIT_FAILURE;
 		}
 		
 		return EXIT_SUCCESS;
 	} else {
 		fprintf(stdout, "Usage:\n");	
-		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <pals flavour> [seed] [gpu device]\n\n", argv[0]);
-		fprintf(stdout, "       pals flavour = 0 serial full\n");
-		fprintf(stdout, "                      1 gpu full\n");
-		fprintf(stdout, "                      2 gpu rand task\n");
-		fprintf(stdout, "                      3 gpu rand machine\n");
+		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device]\n\n", argv[0]);
+		fprintf(stdout, "       Algorithm = 0 Serial full\n");
+		fprintf(stdout, "                   1 GPU full\n");
+		fprintf(stdout, "                   2 GPU rand. task\n");
+		fprintf(stdout, "                   3 GPU rand. machine\n");
+		fprintf(stdout, "                   4 Min-Min\n");
 		fprintf(stdout, "\n");
 
 		return EXIT_FAILURE;

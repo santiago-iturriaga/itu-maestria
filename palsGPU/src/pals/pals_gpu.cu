@@ -310,3 +310,90 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 	fprintf(stdout, "[DEBUG] >>>         [swap      : %d]\n", best_swap);
 	fprintf(stdout, "[DEBUG] >>>         [swap delta: %f]\n", best_swap_delta);*/
 }
+
+void pals_gpu(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
+	struct pals_gpu_instance instance;
+
+	// Timming -----------------------------------------------------
+	timespec ts_init;
+	timming_start(ts_init);
+	// Timming -----------------------------------------------------
+			
+	// Inicializo la memoria en el dispositivo.
+	pals_gpu_init(etc_matrix, current_solution, &instance);
+
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_init", ts_init);
+	// Timming -----------------------------------------------------
+
+	int best_swap_count;
+	int best_swaps[instance.number_of_blocks];
+	float best_swaps_delta[instance.number_of_blocks];
+
+	// Timming -----------------------------------------------------
+	timespec ts_wrapper;
+	timming_start(ts_wrapper);
+	// Timming -----------------------------------------------------
+	
+	// Ejecuto GPUPALS.
+	// for (int i = 0; i < PALS_COUNT; i++) {
+	pals_gpu_wrapper(etc_matrix, current_solution, &instance, best_swap_count, best_swaps, best_swaps_delta);
+	// }
+	
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_wrapper", ts_wrapper);
+	// Timming -----------------------------------------------------
+
+	// Debug ------------------------------------------------------------------------------------------
+	if (DEBUG) {
+		unsigned long current_swap;
+		int task_x, task_y;
+		int machine_a, machine_b;
+
+		fprintf(stdout, "[DEBUG] Mejores swaps:\n");
+		for (int i = 0; i < instance.number_of_blocks; i++) {
+			int block_idx = i;
+			int thread_idx = best_swaps[i] / instance.tasks_per_thread;
+			int task_idx = best_swaps[i] % instance.tasks_per_thread;
+		
+			current_swap = ((unsigned long)instance.block_size * (unsigned long)instance.tasks_per_thread * (unsigned long)block_idx) 
+				+ ((unsigned long)instance.block_size * (unsigned long)task_idx) + (unsigned long)thread_idx;
+
+			float block_offset_start = instance.block_size * instance.tasks_per_thread * block_idx;											
+			float auxf = (block_offset_start  + (instance.block_size * task_idx) + thread_idx) / etc_matrix->tasks_count;
+			task_x = (int)auxf;
+			task_y = (int)((auxf - task_x) * etc_matrix->tasks_count);
+			
+			if (task_x >= etc_matrix->tasks_count) task_x = etc_matrix->tasks_count - 1;
+			if (task_y >= etc_matrix->tasks_count) task_y = etc_matrix->tasks_count - 1;
+			if (task_x < 0) task_x = 0;
+			if (task_y < 0) task_y = 0;
+
+			machine_a = current_solution->task_assignment[task_x];
+			machine_b = current_solution->task_assignment[task_y];
+
+			float swap_delta = 0.0;
+			swap_delta -= get_etc_value(etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
+			swap_delta += get_etc_value(etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
+			swap_delta -= get_etc_value(etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
+			swap_delta += get_etc_value(etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
+
+			fprintf(stdout, "   GPU Result %d. Swap ID %ld. Task x %d, Task y %d. Delta %f (%f). Task %d in %d swaps with task %d in %d.\n", 
+				best_swaps[i], current_swap, (int)auxf, (int)((auxf - task_x) * etc_matrix->tasks_count), 
+				best_swaps_delta[i], swap_delta, task_x, machine_a, task_y, machine_b);
+		}
+	}
+	// Debug ------------------------------------------------------------------------------------------
+
+	// Timming -----------------------------------------------------
+	timespec ts_finalize;
+	timming_start(ts_finalize);
+	// Timming -----------------------------------------------------
+
+	// Libero la memoria del dispositivo.
+	pals_gpu_finalize(&instance);
+	
+	// Timming -----------------------------------------------------
+	timming_end("pals_gpu_finalize", ts_finalize);
+	// Timming -----------------------------------------------------	
+}

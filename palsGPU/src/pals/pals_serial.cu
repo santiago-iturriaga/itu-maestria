@@ -2,9 +2,10 @@
 #include <cuda.h>
 #include <math.h>
 
+#include "../config.h"
 #include "pals_serial.h"
 
-void pals_serial(struct matrix *etc_matrix, struct solution *s, 
+void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s, 
 	int &best_swap_task_a, int &best_swap_task_b, float &best_swap_delta) {
 	
 	best_swap_task_a = -1;
@@ -32,3 +33,14 @@ void pals_serial(struct matrix *etc_matrix, struct solution *s,
 	}
 }
 
+void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
+	int best_swap_task_a;
+	int best_swap_task_b;
+	float best_swap_delta;
+	
+	for (int i = 0; i < PALS_COUNT; i++) {
+		pals_serial_wrapper(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
+	}
+	
+	fprintf(stdout, "[DEBUG] Best swap: task %d for task %d. Gain %f.\n", best_swap_task_a, best_swap_task_b, best_swap_delta);
+}
