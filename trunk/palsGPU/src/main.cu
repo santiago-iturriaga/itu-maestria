@@ -327,7 +327,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		}
 		
 		// Actualiza el makespan de la solución.
-		if (result.delta[0] > 0.0) {
+		if (result.delta[0] != 0.0) {
 			// Si cambio el makespan, busco el nuevo makespan.
 			int machine = 0;		
 			current_solution->makespan = current_solution->machine_compute_time[0];
@@ -344,7 +344,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		} else {
 			if (DEBUG) {
-				fprintf(stdout, "   new_makespan: %f.\n", current_solution->makespan);
+				fprintf(stdout, "   new_makespan: %f (delta == 0).\n", current_solution->makespan);
 			}
 		}
 
