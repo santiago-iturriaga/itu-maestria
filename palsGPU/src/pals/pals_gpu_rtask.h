@@ -19,7 +19,7 @@ struct pals_gpu_rtask_instance {
 	int *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
-	ushort *gpu_best_swaps;
+	int *gpu_best_swaps;
 	float *gpu_best_swaps_delta;
 	
 	int number_of_blocks;
