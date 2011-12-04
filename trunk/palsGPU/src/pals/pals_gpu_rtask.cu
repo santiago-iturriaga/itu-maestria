@@ -54,7 +54,8 @@ __global__ void pals_rtask_kernel(
 		// TODO: OPTIMIZAR MODULOS!!!
 		task_x = random1 % tasks_count;
 				
-		task_y = (random2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS)) + thread_idx;	
+		task_y = random2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
+		task_y = task_y + thread_idx;	
 		
 		if (task_y >= task_x) task_y++;
 		task_y = task_y % tasks_count;
@@ -67,28 +68,26 @@ __global__ void pals_rtask_kernel(
 			// Calculo el delta del swap sorteado.
 			
 			// Máquina 1.
-			machine_a_ct_old = gpu_machine_compute_time[task_x];
+			machine_a_ct_old = gpu_machine_compute_time[machine_a];
 					
 			machine_a_ct_new = machine_a_ct_old;
 			machine_a_ct_new = machine_a_ct_new - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
 			machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
 			
 			// Máquina 2.
-			machine_b_ct_old = gpu_machine_compute_time[task_y];
+			machine_b_ct_old = gpu_machine_compute_time[machine_b];
 
 			machine_b_ct_new = machine_b_ct_old;
 			machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
 			machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-			/*if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+			if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
 				if (machine_a_ct_new > current_makespan) eval = machine_a_ct_new - current_makespan;
 				if (machine_b_ct_new > current_makespan) eval = eval + (machine_b_ct_new - current_makespan);
 			} else {
 				eval = machine_a_ct_new - current_makespan;
 				eval = eval + (machine_b_ct_new - current_makespan);
-			}*/
-			//eval = machine_a_ct_new - current_makespan;
-			eval = current_makespan;
+			}
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
@@ -156,7 +155,7 @@ __global__ void pals_rtask_kernel(
 	__syncthreads();
 
 	// Aplico reduce para quedarme con el mejor delta.
-	/*int pos;
+	int pos;
 	for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
 		pos = 2 * i * thread_idx;
 	
@@ -168,7 +167,7 @@ __global__ void pals_rtask_kernel(
 		}
 	
 		__syncthreads();
-	}*/
+	}
 	
 	if (thread_idx == 0) {
 		gpu_best_swaps[block_idx] = block_swaps[0]; //best_swap;
@@ -397,17 +396,17 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	for (int i = 1; i < instance.number_of_blocks; i++) {
 		if (best_swaps_delta[i] < best_swaps_delta[best_block_idx]) {
 			best_block_idx = i;
-			
-			if (DEBUG) { 
-				fprintf(stdout, ".. ID=%d, eval=%f.\n", best_swaps[i], best_swaps_delta[i]);
-			}
 		}
+
+		/*if (DEBUG) { 
+			fprintf(stdout, ".. ID=%d, eval=%f.\n", (int)best_swaps[i], best_swaps_delta[i]);
+		}*/
 	}
 	
 	int block_idx = (best_block_idx);
 
 	// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
-	int swap = best_swaps[block_idx];
+	ushort swap = best_swaps[block_idx];
 
 	// TODO: OPTIMIZAR!!! (pasar todo como struct? intentar meter todo dentro de un mismo array?)
 	int move_type = swap / PALS_GPU_RTASK__THREADS;
