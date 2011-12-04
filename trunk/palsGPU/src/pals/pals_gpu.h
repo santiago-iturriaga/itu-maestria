@@ -24,6 +24,12 @@ struct pals_gpu_instance {
 };
 
 /*
+ * Ejecuta el algoritmo.
+ * Búsqueda masivamente paralela sobre todo el dominio del problema.
+ */
+void pals_gpu(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
+
+/*
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
 void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance);

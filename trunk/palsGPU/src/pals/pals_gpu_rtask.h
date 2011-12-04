@@ -39,6 +39,13 @@ struct pals_gpu_rtask_result {
 };
 
 /*
+ * Ejecuta el algoritmo.
+ * Búsqueda masivamente paralela sobre un subdominio del problema. 
+ * Se sortea el subdominio por tarea.
+ */
+void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
+
+/*
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, 
@@ -66,6 +73,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
  */
 void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine);
 
+/*
+ * Actualiza el completion time de una máquina.
+ */
 void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time);
 
 #endif /* PALS_GPU_H_ */

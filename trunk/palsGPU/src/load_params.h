@@ -12,6 +12,7 @@
 #define PALS_GPU 1
 #define PALS_GPU_randTask 2
 #define PALS_GPU_randMachine 3
+#define MinMin 4
 
 struct params {
 	char *instance_path;
@@ -19,7 +20,7 @@ struct params {
 	int tasks_count;
 	int seed;
 	int gpu_device;
-	int pals_flavour;
+	int algorithm;
 };
 
 int load_params(int argc, char **argv, struct params *input);
