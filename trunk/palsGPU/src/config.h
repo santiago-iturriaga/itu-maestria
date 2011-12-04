@@ -4,6 +4,8 @@
 #define DEBUG 1
 #define TIMMING 1
 
+#define PALS_RTASK_RANDS 6144*2
+
 //#define PALS_COUNT 1
 //#define PALS_COUNT 5
 //#define PALS_COUNT 25
