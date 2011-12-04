@@ -13,20 +13,17 @@
 #define PALS_GPU_RTASK__BLOCKS 			128
 #define PALS_GPU_RTASK__THREADS 		128
 
-__constant__ int const_random_numbers[PALS_RTASK_RANDS];
-
 __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float current_makespan,
 	float *gpu_etc_matrix, int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers, 
-	ushort *gpu_best_swaps, float *gpu_best_swaps_delta)
+	int *gpu_best_swaps, float *gpu_best_swaps_delta)
 {
 	unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 	const unsigned int mov_type = block_idx & 0x1;
 
-	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
+	__shared__ int block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
-	/*
 	__shared__ int sraux1, sraux2;
 	
 	if (threadIdx.x == 0) {
@@ -38,10 +35,6 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 	
 	int raux1 = sraux1;
 	int raux2 = sraux2;
-	*/
-	
-	int raux1 = const_random_numbers[block_idx];
-	int raux2 = const_random_numbers[block_idx + 1];
 	
 	int int_aux1, int_aux2;	
 	float float_aux1, float_aux2, delta;
@@ -94,7 +87,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 			}
 		}
 
-		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
+		block_swaps[thread_idx] = ((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
 	} else {
 		// Si es par...
@@ -133,7 +126,7 @@ __global__ void pals_rtask_kernel(int machines_count, int tasks_count, float cur
 			float_aux2 = 0.0;
 		}
 
-		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
+		block_swaps[thread_idx] = ((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
 	}
 	
@@ -182,7 +175,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	timming_start(ts_1);
 	
 	// Pido memoria para guardar el resultado.
-	int best_swaps_size = sizeof(ushort) * instance.number_of_blocks;	
+	int best_swaps_size = sizeof(int) * instance.number_of_blocks;	
 	if (cudaMalloc((void**)&(instance.gpu_best_swaps), best_swaps_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_swaps (%d bytes).\n", best_swaps_size);
 		exit(EXIT_FAILURE);
@@ -302,14 +295,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	timming_start(ts_pals_pre);
 	// Timming -----------------------------------------------------
 	
-	if (cudaMemcpyToSymbol(const_random_numbers, gpu_random_numbers, 
-		sizeof(int) * instance.number_of_blocks * 2, 
-		0, cudaMemcpyDeviceToDevice) != cudaSuccess) {
-		
-		fprintf(stderr, "[ERROR] Cargando los random numbers a la memoria constante.\n");
-		exit(EXIT_FAILURE);
-	}
-	
 	// Timming -----------------------------------------------------
 	timming_end(".. pals_gpu_rtask_pals_pre", ts_pals_pre);
 	// Timming -----------------------------------------------------
@@ -338,33 +323,36 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_swaps_delta);
 
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
-	ushort *best_swaps = (ushort*)malloc(sizeof(ushort) * instance.number_of_blocks);
+	int *best_swaps = (int*)malloc(sizeof(int) * instance.number_of_blocks);
 	float *best_swaps_delta = (float*)malloc(sizeof(float) * instance.number_of_blocks);
 	int *rands_nums = (int*)malloc(sizeof(int) * instance.number_of_blocks * 2);
 
 	// Copio los mejores movimientos desde el dispositivo.
-	if (cudaMemcpy(best_swaps, instance.gpu_best_swaps, sizeof(ushort) * instance.number_of_blocks, 
-		cudaMemcpyDeviceToHost) != cudaSuccess) {
+	if (cudaMemcpyAsync(best_swaps, instance.gpu_best_swaps, 
+		sizeof(int) * instance.number_of_blocks, 
+		cudaMemcpyDeviceToHost, 0) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps).\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	if (cudaMemcpy(best_swaps_delta, instance.gpu_best_swaps_delta, sizeof(float) * instance.number_of_blocks, 
-		cudaMemcpyDeviceToHost) != cudaSuccess) {
+	if (cudaMemcpyAsync(best_swaps_delta, instance.gpu_best_swaps_delta, 
+		sizeof(float) * instance.number_of_blocks, 
+		cudaMemcpyDeviceToHost, 0) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps_delta).\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (cudaMemcpy(rands_nums, gpu_random_numbers, sizeof(int) * instance.number_of_blocks * 2, 
-		cudaMemcpyDeviceToHost) != cudaSuccess) {
+	if (cudaMemcpyAsync(rands_nums, gpu_random_numbers, 
+		sizeof(int) * instance.number_of_blocks * 2, 
+		cudaMemcpyDeviceToHost, 0) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
 		exit(EXIT_FAILURE);
 	}
 
-	//cudaThreadSynchronize();
+	cudaThreadSynchronize();
 
 	// Timming -----------------------------------------------------
 	timming_end(".. pals_gpu_rtask_pals", ts_pals);
