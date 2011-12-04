@@ -24,7 +24,9 @@ __global__ void pals_rtask_kernel(
 {
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
-	unsigned int mov_type = block_idx & 0x1;
+	
+	//unsigned int mov_type = block_idx & 0x1;
+	unsigned int mov_type = 0;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -38,7 +40,7 @@ __global__ void pals_rtask_kernel(
 		// ================================================
 		// Aplico los movimientos de la iteración anterior.
 		// ================================================
-		if ((task_x >= 0) && (machine_a >= 0)  && (machine_b >= 0)) {
+		/*if ((task_x >= 0) && (machine_a >= 0)  && (machine_b >= 0)) {
 			gpu_task_assignment[task_x] = task_x_machine;
 			
 			gpu_machine_compute_time[machine_a] = machine_a_ct;
@@ -47,7 +49,7 @@ __global__ void pals_rtask_kernel(
 			if (task_y >= 0) {
 				gpu_task_assignment[task_y] = task_y_machine;
 			}
-		}
+		}*/
 	}
 	
 	__syncthreads();
@@ -87,7 +89,9 @@ __global__ void pals_rtask_kernel(
 			delta = delta + gpu_etc_matrix[(int_aux1 * tasks_count) + raux2]; // Sumo el ETC de y en a.
 			
 			// Sumo 1 por problemas de redondeo... espero solucionarlo con esto.
-			if ((delta > current_makespan) || (float_aux1+1 >= current_makespan)) {
+			if (delta > current_makespan) {
+				float_aux1 = delta - current_makespan;
+			} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) {
 				float_aux1 = delta - current_makespan;
 			} else {
 				float_aux1 = 0.0;
@@ -100,15 +104,31 @@ __global__ void pals_rtask_kernel(
 			delta = delta + gpu_etc_matrix[(int_aux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 			
 			// Sumo 1 por problemas de redondeo... espero solucionarlo con esto.
-			if ((delta > current_makespan) || (float_aux2+1 >= current_makespan)) {
+			if (delta > current_makespan) {
 				float_aux2 = delta - current_makespan;
+			} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) {
+				float_aux2 = delta - current_makespan;				
 			} else {
 				float_aux2 = 0.0;
+			}
+			
+			if ((float_aux1 != 0.0) && (float_aux2 != 0.0)) {
+				if (float_aux1 > float_aux2) {
+					delta = float_aux1;
+				} else {
+					delta = float_aux2;
+				}
+			} else if ((float_aux1 != 0.0) && (float_aux2 == 0.0)) {
+				delta = float_aux1;
+			} else if ((float_aux1 == 0.0) && (float_aux2 != 0.0)) {
+				delta = float_aux2;
+			} else {
+				delta = 0.0;
 			}
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
-		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
+		block_swaps_delta[thread_idx] = delta;
 	} else {
 		// Si es par...
 		// Movimiento MOVE.
@@ -131,23 +151,30 @@ __global__ void pals_rtask_kernel(
 		delta = float_aux1 - gpu_etc_matrix[(int_aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
 		
 		// Sumo 1 por problemas de redondeo... espero solucionarlo con esto.
-		if ((delta > current_makespan) || (float_aux1+1 >= current_makespan)) {
+		if (delta > current_makespan) {
+			float_aux1 = delta - current_makespan;
+		} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) {
 			float_aux1 = delta - current_makespan;
 		} else {
 			float_aux1 = 0.0;
 		}
-		
+			
 		delta = float_aux2 + gpu_etc_matrix[(int_aux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
 
 		// Sumo 1 por problemas de redondeo... espero solucionarlo con esto.
-		if ((delta > current_makespan) || (float_aux2+1 >= current_makespan)) {
+		if (delta > current_makespan) {
 			float_aux2 = delta - current_makespan;
+		} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) {
+			float_aux2 = delta - current_makespan;	
 		} else {
 			float_aux2 = 0.0;
 		}
 
+		if (float_aux1 > float_aux2) delta = float_aux1;
+		else delta = float_aux2;
+
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
-		block_swaps_delta[thread_idx] = float_aux1 + float_aux2;
+		block_swaps_delta[thread_idx] = delta;
 	}
 	
 	__syncthreads();
@@ -473,4 +500,9 @@ void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int
 	}
 }
 
-
+void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time) {
+	if (cudaMemset(&(instance.gpu_machine_compute_time[machine]), compute_time, 1) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Error actualizando el compute time de la máquina %d.\n", machine);
+		exit(EXIT_FAILURE);
+	}
+}
