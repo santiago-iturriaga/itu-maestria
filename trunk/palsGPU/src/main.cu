@@ -291,6 +291,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
 				}
 					
+				current_solution->task_assignment[task_x] = machine_b;
+					
 				// Actualizo los compute time de cada máquina luego del move en el host.
 				current_solution->machine_compute_time[machine_a] = 
 					current_solution->machine_compute_time[machine_a] - 
