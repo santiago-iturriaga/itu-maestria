@@ -21,105 +21,81 @@ __global__ void pals_rtask_kernel(
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
 	
-	unsigned int mov_type = block_idx & 0x1;
-	//unsigned int mov_type = 0;
+	//unsigned int mov_type = block_idx & 0x1;
+	unsigned int mov_type = 0;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
 
-	__shared__ int sraux1, sraux2;
+	__shared__ int random1, random2;
 	
 	if (threadIdx.x == 0) {
-		sraux1 = gpu_random_numbers[block_idx];
-		sraux2 = gpu_random_numbers[block_idx + 1];
+		random1 = gpu_random_numbers[block_idx];
+		random2 = gpu_random_numbers[block_idx + 1];
 	}
 	
 	__syncthreads();
-	
-	int raux1 = sraux1;
-	int raux2 = sraux2;
-	
-	int int_aux1, int_aux2;	
-	float float_aux1, float_aux2, delta;
-	delta = 0.0;
 							
 	// Tipo de movimiento.	
 	if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 		// Si es impar... 
 		// Movimiento SWAP.
 		
+		int task_x, task_y;
+		int machine_a, machine_b;
+		
+		float machine_a_ct_old, machine_b_ct_old;
+		float machine_a_ct_new, machine_b_ct_new;
+		
+		float eval;
+		eval = 0.0;
+		
 		// ================= Obtengo las tareas sorteadas.
 		// TODO: OPTIMIZAR MODULOS!!!
-		raux1 = raux1 % tasks_count;
+		task_x = random1 % tasks_count;
 				
-		raux2 = raux2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
-		raux2 = raux2 + thread_idx;
+		task_y = (random2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS)) + thread_idx;	
 		
-		if (raux2 >= raux1) raux2 = raux2 + 1;
-		raux2 = raux2 % tasks_count;
+		if (task_y >= task_x) task_y++;
+		task_y = task_y % tasks_count;
 		
 		// ================= Obtengo las máquinas a las que estan asignadas las tareas.
-		int_aux1 = gpu_task_assignment[raux1]; // Máquina a.	
-		int_aux2 = gpu_task_assignment[raux2]; // Máquina b.	
+		machine_a = gpu_task_assignment[task_x]; // Máquina a.	
+		machine_b = gpu_task_assignment[task_y]; // Máquina b.	
 
-		if (int_aux1 != int_aux2) {
+		if (machine_a != machine_b) {
 			// Calculo el delta del swap sorteado.
 			
 			// Máquina 1.
-			float_aux1 = gpu_machine_compute_time[int_aux1];
+			machine_a_ct_old = gpu_machine_compute_time[task_x];
 					
-			delta = float_aux1 - gpu_etc_matrix[(int_aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
-			delta = delta + gpu_etc_matrix[(int_aux1 * tasks_count) + raux2]; // Sumo el ETC de y en a.
+			machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
+			machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
 			
-			// Obtengo la diferencia en la máquina 1.
-			if (delta > current_makespan) {
-				float_aux1 = delta - current_makespan;
-			} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) { /* sumo 1 por problemas de redondeo... funciona? */
-				float_aux1 = delta - current_makespan;
-			} else {
-				float_aux1 = 0.0;
-			}
-
 			// Máquina 2.
-			float_aux2 = gpu_machine_compute_time[int_aux2];
+			machine_b_ct_old = gpu_machine_compute_time[task_y];
 
-			delta = float_aux2 - gpu_etc_matrix[(int_aux2 * tasks_count) + raux2]; // Resto el ETC de y en b.
-			delta = delta + gpu_etc_matrix[(int_aux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
-			
-			// Obtengo la diferencia en la máquina 2.
-			if (delta > current_makespan) {
-				float_aux2 = delta - current_makespan;
-			} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) { /* sumo 1 por problemas de redondeo... funciona? */
-				float_aux2 = delta - current_makespan;				
+			machine_b_ct_new = machine_b_ct_old - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
+			machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+
+			if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+				if (machine_a_ct_new > current_makespan) eval = eval + (machine_a_ct_new - current_makespan);
+				if (machine_b_ct_new > current_makespan) eval = eval + (machine_b_ct_new - current_makespan);
 			} else {
-				float_aux2 = 0.0;
-			}
-			
-			// Calculo la mejora de ambos movimientos combinados.
-			if ((float_aux1 != 0.0) && (float_aux2 != 0.0)) {
-				if (float_aux1 > float_aux2) {
-					delta = float_aux1;
-				} else {
-					delta = float_aux2;
-				}
-			} else if ((float_aux1 != 0.0) && (float_aux2 == 0.0)) {
-				delta = float_aux1;
-			} else if ((float_aux1 == 0.0) && (float_aux2 != 0.0)) {
-				delta = float_aux2;
-			} else {
-				delta = 0.0;
+				eval = eval + (machine_a_ct_new - current_makespan);
+				eval = eval + (machine_b_ct_new - current_makespan);
 			}
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
-		block_swaps_delta[thread_idx] = delta;
+		block_swaps_delta[thread_idx] = eval;
 	} else {
 		// Si es par...
 		// Movimiento MOVE.
 		
 		// ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
 		// ================= y el compute time de la máquina.
-		raux1 = raux1 % tasks_count;
+		/*raux1 = raux1 % tasks_count;
 		int_aux1 = gpu_task_assignment[raux1]; // Máquina a.
 		float_aux1 = gpu_machine_compute_time[int_aux1];	
 							
@@ -137,7 +113,7 @@ __global__ void pals_rtask_kernel(
 		// Obtengo la diferencia en la máquina A.
 		if (delta > current_makespan) {
 			float_aux1 = delta - current_makespan;
-		} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) { /* sumo 1 por problemas de redondeo... funciona? */
+		} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) { // sumo 1 por problemas de redondeo... funciona? 
 			float_aux1 = delta - current_makespan;
 		} else {
 			float_aux1 = 0.0;
@@ -148,7 +124,7 @@ __global__ void pals_rtask_kernel(
 		// Obtengo la diferencia en la máquina B.
 		if (delta > current_makespan) {
 			float_aux2 = delta - current_makespan;
-		} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) { /* sumo 1 por problemas de redondeo... funciona? */
+		} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) { // sumo 1 por problemas de redondeo... funciona? 
 			float_aux2 = delta - current_makespan;	
 		} else {
 			float_aux2 = 0.0;
@@ -170,19 +146,20 @@ __global__ void pals_rtask_kernel(
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
-		block_swaps_delta[thread_idx] = delta;
+		block_swaps_delta[thread_idx] = delta;*/
 	}
 	
 	__syncthreads();
 
 	// Aplico reduce para quedarme con el mejor delta.
 	for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
-		int_aux1 = 2 * i * thread_idx;
+		int pos;
+		pos = 2 * i * thread_idx;
 	
-		if (int_aux1 < PALS_GPU_RTASK__THREADS) {
-			if (block_swaps_delta[int_aux1] > block_swaps_delta[int_aux1 + i]) {
-				block_swaps_delta[int_aux1] = block_swaps_delta[int_aux1 + i];
-				block_swaps[int_aux1] = block_swaps[int_aux1 + i];
+		if (pos < PALS_GPU_RTASK__THREADS) {
+			if (block_swaps_delta[pos] > block_swaps_delta[pos + i]) {
+				block_swaps_delta[pos] = block_swaps_delta[pos + i];
+				block_swaps[pos] = block_swaps[pos + i];
 			}
 		}
 	
