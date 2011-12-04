@@ -25,8 +25,8 @@ __global__ void pals_rtask_kernel(
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
 	
-	//unsigned int mov_type = block_idx & 0x1;
-	unsigned int mov_type = 0;
+	unsigned int mov_type = block_idx & 0x1;
+	//unsigned int mov_type = 0;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -59,7 +59,8 @@ __global__ void pals_rtask_kernel(
 	
 	int int_aux1, int_aux2;	
 	float float_aux1, float_aux2, delta;
-					
+	delta = 0.0;
+							
 	// Tipo de movimiento.	
 	if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 		// Si es impar... 
@@ -78,8 +79,6 @@ __global__ void pals_rtask_kernel(
 		// ================= Obtengo las máquinas a las que estan asignadas las tareas.
 		int_aux1 = gpu_task_assignment[raux1]; // Máquina a.	
 		int_aux2 = gpu_task_assignment[raux2]; // Máquina b.	
-
-		delta = 0.0;
 
 		if (int_aux1 != int_aux2) {
 			// Calculo el delta del swap sorteado.
@@ -172,8 +171,19 @@ __global__ void pals_rtask_kernel(
 			float_aux2 = 0.0;
 		}
 
-		if (float_aux1 > float_aux2) delta = float_aux1;
-		else delta = float_aux2;
+		if ((float_aux1 != 0.0) && (float_aux2 != 0.0)) {
+			if (float_aux1 > float_aux2) {
+				delta = float_aux1;
+			} else {
+				delta = float_aux2;
+			}
+		} else if ((float_aux1 != 0.0) && (float_aux2 == 0.0)) {
+			delta = float_aux1;
+		} else if ((float_aux1 == 0.0) && (float_aux2 != 0.0)) {
+			delta = float_aux2;
+		} else {
+			delta = 0.0;
+		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
 		block_swaps_delta[thread_idx] = delta;
