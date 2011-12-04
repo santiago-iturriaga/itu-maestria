@@ -185,16 +185,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
 	
 	const short cant_iter_generadas = PALS_RTASK_RANDS / size;
-
-	struct pals_gpu_rtask_update update;	
-	update.task_x = -1;
-	update.task_x_machine = -1;
-	update.task_y = -1;
-	update.task_y_machine = -1;
-	update.machine_a = -1;
-	update.machine_a_ct = -1;
-	update.machine_b = -1;
-	update.machine_b_ct = -1;
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
 		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
@@ -218,7 +208,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, update, instance, 
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
 			&(r48.res[(i % cant_iter_generadas) * size]), result);
 
 		// Timming -----------------------------------------------------
@@ -265,19 +255,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				pals_gpu_rtask_move(instance, task_y, machine_a);	
 				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
 				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
-			
-				update.task_x = task_x;
-				update.task_x_machine = machine_b;
-						
-				update.task_y = task_y;
-				update.task_y_machine = machine_a;
-			
-				update.machine_a = machine_a;
-				update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
-			
-				update.machine_b = machine_b;
-				update.machine_b_ct = current_solution->machine_compute_time[machine_b];
-
+	
+				if (DEBUG) {
+					fprintf(stdout, ">> [update]:\n");
+					fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
+					fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
+					fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+					fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+					fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
+				}
 			} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
 				int task_x = result.origin[0];		
 				int machine_a = current_solution->task_assignment[task_x];
@@ -306,27 +292,14 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				pals_gpu_rtask_move(instance, task_x, machine_b);
 				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
 				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
-			
-				update.task_x = task_x;
-				update.task_x_machine = machine_b;
-						
-				update.task_y = -1; /* No hay tarea Y involucrada. */
-				update.task_y_machine = -1;
-			
-				update.machine_a = machine_a;
-				update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
-			
-				update.machine_b = machine_b;
-				update.machine_b_ct = current_solution->machine_compute_time[machine_b];
-			}
-		
-			if (DEBUG) {
-				fprintf(stdout, ">> [update]:\n");
-				fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", update.task_x, update.task_x_machine);
-				fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", update.task_y, update.task_y_machine);
-				fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", update.machine_a, update.machine_a_ct);
-				fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", update.machine_b, update.machine_b_ct);
-				fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
+				
+				if (DEBUG) {
+					fprintf(stdout, ">> [update]:\n");
+					fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
+					fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+					fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+					fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
+				}
 			}
 		
 			// Actualiza el makespan de la solución.
