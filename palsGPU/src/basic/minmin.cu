@@ -1,6 +1,8 @@
-#include "mct.h"
+#include "minmin.h"
 
 void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
+	fprintf(stdout, "[DEBUG] calculando MinMin.\n");
+
 	short assigned_tasks[etc_matrix->tasks_count];
 	for (int i = 0; i < etc_matrix->tasks_count; i++) {
 		assigned_tasks[i] = 0;
