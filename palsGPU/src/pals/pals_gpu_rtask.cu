@@ -40,7 +40,7 @@ __global__ void pals_rtask_kernel(
 		// ================================================
 		// Aplico los movimientos de la iteración anterior.
 		// ================================================
-		/*if ((task_x >= 0) && (machine_a >= 0)  && (machine_b >= 0)) {
+		if ((task_x >= 0) && (machine_a >= 0)  && (machine_b >= 0)) {
 			gpu_task_assignment[task_x] = task_x_machine;
 			
 			gpu_machine_compute_time[machine_a] = machine_a_ct;
@@ -49,7 +49,7 @@ __global__ void pals_rtask_kernel(
 			if (task_y >= 0) {
 				gpu_task_assignment[task_y] = task_y_machine;
 			}
-		}*/
+		}
 	}
 	
 	__syncthreads();
