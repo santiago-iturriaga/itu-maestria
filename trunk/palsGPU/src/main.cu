@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 			
 	} else if (input.algorithm == PALS_GPU_randMachine) {
 		
-	} else if (input.algorithm == PALS_GPU_randMachine) {
+	} else if (input.algorithm == MinMin) {
 		
 		compute_minmin(etc_matrix, current_solution);
 		
