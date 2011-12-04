@@ -163,6 +163,44 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	pals_gpu_rtask_init(etc_matrix, current_solution, instance, result);
 
+	if (DEBUG) {
+		// Validación de la memoria del dispositivo.
+		fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
+
+		int aux_task_assignment[etc_matrix->tasks_count];
+	
+		if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, (int)(etc_matrix->tasks_count * sizeof(int)), 
+			cudaMemcpyDeviceToHost) != cudaSuccess) {
+			
+			fprintf(stderr, "[ERROR] Copiando task_assignment al host (%d bytes).\n", (int)(etc_matrix->tasks_count * sizeof(int)));
+			exit(EXIT_FAILURE);
+		}
+
+		for (int i = 0; i < etc_matrix->tasks_count; i++) {
+			if (current_solution->task_assignment[i] != aux_task_assignment[i]) {
+				fprintf(stdout, "[INFO] task assignment diff => task %d on host: %d, on device: %d\n",
+					i, current_solution->task_assignment[i], aux_task_assignment[i]);
+			}
+		}
+
+		float aux_machine_compute_time[etc_matrix->machines_count];
+	
+		if (cudaMemcpy(aux_machine_compute_time, instance.gpu_machine_compute_time, (int)(etc_matrix->machines_count * sizeof(float)), 
+			cudaMemcpyDeviceToHost) != cudaSuccess) {
+			
+			fprintf(stderr, "[ERROR] Copiando machine_compute_time al host (%d bytes).\n", (int)(etc_matrix->machines_count * sizeof(float)));
+			exit(EXIT_FAILURE);
+		}
+
+		for (int i = 0; i < etc_matrix->machines_count; i++) {
+			if (current_solution->machine_compute_time[i] != aux_machine_compute_time[i]) {
+				fprintf(stdout, "[INFO] machine CT diff => machine %d on host: %f, on device: %f\n",
+					i, current_solution->machine_compute_time[i], aux_machine_compute_time[i]);
+			}
+		}
+	}
+
+
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_gpu_rtask_init", ts_init);
 	// Timming -----------------------------------------------------
