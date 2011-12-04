@@ -1,9 +1,11 @@
+#include "../config.h"
+
 #include "minmin.h"
 
 void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
-	fprintf(stdout, "[DEBUG] calculando MinMin.\n");
+	fprintf(stdout, "[DEBUG] calculando MinMin...\n");
 
-	short assigned_tasks[etc_matrix->tasks_count];
+	int assigned_tasks[etc_matrix->tasks_count];
 	for (int i = 0; i < etc_matrix->tasks_count; i++) {
 		assigned_tasks[i] = 0;
 	}
@@ -51,11 +53,15 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 			}
 		}
 		
-		assigned_tasks_count--;
+		assigned_tasks_count++;
 		assigned_tasks[best_task] = 1;
 		
 		solution->task_assignment[best_task] = best_machine;
-		
+	
+		/*if (DEBUG) {
+			fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
+		}*/
+	
 		solution->machine_compute_time[best_machine] = solution->machine_compute_time[best_machine] + 
 			get_etc_value(etc_matrix, best_machine, best_task);
 	}
