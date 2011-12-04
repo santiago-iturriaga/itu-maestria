@@ -17,6 +17,7 @@
 struct pals_gpu_rtask_instance {
 	float *gpu_etc_matrix;
 	int *gpu_task_assignment;
+	float *gpu_machine_compute_time;
 	
 	ushort *gpu_best_swaps;
 	float *gpu_best_swaps_delta;
