@@ -21,8 +21,8 @@ __global__ void pals_rtask_kernel(
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
 	
-	//unsigned int mov_type = block_idx & 0x1;
-	unsigned int mov_type = 0;
+	unsigned int mov_type = block_idx & 0x1;
+	//unsigned int mov_type = 0;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -117,60 +117,55 @@ __global__ void pals_rtask_kernel(
 		// Si es par...
 		// Movimiento MOVE.
 		
+		int task_x;
+		int machine_a, machine_b;
+		
+		float machine_a_ct_old, machine_b_ct_old;
+		float machine_a_ct_new, machine_b_ct_new;
+
+		float eval;
+		eval = 0.0;
+		
 		// ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
 		// ================= y el compute time de la máquina.
-		/*raux1 = raux1 % tasks_count;
-		int_aux1 = gpu_task_assignment[raux1]; // Máquina a.
-		float_aux1 = gpu_machine_compute_time[int_aux1];	
+		task_x = random1 % tasks_count;
+		machine_a = gpu_task_assignment[task_x]; // Máquina a.
+		machine_a_ct_old = gpu_machine_compute_time[machine_a];	
 							
 		// ================= Obtengo la máquina destino sorteada.
-		raux2 = raux2 % (machines_count - 1 - PALS_GPU_RTASK__THREADS);
-		raux2 = raux2 + thread_idx;	
-		if (raux2 >= int_aux1) raux2 = raux2 + 1;
-
-		int_aux2 = raux2 % machines_count;
-		float_aux2 = gpu_machine_compute_time[int_aux2];
+		machine_b = random2 % (machines_count - 1 - PALS_GPU_RTASK__THREADS);
+		machine_b = machine_b + thread_idx;	
+		
+		if (machine_b >= machine_a) machine_b = machine_b + 1;
+		machine_b = machine_b % machines_count;
+		
+		machine_b_ct_old = gpu_machine_compute_time[machine_b];
 		
 		// Calculo el delta del swap sorteado.
-		delta = float_aux1 - gpu_etc_matrix[(int_aux1 * tasks_count) + raux1]; // Resto del ETC de x en a.
-		
-		// Obtengo la diferencia en la máquina A.
-		if (delta > current_makespan) {
-			float_aux1 = delta - current_makespan;
-		} else if ((float_aux1 + 1 >= current_makespan) && (delta < current_makespan)) { // sumo 1 por problemas de redondeo... funciona? 
-			float_aux1 = delta - current_makespan;
-		} else {
-			float_aux1 = 0.0;
-		}
+		machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.		
+		machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+
+		if (machine_b_ct_new > current_makespan) {
+			// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
 			
-		delta = float_aux2 + gpu_etc_matrix[(int_aux2 * tasks_count) + raux1]; // Sumo el ETC de x en b.
-
-		// Obtengo la diferencia en la máquina B.
-		if (delta > current_makespan) {
-			float_aux2 = delta - current_makespan;
-		} else if ((float_aux2 + 1 >= current_makespan) && (delta < current_makespan)) { // sumo 1 por problemas de redondeo... funciona? 
-			float_aux2 = delta - current_makespan;	
+			eval = eval + (machine_b_ct_new - current_makespan);
+			
+		} else if (machine_a_ct_old+1 >= current_makespan) {	
+			// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+			
+			eval = eval + (machine_a_ct_new - machine_a_ct_old);
+			eval = eval + 1/(machine_b_ct_new - machine_b_ct_old);
+			
 		} else {
-			float_aux2 = 0.0;
-		}
-
-		// Calculo la mejora de ambos movimientos combinados.
-		if ((float_aux1 != 0.0) && (float_aux2 != 0.0)) {
-			if (float_aux1 > float_aux2) {
-				delta = float_aux1;
-			} else {
-				delta = float_aux2;
-			}
-		} else if ((float_aux1 != 0.0) && (float_aux2 == 0.0)) {
-			delta = float_aux1;
-		} else if ((float_aux1 == 0.0) && (float_aux2 != 0.0)) {
-			delta = float_aux2;
-		} else {
-			delta = 0.0;
+			// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+			
+			eval = eval + (machine_a_ct_new - machine_a_ct_old);
+			eval = eval + (machine_b_ct_new - machine_b_ct_old);
+			eval = 1 / eval;
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_MOVE * PALS_GPU_RTASK__THREADS) + thread_idx);
-		block_swaps_delta[thread_idx] = delta;*/
+		block_swaps_delta[thread_idx] = eval;
 	}
 	
 	__syncthreads();
