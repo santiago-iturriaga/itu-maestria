@@ -82,11 +82,23 @@ __global__ void pals_rtask_kernel(
 			machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
 			if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
-				if (machine_a_ct_new > current_makespan) eval = machine_a_ct_new - current_makespan;
+				// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+				
+				if (machine_a_ct_new > current_makespan) eval = eval + (machine_a_ct_new - current_makespan);
 				if (machine_b_ct_new > current_makespan) eval = eval + (machine_b_ct_new - current_makespan);
+				
+			} else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {	
+				// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+				
+				eval = eval + (machine_a_ct_new - machine_a_ct_old);
+				eval = eval + (machine_b_ct_new - machine_b_ct_old);
+				
 			} else {
-				eval = machine_a_ct_new - current_makespan;
-				eval = eval + (machine_b_ct_new - current_makespan);
+				// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+				
+				eval = eval + (machine_a_ct_new - machine_a_ct_old);
+				eval = eval + (machine_b_ct_new - machine_b_ct_old);
+				eval = 1 / eval;
 			}
 		}
 
