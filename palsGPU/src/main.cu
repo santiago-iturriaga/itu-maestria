@@ -296,6 +296,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			update.machine_b_ct = current_solution->machine_compute_time[machine_b];
 		}
 		
+		if (DEBUG) {
+			fprintf(stdout, ">> [update]:\n");
+			fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", update.task_x, update.task_x_machine);
+			fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", update.task_y, update.task_y_machine);
+			fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", update.machine_a, update.machine_a_ct);
+			fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", update.machine_b, update.machine_b_ct);
+			fprintf(stdout, "   current_makespan: %f.\n", current_solution->makespan);
+		}
+		
 		// Actualiza el makespan de la solución.
 		if (result.delta[0] > 0.0) {
 			// Si cambio el makespan, busco el nuevo makespan.
@@ -307,6 +316,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					current_solution->makespan = current_solution->machine_compute_time[i];
 				}
 			}
+		}
+		
+		if (DEBUG) {
+			fprintf(stdout, "   new_makespan: %f.\n", current_solution->makespan);
 		}
 
 		// Timming -----------------------------------------------------
