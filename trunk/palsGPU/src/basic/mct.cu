@@ -29,4 +29,6 @@ void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
 			solution->makespan = solution->machine_compute_time[best_machine];
 		}
 	}
+	
+	fprintf(stdout, "[DEBUG] Solution makespan: %f.\n", solution->makespan);
 }
