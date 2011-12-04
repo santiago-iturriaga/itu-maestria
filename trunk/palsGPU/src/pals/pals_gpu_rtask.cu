@@ -69,20 +69,22 @@ __global__ void pals_rtask_kernel(
 			// Máquina 1.
 			machine_a_ct_old = gpu_machine_compute_time[task_x];
 					
-			machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
+			machine_a_ct_new = machine_a_ct_old;
+			machine_a_ct_new = machine_a_ct_new - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
 			machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
 			
 			// Máquina 2.
 			machine_b_ct_old = gpu_machine_compute_time[task_y];
 
-			machine_b_ct_new = machine_b_ct_old - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
+			machine_b_ct_new = machine_b_ct_old;
+			machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
 			machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
 			if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
-				if (machine_a_ct_new > current_makespan) eval = eval + (machine_a_ct_new - current_makespan);
+				if (machine_a_ct_new > current_makespan) eval = machine_a_ct_new - current_makespan;
 				if (machine_b_ct_new > current_makespan) eval = eval + (machine_b_ct_new - current_makespan);
 			} else {
-				eval = eval + (machine_a_ct_new - current_makespan);
+				eval = machine_a_ct_new - current_makespan;
 				eval = eval + (machine_b_ct_new - current_makespan);
 			}
 		}
@@ -152,8 +154,8 @@ __global__ void pals_rtask_kernel(
 	__syncthreads();
 
 	// Aplico reduce para quedarme con el mejor delta.
+	/*int pos;
 	for (int i = 1; i < PALS_GPU_RTASK__THREADS; i *= 2) {
-		int pos;
 		pos = 2 * i * thread_idx;
 	
 		if (pos < PALS_GPU_RTASK__THREADS) {
@@ -164,7 +166,7 @@ __global__ void pals_rtask_kernel(
 		}
 	
 		__syncthreads();
-	}
+	}*/
 	
 	if (thread_idx == 0) {
 		gpu_best_swaps[block_idx] = block_swaps[0]; //best_swap;
