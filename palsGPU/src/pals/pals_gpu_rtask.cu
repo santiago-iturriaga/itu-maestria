@@ -79,6 +79,8 @@ __global__ void pals_rtask_kernel(
 		int_aux1 = gpu_task_assignment[raux1]; // Máquina a.	
 		int_aux2 = gpu_task_assignment[raux2]; // Máquina b.	
 
+		delta = 0.0;
+
 		if (int_aux1 != int_aux2) {
 			// Calculo el delta del swap sorteado.
 			
