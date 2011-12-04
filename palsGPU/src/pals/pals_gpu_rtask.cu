@@ -80,13 +80,15 @@ __global__ void pals_rtask_kernel(
 			machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
 			machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-			if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+			/*if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
 				if (machine_a_ct_new > current_makespan) eval = machine_a_ct_new - current_makespan;
 				if (machine_b_ct_new > current_makespan) eval = eval + (machine_b_ct_new - current_makespan);
 			} else {
 				eval = machine_a_ct_new - current_makespan;
 				eval = eval + (machine_b_ct_new - current_makespan);
-			}
+			}*/
+			//eval = machine_a_ct_new - current_makespan;
+			eval = current_makespan;
 		}
 
 		block_swaps[thread_idx] = (ushort)((PALS_GPU_RTASK_SWAP * PALS_GPU_RTASK__THREADS) + thread_idx);
@@ -395,6 +397,10 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	for (int i = 1; i < instance.number_of_blocks; i++) {
 		if (best_swaps_delta[i] < best_swaps_delta[best_block_idx]) {
 			best_block_idx = i;
+			
+			if (DEBUG) { 
+				fprintf(stdout, ".. ID=%d, eval=%f.\n", best_swaps[i], best_swaps_delta[i]);
+			}
 		}
 	}
 	
