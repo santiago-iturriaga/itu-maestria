@@ -231,107 +231,107 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		// Aplico el mejor movimiento.
-		if (result.move_type[0] == PALS_GPU_RTASK_SWAP) {
-			int task_x = result.origin[0];
-			int task_y = result.destination[0];
-			
-			int machine_a = current_solution->task_assignment[result.origin[0]];
-			int machine_b = current_solution->task_assignment[result.destination[0]];
-			
-			if (DEBUG) {
-				fprintf(stdout, ">> [pre-update]:\n");
-				fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-				fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-			}
-			
-			// Actualizo la asignación de cada tarea en el host.
-			current_solution->task_assignment[task_x] = machine_b;
-			current_solution->task_assignment[task_y] = machine_a;
-			
-			// Actualizo los compute time de cada máquina luego del move en el host.
-			current_solution->machine_compute_time[machine_a] = 
-				current_solution->machine_compute_time[machine_a] +
-				get_etc_value(etc_matrix, machine_a, task_y) - 
-				get_etc_value(etc_matrix, machine_a, task_x);
-
-			current_solution->machine_compute_time[machine_b] = 
-				current_solution->machine_compute_time[machine_b] +
-				get_etc_value(etc_matrix, machine_b, task_x) - 
-				get_etc_value(etc_matrix, machine_b, task_y);
-
-			// Actualizo la asignación de cada tarea en el dispositivo.
-			pals_gpu_rtask_move(instance, task_x, machine_b);
-			pals_gpu_rtask_move(instance, task_y, machine_a);	
-			pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
-			pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
-			
-			update.task_x = task_x;
-			update.task_x_machine = machine_b;
-						
-			update.task_y = task_y;
-			update.task_y_machine = machine_a;
-			
-			update.machine_a = machine_a;
-			update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
-			
-			update.machine_b = machine_b;
-			update.machine_b_ct = current_solution->machine_compute_time[machine_b];
-
-		} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
-			int task_x = result.origin[0];		
-			int machine_a = current_solution->task_assignment[task_x];
-			
-			//int machine_a = current_solution->task_assignment[task_x];
-			int machine_b = result.destination[0];
-					
-			if (DEBUG) {
-				fprintf(stdout, ">> [pre-update]:\n");
-				fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-				fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-			}
-					
-			// Actualizo los compute time de cada máquina luego del move en el host.
-			current_solution->machine_compute_time[machine_a] = 
-				current_solution->machine_compute_time[machine_a] - 
-				get_etc_value(etc_matrix, machine_a, task_x);
-
-			current_solution->machine_compute_time[machine_b] = 
-				current_solution->machine_compute_time[machine_b] +
-				get_etc_value(etc_matrix, machine_b, task_x);
-				
-			// Actualizo la asignación de cada tarea en el dispositivo.
-			pals_gpu_rtask_move(instance, task_x, machine_b);
-			pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
-			pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
-			
-			update.task_x = task_x;
-			update.task_x_machine = machine_b;
-						
-			update.task_y = -1; /* No hay tarea Y involucrada. */
-			update.task_y_machine = -1;
-			
-			update.machine_a = machine_a;
-			update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
-			
-			update.machine_b = machine_b;
-			update.machine_b_ct = current_solution->machine_compute_time[machine_b];
-		}
-		
-		if (DEBUG) {
-			fprintf(stdout, ">> [update]:\n");
-			fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", update.task_x, update.task_x_machine);
-			fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", update.task_y, update.task_y_machine);
-			fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", update.machine_a, update.machine_a_ct);
-			fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", update.machine_b, update.machine_b_ct);
-			fprintf(stdout, "   current_makespan: %f.\n", current_solution->makespan);
-		}
-		
-		// Actualiza el makespan de la solución.
 		if (result.delta[0] != 0.0) {
+			if (result.move_type[0] == PALS_GPU_RTASK_SWAP) {
+				int task_x = result.origin[0];
+				int task_y = result.destination[0];
+			
+				int machine_a = current_solution->task_assignment[result.origin[0]];
+				int machine_b = current_solution->task_assignment[result.destination[0]];
+			
+				if (DEBUG) {
+					fprintf(stdout, ">> [pre-update]:\n");
+					fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+					fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+				}
+			
+				// Actualizo la asignación de cada tarea en el host.
+				current_solution->task_assignment[task_x] = machine_b;
+				current_solution->task_assignment[task_y] = machine_a;
+			
+				// Actualizo los compute time de cada máquina luego del move en el host.
+				current_solution->machine_compute_time[machine_a] = 
+					current_solution->machine_compute_time[machine_a] +
+					get_etc_value(etc_matrix, machine_a, task_y) - 
+					get_etc_value(etc_matrix, machine_a, task_x);
+
+				current_solution->machine_compute_time[machine_b] = 
+					current_solution->machine_compute_time[machine_b] +
+					get_etc_value(etc_matrix, machine_b, task_x) - 
+					get_etc_value(etc_matrix, machine_b, task_y);
+
+				// Actualizo la asignación de cada tarea en el dispositivo.
+				pals_gpu_rtask_move(instance, task_x, machine_b);
+				pals_gpu_rtask_move(instance, task_y, machine_a);	
+				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
+				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+			
+				update.task_x = task_x;
+				update.task_x_machine = machine_b;
+						
+				update.task_y = task_y;
+				update.task_y_machine = machine_a;
+			
+				update.machine_a = machine_a;
+				update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
+			
+				update.machine_b = machine_b;
+				update.machine_b_ct = current_solution->machine_compute_time[machine_b];
+
+			} else if (result.move_type[0] == PALS_GPU_RTASK_MOVE) {
+				int task_x = result.origin[0];		
+				int machine_a = current_solution->task_assignment[task_x];
+			
+				//int machine_a = current_solution->task_assignment[task_x];
+				int machine_b = result.destination[0];
+					
+				if (DEBUG) {
+					fprintf(stdout, ">> [pre-update]:\n");
+					fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
+					fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+				}
+					
+				// Actualizo los compute time de cada máquina luego del move en el host.
+				current_solution->machine_compute_time[machine_a] = 
+					current_solution->machine_compute_time[machine_a] - 
+					get_etc_value(etc_matrix, machine_a, task_x);
+
+				current_solution->machine_compute_time[machine_b] = 
+					current_solution->machine_compute_time[machine_b] +
+					get_etc_value(etc_matrix, machine_b, task_x);
+				
+				// Actualizo la asignación de cada tarea en el dispositivo.
+				pals_gpu_rtask_move(instance, task_x, machine_b);
+				pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
+				pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
+			
+				update.task_x = task_x;
+				update.task_x_machine = machine_b;
+						
+				update.task_y = -1; /* No hay tarea Y involucrada. */
+				update.task_y_machine = -1;
+			
+				update.machine_a = machine_a;
+				update.machine_a_ct = current_solution->machine_compute_time[machine_a];	
+			
+				update.machine_b = machine_b;
+				update.machine_b_ct = current_solution->machine_compute_time[machine_b];
+			}
+		
+			if (DEBUG) {
+				fprintf(stdout, ">> [update]:\n");
+				fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", update.task_x, update.task_x_machine);
+				fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", update.task_y, update.task_y_machine);
+				fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", update.machine_a, update.machine_a_ct);
+				fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", update.machine_b, update.machine_b_ct);
+				fprintf(stdout, "   current_makespan: %f.\n", current_solution->makespan);
+			}
+		
+			// Actualiza el makespan de la solución.
 			// Si cambio el makespan, busco el nuevo makespan.
 			int machine = 0;		
 			current_solution->makespan = current_solution->machine_compute_time[0];
-			
+		
 			for (int i = 1; i < etc_matrix->machines_count; i++) {
 				if (current_solution->makespan < current_solution->machine_compute_time[i]) {
 					current_solution->makespan = current_solution->machine_compute_time[i];
@@ -341,10 +341,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 			if (DEBUG) {
 				fprintf(stdout, "   new_makespan: %f (machine %d).\n", current_solution->makespan, machine);
-			}
-		} else {
-			if (DEBUG) {
-				fprintf(stdout, "   new_makespan: %f (delta == 0).\n", current_solution->makespan);
 			}
 		}
 
