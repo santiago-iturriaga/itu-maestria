@@ -25,8 +25,8 @@ __global__ void pals_rtask_kernel(
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
 	
-	unsigned int mov_type = block_idx & 0x1;
-	//unsigned int mov_type = 0;
+	//unsigned int mov_type = block_idx & 0x1;
+	unsigned int mov_type = 0;
 
 	__shared__ ushort block_swaps[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_swaps_delta[PALS_GPU_RTASK__THREADS];
@@ -522,8 +522,12 @@ void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int
 		fprintf(stderr, "[ERROR] Error actualizando el compute time de la máquina %d.\n", machine);
 		exit(EXIT_FAILURE);
 	}*/
+
+	if (DEBUG) {
+		fprintf(stdout, "[INFO] updating machine %d with compute time %f.\n", machine, compute_time);
+	}
 	
-	if (cudaMemcpy(&(instance.gpu_machine_compute_time[machine]), &machine, sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) {
+	if (cudaMemcpy(&(instance.gpu_machine_compute_time[machine]), &compute_time, sizeof(float), cudaMemcpyHostToDevice) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Error actualizando el compute time de la máquina %d.\n", machine);
 		exit(EXIT_FAILURE);
 	}
