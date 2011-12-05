@@ -12,9 +12,9 @@
 
 #include "pals_gpu_rtask.h"
 
-#define PALS_GPU_RTASK__BLOCKS 			128
+#define PALS_GPU_RTASK__BLOCKS 			4096
 #define PALS_GPU_RTASK__THREADS 		128
-#define PALS_GPU_RTASK__LOOPS	 		32
+#define PALS_GPU_RTASK__LOOPS	 		1
 
 __global__ void pals_rtask_kernel(
 	int machines_count, int tasks_count, float current_makespan,
@@ -106,7 +106,7 @@ __global__ void pals_rtask_kernel(
 				}
 			}
 
-			if ((loop == 0) || (block_deltas[thread_idx] < delta)) {
+			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
 				block_operations[thread_idx] = PALS_GPU_RTASK_SWAP;
 				block_rand_idx[thread_idx] = random_index;
 				block_deltas[thread_idx] = delta;
@@ -155,7 +155,7 @@ __global__ void pals_rtask_kernel(
 				delta = 1 / delta;
 			}
 			
-			if ((loop == 0) || (block_deltas[thread_idx] < delta)) {
+			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
 				block_operations[thread_idx] = PALS_GPU_RTASK_MOVE;
 				block_rand_idx[thread_idx] = random_index;
 				block_deltas[thread_idx] = delta;
