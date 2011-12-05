@@ -9,6 +9,7 @@ pals: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
@@ -18,6 +19,7 @@ pals: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
@@ -29,6 +31,7 @@ local: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
@@ -38,6 +41,7 @@ local: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
