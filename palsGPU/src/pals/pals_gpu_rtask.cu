@@ -557,13 +557,14 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Ejecuto GPUPALS.
 	int seed = input.seed;
 	
-	//RNG_rand48 r48;
-	//RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
-	
+	RNG_rand48 r48;
+	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
+
+	/*	
 	int *gpu_randoms = NULL;
 	cudaMalloc((void**)&gpu_randoms, sizeof(int) * PALS_RTASK_RANDS);
-	
 	cpu_rand_init(seed);
+	*/
 
 	// Cantidad de números aleatorios por invocación.
 	const unsigned int size = instance.number_of_blocks * 2;
@@ -581,8 +582,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 		if (i % cant_iter_generadas == 0) {
 			fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
-			//RNG_rand48_generate(r48, seed);
-			cpu_rand_generate(gpu_randoms, PALS_RTASK_RANDS);
+			RNG_rand48_generate(r48, seed);
+			//cpu_rand_generate(gpu_randoms, PALS_RTASK_RANDS);
 		}
 	
 		timming_end(">> RNG_rand48", ts_rand);
@@ -592,11 +593,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		/*pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
-			&(r48.res[(i % cant_iter_generadas) * size]), result);*/
-
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
-			&(gpu_randoms[(i % cant_iter_generadas) * size]), result);
+			&(r48.res[(i % cant_iter_generadas) * size]), result);
+
+		/*pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
+			&(gpu_randoms[(i % cant_iter_generadas) * size]), result);*/
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -784,8 +785,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	pals_gpu_rtask_clean_result(result);
 	
 	// Libera la memoria del dispositivo con los números aleatorios.
-	//RNG_rand48_cleanup(r48);
-	cudaFree(gpu_randoms);
+	RNG_rand48_cleanup(r48);
+	//cudaFree(gpu_randoms);
 
 	// Reconstruye el compute time de cada máquina.
 	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
