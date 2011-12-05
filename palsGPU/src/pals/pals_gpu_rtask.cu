@@ -581,7 +581,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
-		fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
+		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
 
 		// ==============================================================================
 		// Sorteo de numeros aleatorios.
@@ -591,7 +591,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_rand);
 	
 		if (i % cant_iter_generadas == 0) {
-			fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
+			if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 			RNG_rand48_generate(r48, seed);
 			//cpu_rand_generate(gpu_randoms, PALS_RTASK_RANDS);
 		}
@@ -826,10 +826,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	// <=========== DEBUG
 	
-	if (DEBUG) {
+	//if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
-	}
+	//}
 
 	// Libero la memoria del dispositivo.
 	pals_gpu_rtask_finalize(instance);
