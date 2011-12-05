@@ -19,11 +19,12 @@ struct pals_gpu_rtask_instance {
 	int *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
-	ushort *gpu_best_swaps;
-	float *gpu_best_swaps_delta;
+	int *gpu_best_movements;
+	float *gpu_best_deltas;
 	
-	int number_of_blocks;
-	int threads_per_block;
+	int blocks;
+	int threads;
+	int loops;
 	int total_tasks;
 	
 	short result_count;
