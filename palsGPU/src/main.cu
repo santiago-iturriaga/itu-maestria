@@ -74,7 +74,7 @@ int main(int argc, char** argv)
 	timespec ts;
 	timming_start(ts);
 	// Timming -----------------------------------------------------
-	
+
 	if (input.algorithm == PALS_Serial) {	
 		// =============================================================
 		// Candidate solution

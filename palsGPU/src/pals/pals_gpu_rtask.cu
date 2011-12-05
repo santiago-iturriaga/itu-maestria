@@ -53,14 +53,10 @@ __global__ void pals_rtask_kernel(
 		eval = 0.0;
 		
 		// ================= Obtengo las tareas sorteadas.
-		// TODO: OPTIMIZAR MODULOS!!!
 		task_x = random1 % tasks_count;
 				
-		task_y = random2 % (tasks_count - 1 - PALS_GPU_RTASK__THREADS);
-		task_y = task_y + thread_idx;	
-		
+		task_y = ((random2 >> 1) + thread_idx) % (tasks_count - 1);	
 		if (task_y >= task_x) task_y++;
-		task_y = task_y % tasks_count;
 		
 		// ================= Obtengo las máquinas a las que estan asignadas las tareas.
 		machine_a = gpu_task_assignment[task_x]; // Máquina a.	
@@ -135,11 +131,8 @@ __global__ void pals_rtask_kernel(
 		machine_a_ct_old = gpu_machine_compute_time[machine_a];	
 							
 		// ================= Obtengo la máquina destino sorteada.
-		machine_b = random2 % (machines_count - 1 - PALS_GPU_RTASK__THREADS);
-		machine_b = machine_b + thread_idx;	
-		
-		if (machine_b >= machine_a) machine_b = machine_b + 1;
-		machine_b = machine_b % machines_count;
+		machine_b = ((random2 >> 1) + thread_idx) % (machines_count - 1);
+		if (machine_b >= machine_a) machine_b++;
 		
 		machine_b_ct_old = gpu_machine_compute_time[machine_b];
 		
@@ -434,11 +427,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int task_x = rands_nums[block_idx] % etc_matrix->tasks_count;
 
 		int random_2 = rands_nums[block_idx + 1];
-		int task_y = random_2 % (etc_matrix->tasks_count - 1 - PALS_GPU_RTASK__THREADS);
-		task_y = task_y + thread_idx;
 
-		if (task_y >= task_x) task_y = task_y + 1;
-		if (task_y >= etc_matrix->tasks_count) task_y = task_y % etc_matrix->tasks_count;
+                int task_y = ((random_2 >> 1) + thread_idx) % (etc_matrix->tasks_count - 1);
+                if (task_y >= task_x) task_y++;
 
 		result.move_type[0] = move_type; // SWAP
 		result.origin[0] = task_x;
@@ -460,10 +451,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int machine_a = s->task_assignment[task_x];
 
 		int random_2 = rands_nums[block_idx + 1];
-		int machine_b = (random_2 % (etc_matrix->machines_count - 1 - PALS_GPU_RTASK__THREADS)) + thread_idx;
-		
-		if (machine_b >= machine_a) machine_b = machine_b + 1;
-		if (machine_b >= etc_matrix->machines_count) machine_b = machine_b % etc_matrix->machines_count;
+                int machine_b = ((random_2 >> 1) + thread_idx) % (etc_matrix->machines_count - 1);
+                if (machine_b >= machine_a) machine_b++;
 
 		result.move_type[0] = move_type; // MOVE
 		result.origin[0] = task_x;
