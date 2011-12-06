@@ -29,6 +29,8 @@ int load_params(int argc, char **argv, struct params *input) {
 			fprintf(stdout, " (Min-Min)\n");
 		} else if (input->algorithm == MCT) {
 			fprintf(stdout, " (MCT)\n");
+		} else if (input->algorithm == PALS_GPU_randParallelTask) {
+			fprintf(stdout, " (PALS_GPU_randParallelTask)\n");
 		}
 
 		if (argc >= 6) {
@@ -57,7 +59,7 @@ int load_params(int argc, char **argv, struct params *input) {
 			return EXIT_FAILURE;
 		}
 
-		if ((input->algorithm < 0)||(input->algorithm > 5)) {
+		if ((input->algorithm < 0)||(input->algorithm > 6)) {
 			fprintf(stderr, "[ERROR] Invalid algorithm.\n");
 			return EXIT_FAILURE;
 		}
@@ -72,6 +74,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		fprintf(stdout, "                   3 GPU rand. machine\n");
 		fprintf(stdout, "                   4 Min-Min\n");
 		fprintf(stdout, "                   5 MCT\n");
+		fprintf(stdout, "                   6 GPU rand. parallel task\n");
 		fprintf(stdout, "\n");
 
 		return EXIT_FAILURE;
