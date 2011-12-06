@@ -12,9 +12,9 @@
 
 #include "pals_gpu_rtask.h"
 
-#define PALS_GPU_RTASK__BLOCKS 			4096
+#define PALS_GPU_RTASK__BLOCKS 			128
 #define PALS_GPU_RTASK__THREADS 		128
-#define PALS_GPU_RTASK__LOOPS	 		1
+#define PALS_GPU_RTASK__LOOPS	 		32
 
 __global__ void pals_rtask_kernel(
 	int machines_count, int tasks_count, float current_makespan,
@@ -29,16 +29,18 @@ __global__ void pals_rtask_kernel(
 
 	__shared__ short block_operations[PALS_GPU_RTASK__THREADS];
 	__shared__ short block_threads[PALS_GPU_RTASK__THREADS];
-	__shared__ int block_rand_idx[PALS_GPU_RTASK__THREADS];
+	__shared__ short block_loops[PALS_GPU_RTASK__THREADS];
 	__shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
-	int random1, random2;
+	unsigned int random1, random2;
 	
-	for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
-		int random_index = (block_idx * PALS_GPU_RTASK__LOOPS * 2) + (loop * 2);
-		random1 = gpu_random_numbers[random_index];
-		random2 = gpu_random_numbers[random_index + 1];
-							
+	int random_index;
+	random_index = block_idx;
+
+	random1 = gpu_random_numbers[random_index];
+	random2 = gpu_random_numbers[random_index + 1];
+	
+	for (short loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
 		// Tipo de movimiento.
 		if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
 			// Si es impar... 
@@ -54,9 +56,9 @@ __global__ void pals_rtask_kernel(
 			delta = 0.0;
 		
 			// ================= Obtengo las tareas sorteadas.
-			task_x = random1 % tasks_count;
+			task_x = (random1 + loop) % tasks_count;
 				
-			task_y = ((random2 >> 1) + thread_idx) % (tasks_count - 1);	
+			task_y = ((random2 >> 1) + (loop * PALS_GPU_RTASK__THREADS)  + thread_idx) % (tasks_count - 1);	
 			if (task_y >= task_x) task_y++;
 		
 			// ================= Obtengo las máquinas a las que estan asignadas las tareas.
@@ -107,10 +109,10 @@ __global__ void pals_rtask_kernel(
 			}
 
 			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-				block_operations[thread_idx] = PALS_GPU_RTASK_SWAP;
-				block_rand_idx[thread_idx] = random_index;
+				block_operations[thread_idx] = (short)PALS_GPU_RTASK_SWAP;
+				block_threads[thread_idx] = (short)thread_idx;
+				block_loops[thread_idx] = loop;
 				block_deltas[thread_idx] = delta;
-				block_threads[thread_idx] = thread_idx;
 			}
 		} else {
 			// Si es par...
@@ -127,12 +129,12 @@ __global__ void pals_rtask_kernel(
 		
 			// ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
 			// ================= y el compute time de la máquina.
-			task_x = random1 % tasks_count;
+			task_x = (random1 + loop) % tasks_count;
 			machine_a = gpu_task_assignment[task_x]; // Máquina a.
 			machine_a_ct_old = gpu_machine_compute_time[machine_a];	
 							
 			// ================= Obtengo la máquina destino sorteada.
-			machine_b = ((random2 >> 1) + thread_idx) % (machines_count - 1);
+			machine_b = ((random2 >> 1) + (loop * PALS_GPU_RTASK__THREADS) + thread_idx) % (machines_count - 1);
 			if (machine_b >= machine_a) machine_b++;
 		
 			machine_b_ct_old = gpu_machine_compute_time[machine_b];
@@ -157,9 +159,9 @@ __global__ void pals_rtask_kernel(
 			
 			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
 				block_operations[thread_idx] = PALS_GPU_RTASK_MOVE;
-				block_rand_idx[thread_idx] = random_index;
-				block_deltas[thread_idx] = delta;
-				block_threads[thread_idx] = thread_idx;
+				block_threads[thread_idx] = (short)thread_idx;
+                                block_loops[thread_idx] = loop;
+                                block_deltas[thread_idx] = delta;
 			}
 		}
 	}
@@ -174,7 +176,7 @@ __global__ void pals_rtask_kernel(
 		if (pos < PALS_GPU_RTASK__THREADS) {
 			if (block_deltas[pos] > block_deltas[pos + i]) {			
 				block_operations[pos] = block_operations[pos + i];
-				block_rand_idx[pos] = block_rand_idx[pos + i];
+				block_loops[pos] = block_loops[pos + i];
 				block_threads[pos] = block_threads[pos + i];
 				block_deltas[pos] = block_deltas[pos + i];
 			}
@@ -185,8 +187,8 @@ __global__ void pals_rtask_kernel(
 	
 	if (thread_idx == 0) {
 		gpu_best_movements[block_idx * 3] = (int)block_operations[0]; // Best movement operation.
-		gpu_best_movements[(block_idx * 3) + 1] = block_rand_idx[0]; // Best movement random number index.
-		gpu_best_movements[(block_idx * 3) + 2] = (int)block_threads[0]; // Best movement thread index.
+		gpu_best_movements[(block_idx * 3) + 1] = (int)block_threads[0]; // Best movement random number index.
+		gpu_best_movements[(block_idx * 3) + 2] = (int)block_loops[0]; // Best movement thread index.
 		gpu_best_deltas[block_idx] = block_deltas[0];  // Best movement delta.
 	}
 }
@@ -426,21 +428,23 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 	// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
 	int block_idx = best_block_idx;
+
 	int movement_idx = block_idx * 3;
-	
 	int move_type = best_movements[movement_idx];
-	int random_idx = best_movements[movement_idx + 1];
-	int thread_idx = best_movements[movement_idx + 2];
+	int thread_idx = best_movements[movement_idx + 1];
+	int loop_idx = best_movements[movement_idx + 2];
+
 	float delta = best_deltas[block_idx];
 
+	int random_idx = block_idx;
 	int random1 = rands_nums[random_idx];
 	int random2 = rands_nums[random_idx + 1];
 
 	if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
-		int task_x = random1 % etc_matrix->tasks_count;
+		int task_x = (random1 + loop_idx) % etc_matrix->tasks_count;
 
-        int task_y = ((random2 >> 1) + thread_idx) % (etc_matrix->tasks_count - 1);
-        if (task_y >= task_x) task_y++;
+	        int task_y = ((random2 >> 1) + (loop_idx * PALS_GPU_RTASK__THREADS) + thread_idx) % (etc_matrix->tasks_count - 1);
+	        if (task_y >= task_x) task_y++;
 
 		result.move_type[0] = move_type; // SWAP
 		result.origin[0] = task_x;
@@ -457,11 +461,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		}
 		// <======= DEBUG
 	} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
-		int task_x = random1 % etc_matrix->tasks_count;
+		int task_x = (random1 + loop_idx) % etc_matrix->tasks_count;
 		int machine_a = s->task_assignment[task_x];
 
-        int machine_b = ((random2 >> 1) + thread_idx) % (etc_matrix->machines_count - 1);
-        if (machine_b >= machine_a) machine_b++;
+	        int machine_b = ((random2 >> 1) + (loop_idx * PALS_GPU_RTASK__THREADS) + thread_idx) % (etc_matrix->machines_count - 1);
+	        if (machine_b >= machine_a) machine_b++;
 
 		result.move_type[0] = move_type; // MOVE
 		result.origin[0] = task_x;
@@ -576,7 +580,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	*/
 
 	// Cantidad de números aleatorios por invocación.
-	const unsigned int size = instance.blocks * 2 * instance.loops; // 2 random numbers por block x loop.
+	const unsigned int size = instance.blocks * 2; // * instance.loops; // 2 random numbers por block x loop.
 	const short cant_iter_generadas = PALS_RTASK_RANDS / size;
 	fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
