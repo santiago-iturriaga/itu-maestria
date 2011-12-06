@@ -31,6 +31,7 @@
 #include "pals/pals_serial.h"
 #include "pals/pals_gpu.h"
 #include "pals/pals_gpu_rtask.h"
+#include "pals/pals_gpu_prtask.h"
 
 int main(int argc, char** argv)
 {
@@ -161,6 +162,31 @@ int main(int argc, char** argv)
 		
 		compute_mct(etc_matrix, current_solution);
 		
+	} else if (input.algorithm == PALS_GPU_randParallelTask) {
+		// =============================================================
+		// Candidate solution
+		// =============================================================
+		if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+
+		// Timming -----------------------------------------------------
+		timespec ts_mct;
+		timming_start(ts_mct);
+		// Timming -----------------------------------------------------
+
+		compute_mct(etc_matrix, current_solution);
+	
+		// Timming -----------------------------------------------------
+		timming_end(">> MCT Time", ts_mct);
+		// Timming -----------------------------------------------------
+	
+		if (DEBUG) validate_solution(etc_matrix, current_solution);
+	
+		// =============================================================
+		// CUDA. Búsqueda aleatoria por tarea.
+		// =============================================================
+			
+		gpu_set_device(input.gpu_device);
+		pals_gpu_prtask(input, etc_matrix, current_solution);	
 	}
 	
 	// Timming -----------------------------------------------------
