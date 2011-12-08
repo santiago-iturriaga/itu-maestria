@@ -86,7 +86,17 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
 				machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-				
+				if (machine_b_ct_new > machine_a_ct_new) {
+					delta = machine_b_ct_new;
+				} else {
+					delta = machine_a_ct_new;
+				}
+
+				if (machine_b_ct_old > machine_a_ct_old) {
+					delta = delta - machine_b_ct_old;
+				} else {
+					delta = delta - machine_a_ct_old;
+				}
 
 				/*
 				if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
@@ -153,6 +163,18 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			// Calculo el delta del swap sorteado.
 			machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.		
 			machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+
+			if (machine_b_ct_new > machine_a_ct_new) {
+				delta = machine_b_ct_new;
+			} else {
+				delta = machine_a_ct_new;
+			}
+
+			if (machine_b_ct_old > machine_a_ct_old) {
+				delta = delta - machine_b_ct_old;
+			} else {
+				delta = delta - machine_a_ct_old;
+			}
 
 			/*
 			if (machine_b_ct_new > current_makespan) {
