@@ -51,8 +51,8 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 /*
  * Obtiene todas las soluciones desde el dispositivo a la memoria del huesped.
  */
-void pals_gpu_prtask_get_solutions(struct pals_gpu_prtask_instance &instance, 
-	int **gpu_task_assignment, float **gpu_machine_compute_time);
+void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_prtask_instance &instance, 
+	int *gpu_task_assignment, float *gpu_machine_compute_time);
 
 /*
  * Busca en el dispositivo la mejor solución de las halladas hasta el momento, 

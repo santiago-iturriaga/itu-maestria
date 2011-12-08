@@ -86,6 +86,8 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
 				machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
+				
+
 				/*
 				if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
 					// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
@@ -372,10 +374,29 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Timming -----------------------------------------------------
 }
 
-void pals_gpu_prtask_get_solutions(struct pals_gpu_prtask_instance &instance,
-	int **gpu_task_assignment, float **gpu_machine_compute_time) {
+void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_prtask_instance &instance,
+	int *task_assignment, float *machine_compute_time) {
 
-	// TODO: hacer!!!
+	// Timming -----------------------------------------------------
+	timespec ts_get;
+	timming_start(ts_get);
+	// Timming -----------------------------------------------------
+
+	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
+	if (cudaMemcpy(machine_compute_time, instance.gpu_machine_compute_time, machine_compute_time_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando los compute time de las máquinas desde el dispositivo hacia el huesped (%d bytes).\n", machine_compute_time_size);
+		exit(EXIT_FAILURE);
+	}
+
+	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;	
+	if (cudaMemcpy(task_assignment, instance.gpu_task_assignment, task_assignment_size, cudaMemcpyDeviceToDevice) != cudaSuccess) {	
+		fprintf(stderr, "[ERROR] Copiando la asignación de tareas desde el dispositivo hacia el huesped (%d bytes).\n",	task_assignment_size);
+		exit(EXIT_FAILURE);
+	}
+
+	// Timming -----------------------------------------------------
+	timming_end(".. pals_gpu_rtask_get", ts_get);
+	// Timming -----------------------------------------------------
 }
 
 void pals_gpu_prtask_join_solutions(struct pals_gpu_prtask_instance &instance, struct matrix *etc_matrix) {
@@ -536,6 +557,67 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
 	
+	// Libera la memoria del dispositivo con los números aleatorios.
+	RNG_rand48_cleanup(r48);
+	
+	// ==============================================================================
+	// Obtengo las soluciones desde el dispositivo.
+	// ==============================================================================
+	
+	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
+	float *machine_compute_time;
+	
+	if (!(machine_compute_time = (float*)malloc(machine_compute_time_size))) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para los compute time de las máquinas (%d bytes).\n", machine_compute_time_size);
+		exit(EXIT_FAILURE);
+	}
+
+	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;
+	int *task_assignment;
+	
+	if (!(task_assignment = (int*)malloc(task_assignment_size))) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para la asignación de tarea (%d bytes).\n", task_assignment_size);
+		exit(EXIT_FAILURE);
+	}
+	
+	pals_gpu_prtask_get_solutions(etc_matrix, instance, task_assignment, machine_compute_time);
+	
+	// ==============================================================================
+	// Actualizo la solución del host con la mejor del dispositivo.
+	// ==============================================================================
+
+	float *machine_compute_time_offset;
+	
+	int best_solution = 0;
+	float best_solution_makespan = 0.0;
+
+	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
+		machine_compute_time_offset = machine_compute_time + (i * etc_matrix->machines_count * sizeof(float));
+	
+		float makespan;
+		makespan = machine_compute_time_offset[0];
+		
+		for (int j = 1; j < etc_matrix->machines_count; j++) {
+			if (machine_compute_time_offset[j] > makespan) {
+				makespan = machine_compute_time_offset[j];
+			}
+		}
+		
+		if (i == 0) {
+			best_solution = 0;
+			best_solution_makespan = makespan;
+		} else {
+			if (makespan < best_solution_makespan) {
+				best_solution = i;
+				best_solution_makespan = makespan;
+			}
+		}
+	}
+	
+	current_solution->task_assignment = task_assignment + (best_solution * etc_matrix->tasks_count * sizeof(int));
+	current_solution->machine_compute_time = machine_compute_time + (best_solution * etc_matrix->machines_count * sizeof(float));
+	current_solution->makespan = best_solution_makespan;
+
 	/*
 	if (DEBUG) {
 		// Validación de la memoria del dispositivo.
@@ -574,13 +656,10 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 		}
 	}
 	*/
-	
-	// Libera la memoria del dispositivo con los números aleatorios.
-	RNG_rand48_cleanup(r48);
 
 	// Reconstruye el compute time de cada máquina.
 	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
-	for (int i = 0; i < etc_matrix->machines_count; i++) {
+	/*for (int i = 0; i < etc_matrix->machines_count; i++) {
 		current_solution->machine_compute_time[i] = 0.0;
 	}
 	
@@ -598,7 +677,7 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 		if (current_solution->makespan < current_solution->machine_compute_time[i]) {
 			current_solution->makespan = current_solution->machine_compute_time[i];
 		}
-	}
+	}*/
 	
 	// ===========> DEBUG
 	if (DEBUG) {
