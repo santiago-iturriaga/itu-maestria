@@ -19,24 +19,10 @@ struct pals_gpu_prtask_instance {
 	int *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
-	int *gpu_best_movements;
-	float *gpu_best_deltas;
-	
 	int blocks;
 	int threads;
 	int loops;
-	int total_tasks;
-	
-	short result_count;
-};
-
-struct pals_gpu_prtask_result {
-	short move_count;
-
-	char *move_type;
-	int *origin;
-	int *destination;
-	float *delta;
+	unsigned long total_tasks;
 };
 
 /*
@@ -49,8 +35,7 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 /*
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
-void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_prtask_instance &instance, struct pals_gpu_prtask_result &result);
+void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_prtask_instance &instance);
 
 /*
  * Libera la memoria del dispositivo.
@@ -58,25 +43,22 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s,
 void pals_gpu_prtask_finalize(struct pals_gpu_prtask_instance &instance);
 
 /*
- * Limpia la memoria pedida para un resultado.
- */
-void pals_gpu_prtask_clean_result(struct pals_gpu_prtask_result &result);
-
-/*
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers, 
-	struct pals_gpu_rtask_result &result);
+	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers);
 
 /*
- * Mueve una tarea en la memoria del dispositivo.
+ * Obtiene todas las soluciones desde el dispositivo a la memoria del huesped.
  */
-void pals_gpu_prtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine);
+void pals_gpu_prtask_get_solutions(struct pals_gpu_prtask_instance &instance, 
+	int **gpu_task_assignment, float **gpu_machine_compute_time);
 
 /*
- * Actualiza el completion time de una máquina.
+ * Busca en el dispositivo la mejor solución de las halladas hasta el momento, 
+ * descarta las peores y crea tantas copias de la mejor como sea necesario.
  */
-void pals_gpu_prtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time);
+void pals_gpu_prtask_join_solutions(struct pals_gpu_prtask_instance &instance,
+	struct matrix *etc_matrix);
 
 #endif /* PALS_GPU_H_ */
