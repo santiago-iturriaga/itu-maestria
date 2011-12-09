@@ -226,6 +226,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		}
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
+		/*
 		if (thread_idx == 0) {
 			if (block_op[0] == PALS_GPU_PRTASK_SWAP) {
 				// SWAP
@@ -242,6 +243,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				gpu_machine_compute_time[machine_compute_time_offset + block_machine_b[0]] = block_machine_b_ct_new[0];
 			}
 		}
+		*/
 	}
 }
 
@@ -295,11 +297,19 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		if (DEBUG) fprintf(stdout, "[DEBUG] Se solicitaron %d bytes de memoria para task_assignment.\n", task_assignment_size);
 	}
 	
+	if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d\n", task_assignment_size);
 	int *aux_host_task_assignment = (int*)(malloc(task_assignment_size));
+
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		if (!memcpy(aux_host_task_assignment + (i * sizeof(int) * etc_matrix->tasks_count), 
-			s->task_assignment, sizeof(int) * etc_matrix->tasks_count)) {
-			
+		int aux_size;
+		aux_size = sizeof(int) * etc_matrix->tasks_count;
+
+		int offset;
+		offset = i * etc_matrix->tasks_count;
+	
+		if (DEBUG) fprintf(stdout, "[DEBUG] size en paso %d = %d. from %d\n", i, aux_size, offset);
+
+		if (!memcpy(&(aux_host_task_assignment[offset]), s->task_assignment, aux_size)) {
 			fprintf(stdout, "[ERROR] Copiando task_assignment\n");
 			exit(EXIT_FAILURE);
 		}
@@ -312,6 +322,8 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
 	}
+
+	free(aux_host_task_assignment);
 
 	timming_end(".. gpu_task_assignment", ts_3);
 
@@ -328,22 +340,32 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		exit(EXIT_FAILURE);
 	}
 	
+	if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d\n", machine_compute_time_size);
 	float *aux_host_machine_compute_time = (float*)(malloc(machine_compute_time_size));
+
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		if (!memcpy(aux_host_machine_compute_time + (i * sizeof(float) * etc_matrix->machines_count), 
-			s->machine_compute_time, sizeof(float) * etc_matrix->machines_count)) {
-			
+                int aux_size;
+                aux_size = sizeof(float) * etc_matrix->machines_count;
+
+                int offset;
+                offset = i * etc_matrix->machines_count;
+
+                if (DEBUG) fprintf(stdout, "[DEBUG] size en paso %d = %d. from %d\n", i, aux_size, offset);
+
+		if (!memcpy(&(aux_host_machine_compute_time[offset]), s->machine_compute_time, aux_size)) {
 			fprintf(stdout, "[ERROR] Copiando machine_compute_time\n");
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 	if (cudaMemcpy(instance.gpu_machine_compute_time, aux_host_machine_compute_time, machine_compute_time_size, 
 		cudaMemcpyHostToDevice) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando machine_compute_time al dispositivo (%d bytes).\n", machine_compute_time_size);
 		exit(EXIT_FAILURE);
 	}
+
+	free(aux_host_machine_compute_time);
 
 	timming_end(".. gpu_machine_compute_time", ts_4);
 	
@@ -412,8 +434,8 @@ void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_pr
 	}
 
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;	
-	if (cudaMemcpy(task_assignment, instance.gpu_task_assignment, task_assignment_size, cudaMemcpyDeviceToDevice) != cudaSuccess) {	
-		fprintf(stderr, "[ERROR] Copiando la asignación de tareas desde el dispositivo hacia el huesped (%d bytes).\n",	task_assignment_size);
+	if (cudaMemcpy(task_assignment, instance.gpu_task_assignment, task_assignment_size, cudaMemcpyDeviceToHost) != cudaSuccess) {	
+		fprintf(stderr, "[ERROR] Copiando la asignación de tareas desde el dispositivo hacia el huesped (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
 	}
 
@@ -453,6 +475,8 @@ void pals_gpu_prtask_join_solutions(struct pals_gpu_prtask_instance &instance, s
 			}
 		}
 		
+		if (DEBUG) fprintf(stdout, "[DEBUG] Solution %d, makespan %f.\n", i, makespan);
+
 		if (i == 0) {
 			best_solution = 0;
 			best_solution_makespan = makespan;
@@ -503,9 +527,9 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 	// Timming -----------------------------------------------------
 
 	// ===========> DEBUG
-	if (DEBUG) {
+	/*if (DEBUG) {
 		validate_solution(etc_matrix, current_solution);
-	}
+	}*/
 	// <=========== DEBUG
 	
 	float makespan_inicial = current_solution->makespan;
@@ -590,6 +614,8 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
 	float *machine_compute_time;
 	
+	if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d.\n", machine_compute_time_size);
+
 	if (!(machine_compute_time = (float*)malloc(machine_compute_time_size))) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para los compute time de las máquinas (%d bytes).\n", machine_compute_time_size);
 		exit(EXIT_FAILURE);
@@ -597,6 +623,8 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;
 	int *task_assignment;
+
+	if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d.\n", task_assignment_size);
 	
 	if (!(task_assignment = (int*)malloc(task_assignment_size))) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para la asignación de tarea (%d bytes).\n", task_assignment_size);
@@ -609,23 +637,25 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 	// Actualizo la solución del host con la mejor del dispositivo.
 	// ==============================================================================
 
-	float *machine_compute_time_offset;
+	int machine_compute_time_offset;
 	
 	int best_solution = 0;
 	float best_solution_makespan = 0.0;
 
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		machine_compute_time_offset = machine_compute_time + (i * etc_matrix->machines_count * sizeof(float));
+		machine_compute_time_offset = i * etc_matrix->machines_count;
 	
 		float makespan;
-		makespan = machine_compute_time_offset[0];
+		makespan = machine_compute_time[machine_compute_time_offset + 0];
 		
 		for (int j = 1; j < etc_matrix->machines_count; j++) {
-			if (machine_compute_time_offset[j] > makespan) {
-				makespan = machine_compute_time_offset[j];
+			if (machine_compute_time[machine_compute_time_offset + j] > makespan) {
+				makespan = machine_compute_time[machine_compute_time_offset + j];
 			}
 		}
-		
+	
+		if (DEBUG) fprintf(stdout, "[DEBUG] Solution %d, makespan %f.\n", i, makespan);
+	
 		if (i == 0) {
 			best_solution = 0;
 			best_solution_makespan = makespan;
@@ -637,9 +667,24 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 		}
 	}
 	
-	current_solution->task_assignment = task_assignment + (best_solution * etc_matrix->tasks_count * sizeof(int));
-	current_solution->machine_compute_time = machine_compute_time + (best_solution * etc_matrix->machines_count * sizeof(float));
+	if (DEBUG) fprintf(stdout, "[DEBUG] best_solution = %d.\n", best_solution);
+
+	memcpy(current_solution->task_assignment, &(task_assignment[best_solution * etc_matrix->tasks_count]), etc_matrix->tasks_count * sizeof(int));
+	memcpy(current_solution->machine_compute_time, &(machine_compute_time[best_solution * etc_matrix->machines_count]), etc_matrix->machines_count * sizeof(float));
 	current_solution->makespan = best_solution_makespan;
+
+	free(task_assignment);
+	free(machine_compute_time);
+
+	if (DEBUG) {
+		for (int i = 0; i < etc_matrix->tasks_count; i++) {
+			fprintf(stdout, "[DEBUG] task %d on machine %d.\n", i, current_solution->task_assignment[i]);
+		}
+
+		for (int i = 0; i < etc_matrix->machines_count; i++) {
+			fprintf(stdout, "[DEBUG] machine %d compute time %f.\n", i, current_solution->machine_compute_time[i]);
+		}
+	}
 
 	/*
 	if (DEBUG) {
