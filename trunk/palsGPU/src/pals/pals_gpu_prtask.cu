@@ -20,7 +20,15 @@
 #define PALS_GPU_PRTASK__LOOPS	 		1
 
 __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
-	int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers) {
+	int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers,
+        unsigned short *block_op,
+        unsigned short *block_task_x,
+        unsigned short *block_task_y,
+        unsigned short *block_machine_a,
+        unsigned short *block_machine_b,
+        float *block_machine_a_ct_new,
+        float *block_machine_b_ct_new,
+        float *block_delta) {
 	
 	unsigned int thread_idx = threadIdx.x;
 	unsigned int block_idx = blockIdx.x;
@@ -202,10 +210,11 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			block_delta[thread_idx] = delta;
 		}
 		
+
 		__syncthreads();
 
 		// Aplico reduce para quedarme con el mejor movimiento.
-		int pos;
+		/*int pos;
 		for (int i = 1; i < PALS_GPU_PRTASK__THREADS; i *= 2) {
 			pos = 2 * i * thread_idx;
 	
@@ -223,10 +232,9 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			}
 	
 			__syncthreads();
-		}
+		}*/
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
-		/*
 		if (thread_idx == 0) {
 			if (block_op[0] == PALS_GPU_PRTASK_SWAP) {
 				// SWAP
@@ -243,7 +251,6 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				gpu_machine_compute_time[machine_compute_time_offset + block_machine_b[0]] = block_machine_b_ct_new[0];
 			}
 		}
-		*/
 	}
 }
 
