@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "../config.h"
+
 #include "RNG_rand48.h"
 
 /************************************************
@@ -172,6 +174,8 @@ void RNG_rand48_cleanup(struct RNG_rand48 &rand_state) {
 
 void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed)
 { 
+  //if (DEBUG) fprintf(stdout, "[DEBUG] rand_state.nThreads = %d\n", rand_state.nThreads);
+
   uint2* seeds = new uint2[ rand_state.nThreads ];
 
   // prepare first nThreads random numbers from seed
@@ -181,6 +185,8 @@ void RNG_rand48_generate(struct RNG_rand48 &rand_state, int seed)
     
     seeds[i].x = x & 0xFFFFFFLL;
     seeds[i].y = (x >> 24) & 0xFFFFFFLL;
+
+    //if (DEBUG) fprintf(stdout, "[DEBUG] seeds[%d]\n.", i);
   }
 
   if (cudaMemcpy(rand_state.state, seeds, sizeof(uint2) * rand_state.nThreads, cudaMemcpyHostToDevice) != cudaSuccess) {
