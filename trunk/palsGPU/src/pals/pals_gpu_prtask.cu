@@ -284,32 +284,33 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 	
 	timespec ts_3;
 	timming_start(ts_3);
-		
+	
 	// Copio la asignación de tareas a máquinas actuales.
 	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;	
-	if (cudaMalloc((void**)&(instance.gpu_task_assignment), task_assignment_size) != cudaSuccess) {
 	
+	if (cudaMalloc((void**)&(instance.gpu_task_assignment), task_assignment_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
+	} else {
+		if (DEBUG) fprintf(stdout, "[DEBUG] Se solicitaron %d bytes de memoria para task_assignment.\n", task_assignment_size);
+	}
+	
+	int *aux_host_task_assignment = (int*)(malloc(task_assignment_size));
+	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
+		if (!memcpy(aux_host_task_assignment + (i * sizeof(int) * etc_matrix->tasks_count), 
+			s->task_assignment, sizeof(int) * etc_matrix->tasks_count)) {
+			
+			fprintf(stdout, "[ERROR] Copiando task_assignment\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 	// Copio la asignación de tareas de la primer solución desde el HUESPED al DISPOSITIVO.
-	if (cudaMemcpy(instance.gpu_task_assignment, s->task_assignment, sizeof(int) * etc_matrix->tasks_count, 
+	if (cudaMemcpy(instance.gpu_task_assignment, aux_host_task_assignment, task_assignment_size, 
 		cudaMemcpyHostToDevice) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
-	}
-
-	for (int i = 1; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		// Copio la asignación de tareas de la primer solución desde el DISPOSITIVO al DISPOSITIVO.
-		if (cudaMemcpy(instance.gpu_task_assignment + (i * sizeof(int) * etc_matrix->tasks_count), 
-			instance.gpu_task_assignment, sizeof(int) * etc_matrix->tasks_count, 
-			cudaMemcpyDeviceToDevice) != cudaSuccess) {
-			
-			fprintf(stderr, "[ERROR] Copiando task_assignment al dispositivo (%d bytes).\n", task_assignment_size);
-			exit(EXIT_FAILURE);
-		}
 	}
 
 	timming_end(".. gpu_task_assignment", ts_3);
@@ -320,28 +321,28 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 	timming_start(ts_4);
 		
 	// Copio el compute time de las máquinas en la solución actual.
-	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
-	if (cudaMalloc((void**)&(instance.gpu_machine_compute_time), machine_compute_time_size) != cudaSuccess) {
+	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;
 	
+	if (cudaMalloc((void**)&(instance.gpu_machine_compute_time), machine_compute_time_size) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Solicitando memoria machine_compute_time (%d bytes).\n", machine_compute_time_size);
 		exit(EXIT_FAILURE);
 	}
 	
-	if (cudaMemcpy(instance.gpu_machine_compute_time, s->machine_compute_time, sizeof(float) * etc_matrix->machines_count, 
+	float *aux_host_machine_compute_time = (float*)(malloc(machine_compute_time_size));
+	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
+		if (!memcpy(aux_host_machine_compute_time + (i * sizeof(float) * etc_matrix->machines_count), 
+			s->machine_compute_time, sizeof(float) * etc_matrix->machines_count)) {
+			
+			fprintf(stdout, "[ERROR] Copiando machine_compute_time\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+	if (cudaMemcpy(instance.gpu_machine_compute_time, aux_host_machine_compute_time, machine_compute_time_size, 
 		cudaMemcpyHostToDevice) != cudaSuccess) {
 		
 		fprintf(stderr, "[ERROR] Copiando machine_compute_time al dispositivo (%d bytes).\n", machine_compute_time_size);
 		exit(EXIT_FAILURE);
-	}
-
-	for (int i = 1; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		if (cudaMemcpy(instance.gpu_machine_compute_time + (i * sizeof(float) * etc_matrix->machines_count), 
-			instance.gpu_machine_compute_time, sizeof(float) * etc_matrix->machines_count, 
-			cudaMemcpyDeviceToDevice) != cudaSuccess) {
-			
-			fprintf(stderr, "[ERROR] Copiando machine_compute_time al dispositivo (%d bytes).\n", machine_compute_time_size);
-			exit(EXIT_FAILURE);
-		}
 	}
 
 	timming_end(".. gpu_machine_compute_time", ts_4);
