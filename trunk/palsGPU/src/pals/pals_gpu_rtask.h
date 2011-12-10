@@ -16,26 +16,26 @@
 
 struct pals_gpu_rtask_instance {
 	float *gpu_etc_matrix;
-	int *gpu_task_assignment;
+	ushort *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
 	int *gpu_best_movements;
 	float *gpu_best_deltas;
 	
-	int blocks;
-	int threads;
-	int loops;
-	int total_tasks;
+	ushort blocks;
+	ushort threads;
+	ushort loops;
+	ulong total_tasks;
 	
-	short result_count;
+	ushort result_count;
 };
 
 struct pals_gpu_rtask_result {
-	short move_count;
+	ushort move_count;
 
-	char *move_type;
-	int *origin;
-	int *destination;
+	short *move_type;
+	ushort *origin;
+	ushort *destination;
 	float *delta;
 };
 
@@ -72,11 +72,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 /*
  * Mueve una tarea en la memoria del dispositivo.
  */
-void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, int task, int to_machine);
+void pals_gpu_rtask_move(struct pals_gpu_rtask_instance &instance, ushort task, ushort to_machine);
 
 /*
  * Actualiza el completion time de una máquina.
  */
-void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, int machine, float compute_time);
+void pals_gpu_rtask_update_machine(struct pals_gpu_rtask_instance &instance, ushort machine, float compute_time);
 
 #endif /* PALS_GPU_H_ */
