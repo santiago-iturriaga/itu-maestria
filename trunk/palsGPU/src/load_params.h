@@ -18,8 +18,8 @@
 
 struct params {
 	char *instance_path;
-	int machines_count;
-	int tasks_count;
+	ushort machines_count;
+	ushort tasks_count;
 	int seed;
 	int gpu_device;
 	int algorithm;

@@ -13,15 +13,15 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 	}
 	
 	new_solution->makespan = 0.0;
-	new_solution->task_assignment = (int*)(malloc(sizeof(int) * etc_matrix->tasks_count));
+	new_solution->task_assignment = (ushort*)(malloc(sizeof(ushort) * etc_matrix->tasks_count));
 	
 	if (new_solution->task_assignment == NULL) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->task_assignment.\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	for (int task = 0; task < etc_matrix->tasks_count; task++) {
-		new_solution->task_assignment[task] = -1; /* not yet assigned */
+	for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
+		new_solution->task_assignment[task] = 0; /* not yet assigned */
 	}
 
 	new_solution->machine_compute_time = (float*)(malloc(sizeof(float) * etc_matrix->machines_count));
@@ -31,7 +31,7 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 		exit(EXIT_FAILURE);
 	}
 	
-	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
+	for (ushort machine = 0; machine < etc_matrix->machines_count; machine++) {
 		new_solution->machine_compute_time[machine] = 0.0;
 	}
 	
@@ -61,13 +61,13 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
 		assert(s->makespan == aux_makespan);
 	}
 	
-	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
+	for (ushort machine = 0; machine < etc_matrix->machines_count; machine++) {
 		float aux_compute_time;
 		aux_compute_time = 0.0;
 	
-		int assigned_tasks_count = 0;
+		ushort assigned_tasks_count = 0;
 	
-		for (int task = 0; task < etc_matrix->tasks_count; task++) {
+		for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
 			if (s->task_assignment[task] == machine) {
 				aux_compute_time += get_etc_value(etc_matrix, machine, task);
 				assigned_tasks_count++;
@@ -82,7 +82,7 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
 		assert(s->machine_compute_time[machine] == aux_compute_time);
 	}
 	
-	for (int task = 0; task < etc_matrix->tasks_count; task++) {
+	for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
 		assert(s->task_assignment[task] >= 0);
 		assert(s->task_assignment[task] < etc_matrix->machines_count);
 	}
@@ -97,11 +97,11 @@ void show_solution(struct matrix *etc_matrix, struct solution *s) {
 
 	fprintf(stdout, "   Makespan: %f.\n", s->makespan);
 	
-	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
+	for (ushort machine = 0; machine < etc_matrix->machines_count; machine++) {
 		fprintf(stdout, "   Machine: %d -> execution time: %f.\n", machine, s->machine_compute_time[machine]);
 	}
 	
-	for (int task = 0; task < etc_matrix->tasks_count; task++) {
+	for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
 		fprintf(stdout, "   Task: %d -> assigned to: %d.\n", task, s->task_assignment[task]);
 	}
 	fprintf(stdout, "[INFO] ========================================= \n");
