@@ -17,7 +17,7 @@
 
 #define PALS_GPU_PRTASK__BLOCKS 		1
 #define PALS_GPU_PRTASK__THREADS 		96
-#define PALS_GPU_PRTASK__LOOPS	 		1
+#define PALS_GPU_PRTASK__LOOPS	 		2
 
 #define MEMORY_DEBUG 1
 
@@ -215,16 +215,6 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			block_delta[thread_idx] = delta;
 		}
 		
-		if (MEMORY_DEBUG) {
-		dgb_block_op[thread_idx] = block_op[thread_idx];
-		dgb_block_task_x[thread_idx] = block_task_x[thread_idx];
-		dgb_block_task_y[thread_idx] = block_task_y[thread_idx];
-		dgb_block_machine_a[thread_idx] = block_machine_a[thread_idx];
-		dgb_block_machine_b[thread_idx] = block_machine_b[thread_idx];
-		dgb_block_machine_a_ct_new[thread_idx] = block_machine_a_ct_new[thread_idx];
-		dgb_block_machine_b_ct_new[thread_idx] = block_machine_b_ct_new[thread_idx];
-		dgb_block_delta[thread_idx] = block_delta[thread_idx];
-		}
 
 		__syncthreads();
 
@@ -251,6 +241,18 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
 		if (thread_idx == 0) {
+			if (MEMORY_DEBUG) {
+			dgb_block_op[loop] = block_op[0];
+			dgb_block_task_x[loop] = block_task_x[0];
+			dgb_block_task_y[loop] = block_task_y[0];
+			dgb_block_machine_a[loop] = block_machine_a[0];
+			dgb_block_machine_b[loop] = block_machine_b[0];
+			dgb_block_machine_a_ct_new[loop] = block_machine_a_ct_new[0];
+			dgb_block_machine_b_ct_new[loop] = block_machine_b_ct_new[0];
+			dgb_block_delta[loop] = block_delta[0];
+			}
+
+
 			if (block_op[0] == PALS_GPU_PRTASK_SWAP) {
 				// SWAP
 				gpu_task_assignment[task_assignment_offset + block_task_x[0]] = block_machine_b[0];
@@ -438,7 +440,7 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		int size = 0;
 
 	if (MEMORY_DEBUG) {
-			size = PALS_GPU_PRTASK__THREADS;
+			size = PALS_GPU_PRTASK__LOOPS;
 	
 		cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
 	
