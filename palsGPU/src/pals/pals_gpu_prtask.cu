@@ -196,7 +196,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		}
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
-		if ((thread_idx == 0)) && (block_delta[0] < 0.0)) {
+		if ((thread_idx == 0) && (block_delta[0] < 0.0)) {
 			if (MEMORY_DEBUG) {
 				dgb_block_op[loop] = block_op[0];
 				dgb_block_task_x[loop] = block_task_x[0];
