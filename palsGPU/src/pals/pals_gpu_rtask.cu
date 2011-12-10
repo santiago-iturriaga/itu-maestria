@@ -13,7 +13,7 @@
 #include "pals_gpu_rtask.h"
 
 #define PALS_RTASK_RANDS 				6144*20
-#define PALS_RTASK_RESULT_COUNT 		1
+#define PALS_RTASK_RESULT_COUNT 		128
 
 #define PALS_GPU_RTASK__BLOCKS 			128
 #define PALS_GPU_RTASK__THREADS 		128

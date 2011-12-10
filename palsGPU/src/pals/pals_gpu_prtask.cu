@@ -12,13 +12,13 @@
 
 #include "pals_gpu_prtask.h"
 
-#define PALS_PRTASK_RANDS 			6144*20
+#define PALS_PRTASK_RANDS 				6144*20
 
 #define PALS_GPU_PRTASK__BLOCKS 		24
 #define PALS_GPU_PRTASK__THREADS 		64
 #define PALS_GPU_PRTASK__LOOPS	 		2048
 
-#define MEMORY_DEBUG 				0
+#define MEMORY_DEBUG 					0
 
 __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
 	ushort *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers,
