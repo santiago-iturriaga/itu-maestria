@@ -76,8 +76,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			if (task_y >= task_x) task_y++;
 		
 			// ================= Obtengo las máquinas a las que estan asignadas las tareas.
-			int verga = task_assignment_offset + task_x;
-			machine_a = gpu_task_assignment[verga]; // Máquina a.	
+			machine_a = gpu_task_assignment[task_assignment_offset + task_x]; // Máquina a.	
 			machine_b = gpu_task_assignment[task_assignment_offset + task_y]; // Máquina b.	
 
 			if (machine_a != machine_b) {
@@ -108,36 +107,9 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				} else {
 					delta = delta - machine_a_ct_old;
 				}
-
-				/*
-				if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
-					// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-					if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
-					if (machine_b_ct_new > current_makespan) delta = delta + (machine_b_ct_new - current_makespan);
-				} else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {	
-					// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-				
-					if (machine_a_ct_old+1 >= current_makespan) {
-						delta = delta + (machine_a_ct_new - machine_a_ct_old);
-					} else {
-						delta = delta + 1/(machine_a_ct_new - machine_a_ct_old);
-					}
-				
-					if (machine_b_ct_old+1 >= current_makespan) {
-						delta = delta + (machine_b_ct_new - machine_b_ct_old);
-					} else {
-						delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-					}
-				} else {
-					// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-					delta = delta + (machine_a_ct_new - machine_a_ct_old);
-					delta = delta + (machine_b_ct_new - machine_b_ct_old);
-					delta = 1 / delta;
-				}
-				*/
 			} else {
-                                // Máquina 1 == 2.
-                                machine_a_ct_new = machine_b_ct_new = gpu_machine_compute_time[machine_compute_time_offset + machine_a];
+				// Máquina 1 == 2.
+				machine_a_ct_new = machine_b_ct_new = gpu_machine_compute_time[machine_compute_time_offset + machine_a];
 			}
 
 			block_op[thread_idx] = (short)PALS_GPU_PRTASK_SWAP;
@@ -189,22 +161,6 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			} else {
 				delta = delta - machine_a_ct_old;
 			}
-
-			/*
-			if (machine_b_ct_new > current_makespan) {
-				// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-				delta = delta + (machine_b_ct_new - current_makespan);
-			} else if (machine_a_ct_old+1 >= current_makespan) {	
-				// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-				delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-			} else {
-				// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-				delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				delta = delta + (machine_b_ct_new - machine_b_ct_old);
-				delta = 1 / delta;
-			}
-			*/
 			
 			block_op[thread_idx] = (short)PALS_GPU_PRTASK_MOVE;
 			block_task_x[thread_idx] = (unsigned short)task_x;
@@ -243,16 +199,15 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
 		if (thread_idx == 0) {
 			if (MEMORY_DEBUG) {
-			dgb_block_op[loop] = block_op[0];
-			dgb_block_task_x[loop] = block_task_x[0];
-			dgb_block_task_y[loop] = block_task_y[0];
-			dgb_block_machine_a[loop] = block_machine_a[0];
-			dgb_block_machine_b[loop] = block_machine_b[0];
-			dgb_block_machine_a_ct_new[loop] = block_machine_a_ct_new[0];
-			dgb_block_machine_b_ct_new[loop] = block_machine_b_ct_new[0];
-			dgb_block_delta[loop] = block_delta[0];
+				dgb_block_op[loop] = block_op[0];
+				dgb_block_task_x[loop] = block_task_x[0];
+				dgb_block_task_y[loop] = block_task_y[0];
+				dgb_block_machine_a[loop] = block_machine_a[0];
+				dgb_block_machine_b[loop] = block_machine_b[0];
+				dgb_block_machine_a_ct_new[loop] = block_machine_a_ct_new[0];
+				dgb_block_machine_b_ct_new[loop] = block_machine_b_ct_new[0];
+				dgb_block_delta[loop] = block_delta[0];
 			}
-
 
 			if (block_op[0] == PALS_GPU_PRTASK_SWAP) {
 				// SWAP
@@ -369,13 +324,13 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 	float *aux_host_machine_compute_time = (float*)(malloc(machine_compute_time_size));
 
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-                int aux_size;
-                aux_size = sizeof(float) * etc_matrix->machines_count;
+        int aux_size;
+        aux_size = sizeof(float) * etc_matrix->machines_count;
 
-                int offset;
-                offset = i * etc_matrix->machines_count;
+        int offset;
+        offset = i * etc_matrix->machines_count;
 
-                if (DEBUG) fprintf(stdout, "[DEBUG] size en paso %d = %d. from %d\n", i, aux_size, offset);
+        //if (DEBUG) fprintf(stdout, "[DEBUG] size en paso %d = %d. from %d\n", i, aux_size, offset);
 
 		if (!memcpy(&(aux_host_machine_compute_time[offset]), s->machine_compute_time, aux_size)) {
 			fprintf(stdout, "[ERROR] Copiando machine_compute_time\n");
@@ -421,42 +376,25 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// =========================================================================	
 	// DEBUG
 
-
-		unsigned short *dgb_block_op = 0;
-
-		unsigned short *dgb_block_task_x = 0;
-
-		unsigned short *dgb_block_task_y = 0;
-
-		unsigned short *dgb_block_machine_a = 0;
-
-		unsigned short *dgb_block_machine_b = 0;
-	
-		float *dgb_block_machine_a_ct_new = 0;
-
-		float *dgb_block_machine_b_ct_new = 0;
-
-		float *dgb_block_delta = 0;
-
-		int size = 0;
+	unsigned short *dgb_block_op = 0;
+	unsigned short *dgb_block_task_x = 0;
+	unsigned short *dgb_block_task_y = 0;
+	unsigned short *dgb_block_machine_a = 0;
+	unsigned short *dgb_block_machine_b = 0;
+	float *dgb_block_machine_a_ct_new = 0;
+	float *dgb_block_machine_b_ct_new = 0;
+	float *dgb_block_delta = 0;
+	int size = 0;
 
 	if (MEMORY_DEBUG) {
-			size = PALS_GPU_PRTASK__LOOPS;
-	
+		size = PALS_GPU_PRTASK__LOOPS;
 		cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
-	
 		cudaMalloc((void**)&(dgb_block_task_x), sizeof(short) * size);
-	
 		cudaMalloc((void**)&(dgb_block_task_y), sizeof(short) * size);
-
 		cudaMalloc((void**)&(dgb_block_machine_a), sizeof(short) * size);
-	
 		cudaMalloc((void**)&(dgb_block_machine_b), sizeof(short) * size);
-		
 		cudaMalloc((void**)&(dgb_block_machine_a_ct_new), sizeof(float) * size);
-	
 		cudaMalloc((void**)&(dgb_block_machine_b_ct_new), sizeof(float) * size);
-	
 		cudaMalloc((void**)&(dgb_block_delta), sizeof(float) * size);
 	}
 	
@@ -480,13 +418,13 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_machine_compute_time, 
 		gpu_random_numbers,
 		dgb_block_op,
-	        dgb_block_task_x,
-	        dgb_block_task_y,
-	        dgb_block_machine_a,
-	        dgb_block_machine_b,
-	        dgb_block_machine_a_ct_new,
-	        dgb_block_machine_b_ct_new,
-	        dgb_block_delta);
+		dgb_block_task_x,
+		dgb_block_task_y,
+		dgb_block_machine_a,
+		dgb_block_machine_b,
+		dgb_block_machine_a_ct_new,
+		dgb_block_machine_b_ct_new,
+		dgb_block_delta);
 
 	if (TIMMING) cudaThreadSynchronize();
 
@@ -521,37 +459,37 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 		cudaMemcpy(dgb_cpu_block_op, dgb_block_op, size * sizeof(short), cudaMemcpyDeviceToHost);
 		cudaMemcpy(dgb_cpu_block_task_x, dgb_block_task_x, size * sizeof(short), cudaMemcpyDeviceToHost);
-		    cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(short), cudaMemcpyDeviceToHost);
-		    cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(short), cudaMemcpyDeviceToHost);
-		    cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(short), cudaMemcpyDeviceToHost);
-		    cudaMemcpy(dgb_cpu_block_machine_a_ct_new, dgb_block_machine_a_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(short), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(short), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(short), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_a_ct_new, dgb_block_machine_a_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
 		cudaMemcpy(dgb_cpu_block_machine_b_ct_new, dgb_block_machine_b_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
-		    cudaMemcpy(dgb_cpu_block_delta, dgb_block_delta, size * sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_delta, dgb_block_delta, size * sizeof(float), cudaMemcpyDeviceToHost);
 
-	for (int i = 0; i < size; i++) {
-		fprintf(stdout, "[DEBUG] op(%d) task_x(%d) task_y(%d) mach_a(%d) mach_b(%d) mach_a_ct(%f) mach_b_ct(%f) delta(%f).\n",
-			dgb_cpu_block_op[i], dgb_cpu_block_task_x[i], dgb_cpu_block_task_y[i], dgb_cpu_block_machine_a[i],
-			dgb_cpu_block_machine_b[i], dgb_cpu_block_machine_a_ct_new[i], dgb_cpu_block_machine_b_ct_new[i],
-			dgb_cpu_block_delta[i]);
-	}
+		for (int i = 0; i < size; i++) {
+			fprintf(stdout, "[DEBUG] op(%d) task_x(%d) task_y(%d) mach_a(%d) mach_b(%d) mach_a_ct(%f) mach_b_ct(%f) delta(%f).\n",
+				dgb_cpu_block_op[i], dgb_cpu_block_task_x[i], dgb_cpu_block_task_y[i], dgb_cpu_block_machine_a[i],
+				dgb_cpu_block_machine_b[i], dgb_cpu_block_machine_a_ct_new[i], dgb_cpu_block_machine_b_ct_new[i],
+				dgb_cpu_block_delta[i]);
+		}
 
-	free(dgb_cpu_block_op);
-    free(dgb_cpu_block_task_x);
-    free(dgb_cpu_block_task_y);
-    free(dgb_cpu_block_machine_a);
-    free(dgb_cpu_block_machine_b);
-    free(dgb_cpu_block_machine_a_ct_new);
-    free(dgb_cpu_block_machine_b_ct_new);
-    free(dgb_cpu_block_delta);
+		free(dgb_cpu_block_op);
+		free(dgb_cpu_block_task_x);
+		free(dgb_cpu_block_task_y);
+		free(dgb_cpu_block_machine_a);
+		free(dgb_cpu_block_machine_b);
+		free(dgb_cpu_block_machine_a_ct_new);
+		free(dgb_cpu_block_machine_b_ct_new);
+		free(dgb_cpu_block_delta);
 	
-	cudaFree(dgb_block_op);
-    cudaFree(dgb_block_task_x);
-    cudaFree(dgb_block_task_y);
-    cudaFree(dgb_block_machine_a);
-    cudaFree(dgb_block_machine_b);
-    cudaFree(dgb_block_machine_a_ct_new);
-    cudaFree(dgb_block_machine_b_ct_new);
-    cudaFree(dgb_block_delta);
+		cudaFree(dgb_block_op);
+		cudaFree(dgb_block_task_x);
+		cudaFree(dgb_block_task_y);
+		cudaFree(dgb_block_machine_a);
+		cudaFree(dgb_block_machine_b);
+		cudaFree(dgb_block_machine_a_ct_new);
+		cudaFree(dgb_block_machine_b_ct_new);
+		cudaFree(dgb_block_delta);
 	}
 }
 
@@ -726,84 +664,96 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 		// Timming -----------------------------------------------------
 
 		//pals_gpu_prtask_join_solutions(instance);
-	// ==============================================================================
-	// Obtengo las soluciones desde el dispositivo.
-	// ==============================================================================
-	
-	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
-	float *machine_compute_time;
-	
-	if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d.\n", machine_compute_time_size);
 
-	if (!(machine_compute_time = (float*)malloc(machine_compute_time_size))) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para los compute time de las máquinas (%d bytes).\n", machine_compute_time_size);
-		exit(EXIT_FAILURE);
-	}
 
-	int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;
-	int *task_assignment;
 
-	if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d.\n", task_assignment_size);
-	
-	if (!(task_assignment = (int*)malloc(task_assignment_size))) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para la asignación de tarea (%d bytes).\n", task_assignment_size);
-		exit(EXIT_FAILURE);
-	}
-	
-	pals_gpu_prtask_get_solutions(etc_matrix, instance, task_assignment, machine_compute_time);
-	
-	// ==============================================================================
-	// Actualizo la solución del host con la mejor del dispositivo.
-	// ==============================================================================
 
-	int machine_compute_time_offset;
-	
-	int best_solution = 0;
-	float best_solution_makespan = 0.0;
 
-	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
-		machine_compute_time_offset = i * etc_matrix->machines_count;
+
+
+
+
+		// ==============================================================================
+		// Obtengo las soluciones desde el dispositivo.
+		// ==============================================================================
 	
-		float makespan;
-		makespan = machine_compute_time[machine_compute_time_offset + 0];
+		int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;	
+		float *machine_compute_time;
+	
+		if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d.\n", machine_compute_time_size);
+
+		if (!(machine_compute_time = (float*)malloc(machine_compute_time_size))) {
+			fprintf(stderr, "[ERROR] Solicitando memoria para los compute time de las máquinas (%d bytes).\n", machine_compute_time_size);
+			exit(EXIT_FAILURE);
+		}
+
+		int task_assignment_size = sizeof(int) * etc_matrix->tasks_count * PALS_GPU_PRTASK__BLOCKS;
+		int *task_assignment;
+
+		if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d.\n", task_assignment_size);
+	
+		if (!(task_assignment = (int*)malloc(task_assignment_size))) {
+			fprintf(stderr, "[ERROR] Solicitando memoria para la asignación de tarea (%d bytes).\n", task_assignment_size);
+			exit(EXIT_FAILURE);
+		}
+	
+		pals_gpu_prtask_get_solutions(etc_matrix, instance, task_assignment, machine_compute_time);
+	
+		// ==============================================================================
+		// Actualizo la solución del host con la mejor del dispositivo.
+		// ==============================================================================
+
+		int machine_compute_time_offset;
+	
+		int best_solution = 0;
+		float best_solution_makespan = 0.0;
+
+		for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
+			machine_compute_time_offset = i * etc_matrix->machines_count;
+	
+			float makespan;
+			makespan = machine_compute_time[machine_compute_time_offset + 0];
 		
-		for (int j = 1; j < etc_matrix->machines_count; j++) {
-			if (machine_compute_time[machine_compute_time_offset + j] > makespan) {
-				makespan = machine_compute_time[machine_compute_time_offset + j];
+			for (int j = 1; j < etc_matrix->machines_count; j++) {
+				if (machine_compute_time[machine_compute_time_offset + j] > makespan) {
+					makespan = machine_compute_time[machine_compute_time_offset + j];
+				}
 			}
-		}
 	
-		if (DEBUG) fprintf(stdout, "[DEBUG] Solution %d, makespan %f.\n", i, makespan);
+			if (DEBUG) fprintf(stdout, "[DEBUG] Solution %d, makespan %f.\n", i, makespan);
 	
-		if (i == 0) {
-			best_solution = 0;
-			best_solution_makespan = makespan;
-		} else {
-			if (makespan < best_solution_makespan) {
-				best_solution = i;
+			if (i == 0) {
+				best_solution = 0;
 				best_solution_makespan = makespan;
+			} else {
+				if (makespan < best_solution_makespan) {
+					best_solution = i;
+					best_solution_makespan = makespan;
+				}
 			}
 		}
-	}
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] best_solution = %d.\n", best_solution);
+		if (DEBUG) fprintf(stdout, "[DEBUG] best_solution = %d.\n", best_solution);
 
-	memcpy(current_solution->task_assignment, &(task_assignment[best_solution * etc_matrix->tasks_count]), etc_matrix->tasks_count * sizeof(int));
-	memcpy(current_solution->machine_compute_time, &(machine_compute_time[best_solution * etc_matrix->machines_count]), etc_matrix->machines_count * sizeof(float));
-	current_solution->makespan = best_solution_makespan;
+		memcpy(current_solution->task_assignment, &(task_assignment[best_solution * etc_matrix->tasks_count]), etc_matrix->tasks_count * sizeof(int));
+		memcpy(current_solution->machine_compute_time, &(machine_compute_time[best_solution * etc_matrix->machines_count]), etc_matrix->machines_count * sizeof(float));
+		current_solution->makespan = best_solution_makespan;
 
-	free(task_assignment);
-	free(machine_compute_time);
+		free(task_assignment);
+		free(machine_compute_time);
 
-	if (DEBUG) {
-		for (int i = 0; i < etc_matrix->tasks_count; i++) {
-			fprintf(stdout, "[DEBUG] task %d on machine %d.\n", i, current_solution->task_assignment[i]);
+		if (DEBUG) {
+			for (int i = 0; i < etc_matrix->tasks_count; i++) {
+				fprintf(stdout, "[DEBUG] task %d on machine %d.\n", i, current_solution->task_assignment[i]);
+			}
+
+			for (int i = 0; i < etc_matrix->machines_count; i++) {
+				fprintf(stdout, "[DEBUG] machine %d compute time %f.\n", i, current_solution->machine_compute_time[i]);
+			}
 		}
 
-		for (int i = 0; i < etc_matrix->machines_count; i++) {
-			fprintf(stdout, "[DEBUG] machine %d compute time %f.\n", i, current_solution->machine_compute_time[i]);
-		}
-	}
+
+
 
 
 
