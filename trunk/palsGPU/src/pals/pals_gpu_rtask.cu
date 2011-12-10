@@ -524,7 +524,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Validación de la memoria del dispositivo.
 		fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
 
-		int aux_task_assignment[etc_matrix->tasks_count];
+		ushort aux_task_assignment[etc_matrix->tasks_count];
 	
 		if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(short), 
 			cudaMemcpyDeviceToHost) != cudaSuccess) {
@@ -765,7 +765,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Validación de la memoria del dispositivo.
 		fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
 
-		int aux_task_assignment[etc_matrix->tasks_count];
+		ushort aux_task_assignment[etc_matrix->tasks_count];
 	
 		if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(short), 
 			cudaMemcpyDeviceToHost) != cudaSuccess) {
