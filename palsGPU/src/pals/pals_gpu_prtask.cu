@@ -527,29 +527,28 @@ void pals_gpu_prtask_join_solutions(struct matrix *etc_matrix, struct pals_gpu_p
 
 	// TODO: pasar todo este procesamiento a la GPU!!!
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
+	int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS;
+	float *machine_compute_time = (float*)malloc(machine_compute_time_size);
+	
+	if (cudaMemcpy(machine_compute_time, instance.gpu_machine_compute_time, machine_compute_time_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Copiando los machine_compute_time al host (%d bytes).\n", machine_compute_time_size);
+		exit(EXIT_FAILURE);
+	}
 
-	SEGUIR ACA!!!
-
-	float *machine_compute_time = (float*)malloc(sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS);
 	int best_solution = 0;
 	float best_solution_makespan = 0.0;
 
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
 		// Copio los mejores movimientos desde el dispositivo.
-		if (cudaMemcpy(machine_compute_time, 
-			instance.gpu_machine_compute_time + (i * sizeof(float) * etc_matrix->machines_count), 
-			sizeof(float) * etc_matrix->machines_count, cudaMemcpyDeviceToHost) != cudaSuccess) {
-		
-			fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps).\n");
-			exit(EXIT_FAILURE);
-		}
+		int offset;
+		offset = etc_matrix->machines_count * i;
 		
 		float makespan;
-		makespan = machine_compute_time[0];
+		makespan = machine_compute_time[offset + 0];
 		
 		for (int j = 1; j < etc_matrix->machines_count; j++) {
-			if (machine_compute_time[j] > makespan) {
-				makespan = machine_compute_time[j];
+			if (machine_compute_time[offset + j] > makespan) {
+				makespan = machine_compute_time[offset + j];
 			}
 		}
 		
