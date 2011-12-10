@@ -15,7 +15,7 @@
 #define PALS_PRTASK_RANDS 			6144*20
 #define PALS_PRTASK_RESULT_COUNT 		1
 
-#define PALS_GPU_PRTASK__BLOCKS 		1
+#define PALS_GPU_PRTASK__BLOCKS 		2
 #define PALS_GPU_PRTASK__THREADS 		64
 #define PALS_GPU_PRTASK__LOOPS	 		8
 
@@ -274,7 +274,7 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
 		exit(EXIT_FAILURE);
 	} else {
-		if (DEBUG) fprintf(stdout, "[DEBUG] Se solicitaron %d bytes de memoria para task_assignment.\n", task_assignment_size);
+		//if (DEBUG) fprintf(stdout, "[DEBUG] Se solicitaron %d bytes de memoria para task_assignment.\n", task_assignment_size);
 	}
 	
 	if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d\n", task_assignment_size);
@@ -320,7 +320,7 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		exit(EXIT_FAILURE);
 	}
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d\n", machine_compute_time_size);
+	//if (DEBUG) fprintf(stdout, "[DEBUG] machine_compute_time_size = %d\n", machine_compute_time_size);
 	float *aux_host_machine_compute_time = (float*)(malloc(machine_compute_time_size));
 
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
@@ -527,7 +527,10 @@ void pals_gpu_prtask_join_solutions(struct matrix *etc_matrix, struct pals_gpu_p
 
 	// TODO: pasar todo este procesamiento a la GPU!!!
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
-	float *machine_compute_time = (float*)malloc(sizeof(float) * etc_matrix->machines_count);
+
+	SEGUIR ACA!!!
+
+	float *machine_compute_time = (float*)malloc(sizeof(float) * etc_matrix->machines_count * PALS_GPU_PRTASK__BLOCKS);
 	int best_solution = 0;
 	float best_solution_makespan = 0.0;
 
