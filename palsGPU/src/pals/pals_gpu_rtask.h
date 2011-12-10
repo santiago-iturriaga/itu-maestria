@@ -15,24 +15,30 @@
 #define PALS_GPU_RTASK_H_
 
 struct pals_gpu_rtask_instance {
+	// Datos del estado actual del problema a resolver.
 	float *gpu_etc_matrix;
 	ushort *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
+	// Espacio de memoria en el dispositivo para almacenar los
+	// mejores movimientos encontrados en cada iteración.
 	int *gpu_best_movements;
 	float *gpu_best_deltas;
 	
+	// Parámetros de ejecución del kernel.
 	ushort blocks;
 	ushort threads;
 	ushort loops;
+	
+	// Cantidad de movimientos probados por iteración.
 	ulong total_tasks;
 	
+	// Cantidad de resultados obtenidos por iteración.
+	// (¿siempre es igual a cantidad de bloques del kernel?)
 	ushort result_count;
 };
 
 struct pals_gpu_rtask_result {
-	ushort move_count;
-
 	short *move_type;
 	ushort *origin;
 	ushort *destination;
