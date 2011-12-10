@@ -15,11 +15,11 @@
 #define PALS_PRTASK_RANDS 			6144*20
 #define PALS_PRTASK_RESULT_COUNT 		1
 
-#define PALS_GPU_PRTASK__BLOCKS 		2
+#define PALS_GPU_PRTASK__BLOCKS 		1
 #define PALS_GPU_PRTASK__THREADS 		64
-#define PALS_GPU_PRTASK__LOOPS	 		8
+#define PALS_GPU_PRTASK__LOOPS	 		1024
 
-#define MEMORY_DEBUG 				1
+#define MEMORY_DEBUG 				0
 
 __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
 	ushort *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers,
@@ -197,7 +197,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		}
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
-		if (thread_idx == 0) {
+		if ((thread_idx == 0) && (block_delta[0] < 0.0)) {
 			if (MEMORY_DEBUG) {
 				dgb_block_op[loop] = block_op[0];
 				dgb_block_task_x[loop] = block_task_x[0];
@@ -277,7 +277,7 @@ void pals_gpu_prtask_init(struct matrix *etc_matrix, struct solution *s, struct 
 		//if (DEBUG) fprintf(stdout, "[DEBUG] Se solicitaron %d bytes de memoria para task_assignment.\n", task_assignment_size);
 	}
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d\n", task_assignment_size);
+	// if (DEBUG) fprintf(stdout, "[DEBUG] task_assignment_size = %d\n", task_assignment_size);
 	ushort *aux_host_task_assignment = (ushort*)(malloc(task_assignment_size));
 
 	for (int i = 0; i < PALS_GPU_PRTASK__BLOCKS; i++) {
@@ -389,6 +389,7 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	if (MEMORY_DEBUG) {
 		size = PALS_GPU_PRTASK__LOOPS;
+
 		cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
 		cudaMalloc((void**)&(dgb_block_task_x), sizeof(short) * size);
 		cudaMalloc((void**)&(dgb_block_task_y), sizeof(short) * size);
@@ -761,13 +762,16 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 	
 	if (DEBUG) fprintf(stdout, "[DEBUG] best_solution = %d.\n", best_solution);
 
-	memcpy(current_solution->task_assignment, &(task_assignment[best_solution * etc_matrix->tasks_count]), etc_matrix->tasks_count * sizeof(short));
-	memcpy(current_solution->machine_compute_time, &(machine_compute_time[best_solution * etc_matrix->machines_count]), etc_matrix->machines_count * sizeof(float));
+	memcpy(current_solution->task_assignment, &(task_assignment[best_solution * etc_matrix->tasks_count]), 
+		etc_matrix->tasks_count * sizeof(short));
+	memcpy(current_solution->machine_compute_time, &(machine_compute_time[best_solution * etc_matrix->machines_count]), 
+		etc_matrix->machines_count * sizeof(float));
 	current_solution->makespan = best_solution_makespan;
 
 	free(task_assignment);
 	free(machine_compute_time);
 
+	/*
 	if (DEBUG) {
 		for (int i = 0; i < etc_matrix->tasks_count; i++) {
 			fprintf(stdout, "[DEBUG] task %d on machine %d.\n", i, current_solution->task_assignment[i]);
@@ -777,6 +781,7 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 			fprintf(stdout, "[DEBUG] machine %d compute time %f.\n", i, current_solution->machine_compute_time[i]);
 		}
 	}
+	*/
 
 	// Reconstruye el compute time de cada máquina.
 	// NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
