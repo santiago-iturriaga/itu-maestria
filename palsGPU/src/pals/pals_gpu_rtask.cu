@@ -12,7 +12,7 @@
 
 #include "pals_gpu_rtask.h"
 
-#define PALS_RTASK_RANDS 				6144*20
+#define PALS_RTASK_RANDS			6144*20
 #define PALS_RTASK_RESULT_COUNT 		128
 
 #define PALS_GPU_RTASK__BLOCKS 			128
@@ -427,12 +427,12 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			best_block_idx = i;
 		}
 
-		if (DEBUG) { 
+		/*if (DEBUG) { 
 			fprintf(stdout, ".. id=%d, eval=%f.\n", i, best_deltas[i]);
-		}
+		}*/
 	}
 	
-	for (int i = 0; i < instance.blocks; i++) {
+	for (int i = 0; i < instance.result_count; i++) {
 		// Calculo cuales fueron los elementos modificados en ese mejor movimiento.	
 		int block_idx = (i + best_block_idx) % instance.blocks;
 
@@ -459,13 +459,13 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.delta[i] = delta;
 		
 			// =======> DEBUG
-			if (DEBUG) { 
+			/*if (DEBUG) { 
 				ushort machine_a = s->task_assignment[task_x];
 				ushort machine_b = s->task_assignment[task_y];
 
 				fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f.\n",
 					task_x, machine_a, task_y, machine_b, delta);
-			}
+			}*/
 			// <======= DEBUG
 		} else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
 			ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
@@ -480,10 +480,10 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 			result.delta[i] = delta;
 		
 			// =======> DEBUG
-			if (DEBUG) {
+			/*if (DEBUG) {
 				fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f.\n",
 					task_x, machine_a, machine_b, delta);
-			}
+			}*/
 			// <======= DEBUG
 		}
 	}
@@ -625,7 +625,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		for (int i = 0; i < etc_matrix->machines_count; i++) result_machine_history[i] = 0;	
 		
 		for (int i = 0; i < result.move_count; i++) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", i, result.delta[i]);
+			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", i, result.delta[i]);
 		
 			if (result.delta[i] < 0.0) {
 				if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
@@ -676,12 +676,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
 							fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
-							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
+								current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
+								current_solution->machine_compute_time[machine_b]);
 							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
 						}
 					} else {
-						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+                                                if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro. task_x: %d, task_y: %d, machine_a: %d, machine_b: %d.\n",
+                                                                task_x, task_y, machine_a, machine_b);
 					}
 				} else if (result.move_type[i] == PALS_GPU_RTASK_MOVE) {
 					ushort task_x = result.origin[i];		
@@ -698,8 +701,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					
 						if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
-							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
+								current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
+								current_solution->machine_compute_time[machine_b]);
 						}
 					
 						current_solution->task_assignment[task_x] = machine_b;
@@ -721,12 +726,17 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						if (DEBUG) {
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
+							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
+								current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
+								current_solution->machine_compute_time[machine_b]);
 							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
 						}
 					} else {
-						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+						if (DEBUG) {
+							fprintf(stdout, "[DEBUG] Lo ignoro. task_x: %d, machine_a: %d, machine_b: %d.\n", 
+								task_x, machine_a, machine_b);
+						}
 					}
 				}
 		
