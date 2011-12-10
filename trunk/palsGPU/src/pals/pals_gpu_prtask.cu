@@ -16,8 +16,10 @@
 #define PALS_PRTASK_RESULT_COUNT 1
 
 #define PALS_GPU_PRTASK__BLOCKS 		1
-#define PALS_GPU_PRTASK__THREADS 		16
+#define PALS_GPU_PRTASK__THREADS 		96
 #define PALS_GPU_PRTASK__LOOPS	 		1
+
+#define MEMORY_DEBUG 1
 
 __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
 	int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers,
@@ -132,6 +134,9 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 					delta = 1 / delta;
 				}
 				*/
+			} else {
+                                // Máquina 1 == 2.
+                                machine_a_ct_new = machine_b_ct_new = gpu_machine_compute_time[machine_compute_time_offset + machine_a];
 			}
 
 			block_op[thread_idx] = (short)PALS_GPU_PRTASK_SWAP;
@@ -210,6 +215,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			block_delta[thread_idx] = delta;
 		}
 		
+		if (MEMORY_DEBUG) {
 		dgb_block_op[thread_idx] = block_op[thread_idx];
 		dgb_block_task_x[thread_idx] = block_task_x[thread_idx];
 		dgb_block_task_y[thread_idx] = block_task_y[thread_idx];
@@ -218,11 +224,12 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 		dgb_block_machine_a_ct_new[thread_idx] = block_machine_a_ct_new[thread_idx];
 		dgb_block_machine_b_ct_new[thread_idx] = block_machine_b_ct_new[thread_idx];
 		dgb_block_delta[thread_idx] = block_delta[thread_idx];
+		}
 
 		__syncthreads();
 
 		// Aplico reduce para quedarme con el mejor movimiento.
-		/*int pos;
+		int pos;
 		for (int i = 1; i < PALS_GPU_PRTASK__THREADS; i *= 2) {
 			pos = 2 * i * thread_idx;
 	
@@ -240,7 +247,7 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 			}
 	
 			__syncthreads();
-		}*/
+		}
 		
 		// Aplico el mejor movimiento encontrado en la iteración a la solución del bloque.
 		if (thread_idx == 0) {
@@ -410,32 +417,45 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	
 	// =========================================================================	
 	// DEBUG
+
+
+		unsigned short *dgb_block_op = 0;
+
+		unsigned short *dgb_block_task_x = 0;
+
+		unsigned short *dgb_block_task_y = 0;
+
+		unsigned short *dgb_block_machine_a = 0;
+
+		unsigned short *dgb_block_machine_b = 0;
 	
-	int size = 100;
+		float *dgb_block_machine_a_ct_new = 0;
+
+		float *dgb_block_machine_b_ct_new = 0;
+
+		float *dgb_block_delta = 0;
+
+		int size = 0;
+
+	if (MEMORY_DEBUG) {
+			size = PALS_GPU_PRTASK__THREADS;
 	
-	unsigned short *dgb_block_op;
-	cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
+		cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
 	
-	unsigned short *dgb_block_task_x;
-	cudaMalloc((void**)&(dgb_block_task_x), sizeof(short) * size);
+		cudaMalloc((void**)&(dgb_block_task_x), sizeof(short) * size);
 	
-	unsigned short *dgb_block_task_y;
-	cudaMalloc((void**)&(dgb_block_task_y), sizeof(short) * size);
+		cudaMalloc((void**)&(dgb_block_task_y), sizeof(short) * size);
+
+		cudaMalloc((void**)&(dgb_block_machine_a), sizeof(short) * size);
 	
-	unsigned short *dgb_block_machine_a;
-	cudaMalloc((void**)&(dgb_block_machine_a), sizeof(short) * size);
-	
-	unsigned short *dgb_block_machine_b;
-	cudaMalloc((void**)&(dgb_block_machine_b), sizeof(short) * size);
+		cudaMalloc((void**)&(dgb_block_machine_b), sizeof(short) * size);
 		
-	float *dgb_block_machine_a_ct_new;
-	cudaMalloc((void**)&(dgb_block_machine_a_ct_new), sizeof(float) * size);
+		cudaMalloc((void**)&(dgb_block_machine_a_ct_new), sizeof(float) * size);
 	
-	float *dgb_block_machine_b_ct_new;
-	cudaMalloc((void**)&(dgb_block_machine_b_ct_new), sizeof(float) * size);
+		cudaMalloc((void**)&(dgb_block_machine_b_ct_new), sizeof(float) * size);
 	
-	float *dgb_block_delta;
-	cudaMalloc((void**)&(dgb_block_delta), sizeof(float) * size);
+		cudaMalloc((void**)&(dgb_block_delta), sizeof(float) * size);
+	}
 	
 	// ==============================================================================
 	// Ejecución del algoritmo.
@@ -457,13 +477,13 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_machine_compute_time, 
 		gpu_random_numbers,
 		dgb_block_op,
-        dgb_block_task_x,
-        dgb_block_task_y,
-        dgb_block_machine_a,
-        dgb_block_machine_b,
-        dgb_block_machine_a_ct_new,
-        dgb_block_machine_b_ct_new,
-        dgb_block_delta);
+	        dgb_block_task_x,
+	        dgb_block_task_y,
+	        dgb_block_machine_a,
+	        dgb_block_machine_b,
+	        dgb_block_machine_a_ct_new,
+	        dgb_block_machine_b_ct_new,
+	        dgb_block_delta);
 
 	if (TIMMING) cudaThreadSynchronize();
 
@@ -471,38 +491,39 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	timming_end(".. pals_gpu_prtask_pals", ts_pals);
 	// Timming -----------------------------------------------------
 	
-	unsigned short *dgb_cpu_block_op;
-	dgb_cpu_block_op = (unsigned short*)malloc(sizeof(short) * size);
+	if (MEMORY_DEBUG) {
+		unsigned short *dgb_cpu_block_op;
+		dgb_cpu_block_op = (unsigned short*)malloc(sizeof(short) * size);
 	
-	unsigned short *dgb_cpu_block_task_x;
-	dgb_cpu_block_task_x = (unsigned short*)malloc(sizeof(short) * size);
+		unsigned short *dgb_cpu_block_task_x;
+		dgb_cpu_block_task_x = (unsigned short*)malloc(sizeof(short) * size);
 	
-	unsigned short *dgb_cpu_block_task_y;
-	dgb_cpu_block_task_y = (unsigned short*)malloc(sizeof(short) * size);
+		unsigned short *dgb_cpu_block_task_y;
+		dgb_cpu_block_task_y = (unsigned short*)malloc(sizeof(short) * size);
 	
-	unsigned short *dgb_cpu_block_machine_a;
-	dgb_cpu_block_machine_a = (unsigned short*)malloc(sizeof(short) * size);
+		unsigned short *dgb_cpu_block_machine_a;
+		dgb_cpu_block_machine_a = (unsigned short*)malloc(sizeof(short) * size);
 	
-	unsigned short *dgb_cpu_block_machine_b;
-	dgb_cpu_block_machine_b = (unsigned short*)malloc(sizeof(short) * size);
+		unsigned short *dgb_cpu_block_machine_b;
+		dgb_cpu_block_machine_b = (unsigned short*)malloc(sizeof(short) * size);
 		
-	float *dgb_cpu_block_machine_a_ct_new;
-	dgb_cpu_block_machine_a_ct_new = (float*)malloc(sizeof(float) * size);
+		float *dgb_cpu_block_machine_a_ct_new;
+		dgb_cpu_block_machine_a_ct_new = (float*)malloc(sizeof(float) * size);
 	
-	float *dgb_cpu_block_machine_b_ct_new;
-	dgb_cpu_block_machine_b_ct_new = (float*)malloc(sizeof(float) * size);
+		float *dgb_cpu_block_machine_b_ct_new;
+		dgb_cpu_block_machine_b_ct_new = (float*)malloc(sizeof(float) * size);
 	
-	float *dgb_cpu_block_delta;
-	dgb_cpu_block_delta = (float*)malloc(sizeof(float) * size);
+		float *dgb_cpu_block_delta;
+		dgb_cpu_block_delta = (float*)malloc(sizeof(float) * size);
 	
-	cudaMemcpy(dgb_cpu_block_op, dgb_block_op, size * sizeof(short), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_task_x, dgb_block_task_x, size * sizeof(short), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(short), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(short), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(short), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_machine_a_ct_new, dgb_block_machine_a_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_machine_b_ct_new, dgb_block_machine_b_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(dgb_cpu_block_delta, dgb_block_delta, size * sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_op, dgb_block_op, size * sizeof(short), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_task_x, dgb_block_task_x, size * sizeof(short), cudaMemcpyDeviceToHost);
+		    cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(short), cudaMemcpyDeviceToHost);
+		    cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(short), cudaMemcpyDeviceToHost);
+		    cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(short), cudaMemcpyDeviceToHost);
+		    cudaMemcpy(dgb_cpu_block_machine_a_ct_new, dgb_block_machine_a_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_b_ct_new, dgb_block_machine_b_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
+		    cudaMemcpy(dgb_cpu_block_delta, dgb_block_delta, size * sizeof(float), cudaMemcpyDeviceToHost);
 
 	for (int i = 0; i < size; i++) {
 		fprintf(stdout, "[DEBUG] op(%d) task_x(%d) task_y(%d) mach_a(%d) mach_b(%d) mach_a_ct(%f) mach_b_ct(%f) delta(%f).\n",
@@ -528,6 +549,7 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     cudaFree(dgb_block_machine_a_ct_new);
     cudaFree(dgb_block_machine_b_ct_new);
     cudaFree(dgb_block_delta);
+	}
 }
 
 void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_prtask_instance &instance,
