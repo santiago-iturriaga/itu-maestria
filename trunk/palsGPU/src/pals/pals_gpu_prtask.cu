@@ -23,11 +23,11 @@
 
 __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *gpu_etc_matrix, 
 	int *gpu_task_assignment, float *gpu_machine_compute_time, int *gpu_random_numbers,
-        unsigned short *dgb_block_op,
-        unsigned short *dgb_block_task_x,
-        unsigned short *dgb_block_task_y,
-        unsigned short *dgb_block_machine_a,
-        unsigned short *dgb_block_machine_b,
+        int *dgb_block_op,
+        int *dgb_block_task_x,
+        int *dgb_block_task_y,
+        int *dgb_block_machine_a,
+        int *dgb_block_machine_b,
         float *dgb_block_machine_a_ct_new,
         float *dgb_block_machine_b_ct_new,
         float *dgb_block_delta) {
@@ -35,11 +35,11 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 	const unsigned int thread_idx = threadIdx.x;
 	const unsigned int block_idx = blockIdx.x;
 
-	__shared__ unsigned short block_op[PALS_GPU_PRTASK__THREADS];
-	__shared__ unsigned short block_task_x[PALS_GPU_PRTASK__THREADS];
-	__shared__ unsigned short block_task_y[PALS_GPU_PRTASK__THREADS];
-	__shared__ unsigned short block_machine_a[PALS_GPU_PRTASK__THREADS];
-	__shared__ unsigned short block_machine_b[PALS_GPU_PRTASK__THREADS];
+	__shared__ int block_op[PALS_GPU_PRTASK__THREADS];
+	__shared__ int block_task_x[PALS_GPU_PRTASK__THREADS];
+	__shared__ int block_task_y[PALS_GPU_PRTASK__THREADS];
+	__shared__ int block_machine_a[PALS_GPU_PRTASK__THREADS];
+	__shared__ int block_machine_b[PALS_GPU_PRTASK__THREADS];
 	__shared__ float block_machine_a_ct_new[PALS_GPU_PRTASK__THREADS];
 	__shared__ float block_machine_b_ct_new[PALS_GPU_PRTASK__THREADS];
 	__shared__ float block_delta[PALS_GPU_PRTASK__THREADS];
@@ -47,13 +47,13 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 	const int machine_compute_time_offset = block_idx * machines_count;
 	const int task_assignment_offset = block_idx * tasks_count;
 	
-	for (short loop = 0; loop < PALS_GPU_PRTASK__LOOPS; loop++) {
+	for (int loop = 0; loop < PALS_GPU_PRTASK__LOOPS; loop++) {
 		int random1, random2;
 
 		random1 = gpu_random_numbers[(block_idx * PALS_GPU_PRTASK__LOOPS * 2) + (loop * 2)];
 		random2 = gpu_random_numbers[(block_idx * PALS_GPU_PRTASK__LOOPS * 2) + (loop * 2) + 1];
 
-		short mov_type = (short)((random1 & 0x1) ^ (random2 & 0x1));
+		int mov_type = (int)((random1 & 0x1) ^ (random2 & 0x1));
 	
 		// Tipo de movimiento.
 		if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
@@ -112,11 +112,11 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				machine_a_ct_new = machine_b_ct_new = gpu_machine_compute_time[machine_compute_time_offset + machine_a];
 			}
 
-			block_op[thread_idx] = (short)PALS_GPU_PRTASK_SWAP;
-			block_task_x[thread_idx] = (unsigned short)task_x;
-			block_task_y[thread_idx] = (unsigned short)task_y;
-			block_machine_a[thread_idx] = (unsigned short)machine_a;
-			block_machine_b[thread_idx] = (unsigned short)machine_b;
+			block_op[thread_idx] = (int)PALS_GPU_PRTASK_SWAP;
+			block_task_x[thread_idx] = (int)task_x;
+			block_task_y[thread_idx] = (int)task_y;
+			block_machine_a[thread_idx] = (int)machine_a;
+			block_machine_b[thread_idx] = (int)machine_b;
 			block_machine_a_ct_new[thread_idx] = machine_a_ct_new;
 			block_machine_b_ct_new[thread_idx] = machine_b_ct_new;			
 			block_delta[thread_idx] = delta;
@@ -162,11 +162,11 @@ __global__ void pals_prtask_kernel(int machines_count, int tasks_count, float *g
 				delta = delta - machine_a_ct_old;
 			}
 			
-			block_op[thread_idx] = (short)PALS_GPU_PRTASK_MOVE;
-			block_task_x[thread_idx] = (unsigned short)task_x;
+			block_op[thread_idx] = (int)PALS_GPU_PRTASK_MOVE;
+			block_task_x[thread_idx] = (int)task_x;
 			block_task_y[thread_idx] = 0;
-			block_machine_a[thread_idx] = (unsigned short)machine_a;
-			block_machine_b[thread_idx] = (unsigned short)machine_b;
+			block_machine_a[thread_idx] = (int)machine_a;
+			block_machine_b[thread_idx] = (int)machine_b;
 			block_machine_a_ct_new[thread_idx] = machine_a_ct_new;
 			block_machine_b_ct_new[thread_idx] = machine_b_ct_new;			
 			block_delta[thread_idx] = delta;
@@ -376,11 +376,11 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// =========================================================================	
 	// DEBUG
 
-	unsigned short *dgb_block_op = 0;
-	unsigned short *dgb_block_task_x = 0;
-	unsigned short *dgb_block_task_y = 0;
-	unsigned short *dgb_block_machine_a = 0;
-	unsigned short *dgb_block_machine_b = 0;
+	int *dgb_block_op = 0;
+	int *dgb_block_task_x = 0;
+	int *dgb_block_task_y = 0;
+	int *dgb_block_machine_a = 0;
+	int *dgb_block_machine_b = 0;
 	float *dgb_block_machine_a_ct_new = 0;
 	float *dgb_block_machine_b_ct_new = 0;
 	float *dgb_block_delta = 0;
@@ -388,11 +388,11 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	if (MEMORY_DEBUG) {
 		size = PALS_GPU_PRTASK__LOOPS;
-		cudaMalloc((void**)&(dgb_block_op), sizeof(short) * size);
-		cudaMalloc((void**)&(dgb_block_task_x), sizeof(short) * size);
-		cudaMalloc((void**)&(dgb_block_task_y), sizeof(short) * size);
-		cudaMalloc((void**)&(dgb_block_machine_a), sizeof(short) * size);
-		cudaMalloc((void**)&(dgb_block_machine_b), sizeof(short) * size);
+		cudaMalloc((void**)&(dgb_block_op), sizeof(int) * size);
+		cudaMalloc((void**)&(dgb_block_task_x), sizeof(int) * size);
+		cudaMalloc((void**)&(dgb_block_task_y), sizeof(int) * size);
+		cudaMalloc((void**)&(dgb_block_machine_a), sizeof(int) * size);
+		cudaMalloc((void**)&(dgb_block_machine_b), sizeof(int) * size);
 		cudaMalloc((void**)&(dgb_block_machine_a_ct_new), sizeof(float) * size);
 		cudaMalloc((void**)&(dgb_block_machine_b_ct_new), sizeof(float) * size);
 		cudaMalloc((void**)&(dgb_block_delta), sizeof(float) * size);
@@ -433,20 +433,20 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 	// Timming -----------------------------------------------------
 	
 	if (MEMORY_DEBUG) {
-		unsigned short *dgb_cpu_block_op;
-		dgb_cpu_block_op = (unsigned short*)malloc(sizeof(short) * size);
+		int *dgb_cpu_block_op;
+		dgb_cpu_block_op = (int*)malloc(sizeof(int) * size);
 	
-		unsigned short *dgb_cpu_block_task_x;
-		dgb_cpu_block_task_x = (unsigned short*)malloc(sizeof(short) * size);
+		int *dgb_cpu_block_task_x;
+		dgb_cpu_block_task_x = (int*)malloc(sizeof(int) * size);
 	
-		unsigned short *dgb_cpu_block_task_y;
-		dgb_cpu_block_task_y = (unsigned short*)malloc(sizeof(short) * size);
+		int *dgb_cpu_block_task_y;
+		dgb_cpu_block_task_y = (int*)malloc(sizeof(int) * size);
 	
-		unsigned short *dgb_cpu_block_machine_a;
-		dgb_cpu_block_machine_a = (unsigned short*)malloc(sizeof(short) * size);
+		int *dgb_cpu_block_machine_a;
+		dgb_cpu_block_machine_a = (int*)malloc(sizeof(int) * size);
 	
-		unsigned short *dgb_cpu_block_machine_b;
-		dgb_cpu_block_machine_b = (unsigned short*)malloc(sizeof(short) * size);
+		int *dgb_cpu_block_machine_b;
+		dgb_cpu_block_machine_b = (int*)malloc(sizeof(int) * size);
 		
 		float *dgb_cpu_block_machine_a_ct_new;
 		dgb_cpu_block_machine_a_ct_new = (float*)malloc(sizeof(float) * size);
@@ -457,11 +457,11 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		float *dgb_cpu_block_delta;
 		dgb_cpu_block_delta = (float*)malloc(sizeof(float) * size);
 	
-		cudaMemcpy(dgb_cpu_block_op, dgb_block_op, size * sizeof(short), cudaMemcpyDeviceToHost);
-		cudaMemcpy(dgb_cpu_block_task_x, dgb_block_task_x, size * sizeof(short), cudaMemcpyDeviceToHost);
-		cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(short), cudaMemcpyDeviceToHost);
-		cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(short), cudaMemcpyDeviceToHost);
-		cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(short), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_op, dgb_block_op, size * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_task_x, dgb_block_task_x, size * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_task_y, dgb_block_task_y, size * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_a, dgb_block_machine_a, size * sizeof(int), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dgb_cpu_block_machine_b, dgb_block_machine_b, size * sizeof(int), cudaMemcpyDeviceToHost);
 		cudaMemcpy(dgb_cpu_block_machine_a_ct_new, dgb_block_machine_a_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
 		cudaMemcpy(dgb_cpu_block_machine_b_ct_new, dgb_block_machine_b_ct_new, size * sizeof(float), cudaMemcpyDeviceToHost);
 		cudaMemcpy(dgb_cpu_block_delta, dgb_block_delta, size * sizeof(float), cudaMemcpyDeviceToHost);
@@ -616,7 +616,7 @@ void pals_gpu_prtask(struct params &input, struct matrix *etc_matrix, struct sol
 
 	// Cantidad de números aleatorios por invocación.
 	const unsigned int size = instance.blocks * (2 * instance.loops); // 2 random numbers por block x loop.
-	const short cant_iter_generadas = PALS_PRTASK_RANDS / size;
+	const int cant_iter_generadas = PALS_PRTASK_RANDS / size;
 	fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
