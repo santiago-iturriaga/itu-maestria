@@ -13,9 +13,8 @@
 #include "pals_gpu_prtask.h"
 
 #define PALS_PRTASK_RANDS 			6144*20
-#define PALS_PRTASK_RESULT_COUNT 		1
 
-#define PALS_GPU_PRTASK__BLOCKS 		1
+#define PALS_GPU_PRTASK__BLOCKS 		6
 #define PALS_GPU_PRTASK__THREADS 		64
 #define PALS_GPU_PRTASK__LOOPS	 		1024
 
