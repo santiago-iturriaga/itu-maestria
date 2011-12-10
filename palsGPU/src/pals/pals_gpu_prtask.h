@@ -16,13 +16,13 @@
 
 struct pals_gpu_prtask_instance {
 	float *gpu_etc_matrix;
-	int *gpu_task_assignment;
+	ushort *gpu_task_assignment;
 	float *gpu_machine_compute_time;
 	
-	int blocks;
-	int threads;
-	int loops;
-	unsigned long total_tasks;
+	ushort blocks;
+	ushort threads;
+	ushort loops;
+	ulong total_tasks;
 };
 
 /*
@@ -52,7 +52,7 @@ void pals_gpu_prtask_wrapper(struct matrix *etc_matrix, struct solution *s,
  * Obtiene todas las soluciones desde el dispositivo a la memoria del huesped.
  */
 void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_prtask_instance &instance, 
-	int *gpu_task_assignment, float *gpu_machine_compute_time);
+	ushort *gpu_task_assignment, float *gpu_machine_compute_time);
 
 /*
  * Busca en el dispositivo la mejor solución de las halladas hasta el momento, 

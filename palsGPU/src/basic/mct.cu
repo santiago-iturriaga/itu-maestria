@@ -3,14 +3,14 @@
 void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
 	solution->makespan = 0.0;
 
-	for (int task = 0; task < etc_matrix->tasks_count; task++) {
+	for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
 		int best_machine;
 		best_machine = 0;
 		
 		float best_etc_value;
 		best_etc_value = get_etc_value(etc_matrix, 0, task);
 	
-		for (int machine = 1; machine < etc_matrix->machines_count; machine++) {
+		for (ushort machine = 1; machine < etc_matrix->machines_count; machine++) {
 			float etc_value;
 			etc_value = get_etc_value(etc_matrix, machine, task);
 			

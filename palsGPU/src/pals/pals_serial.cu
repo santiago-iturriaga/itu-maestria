@@ -6,16 +6,16 @@
 #include "pals_serial.h"
 
 void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	int &best_swap_task_a, int &best_swap_task_b, float &best_swap_delta) {
+	ushort &best_swap_task_a, ushort &best_swap_task_b, float &best_swap_delta) {
 	
-	best_swap_task_a = -1;
-	best_swap_task_b = -1;
+	best_swap_task_a = 0;
+	best_swap_task_b = 0;
 	best_swap_delta = 0.0;
 
-	for (int task_a = 0; task_a < etc_matrix->tasks_count; task_a++) {
-		for (int task_b = 0; task_b < task_a; task_b++) {
-			int machine_a = s->task_assignment[task_a];
-			int machine_b = s->task_assignment[task_b];
+	for (ushort task_a = 0; task_a < etc_matrix->tasks_count; task_a++) {
+		for (ushort task_b = 0; task_b < task_a; task_b++) {
+			ushort machine_a = s->task_assignment[task_a];
+			ushort machine_b = s->task_assignment[task_b];
 			
 			float current_swap_delta = 0.0;
 			current_swap_delta -= get_etc_value(etc_matrix, machine_a, task_a);
@@ -34,8 +34,8 @@ void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s,
 }
 
 void pals_serial(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {
-	int best_swap_task_a;
-	int best_swap_task_b;
+	ushort best_swap_task_a;
+	ushort best_swap_task_b;
 	float best_swap_delta;
 	
 	for (int i = 0; i < PALS_COUNT; i++) {
