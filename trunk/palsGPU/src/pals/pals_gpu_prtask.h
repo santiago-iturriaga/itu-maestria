@@ -58,7 +58,6 @@ void pals_gpu_prtask_get_solutions(struct matrix *etc_matrix, struct pals_gpu_pr
  * Busca en el dispositivo la mejor solución de las halladas hasta el momento, 
  * descarta las peores y crea tantas copias de la mejor como sea necesario.
  */
-void pals_gpu_prtask_join_solutions(struct pals_gpu_prtask_instance &instance,
-	struct matrix *etc_matrix);
+void pals_gpu_prtask_join_solutions(struct matrix *etc_matrix, struct pals_gpu_prtask_instance &instance);
 
 #endif /* PALS_GPU_H_ */
