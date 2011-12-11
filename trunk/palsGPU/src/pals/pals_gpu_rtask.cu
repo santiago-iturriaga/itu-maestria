@@ -198,9 +198,9 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 	
 	// Asignación del paralelismo del algoritmo.
-	instance.blocks = 128;
+	instance.blocks = 32; //128;
 	instance.threads = 128;
-	instance.loops = 32;
+	instance.loops = 1; //32;
 	
 	// Cantidad total de movimientos a evaluar.
 	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -584,6 +584,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	char result_task_history[etc_matrix->tasks_count];
 	char result_machine_history[etc_matrix->machines_count];
+
+	short increase_depth;
+	increase_depth = 0;
 	
 	ulong cantidad_swaps = 0;
 	ulong cantidad_movs = 0;
@@ -766,15 +769,23 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 				fprintf(stdout, "   swaps performed  : %ld.\n", cantidad_swaps_iter);
 				fprintf(stdout, "   movs performed   : %ld.\n", cantidad_movs_iter);
 			}
-		} else {
+	
+			increase_depth = 0;
+
 			if (DEBUG) {
-				fprintf(stdout, "   makespan unchanged: %f.\n", current_solution->makespan);
+				cantidad_swaps += cantidad_swaps_iter;
+				cantidad_movs += cantidad_movs_iter;
+			}
+		} else {
+			increase_depth++;
+
+			if (DEBUG) {
+				fprintf(stdout, "   makespan unchanged: %f (%d).\n", current_solution->makespan, increase_depth);
 			}
 		}
 
-		if (DEBUG) {
-			cantidad_swaps += cantidad_swaps_iter;
-			cantidad_movs += cantidad_movs_iter;
+		if (increase_depth > 5) {
+			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth = %d on iteration %d.\n", increase_depth, iter);
 		}
 
 		// Timming -----------------------------------------------------
