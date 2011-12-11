@@ -192,9 +192,9 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 	
 	// Asignación del paralelismo del algoritmo.
-	instance.blocks = 128; //32; //128;
-	instance.threads = 128;
-	instance.loops = 32; //32;
+	instance.blocks = 8; //128;
+	instance.threads = PALS_GPU_RTASK__THREADS;
+	instance.loops = 1; //32;
 	
 	// Cantidad total de movimientos a evaluar.
 	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -572,8 +572,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	RNG_rand48_init(r48, PALS_RTASK_RANDS);	// Debe ser múltiplo de 6144
 
 	// Cantidad de números aleatorios por invocación.
-	const unsigned int size = instance.blocks * 2;
-	const short cant_iter_generadas = PALS_RTASK_RANDS / size;
+	unsigned int rand_iter_size = instance.blocks * 2;
+	uint current_rand_offset = 0;
+
+	const short cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
 	fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	char result_task_history[etc_matrix->tasks_count];
@@ -598,9 +600,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timespec ts_rand;
 		timming_start(ts_rand);
 	
-		if (iter % cant_iter_generadas == 0) {
+		//if (iter % cant_iter_generadas == 0) {
+		if (current_rand_offset + rand_iter_size > PALS_RTASK_RANDS) {
 			if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 			RNG_rand48_generate(r48, seed);
+
+			current_rand_offset = 0;
 		}
 	
 		timming_end(">> RNG_rand48", ts_rand);
@@ -610,8 +615,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
-			&(r48.res[(iter % cant_iter_generadas) * size]), result);
+		//pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
+		//	&(r48.res[(iter % cant_iter_generadas) * size]), result);
+
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
+			&(r48.res[current_rand_offset]), result);
+
+		current_rand_offset += rand_iter_size;
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -781,16 +791,19 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if (increase_depth >= 5) {
+		if (increase_depth >= 1) {
 			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 			
 			/*if (instance.loops < 1024) {
 				instance.loops = instance.loops * 2;
-				if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);
-			} else {*/
+				if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);*/
+			if (instance.blocks < 128) {
+				instance.blocks += 8;
+				if (DEBUG) fprintf(stdout, "[DEBUG] Blocks increased to %d.\n", instance.blocks);
+			} else {
 				convergence_flag = 1;
 				if (DEBUG) fprintf(stdout, "[DEBUG] Convergence detected! Iteration: %d.\n", iter);
-			//}
+			}
 			
 			increase_depth = 0;
 		}
