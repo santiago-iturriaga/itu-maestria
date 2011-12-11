@@ -586,7 +586,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	ulong cantidad_movs = 0;
 	
 	for (int iter = 0; iter < PALS_COUNT; iter++) {
-		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
+		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
 		// ==============================================================================
 		// Sorteo de numeros aleatorios.
@@ -627,8 +627,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		cantidad_swaps_iter = 0;
 		cantidad_movs_iter = 0;
 		
-		for (int result_idx = 0; result_idx < instance.result_count; i++) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[i]);
+		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
+			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
 			if (result.delta[result_idx] < 0.0) {
 				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
