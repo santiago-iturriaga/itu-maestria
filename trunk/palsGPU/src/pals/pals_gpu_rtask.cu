@@ -296,6 +296,65 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	result.delta = (float*)malloc(sizeof(float) * instance.result_count);
 }
 
+void pals_gpu_rtask_reinit(struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
+	// Cantidad total de movimientos a evaluar.
+	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
+	
+	// Cantidad de resultados retornados por iteración.
+	instance.result_count = instance.blocks;
+
+	if (DEBUG) {
+		fprintf(stdout, "[INFO] Number of blocks (grid size)   : %d\n", instance.blocks);
+		fprintf(stdout, "[INFO] Threads per block (block size) : %d\n", instance.threads);
+		fprintf(stdout, "[INFO] Loops per thread               : %d\n", instance.loops);
+		fprintf(stdout, "[INFO] Total tasks                    : %ld\n", instance.total_tasks);
+		fprintf(stdout, "[INFO] Movements per iteration        : %d\n", instance.result_count);
+	}
+
+	// =========================================================================
+
+	// Pedido de memoria en el dispositivo y copiado de datos.
+	timespec ts_1;
+	timming_start(ts_1);
+
+	if (cudaFree(instance.gpu_best_deltas) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para best_swaps.\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	if (cudaFree(instance.gpu_best_movements) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para best_movements.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Pido memoria para guardar el resultado.
+	int best_movements_size = sizeof(int) * instance.blocks * 3;
+	if (cudaMalloc((void**)&(instance.gpu_best_movements), best_movements_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_size (%d bytes).\n", best_movements_size);
+		exit(EXIT_FAILURE);
+	}
+		
+	int best_deltas_size = sizeof(float) * instance.blocks;	
+	if (cudaMalloc((void**)&(instance.gpu_best_deltas), best_deltas_size) != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_deltas (%d bytes).\n", best_deltas_size);
+		exit(EXIT_FAILURE);
+	}
+	
+	timming_end(".. gpu_best_movements", ts_1);
+	
+	// =========================================================================
+	
+	free(result.move_type);
+	free(result.origin);
+	free(result.destination);
+	free(result.delta);
+	
+	result.move_type = (short*)malloc(sizeof(short) * instance.result_count);
+	result.origin = (ushort*)malloc(sizeof(short) * instance.result_count);
+	result.destination = (ushort*)malloc(sizeof(short) * instance.result_count);
+	result.delta = (float*)malloc(sizeof(float) * instance.result_count);
+}
+
 void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
 	if (cudaFree(instance.gpu_etc_matrix) != cudaSuccess) {
 		fprintf(stderr, "[ERROR] Liberando la memoria solicitada para etc_matrix.\n");
@@ -800,6 +859,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			if (instance.blocks < 128) {
 				instance.blocks += 8;
 				if (DEBUG) fprintf(stdout, "[DEBUG] Blocks increased to %d.\n", instance.blocks);
+				
+				pals_gpu_rtask_reinit(instance, result);
+				
 			} else {
 				convergence_flag = 1;
 				if (DEBUG) fprintf(stdout, "[DEBUG] Convergence detected! Iteration: %d.\n", iter);
