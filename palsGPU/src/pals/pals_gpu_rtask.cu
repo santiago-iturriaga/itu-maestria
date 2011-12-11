@@ -192,9 +192,9 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 	
 	// Asignación del paralelismo del algoritmo.
-	instance.blocks = 8; //128;
+	instance.blocks = 32; //128;
 	instance.threads = PALS_GPU_RTASK__THREADS;
-	instance.loops = 1; //32;
+	instance.loops = 32; //32;
 	
 	// Cantidad total de movimientos a evaluar.
 	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -700,7 +700,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		cantidad_movs_iter = 0;
 		
 		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
+			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
 			if (result.delta[result_idx] < 0.0) {
 				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
@@ -710,8 +710,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					ushort machine_a = current_solution->task_assignment[result.origin[result_idx]];
 					ushort machine_b = current_solution->task_assignment[result.destination[result_idx]];
 			
-					if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);
+					/*if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);*/
 			
 					if ((result_task_history[task_x] == 0) &&
 						(result_task_history[task_y] == 0) &&
@@ -725,11 +725,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						result_machine_history[machine_a] = 1;
 						result_machine_history[machine_b] = 1;
 			
-						if (DEBUG) {
+						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
 							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
 							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-						}
+						}*/
 			
 						// Actualizo la asignación de cada tarea en el host.
 						current_solution->task_assignment[task_x] = machine_b;
@@ -752,24 +752,24 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
 						pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
 	
-						if (DEBUG) {
+						/*if (DEBUG) {
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
 							fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
 							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
 							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
 							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
-						}
+						}*/
 					} else {
-						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+						//if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
 				} else if (result.move_type[result_idx] == PALS_GPU_RTASK_MOVE) {
 					ushort task_x = result.origin[result_idx];
 					ushort machine_a = current_solution->task_assignment[task_x];
 					ushort machine_b = result.destination[result_idx];
 
-					if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);
+					/*if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);*/
 					
 					if ((result_task_history[task_x] == 0) &&
 						(result_machine_history[machine_a] == 0) &&
@@ -781,11 +781,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						result_machine_history[machine_a] = 1;
 						result_machine_history[machine_b] = 1;
 					
-						if (DEBUG) {
+						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
 							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
 							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-						}
+						}*/
 					
 						current_solution->task_assignment[task_x] = machine_b;
 					
@@ -803,15 +803,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						pals_gpu_rtask_update_machine(instance, machine_a, current_solution->machine_compute_time[machine_a]);
 						pals_gpu_rtask_update_machine(instance, machine_b, current_solution->machine_compute_time[machine_b]);
 				
-						if (DEBUG) {
+						/*if (DEBUG) {
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
 							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
 							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
 							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
-						}
+						}*/
 					} else {
-						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+						//if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
 				}
 			}
@@ -851,22 +851,26 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		}
 
 		if (increase_depth >= 1) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
-			
-			/*if (instance.loops < 1024) {
-				instance.loops = instance.loops * 2;
-				if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);*/
-			if (instance.blocks < 128) {
-				instance.blocks += 8;
-				if (DEBUG) fprintf(stdout, "[DEBUG] Blocks increased to %d.\n", instance.blocks);
-				
-				pals_gpu_rtask_reinit(instance, result);
-				
-			} else {
-				convergence_flag = 1;
-				if (DEBUG) fprintf(stdout, "[DEBUG] Convergence detected! Iteration: %d.\n", iter);
+			/*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
+		
+			instance.blocks += 8;
+
+			if ((instance.blocks == 96) && (instance.loops == 32)) {
+				instance.blocks = 32;
+				instance.loops = 64;
 			}
-			
+
+			fprintf(stdout, "[DEBUG] REINIT! Blocks = %d, Loops = %d.\n", instance.blocks, instance.loops);
+
+			if ((instance.blocks == 96) && (instance.loops = 64)) {
+                                convergence_flag = 1;
+                                if (DEBUG) fprintf(stdout, "[DEBUG] Convergence detected! Iteration: %d.\n", iter);
+			} else {
+				pals_gpu_rtask_reinit(instance, result);
+			}*/
+
+			convergence_flag = 1;
+	
 			increase_depth = 0;
 		}
 
@@ -886,6 +890,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
+
+		fprintf(stdout, "[DEBUG] Current blocks count   : %d.\n", instance.blocks);
 		fprintf(stdout, "[DEBUG] Current loops count    : %d.\n", instance.loops);
 	}
 	
