@@ -745,7 +745,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if ((cantidad_movs_iter > 0) || (cantidad_swaps > 0)) {
+		if ((cantidad_movs_iter > 0) || (cantidad_swaps_iter > 0)) {
 			// Actualiza el makespan de la solución.
 			// Si cambio el makespan, busco el nuevo makespan.
 			ushort machine = 0;		
