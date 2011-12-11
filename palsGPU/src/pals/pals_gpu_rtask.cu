@@ -13,12 +13,6 @@
 #include "pals_gpu_rtask.h"
 
 #define PALS_RTASK_RANDS 				6144*20
-#define PALS_RTASK_RESULT_COUNT 		128
-
-/*
-#define PALS_GPU_RTASK__BLOCKS 			128
-#define PALS_GPU_RTASK__LOOPS	 		32
-*/
 
 #define PALS_GPU_RTASK__THREADS 		128
 
@@ -591,7 +585,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	ulong cantidad_swaps = 0;
 	ulong cantidad_movs = 0;
 	
-	for (int i = 0; i < PALS_COUNT; i++) {
+	for (int iter = 0; iter < PALS_COUNT; iter++) {
 		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", i);
 
 		// ==============================================================================
@@ -601,7 +595,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timespec ts_rand;
 		timming_start(ts_rand);
 	
-		if (i % cant_iter_generadas == 0) {
+		if (iter % cant_iter_generadas == 0) {
 			if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 			RNG_rand48_generate(r48, seed);
 		}
@@ -614,7 +608,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
-			&(r48.res[(i % cant_iter_generadas) * size]), result);
+			&(r48.res[(iter % cant_iter_generadas) * size]), result);
 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -633,19 +627,19 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		cantidad_swaps_iter = 0;
 		cantidad_movs_iter = 0;
 		
-		for (int i = 0; i < instance.result_count; i++) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", i, result.delta[i]);
+		for (int result_idx = 0; result_idx < instance.result_count; i++) {
+			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[i]);
 		
-			if (result.delta[i] < 0.0) {
-				if (result.move_type[i] == PALS_GPU_RTASK_SWAP) {
-					ushort task_x = result.origin[i];
-					ushort task_y = result.destination[i];
+			if (result.delta[result_idx] < 0.0) {
+				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
+					ushort task_x = result.origin[result_idx];
+					ushort task_y = result.destination[result_idx];
 			
-					ushort machine_a = current_solution->task_assignment[result.origin[i]];
-					ushort machine_b = current_solution->task_assignment[result.destination[i]];
+					ushort machine_a = current_solution->task_assignment[result.origin[result_idx]];
+					ushort machine_b = current_solution->task_assignment[result.destination[result_idx]];
 			
 					if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-						result.origin[i], machine_a, result.destination[i], machine_b, result.delta[i]);
+						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);
 			
 					if ((result_task_history[task_x] == 0) &&
 						(result_task_history[task_y] == 0) &&
@@ -697,13 +691,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					} else {
 						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
-				} else if (result.move_type[i] == PALS_GPU_RTASK_MOVE) {
-					ushort task_x = result.origin[i];		
+				} else if (result.move_type[result_idx] == PALS_GPU_RTASK_MOVE) {
+					ushort task_x = result.origin[result_idx];
 					ushort machine_a = current_solution->task_assignment[task_x];
-					ushort machine_b = result.destination[i];
+					ushort machine_b = result.destination[result_idx];
 
 					if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-						result.origin[i], machine_a, result.destination[i], result.delta[i]);
+						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);
 					
 					if ((result_task_history[task_x] == 0) &&
 						(result_machine_history[machine_a] == 0) &&
@@ -786,6 +780,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 		if (increase_depth > 5) {
 			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth = %d on iteration %d.\n", increase_depth, iter);
+			
+			if (instance.loops == 1) instance.loops = 32;
+			else instance.loops += 32;
+			
+			if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);
+			
+			increase_depth = 0;
 		}
 
 		// Timming -----------------------------------------------------
@@ -804,6 +805,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
+		fprintf(stdout, "[DEBUG] Current loops count    : %d.\n", instance.loops);
 	}
 	
 	if (DEBUG) {
