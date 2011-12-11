@@ -192,9 +192,9 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 	
 	// Asignación del paralelismo del algoritmo.
-	instance.blocks = 32; //128;
+	instance.blocks = 128; //32; //128;
 	instance.threads = 128;
-	instance.loops = 8; //32;
+	instance.loops = 32; //32;
 	
 	// Cantidad total de movimientos a evaluar.
 	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -584,8 +584,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 	ulong cantidad_swaps = 0;
 	ulong cantidad_movs = 0;
+
+	short convergence_flag;
+	convergence_flag = 0;
 	
-	for (int iter = 0; iter < PALS_COUNT; iter++) {
+	for (int iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
 		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
 		// ==============================================================================
@@ -778,12 +781,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if (increase_depth > 5) {
-			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth = %d on iteration %d.\n", increase_depth, iter);
+		if (increase_depth >= 5) {
+			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 			
-			if (instance.loops < 1024) instance.loops += 8;
-			
-			if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);
+			/*if (instance.loops < 1024) {
+				instance.loops = instance.loops * 2;
+				if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);
+			} else {*/
+				convergence_flag = 1;
+				if (DEBUG) fprintf(stdout, "[DEBUG] Convergence detected! Iteration: %d.\n", iter);
+			//}
 			
 			increase_depth = 0;
 		}
