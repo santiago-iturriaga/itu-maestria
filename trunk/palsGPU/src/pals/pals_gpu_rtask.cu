@@ -194,7 +194,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	// Asignación del paralelismo del algoritmo.
 	instance.blocks = 32; //128;
 	instance.threads = 128;
-	instance.loops = 1; //32;
+	instance.loops = 8; //32;
 	
 	// Cantidad total de movimientos a evaluar.
 	instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -781,8 +781,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		if (increase_depth > 5) {
 			if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth = %d on iteration %d.\n", increase_depth, iter);
 			
-			if (instance.loops == 1) instance.loops = 32;
-			else instance.loops += 32;
+			if (instance.loops < 1024) instance.loops += 8;
 			
 			if (DEBUG) fprintf(stdout, "[DEBUG] Loops increased to %d.\n", instance.loops);
 			
