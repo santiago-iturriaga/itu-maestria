@@ -1,3 +1,4 @@
+#include "../config.h"
 #include "mct.h"
 
 void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
@@ -30,5 +31,5 @@ void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
 		}
 	}
 	
-	fprintf(stdout, "[DEBUG] Solution makespan: %f.\n", solution->makespan);
+	if (DEBUG) fprintf(stdout, "[DEBUG] MCT Solution makespan: %f.\n", solution->makespan);
 }
