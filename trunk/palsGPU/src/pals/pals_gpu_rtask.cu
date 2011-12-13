@@ -649,7 +649,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	short convergence_flag;
 	convergence_flag = 0;
 	
-	for (int iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
+	int iter;
+	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
 		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
 		// ==============================================================================
@@ -659,8 +660,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timespec ts_rand;
 		timming_start(ts_rand);
 	
-		//if (iter % cant_iter_generadas == 0) {
-		if (current_rand_offset + rand_iter_size > PALS_RTASK_RANDS) {
+		if (iter % cant_iter_generadas == 0) {
+		//if (current_rand_offset + rand_iter_size > PALS_RTASK_RANDS) {
 			if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 			RNG_rand48_generate(r48, seed);
 
@@ -674,11 +675,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		timming_start(ts_wrapper);
 		// Timming -----------------------------------------------------
 
-		//pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
-		//	&(r48.res[(iter % cant_iter_generadas) * size]), result);
+		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance, 
+			&(r48.res[(iter % cant_iter_generadas) * rand_iter_size]), result);
 
-		pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-			&(r48.res[current_rand_offset]), result);
+		//pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
+		//	&(r48.res[current_rand_offset]), result);
 
 		current_rand_offset += rand_iter_size;
 
@@ -887,7 +888,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
 
-	if (DEBUG) {
+	if (DEBUG) {	
+		fprintf(stdout, "[DEBUG] Total iterations       : %d.\n", iter);
+
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
 
