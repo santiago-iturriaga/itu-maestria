@@ -1,7 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define DEBUG 1
+#define OUTPUT_SOLUTION 1
+#define DEBUG 0
 #define TIMMING 0
 
 //#define PALS_COUNT 10000

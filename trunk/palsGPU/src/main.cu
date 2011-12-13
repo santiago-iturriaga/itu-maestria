@@ -188,6 +188,13 @@ int main(int argc, char** argv)
 		gpu_set_device(input.gpu_device);
 		pals_gpu_prtask(input, etc_matrix, current_solution);	
 	}
+
+	if (OUTPUT_SOLUTION) {
+		fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
+		for (int task_id = 0; task_id < etc_matrix->tasks_count; task_id++) {
+			fprintf(stdout, "%d\n", current_solution->task_assignment[task_id]);
+		}
+	}
 	
 	// Timming -----------------------------------------------------
 	timming_end("Elapsed algorithm total time", ts);

@@ -635,7 +635,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	uint current_rand_offset = 0;
 
 	const short cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
-	fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
+	if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	char result_task_history[etc_matrix->tasks_count];
 	char result_machine_history[etc_matrix->machines_count];
@@ -719,7 +719,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						(result_machine_history[machine_a] == 0) &&
 						(result_machine_history[machine_b] == 0))	{
 			
-						if (DEBUG) cantidad_swaps_iter++;
+						cantidad_swaps_iter++;
 			
 						result_task_history[task_x] = 1;
 						result_task_history[task_y] = 1;
@@ -776,7 +776,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						(result_machine_history[machine_a] == 0) &&
 						(result_machine_history[machine_b] == 0))	{
 			
-						if (DEBUG) cantidad_movs_iter++;
+						cantidad_movs_iter++;
 			
 						result_task_history[task_x] = 1;
 						result_machine_history[machine_a] = 1;
@@ -839,10 +839,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	
 			increase_depth = 0;
 
-			if (DEBUG) {
-				cantidad_swaps += cantidad_swaps_iter;
-				cantidad_movs += cantidad_movs_iter;
-			}
+			cantidad_swaps += cantidad_swaps_iter;
+			cantidad_movs += cantidad_movs_iter;
 		} else {
 			increase_depth++;
 
@@ -970,10 +968,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	// <=========== DEBUG
 	
-	//if (DEBUG) {
+	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
-	//}
+	} else {
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
+	}
 
 	// Libero la memoria del dispositivo.
 	pals_gpu_rtask_finalize(instance);

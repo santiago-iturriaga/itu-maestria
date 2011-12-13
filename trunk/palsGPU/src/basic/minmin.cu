@@ -1,6 +1,7 @@
 #include "../config.h"
 #include "../utils.h"
 
+#include "../config.h"
 #include "minmin.h"
 
 void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
@@ -81,7 +82,7 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 		}
 	}
 	
-	fprintf(stdout, "[DEBUG] Solution makespan: %f.\n", solution->makespan);
+	fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", solution->makespan);
 
 	// Timming -----------------------------------------------------
 	timming_end("MinMin time", ts);
