@@ -5,7 +5,7 @@
 #include "minmin.h"
 
 void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
-	fprintf(stdout, "[DEBUG] calculando MinMin...\n");
+	if (DEBUG) fprintf(stdout, "[DEBUG] calculando MinMin...\n");
 
 	// Timming -----------------------------------------------------
 	timespec ts;
@@ -82,7 +82,7 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 		}
 	}
 	
-	fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", solution->makespan);
+	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", solution->makespan);
 
 	// Timming -----------------------------------------------------
 	timming_end("MinMin time", ts);
