@@ -61,10 +61,7 @@ CCFLAGS = $(OPTI) $(WARN) $(STD) $(DEBUG)
 #CCFLAGS += -march=athlon64
 OBJS = mtgp32-fast.o mtgp32-param-fast.o 
 
-all:test32-ref test32-fast test32-cuda ${OBJS}
-
-test32-ref: mtgp32-ref.h mtgp32-ref.c mtgp32-param-ref.o
-	${CC} ${CCFLAGS} -DMAIN=1 -o $@ mtgp32-ref.c mtgp32-param-ref.o
+all:test32-fast test32-cuda ${OBJS}
 
 test32-fast: mtgp32-fast.h mtgp32-fast.c mtgp32-param-fast.o
 	${CC} ${CCFLAGS} -DMAIN=1 -o $@ mtgp32-fast.c mtgp32-param-fast.o
