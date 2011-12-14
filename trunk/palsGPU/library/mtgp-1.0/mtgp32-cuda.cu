@@ -20,29 +20,23 @@
  */
 #define __STDC_FORMAT_MACROS 1
 #define __STDC_CONSTANT_MACROS 1
+
 #include <stdio.h>
 #include <cutil.h>
-#include <stdint.h>
 #include <inttypes.h>
 #include <errno.h>
 #include <stdlib.h>
 extern "C" {
 #include "mtgp32-fast.h"
 }
+
+#include "mtgp32-cuda.h"
+
 #define MEXP 23209
-#define N 726
 #define THREAD_NUM 512
 #define LARGE_SIZE (THREAD_NUM * 3)
 #define BLOCK_NUM 32	     /* You can change this value up to 128 */
 #define TBL_SIZE 16
-
-/**
- * kernel I/O
- * This structure must be initialized before first use.
- */
-struct mtgp32_kernel_status_t {
-    uint32_t status[N];
-};
 
 /*
  * Generator Parameters.
@@ -617,3 +611,25 @@ int main(int argc, char** argv)
     CUDA_SAFE_CALL(cudaFree(d_status));
     CUT_EXIT(argc, argv);
 }
+
+mtgp32_kernel_status_t* mtgp32_init() {
+	mtgp32_kernel_status_t* d_status;
+
+    CUDA_SAFE_CALL(cudaMalloc((void**)&d_status, sizeof(mtgp32_kernel_status_t) * BLOCK_NUM));
+    
+    make_constant(mtgp32_params_fast_23209);
+    make_kernel_data(d_status, mtgp32_params_fast_23209);
+}
+
+void mtgp32_dispose(mtgp32_kernel_status_t* d_status) {
+    CUDA_SAFE_CALL(cudaFree(d_status));
+}
+
+void mtgp32_uint32_random(mtgp32_kernel_status_t* d_status, int num_data) {
+    make_uint32_random(d_status, num_data);
+}
+
+void mtgp32_single_random(mtgp32_kernel_status_t* d_status, int num_data) {
+    make_single_random(d_status, num_data);
+}
+
