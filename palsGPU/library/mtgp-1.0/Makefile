@@ -14,7 +14,7 @@
 WARN = -Wmissing-prototypes -Wall #-Winline
 #WARN = -Wmissing-prototypes -Wall -W
 OPTI = -O3 -finline-functions -fomit-frame-pointer -DNDEBUG -fno-strict-aliasing 
-CUDA_OPTI = -I../cutil/inc -L../cutil/lib
+CUDA_OPTI = -I../cutil/inc -L../cutil/lib --ptxas-options=-v
 #--param inline-unit-growth=500 --param large-function-growth=900 #for gcc 4
 #DEBUG = -DDEBUG -g -O0
 #STD =

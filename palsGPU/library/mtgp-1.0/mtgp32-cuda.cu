@@ -59,12 +59,6 @@ __constant__ uint32_t sh2_tbl[BLOCK_NUM];
 __constant__ uint32_t mask = 0xff800000;
 
 /**
- * Shared memory
- * The generator's internal status vector.
- */
-__shared__ uint32_t status[LARGE_SIZE]; /* 512 * 3 elements, 6144 bytes. */
-
-/**
  * The function of the recursion formula calculation.
  *
  * @param[in] X1 the farthest part of state array.
@@ -173,6 +167,9 @@ __device__ void status_write(mtgp32_kernel_status_t *d_status,
  */
 __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
 				     uint32_t* d_data, int size) {
+
+    __shared__ uint32_t status[LARGE_SIZE]; /* 512 * 3 elements, 6144 bytes. */
+
     const int bid = blockIdx.x;
     const int tid = threadIdx.x;
     int pos = pos_tbl[bid];
@@ -253,6 +250,7 @@ __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
 __global__ void mtgp32_single_kernel(mtgp32_kernel_status_t* d_status,
 				     uint32_t* d_data, int size)
 {
+    __shared__ uint32_t status[LARGE_SIZE]; /* 512 * 3 elements, 6144 bytes. */
 
     const int bid = blockIdx.x;
     const int tid = threadIdx.x;
