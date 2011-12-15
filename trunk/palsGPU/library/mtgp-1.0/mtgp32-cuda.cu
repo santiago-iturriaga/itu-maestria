@@ -613,9 +613,9 @@ int main(int argc, char** argv)
     uint32_t *salida = (uint32_t*)malloc(sizeof(uint32_t) * num_data);
     make_uint32_random(d_status, num_data, salida);
 
-	for (int i = 0; i < num_data; i++) {
-		fprintf(stdout, "[%d] %d\n", i, salida[i]);
-	}
+    for (int i = 0; i < num_data; i++) {
+       fprintf(stdout, "[%d] %u\n", i, (unsigned int)salida[i]);
+    }
 
     //finalize
     CUDA_SAFE_CALL(cudaFree(d_status));
