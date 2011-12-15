@@ -466,6 +466,58 @@ void print_uint32_array(uint32_t array[], int size, int block) {
     }
 }
 
+void convert_uint32_array(uint32_t array[], int size, int block, int output_array_size, uint32_t output_array[]) {
+    int offset = 0;
+    int b = size / block;
+
+    for (int j = 0; j < 5; j += 5) {
+        printf("%10" PRIu32 " %10" PRIu32 " %10" PRIu32
+               " %10" PRIu32 " %10" PRIu32 "\n",
+               array[j], array[j + 1],
+               array[j + 2], array[j + 3], array[j + 4]);
+
+        if (offset < output_array_size) output_array[offset++] = array[j];
+        if (offset < output_array_size) output_array[offset++] = array[j + 1];
+        if (offset < output_array_size) output_array[offset++] = array[j + 2];
+        if (offset < output_array_size) output_array[offset++] = array[j + 3];
+        if (offset < output_array_size) output_array[offset++] = array[j + 4];
+    }
+    for (int i = 1; i < block; i++) {
+        for (int j = -5; j < 5; j += 5) {
+            printf("%10" PRIu32 " %10" PRIu32 " %10" PRIu32
+                   " %10" PRIu32 " %10" PRIu32 "\n",
+                   array[b * i + j],
+                   array[b * i + j + 1],
+                   array[b * i + j + 2],
+                   array[b * i + j + 3],
+                   array[b * i + j + 4]);
+
+            if (offset < output_array_size) output_array[offset++] = array[b * i + j];
+            if (offset < output_array_size) output_array[offset++] = array[b * i + j + 1];
+            if (offset < output_array_size) output_array[offset++] = array[b * i + j + 2];
+            if (offset < output_array_size) output_array[offset++] = array[b * i + j + 3];
+            if (offset < output_array_size) output_array[offset++] = array[b * i + j + 4];
+        }
+    }
+    for (int j = -5; j < 0; j += 5) {
+        printf("%10" PRIu32 " %10" PRIu32 " %10" PRIu32
+               " %10" PRIu32 " %10" PRIu32 "\n",
+               array[size + j],
+               array[size + j + 1],
+               array[size + j + 2],
+               array[size + j + 3],
+               array[size + j + 4]);
+
+         if (offset < output_array_size) output_array[offset++] = array[size + j];
+         if (offset < output_array_size) output_array[offset++] = array[size + j + 1];
+         if (offset < output_array_size) output_array[offset++] = array[size + j + 2];
+         if (offset < output_array_size) output_array[offset++] = array[size + j + 3];
+         if (offset < output_array_size) output_array[offset++] = array[size + j + 4];
+    }
+
+    fprintf(stdout, "[DEBUG] convert_uint32_array offset = %d\n", offset);
+}
+
 /**
  * host function.
  * This function calls corresponding kernel function.
@@ -473,14 +525,25 @@ void print_uint32_array(uint32_t array[], int size, int block) {
  * @param[in] d_status kernel I/O data.
  * @param[in] num_data number of data to be generated.
  */
-void make_uint32_random(mtgp32_kernel_status_t* d_status, int num_data) {
-    uint32_t* d_data;
+void make_uint32_random(mtgp32_kernel_status_t *d_status, int rnd_numbers_size, uint32_t *rnd_numbers) {
     unsigned int timer = 0;
+
     uint32_t* h_data;
+    uint32_t* d_data;
+
     cudaError_t e;
     float gputime;
 
-    printf("generating 32-bit unsigned random numbers.\n");
+    int num_data = rnd_numbers_size;
+    int num_unit = LARGE_SIZE * BLOCK_NUM;
+    int r;
+
+    r = num_data % num_unit;
+    if (r != 0) {
+	num_data = num_data + num_unit - r;
+    }
+
+    printf("generating %d 32-bit unsigned random numbers.\n", num_data);
     CUDA_SAFE_CALL(cudaMalloc((void**)&d_data, sizeof(uint32_t) * num_data));
     CUT_SAFE_CALL(cutCreateTimer(&timer));
     h_data = (uint32_t *) malloc(sizeof(uint32_t) * num_data);
@@ -504,6 +567,7 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status, int num_data) {
 	printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
 	exit(1);
     }
+
     CUT_SAFE_CALL(cutStopTimer(timer));
     CUDA_SAFE_CALL(
 	cudaMemcpy(h_data,
@@ -511,12 +575,24 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status, int num_data) {
 		   sizeof(uint32_t) * num_data,
 		   cudaMemcpyDeviceToHost));
     gputime = cutGetTimerValue(timer);
+
     print_uint32_array(h_data, num_data, BLOCK_NUM);
+
+    printf("==============================================================================================\n");
+    convert_uint32_array(h_data, num_data, BLOCK_NUM, rnd_numbers_size, rnd_numbers);
+
+    printf("==============================================================================================\n");
+    for (int y = 0; y < rnd_numbers_size; y++) {
+       printf("[%d] %10" PRIu32 "\n", y, h_data[y]);
+    }
+
     printf("generated numbers: %d\n", num_data);
     printf("Processing time: %f (ms)\n", gputime);
     printf("Samples per second: %E \n", num_data / (gputime * 0.001));
+
     CUT_SAFE_CALL(cutDeleteTimer(timer));
     //free memories
+
     free(h_data);
     CUDA_SAFE_CALL(cudaFree(d_data));
 }
@@ -580,8 +656,6 @@ int main(int argc, char** argv)
 {
     // LARGE_SIZE is a multiple of 16
     int num_data = 10000000;
-    int num_unit = LARGE_SIZE * BLOCK_NUM;
-    int r;
     mtgp32_kernel_status_t* d_status;
 
     CUT_DEVICE_INIT(argc, argv);
@@ -598,38 +672,35 @@ int main(int argc, char** argv)
 	printf("%s number_of_output\n", argv[0]);
 	return 1;
     }
-    r = num_data % num_unit;
-    if (r != 0) {
-	num_data = num_data + num_unit - r;
-    }
+    
     make_constant(mtgp32_params_fast_23209);
     make_kernel_data(d_status, mtgp32_params_fast_23209);
-    make_uint32_random(d_status, num_data);
-    make_single_random(d_status, num_data);
+
+    uint32_t *salida = (uint32_t*)malloc(sizeof(uint32_t) * num_data);
+    make_uint32_random(d_status, num_data, salida);
 
     //finalize
     CUDA_SAFE_CALL(cudaFree(d_status));
-    CUT_EXIT(argc, argv);
+    //CUT_EXIT(argc, argv);
 }
 
+
 mtgp32_kernel_status_t* mtgp32_init() {
-	mtgp32_kernel_status_t* d_status;
+    mtgp32_kernel_status_t* d_status;
 
     CUDA_SAFE_CALL(cudaMalloc((void**)&d_status, sizeof(mtgp32_kernel_status_t) * BLOCK_NUM));
     
     make_constant(mtgp32_params_fast_23209);
     make_kernel_data(d_status, mtgp32_params_fast_23209);
+
+    return d_status;
 }
 
 void mtgp32_dispose(mtgp32_kernel_status_t* d_status) {
     CUDA_SAFE_CALL(cudaFree(d_status));
 }
 
-void mtgp32_uint32_random(mtgp32_kernel_status_t* d_status, int num_data) {
-    make_uint32_random(d_status, num_data);
-}
-
-void mtgp32_single_random(mtgp32_kernel_status_t* d_status, int num_data) {
-    make_single_random(d_status, num_data);
+void mtgp32_uint32_random(mtgp32_kernel_status_t *d_status, int rnd_numbers_size, uint32_t *rnd_numbers) {
+    make_uint32_random(d_status, rnd_numbers_size, rnd_numbers);
 }
 
