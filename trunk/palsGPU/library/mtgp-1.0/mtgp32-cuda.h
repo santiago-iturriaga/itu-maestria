@@ -2,8 +2,8 @@
 
 #define N 726
 
-#ifndef MTGP32-CUDA_H_
-#define MTGP32-CUDA_H_
+#ifndef MTGP32_CUDA_H_ 
+#define MTGP32_CUDA_H_ 
 
 /**
  * kernel I/O
@@ -17,8 +17,6 @@ mtgp32_kernel_status_t* mtgp32_init();
 
 void mtgp32_dispose(mtgp32_kernel_status_t* d_status);
 
-void mtgp32_uint32_random(mtgp32_kernel_status_t* d_status, int num_data);
-
-void mtgp32_single_random(mtgp32_kernel_status_t* d_status, int num_data);
+void mtgp32_uint32_random(mtgp32_kernel_status_t* d_status, int rnd_numbers_size, uint32_t *rnd_numbers);
 
 #endif
