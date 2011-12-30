@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
 		float flowtime = 0.0;
 		sortedAssignMatrix.clear();
 
-		for (int i = 0; i < lastAsig[maquinaId]; i++) {
+		for (int i = 0; i <= lastAsig[maquinaId]; i++) {
 			int tareaId;
 			tareaId = asignMatrix[maquinaId][i];
 
@@ -205,6 +205,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		//fprintf(stdout, "%d > ", maquinaId);
+		
 		for (vector<int>::iterator i = sortedAssignMatrix.begin(); i < sortedAssignMatrix.end(); i++) {
 			int tareaId;
 			tareaId = *i;
@@ -213,9 +215,14 @@ int main(int argc, char *argv[]) {
 				flowtime += ETC[tareaId][maquinaId];
 				total_wrr += Priority[tareaId] * (flowtime / ETC[tareaId][maquinaId]);
 			}
+
+			//fprintf(stdout, "%d\n", tareaId);
 		}
+		
+		//fprintf(stdout, "-1\n");
 	}
 
+	
 	if (DEBUG == 0) {
 		fprintf(stdout, "%s|%d|%d|%f|%f\n", arch_inst, NT, NM, makespan, total_wrr);
 	} else {
@@ -224,6 +231,7 @@ int main(int argc, char *argv[]) {
 		fprintf(stdout, "Makespan: %f\n", makespan);
 		fprintf(stdout, "WRR: %f\n", total_wrr);
 	}
+	
 
 	return EXIT_SUCCESS;
 }
