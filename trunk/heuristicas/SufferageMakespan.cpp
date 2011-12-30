@@ -199,10 +199,12 @@ int main(int argc, char *argv[]) {
 	sortedAssignMatrix.reserve(NT);
 
 	for (int maquinaId = 0; maquinaId < NM; maquinaId++) {
-		float flowtime = 0.0;
+		float flowtime;
+		flowtime = 0.0;
+		
 		sortedAssignMatrix.clear();
 
-		for (int i = 0; i < lastAsig[maquinaId]; i++) {
+		for (int i = 0; i <= lastAsig[maquinaId]; i++) {
 			int tareaId;
 			tareaId = asignMatrix[maquinaId][i];
 
@@ -228,8 +230,12 @@ int main(int argc, char *argv[]) {
 				flowtime += ETC[tareaId][maquinaId];
 				total_wrr += Priority[tareaId] * (flowtime / ETC[tareaId][maquinaId]);
 			}
+			
+			//fprintf(stdout, "%d\n", tareaId);
 		}
+		//fprintf(stdout, "-1\n");
 	}
+	
 
 	if (DEBUG == 0) {
 		fprintf(stdout, "%s|%d|%d|%f|%f\n", arch_inst, NT, NM, makespan, total_wrr);
