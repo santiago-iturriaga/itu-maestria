@@ -18,7 +18,7 @@ do
 	time (${BASE_PATH}/bin/pals ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 5 0 ${GPU_DEVICE} > ${SOL_PATH}/${INSTANCE}.mct.sol) 2> ${SOL_PATH}/${INSTANCE}.mct.time
 	${BASE_PATH}/bin/verificador ${INSTANCE_PATH}/${INSTANCE} ${SOL_PATH}/${INSTANCE}.mct.sol ${DIM_SIZE} > ${SOL_PATH}/${INSTANCE}.mct.makespan
 		
-	for (( i = 0; i < 15; i++ ))
+	for (( j = 0; j < 15; j++ ))
 	do
 		SEED=$RANDOM
 		echo "... pals GPU ${j} (seed: ${SEED})"
