@@ -29,14 +29,14 @@ arch_inst = (char *)malloc(sizeof(char)*SIZE_NOM_ARCH);
 
 strcpy(arch_inst,argv[1]);
 
-printf("Archivo: %s\n",arch_inst);
+//printf("Archivo: %s\n",arch_inst);
 
 char *arch_sol;
 arch_sol= (char *)malloc(sizeof(char)*SIZE_NOM_ARCH);
 
 strcpy(arch_sol,argv[2]);
 
-printf("Archivo sol: %s\n",arch_sol);
+//printf("Archivo sol: %s\n",arch_sol);
 
 // Leer archivo, almacenando matriz ETC
 
