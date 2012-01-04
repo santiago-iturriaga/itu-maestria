@@ -22,7 +22,7 @@ do
 	do
 		SEED=$RANDOM
 		echo "... pals GPU ${j} (seed: ${SEED})"
-		time (${BASE_PATH}/bin/pals ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 2 ${SEED} ${GPU_DEVICE} > ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.sol) 2> ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.time
+		time (${BASE_PATH}/bin/pals ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 2 ${SEED} ${GPU_DEVICE} 1> ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.sol 2> ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.info) 2> ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.time
 		${BASE_PATH}/bin/verificador ${INSTANCE_PATH}/${INSTANCE} ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.sol ${DIM_SIZE} > ${SOL_PATH}/${INSTANCE}.palsGPU.${j}.makespan
 	done
 done
