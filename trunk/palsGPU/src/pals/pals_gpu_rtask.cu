@@ -980,6 +980,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
 	} else {
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
+		fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
 	}
 
 	// Libero la memoria del dispositivo.
