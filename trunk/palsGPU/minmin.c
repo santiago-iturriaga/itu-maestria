@@ -36,7 +36,7 @@ if((fi=fopen(arch_inst, "r"))==NULL){
 
 NT = atoi(argv[2]);
 NM = atoi(argv[3]);
-fprintf(stdout,"NT: %d, NM: %d\n",NT,NM);
+//fprintf(stdout,"NT: %d, NM: %d\n",NT,NM);
 
 // Read input file, store ETC matrix
 
