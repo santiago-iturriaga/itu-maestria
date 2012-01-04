@@ -51,7 +51,7 @@ NT=atoi(argv[3]);
 NM=atoi(argv[4]);
 
 //fscanf(fi,"%d %d",&NT,&NM);
-printf("NT: %d, NM: %d\n",NT,NM);
+//printf("NT: %d, NM: %d\n",NT,NM);
 
 float **ETC = (float **) malloc(sizeof(float *)*NT);
 
@@ -102,11 +102,12 @@ for (i=0;i<NT;i++){
 
 fclose(fs);
 
-printf("Sol: [");
+/*printf("Sol: [");
 for (i=0;i<NT;i++){
 	printf("%d ",asig[i]);
 }
 printf("]\n");
+*/
 
 int maq;
 
@@ -122,6 +123,6 @@ for (j=0;j<NM;j++){
 	}
 }
 
-printf("Makespan: %f\n",makespan);
+printf("%f\n",makespan);
 
 }

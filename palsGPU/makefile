@@ -1,10 +1,18 @@
+#CC=gcc
+
 #NVCC=/home/santiago/cuda/bin/nvcc
 NVCC=/usr/local/cuda/bin/nvcc 
 NVCCLocal=/home/santiago/cuda/bin/nvcc 
 
-all: pals
+all: pals-opt verificador minmin
 
-pals: src/main.cu \
+verificador: verificador.c
+	$(CC) verificador.c -o bin/verificador
+	
+minmin: minmin.c
+	$(CC) -O3 minmin.c -o bin/minmin
+
+pals-dgb: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
@@ -28,7 +36,7 @@ pals: src/main.cu \
 		src/pals/pals_serial.cu \
 			-o bin/pals
 
-opt: src/main.cu \
+pals-opt: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
@@ -52,7 +60,7 @@ opt: src/main.cu \
 		src/pals/pals_serial.cu \
 			-o bin/pals
 
-local: src/main.cu \
+pals-local: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
@@ -76,6 +84,6 @@ local: src/main.cu \
 		src/pals/pals_serial.cu \
 			-o bin/pals
 
-clean: bin/pals
-	rm bin/pals
+clean:
+	rm bin/*
 

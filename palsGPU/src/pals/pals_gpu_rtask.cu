@@ -426,6 +426,13 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 		instance.gpu_best_movements, 
 		instance.gpu_best_deltas);
 
+	cudaError_t e;
+    e = cudaGetLastError();
+    if (e != cudaSuccess) {
+		fprintf(stderr, "[ERROR] Failure in kernel call.\n%s\n", cudaGetErrorString(e));
+		exit(EXIT_FAILURE);
+    }
+
 	// Pido el espacio de memoria para obtener los resultados desde la gpu.
 	int *best_movements = (int*)malloc(sizeof(int) * instance.blocks * 3);
 	float *best_deltas = (float*)malloc(sizeof(float) * instance.blocks);
