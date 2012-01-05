@@ -705,17 +705,19 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		// Aplico el mejor movimiento.
-		for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
-		for (int i = 0; i < etc_matrix->machines_count; i++) result_machine_history[i] = 0;	
+		//for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
+		memset(result_task_history, 0, sizeof(int) * etc_matrix->tasks_count);
 		
 		ulong cantidad_swaps_iter, cantidad_movs_iter;
 		cantidad_swaps_iter = 0;
 		cantidad_movs_iter = 0;
 		
+		int makespan_changed;
+		
 		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
 			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
-			if (result.delta[result_idx] < 0.0) {
+			//if (result.delta[result_idx] < 0.0) {
 				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
 					ushort task_x = result.origin[result_idx];
 					ushort task_y = result.destination[result_idx];
@@ -726,17 +728,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					/*if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
 						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);*/
 			
-					if ((result_task_history[task_x] == 0) &&
-						(result_task_history[task_y] == 0) &&
-						(result_machine_history[machine_a] == 0) &&
-						(result_machine_history[machine_b] == 0))	{
+					if ((result_task_history[task_x] == 0) && (result_task_history[task_y] == 0))	{
 			
 						cantidad_swaps_iter++;
 			
 						result_task_history[task_x] = 1;
 						result_task_history[task_y] = 1;
-						result_machine_history[machine_a] = 1;
-						result_machine_history[machine_b] = 1;
 			
 						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
@@ -784,22 +781,18 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					/*if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
 						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);*/
 					
-					if ((result_task_history[task_x] == 0) &&
-						(result_machine_history[machine_a] == 0) &&
-						(result_machine_history[machine_b] == 0))	{
+					if (result_task_history[task_x] == 0)	{
 			
 						cantidad_movs_iter++;
 			
 						result_task_history[task_x] = 1;
-						result_machine_history[machine_a] = 1;
-						result_machine_history[machine_b] = 1;
 					
 						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
 							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
 							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
 						}*/
-					
+				
 						current_solution->task_assignment[task_x] = machine_b;
 					
 						// Actualizo los compute time de cada máquina luego del move en el host.
@@ -827,13 +820,26 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 						//if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
 				}
-			}
+
+				current_solution->makespan = current_solution->machine_compute_time[0];
+
+				for (ushort i = 1; i < etc_matrix->machines_count; i++) {
+					if (current_solution->makespan < current_solution->machine_compute_time[i]) {
+						current_solution->makespan = current_solution->machine_compute_time[i];
+					}
+				}
+				
+				if (current_solution->makespan < best_solution->makespan) {
+					clone_solution(etc_matrix, best_solution, current_solution);
+					best_solution_iter = iter;
+				}
+			//}
 		}
 
 		if ((cantidad_movs_iter > 0) || (cantidad_swaps_iter > 0)) {
 			// Actualiza el makespan de la solución.
 			// Si cambio el makespan, busco el nuevo makespan.
-			ushort machine = 0;		
+			/*ushort machine = 0;		
 			current_solution->makespan = current_solution->machine_compute_time[0];
 
 			for (ushort i = 1; i < etc_matrix->machines_count; i++) {
@@ -841,23 +847,23 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					current_solution->makespan = current_solution->machine_compute_time[i];
 					machine = i;
 				}
-			}
+			}*/
 
 			if (DEBUG) {
-				fprintf(stdout, "   makespan improved: %f (machine %d).\n", current_solution->makespan, machine);
 				fprintf(stdout, "   swaps performed  : %ld.\n", cantidad_swaps_iter);
 				fprintf(stdout, "   movs performed   : %ld.\n", cantidad_movs_iter);
 			}
-	
-			increase_depth = 0;
-
+			
 			cantidad_swaps += cantidad_swaps_iter;
 			cantidad_movs += cantidad_movs_iter;
-			
-			if (current_solution->makespan < best_solution->makespan) {
-				clone_solution(etc_matrix, best_solution, current_solution);
-				best_solution_iter = iter;
+		}
+		
+		if (best_solution_iter == iter) {
+			if (DEBUG) {
+				fprintf(stdout, "   makespan improved: %f.\n", current_solution->makespan);
 			}
+		
+			increase_depth = 0;
 		} else {
 			increase_depth++;
 
@@ -866,7 +872,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if (increase_depth >= 1) {
+		if (increase_depth >= 100) {
 			/*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 		
 			instance.blocks += 8;
