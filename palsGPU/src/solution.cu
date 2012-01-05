@@ -38,6 +38,12 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 	return new_solution;
 }
 
+void clone_solution(struct matrix *etc_matrix, struct solution *dst, struct solution *src) {
+	dst->makespan = src->makespan;
+	memcpy(dst->task_assignment, src->task_assignment, sizeof(ushort) * etc_matrix->tasks_count);
+	memcpy(dst->machine_compute_time, src->machine_compute_time, sizeof(float) * etc_matrix->machines_count);
+}
+
 void free_solution(struct solution *s) {
 	free(s->task_assignment);
 	free(s->machine_compute_time);
