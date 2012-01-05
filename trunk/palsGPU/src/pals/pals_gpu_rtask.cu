@@ -656,6 +656,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	short convergence_flag;
 	convergence_flag = 0;
 	
+	struct solution *best_solution = create_empty_solution(etc_matrix);
+	clone_solution(etc_matrix, best_solution, current_solution);
+	
+	int best_solution_iter = 0;
+	
 	int iter;
 	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
 		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
@@ -848,6 +853,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 			cantidad_swaps += cantidad_swaps_iter;
 			cantidad_movs += cantidad_movs_iter;
+			
+			if (current_solution->makespan < best_solution->makespan) {
+				clone_solution(etc_matrix, best_solution, current_solution);
+				best_solution_iter = iter;
+			}
 		} else {
 			increase_depth++;
 
@@ -876,7 +886,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}*/
 
 			convergence_flag = 1;
-	
 			increase_depth = 0;
 		}
 
@@ -893,8 +902,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
 
+	clone_solution(etc_matrix, current_solution, best_solution);
+
 	if (DEBUG) {	
 		fprintf(stdout, "[DEBUG] Total iterations       : %d.\n", iter);
+		fprintf(stdout, "[DEBUG] Iter. best sol. found  : %d.\n", best_solution_iter);
 
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
@@ -981,6 +993,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	} else {
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
 		fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
+		fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
 	}
 
 	// Libero la memoria del dispositivo.
