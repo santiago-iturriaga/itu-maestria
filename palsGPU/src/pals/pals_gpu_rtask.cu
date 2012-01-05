@@ -645,7 +645,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	char result_task_history[etc_matrix->tasks_count];
-	char result_machine_history[etc_matrix->machines_count];
 
 	short increase_depth;
 	increase_depth = 0;
@@ -659,7 +658,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	struct solution *best_solution = create_empty_solution(etc_matrix);
 	clone_solution(etc_matrix, best_solution, current_solution);
 	
-	int best_solution_iter = 0;
+	int best_solution_iter = -1;
 	
 	int iter;
 	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
@@ -705,15 +704,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		// Aplico el mejor movimiento.
-		//for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
-		memset(result_task_history, 0, sizeof(int) * etc_matrix->tasks_count);
+		for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
+		//memset(result_task_history, 0, sizeof(int) * etc_matrix->tasks_count);
 		
 		ulong cantidad_swaps_iter, cantidad_movs_iter;
 		cantidad_swaps_iter = 0;
 		cantidad_movs_iter = 0;
-		
-		int makespan_changed;
-		
+			
 		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
 			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
