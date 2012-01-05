@@ -12,7 +12,7 @@ verificador: verificador.c
 minmin: minmin.c
 	$(CC) -O3 minmin.c -o bin/minmin
 
-pals-dgb: src/main.cu \
+pals-gdb: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
