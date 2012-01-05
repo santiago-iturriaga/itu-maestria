@@ -102,6 +102,13 @@ for (i=0;i<NT;i++){
 
 fclose(fs);
 
+for (i=0;i<NT;i++) {
+    if (asig[i]==NO_ASIG) {
+        printf("ERROR!!! tarea %d no asignada!!!\n", i);
+        exit(1);
+    }
+}
+
 /*printf("Sol: [");
 for (i=0;i<NT;i++){
 	printf("%d ",asig[i]);
