@@ -103,6 +103,7 @@ if __name__ == '__main__':
         make_values = []
         time_values = []
         cant_iter_values = []
+	best_found_values = []
 
         for (r_inst, r_make, r_time, r_cant_iter, r_best_found) in resultados_palsGPU:
             if r_inst == instancia:
