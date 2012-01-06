@@ -715,7 +715,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
 			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
-			if ((result.delta[result_idx] < 0.0) || (increase_depth < 25)) {
+			if ((result.delta[result_idx] < 0.0) || (increase_depth < 50)) {
 				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
 					ushort task_x = result.origin[result_idx];
 					ushort task_y = result.destination[result_idx];
@@ -869,7 +869,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if (increase_depth >= 250) {
+		if (increase_depth >= 500) {
 			/*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 		
 			instance.blocks += 8;
