@@ -142,6 +142,7 @@ if __name__ == '__main__':
 
     print "====== Tabla de tiempos (segundos) ======"
     print "Instancia,MCT,Min-Min,Min time PGPU,Avg time PGPU,Stddev time PGPU,Worst time PGPU,Avg time PGPU vs Min-Min"
+    total_avg_time = 0.0
     for instancia in instancias:
         (minmin_make, minmin_time) = medidas_deterministas[instancia]['minmin']
         (mct_make, mct_time) = medidas_deterministas[instancia]['mct']
@@ -151,6 +152,10 @@ if __name__ == '__main__':
         (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
         (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
         print "%s,%.4f,%.4f,%.4f,%.4f,%.1f,%.4f,%.1f" % (instancia, mct_time, minmin_time, time_min, time_avg, (time_stddev * 100 / time_avg), time_max, 100-(time_avg * 100 / minmin_time))
+
+        total_avg_time = total_avg_time + time_avg
+
+    print ">> Total avg time: %.4f" % total_avg_time
 
     print "====== Tabla de iteraciones ======"
     print "Instancia,Min iter PGPU,Avg iter PGPU,Stddev iter PGPU,Worst iter PGPU,Best found min, Best found avg"
