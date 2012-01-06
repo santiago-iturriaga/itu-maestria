@@ -645,6 +645,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 	
 	char result_task_history[etc_matrix->tasks_count];
+	char result_machine_history[etc_matrix->machines_count];
 
 	short increase_depth;
 	increase_depth = 0;
@@ -705,7 +706,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 		// Aplico el mejor movimiento.
 		for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
-		//memset(result_task_history, 0, sizeof(int) * etc_matrix->tasks_count);
+		for (int i = 0; i < etc_matrix->machines_count; i++) result_machine_history[i] = 0;
 		
 		ulong cantidad_swaps_iter, cantidad_movs_iter;
 		cantidad_swaps_iter = 0;
@@ -725,13 +726,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					/*if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
 						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);*/
 			
-					if ((result_task_history[task_x] == 0) && (result_task_history[task_y] == 0))	{
+					if ((result_task_history[task_x] == 0) && (result_task_history[task_y] == 0) &&
+						(result_machine_history[machine_a] == 0) && (result_machine_history[machine_b] == 0))	{
 			
 						cantidad_swaps_iter++;
 			
 						result_task_history[task_x] = 1;
 						result_task_history[task_y] = 1;
-			
+						result_machine_history[machine_a] = 1;
+						result_machine_history[machine_b] = 1;
+						
 						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
 							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
@@ -778,11 +782,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 					/*if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
 						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);*/
 					
-					if (result_task_history[task_x] == 0)	{
+					if ((result_task_history[task_x] == 0) &&
+	 					(result_machine_history[machine_a] == 0) &&
+						(result_machine_history[machine_b] == 0))	{
 			
 						cantidad_movs_iter++;
 			
 						result_task_history[task_x] = 1;
+						result_machine_history[machine_a] = 1;
+						result_machine_history[machine_b] = 1;
 					
 						/*if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
@@ -861,7 +869,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 			}
 		}
 
-		if (increase_depth >= 100) {
+		if (increase_depth >= 1000) {
 			/*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 		
 			instance.blocks += 8;
