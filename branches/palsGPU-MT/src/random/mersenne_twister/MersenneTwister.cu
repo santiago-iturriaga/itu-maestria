@@ -227,10 +227,10 @@ int main(int argc, char **argv){
     ///////////////////////////////////////////////////////////////////////////////
     // Data configuration
     ///////////////////////////////////////////////////////////////////////////////
-    int PATH_N = 1; //atoi(argv[1]); //24000000;
+    int PATH_N = 80; //atoi(argv[1]); //24000000;
     int N_PER_RNG = iAlignUp(iDivUp(PATH_N, MT_RNG_COUNT), 2);
     int RAND_N = MT_RNG_COUNT * N_PER_RNG;
-    unsigned int SEED = atoi(argv[2]); //777;
+    unsigned int SEED = 777; //atoi(argv[2]);
 
     fprintf(stdout, "[DEBUG] PATH_N: %d\n", PATH_N);
     fprintf(stdout, "[DEBUG] SEED  : %d\n", SEED);
