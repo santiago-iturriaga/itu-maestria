@@ -243,7 +243,7 @@ int main(int argc, char **argv){
 
     printf("Loading CPU and GPU twisters configurations...\n");
 
-	char *data_path = "/home/santiago/palsGPU/palsGPU-MT-branch/src/random/mersenne_twister/data/";
+	char *data_path = "/home/siturria/cuda/palsGPU-MT/src/random/mersenne_twister/data/";
     
     char raw_path[2048] = "";
     strcat(raw_path, data_path);
