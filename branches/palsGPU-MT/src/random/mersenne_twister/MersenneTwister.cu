@@ -188,6 +188,32 @@ __global__ void RandomGPU(
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Transform each of MT_RNG_COUNT lanes of NPerRng uniformly distributed 
+// random samples, produced by RandomGPU(), to normally distributed lanes
+// using Cartesian form of Box-Muller transformation.
+// NPerRng must be even.
+////////////////////////////////////////////////////////////////////////////////
+#define PI 3.14159265358979f
+__device__ void BoxMuller(float& u1, float& u2){
+    float   r = sqrtf(-2.0f * logf(u1));
+    float phi = 2 * PI * u2;
+    u1 = r * __cosf(phi);
+    u2 = r * __sinf(phi);
+}
+
+__global__ void BoxMullerGPU(float *d_Random, int NPerRng){
+    const int      tid = blockDim.x * blockIdx.x + threadIdx.x;
+    const int THREAD_N = blockDim.x * gridDim.x;
+
+    for(int iRng = tid; iRng < MT_RNG_COUNT; iRng += THREAD_N)
+        for(int iOut = 0; iOut < NPerRng; iOut += 2)
+            BoxMuller(
+                d_Random[iRng + (iOut + 0) * MT_RNG_COUNT],
+                d_Random[iRng + (iOut + 1) * MT_RNG_COUNT]
+            );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main program
 ///////////////////////////////////////////////////////////////////////////////
@@ -242,6 +268,17 @@ int main(int argc, char **argv){
     cudaThreadSynchronize();
  
     printf("Generated samples : %i \n", RAND_N);
+
+    printf("Applying Box-Muller transformation on GPU...\n");
+
+    cudaThreadSynchronize();
+
+    BoxMullerGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
+
+    //CUT_CHECK_ERROR("BoxMullerGPU() execution failed\n");
+    cudaThreadSynchronize();
+
+    printf("Transformed samples : %i \n", RAND_N);
 
     printf("Reading back the results...\n");
     cudaMemcpy(h_RandGPU, d_Rand, RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
