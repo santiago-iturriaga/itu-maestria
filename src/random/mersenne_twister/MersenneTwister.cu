@@ -269,6 +269,7 @@ int main(int argc, char **argv){
  
     printf("Generated samples : %i \n", RAND_N);
 
+	/*
     printf("Applying Box-Muller transformation on GPU...\n");
 
     cudaThreadSynchronize();
@@ -277,7 +278,8 @@ int main(int argc, char **argv){
 
     //CUT_CHECK_ERROR("BoxMullerGPU() execution failed\n");
     cudaThreadSynchronize();
-
+	*/
+	
     printf("Transformed samples : %i \n", RAND_N);
 
     printf("Reading back the results...\n");
