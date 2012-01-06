@@ -192,7 +192,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
 	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 	
 	// Asignación del paralelismo del algoritmo.
-	instance.blocks = 64; //32; //128;
+	instance.blocks = 32; //128;
 	instance.threads = PALS_GPU_RTASK__THREADS;
 	instance.loops = 16; //32; //32;
 	
@@ -705,8 +705,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		// Timming -----------------------------------------------------
 
 		// Aplico el mejor movimiento.
-		for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
-		for (int i = 0; i < etc_matrix->machines_count; i++) result_machine_history[i] = 0;
+		memset(result_task_history, 0, etc_matrix->tasks_count); //for (int i = 0; i < etc_matrix->tasks_count; i++) result_task_history[i] = 0;
+		memset(result_machine_history, 0, etc_matrix->machines_count); //for (int i = 0; i < etc_matrix->machines_count; i++) result_machine_history[i] = 0;
 		
 		ulong cantidad_swaps_iter, cantidad_movs_iter;
 		cantidad_swaps_iter = 0;
@@ -715,7 +715,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
 			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 		
-			if ((result.delta[result_idx] < 0.0) || (increase_depth < 50)) {
+			if (result.delta[result_idx] < 0.0) { //|| (increase_depth < 50)) {
 				if (result.move_type[result_idx] == PALS_GPU_RTASK_SWAP) {
 					ushort task_x = result.origin[result_idx];
 					ushort task_y = result.destination[result_idx];
