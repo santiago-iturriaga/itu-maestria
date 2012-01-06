@@ -1,13 +1,10 @@
 #ifndef MERSENNETWISTER_H
 #define MERSENNETWISTER_H
-#ifndef mersennetwister_h
-#define mersennetwister_h
-
-
 
 #define      DCMT_SEED 4172
 #define  MT_RNG_PERIOD 607
 
+typedef unsigned int uint32_t;
 
 typedef struct{
     unsigned int matrix_a;
@@ -16,6 +13,15 @@ typedef struct{
     unsigned int seed;
 } mt_struct_stripped;
 
+typedef struct {
+    uint32_t aaa;
+    int mm,nn,rr,ww;
+    uint32_t wmask,umask,lmask;
+    int shift0, shift1, shiftB, shiftC;
+    uint32_t maskB, maskC;
+    int i;
+    uint32_t *state;
+}mt_struct;
 
 #define   MT_RNG_COUNT 4096
 #define          MT_MM 9
@@ -31,4 +37,4 @@ typedef struct{
 
 
 #endif
-#endif
+

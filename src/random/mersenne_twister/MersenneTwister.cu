@@ -39,16 +39,12 @@
  * See supplied whitepaper for more explanations.
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-#include <cutil.h>
+
 #include "MersenneTwister.h"
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Common host and device function 
@@ -73,25 +69,125 @@ extern "C" int iAlignDown(int a, int b){
     return a - a % b;
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// Reference MT front-end and Box-Muller transform
+// Mersenne twister functions
 ///////////////////////////////////////////////////////////////////////////////
-extern "C" void initMTRef(const char *fname);
-extern "C" void RandomRef(float *h_Random, int NPerRng, unsigned int seed);
-extern "C" void BoxMullerRef(float *h_Random, int NPerRng);
+__device__ static mt_struct_stripped ds_MT[MT_RNG_COUNT];
 
+static mt_struct_stripped h_MT[MT_RNG_COUNT];
+static mt_struct MT[MT_RNG_COUNT];
 
+void initMTRef(const char *fname){   
+    FILE *fd = fopen(fname, "rb");
+    if(!fd){
+        printf("initMTRef(): failed to open %s\n", fname);
+        printf("TEST FAILED\n");
+        exit(0);
+    }
 
-///////////////////////////////////////////////////////////////////////////////
-// Fast GPU random number generator and Box-Muller transform
-///////////////////////////////////////////////////////////////////////////////
-#include "MersenneTwister_kernel.cu"
+    for (int i = 0; i < MT_RNG_COUNT; i++){
+        //Inline structure size for compatibility,
+        //since pointer types are 8-byte on 64-bit systems (unused *state variable)
+        if( !fread(MT + i, 16 /* sizeof(mt_struct) */ * sizeof(int), 1, fd) ){
+            printf("initMTRef(): failed to load %s\n", fname);
+            printf("TEST FAILED\n");
+            exit(0);
+        }
+    }
 
+    fclose(fd);
+}
 
+//Load twister configurations
+void loadMTGPU(const char *fname){
+    FILE *fd = fopen(fname, "rb");
+    if(!fd){
+        printf("initMTGPU(): failed to open %s\n", fname);
+        printf("TEST FAILED\n");
+        exit(0);
+    }
+    if( !fread(h_MT, sizeof(h_MT), 1, fd) ){
+        printf("initMTGPU(): failed to load %s\n", fname);
+        printf("TEST FAILED\n");
+        exit(0);
+    }
+    fclose(fd);
+}
 
-//define DO_BOXMULLER
+//Initialize/seed twister for current GPU context
+void seedMTGPU(unsigned int seed){
+    int i;
+    //Need to be thread-safe
+    mt_struct_stripped *MT = (mt_struct_stripped *)malloc(MT_RNG_COUNT * sizeof(mt_struct_stripped));
+
+    for(i = 0; i < MT_RNG_COUNT; i++){
+        MT[i]      = h_MT[i];
+        MT[i].seed = seed;
+    }
+    cudaMemcpyToSymbol(ds_MT, MT, sizeof(h_MT));
+
+    free(MT);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Write MT_RNG_COUNT vertical lanes of NPerRng random numbers to *d_Random.
+// For coalesced global writes MT_RNG_COUNT should be a multiple of warp size.
+// Initial states for each generator are the same, since the states are
+// initialized from the global seed. In order to improve distribution properties
+// on small NPerRng supply dedicated (local) seed to each twister.
+// The local seeds, in their turn, can be extracted from global seed
+// by means of any simple random number generator, like LCG.
+////////////////////////////////////////////////////////////////////////////////
+__global__ void RandomGPU(
+    float *d_Random,
+    int NPerRng
+){
+    const int      tid = blockDim.x * blockIdx.x + threadIdx.x;
+    const int THREAD_N = blockDim.x * gridDim.x;
+
+    int iState, iState1, iStateM, iOut;
+    unsigned int mti, mti1, mtiM, x;
+    unsigned int mt[MT_NN];
+
+    for(int iRng = tid; iRng < MT_RNG_COUNT; iRng += THREAD_N){
+        //Load bit-vector Mersenne Twister parameters
+        mt_struct_stripped config = ds_MT[iRng];
+
+        //Initialize current state
+        mt[0] = config.seed;
+        for(iState = 1; iState < MT_NN; iState++)
+            mt[iState] = (1812433253U * (mt[iState - 1] ^ (mt[iState - 1] >> 30)) + iState) & MT_WMASK;
+
+        iState = 0;
+        mti1 = mt[0];
+        for(iOut = 0; iOut < NPerRng; iOut++){
+            //iState1 = (iState +     1) % MT_NN
+            //iStateM = (iState + MT_MM) % MT_NN
+            iState1 = iState + 1;
+            iStateM = iState + MT_MM;
+            if(iState1 >= MT_NN) iState1 -= MT_NN;
+            if(iStateM >= MT_NN) iStateM -= MT_NN;
+            mti  = mti1;
+            mti1 = mt[iState1];
+            mtiM = mt[iStateM];
+
+            x    = (mti & MT_UMASK) | (mti1 & MT_LMASK);
+            x    =  mtiM ^ (x >> 1) ^ ((x & 1) ? config.matrix_a : 0);
+            mt[iState] = x;
+            iState = iState1;
+
+            //Tempering transformation
+            x ^= (x >> MT_SHIFT0);
+            x ^= (x << MT_SHIFTB) & config.mask_b;
+            x ^= (x << MT_SHIFTC) & config.mask_c;
+            x ^= (x >> MT_SHIFT1);
+
+            //Convert to (0, 1] float and write to global memory
+            d_Random[iRng + iOut * MT_RNG_COUNT] = ((float)x + 1.0f) / 4294967296.0f;
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Main program
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,19 +196,12 @@ int main(int argc, char **argv){
         *d_Rand;
 
     float
-        *h_RandCPU,
         *h_RandGPU;
-
-    double
-        rCPU, rGPU, delta, sum_delta, max_delta, sum_ref, L1norm, gpuTime;
-
-    int i, j;
-    unsigned int hTimer;
 
     ///////////////////////////////////////////////////////////////////////////////
     // Data configuration
     ///////////////////////////////////////////////////////////////////////////////
-    int PATH_N = atoi(argv[1]); //24000000;
+    int PATH_N = 1; //atoi(argv[1]); //24000000;
     int N_PER_RNG = iAlignUp(iDivUp(PATH_N, MT_RNG_COUNT), 2);
     int RAND_N = MT_RNG_COUNT * N_PER_RNG;
     unsigned int SEED = atoi(argv[2]); //777;
@@ -120,101 +209,47 @@ int main(int argc, char **argv){
     fprintf(stdout, "[DEBUG] PATH_N: %d\n", PATH_N);
     fprintf(stdout, "[DEBUG] SEED  : %d\n", SEED);
 
-    CUT_DEVICE_INIT(argc, argv);
-    CUT_SAFE_CALL( cutCreateTimer(&hTimer) );
+    cudaSetDevice(2);
 
     printf("Initializing data for %i samples...\n", PATH_N);
-        h_RandCPU  = (float *)malloc(RAND_N * sizeof(float));
-        h_RandGPU  = (float *)malloc(RAND_N * sizeof(float));
-        CUDA_SAFE_CALL( cudaMalloc((void **)&d_Rand, RAND_N * sizeof(float)) );
+    h_RandGPU  = (float *)malloc(RAND_N * sizeof(float));
+    cudaMalloc((void **)&d_Rand, RAND_N * sizeof(float));
 
     printf("Loading CPU and GPU twisters configurations...\n");
-        const char *raw_path = cutFindFilePath("MersenneTwister.raw", argv[0]);
-        const char *dat_path = cutFindFilePath("MersenneTwister.dat", argv[0]);
-        initMTRef(raw_path);
-        loadMTGPU(dat_path);
-        seedMTGPU(SEED);
+
+	char *data_path = "/home/santiago/palsGPU/palsGPU-MT-branch/src/random/mersenne_twister/data/";
+    
+    char raw_path[2048] = "";
+    strcat(raw_path, data_path);
+    strcat(raw_path, "MersenneTwister.raw");
+    
+    char dat_path[2048];
+    strcat(dat_path, data_path);
+    strcat(dat_path, "MersenneTwister.dat");
+        
+    initMTRef(raw_path);
+    loadMTGPU(dat_path);
+    seedMTGPU(SEED);
 
     printf("Generating random numbers on GPU...\n");
 
-    CUDA_SAFE_CALL( cudaThreadSynchronize() );
-    CUT_SAFE_CALL( cutResetTimer(hTimer) );
-    CUT_SAFE_CALL( cutStartTimer(hTimer) );
+    //CUDA_SAFE_CALL( 
+    cudaThreadSynchronize();
 
     RandomGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
 
-    CUT_CHECK_ERROR("RandomGPU() execution failed\n");
-    CUDA_SAFE_CALL( cudaThreadSynchronize() );
-    CUT_SAFE_CALL( cutStopTimer(hTimer) );
- 
-    gpuTime = cutGetTimerValue(hTimer);
+    //CUT_CHECK_ERROR("RandomGPU() execution failed\n");
+    cudaThreadSynchronize();
  
     printf("Generated samples : %i \n", RAND_N);
-    printf("RandomGPU() time  : %f \n", gpuTime);
-    printf("Samples per second: %E \n", RAND_N / (gpuTime * 0.001));
-
-
-#ifdef DO_BOXMULLER
-    printf("Applying Box-Muller transformation on GPU...\n");
-
-    CUDA_SAFE_CALL( cudaThreadSynchronize() );
-    CUT_SAFE_CALL( cutResetTimer(hTimer) );
-    CUT_SAFE_CALL( cutStartTimer(hTimer) );
-
-    BoxMullerGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
-
-    CUT_CHECK_ERROR("BoxMullerGPU() execution failed\n");
-    CUDA_SAFE_CALL( cudaThreadSynchronize() );
-    CUT_SAFE_CALL( cutStopTimer(hTimer) );
-
-    gpuTime = cutGetTimerValue(hTimer);
-
-    printf("Transformed samples : %i \n", RAND_N);
-    printf("BoxMullerGPU() time : %f \n", gpuTime);
-    printf("Samples per second  : %E \n", RAND_N / (gpuTime * 0.001));
-#endif
 
     printf("Reading back the results...\n");
-        CUDA_SAFE_CALL( cudaMemcpy(h_RandGPU, d_Rand, RAND_N * sizeof(float), cudaMemcpyDeviceToHost) );
+    cudaMemcpy(h_RandGPU, d_Rand, RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
 
     for (int i = 0; i < PATH_N; i++) {
         fprintf(stdout, "[%d] %f\n", i, h_RandGPU[i]);
     }
 
-    printf("Checking GPU results...\n");
-        printf("...generating random numbers on CPU using reference generator\n");
-        RandomRef(h_RandCPU, N_PER_RNG, SEED);
-
-        #ifdef DO_BOXMULLER
-            printf("...applying Box-Muller transformation on CPU\n");
-            BoxMullerRef(h_RandCPU, N_PER_RNG);
-        #endif
-
-        printf("...comparing the results\n");
-        max_delta = 0;
-        sum_delta = 0;
-        sum_ref   = 0;
-        for(i = 0; i < MT_RNG_COUNT; i++)
-            for(j = 0; j < N_PER_RNG; j++){
-                rCPU = h_RandCPU[i * N_PER_RNG + j];
-                rGPU = h_RandGPU[i + j * MT_RNG_COUNT];
-                delta = fabs(rCPU - rGPU);
-                sum_delta += delta;
-                sum_ref   += fabs(rCPU);
-                if(delta >= max_delta) max_delta = delta;
-            }
-
-    L1norm = (float)(sum_delta / sum_ref);
-    printf("Max absolute error: %E\n", max_delta);
-    printf("L1 norm: %E\n", L1norm);
-    printf((L1norm < 1e-6) ? "TEST PASSED\n" : "TEST FAILED\n");
-
-    printf("Shutting down...\n");
-        CUDA_SAFE_CALL( cudaFree(d_Rand) );
-        free(h_RandGPU);
-        free(h_RandCPU);
-
-    CUT_SAFE_CALL( cutDeleteTimer( hTimer) );
-
-    CUT_EXIT(argc, argv);
+	cudaFree(d_Rand);
+    free(h_RandGPU);
 }
