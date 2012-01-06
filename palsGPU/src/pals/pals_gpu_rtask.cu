@@ -997,6 +997,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
 		fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
 		fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
+                fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
+                fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
 	}
 
 	// Libero la memoria del dispositivo.
