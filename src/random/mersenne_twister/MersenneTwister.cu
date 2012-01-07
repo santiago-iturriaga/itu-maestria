@@ -39,12 +39,17 @@
  * See supplied whitepaper for more explanations.
  */
 
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include "dci.h"
 
 #include "MersenneTwister.h"
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Common host and device function 
@@ -69,15 +74,69 @@ extern "C" int iAlignDown(int a, int b){
     return a - a % b;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Mersenne twister functions
-///////////////////////////////////////////////////////////////////////////////
-__device__ static mt_struct_stripped ds_MT[MT_RNG_COUNT];
 
-static mt_struct_stripped h_MT[MT_RNG_COUNT];
+
+///////////////////////////////////////////////////////////////////////////////
+// Reference MT front-end and Box-Muller transform
+///////////////////////////////////////////////////////////////////////////////
 static mt_struct MT[MT_RNG_COUNT];
+static uint32_t state[MT_NN];
 
-void initMTRef(const char *fname){   
+#define SHIFT1 18
+
+void sgenrand_mt(uint32_t seed, mt_struct *mts){
+    int i;
+
+    mts->state[0] = seed;
+
+    for(i = 1; i < mts->nn; i++){
+        mts->state[i] = (UINT32_C(1812433253) * (mts->state[i - 1] ^ (mts->state[i - 1] >> 30)) + i) & mts->wmask;
+        /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+        /* In the previous versions, MSBs of the seed affect   */
+        /* only MSBs of the array mt[].                        */
+    }
+    mts->i = mts->nn;
+}
+
+uint32_t genrand_mt(mt_struct *mts){
+    uint32_t *st, uuu, lll, aa, x;
+    int k,n,m,lim;
+
+    if(mts->i >= mts->nn ){
+        n = mts->nn; m = mts->mm;
+        aa = mts->aaa;
+        st = mts->state;
+        uuu = mts->umask; lll = mts->lmask;
+
+        lim = n - m;
+        for(k = 0; k < lim; k++){
+            x = (st[k]&uuu)|(st[k+1]&lll);
+            st[k] = st[k + m] ^ (x >> 1) ^ (x&1U ? aa : 0U);
+        }
+
+        lim = n - 1;
+        for(; k < lim; k++){
+            x = (st[k] & uuu)|(st[k + 1] & lll);
+            st[k] = st[k + m - n] ^ (x >> 1) ^ (x & 1U ? aa : 0U);
+        }
+
+        x = (st[n - 1] & uuu)|(st[0] & lll);
+        st[n - 1] = st[m - 1] ^ (x >> 1) ^ (x&1U ? aa : 0U);
+        mts->i=0;
+    }
+
+    x = mts->state[mts->i];
+    mts->i += 1;
+    x ^= x >> mts->shift0;
+    x ^= (x << mts->shiftB) & mts->maskB;
+    x ^= (x << mts->shiftC) & mts->maskC;
+    x ^= x >> mts->shift1;
+
+    return x;
+}
+
+void initMTRef(const char *fname){
+
     FILE *fd = fopen(fname, "rb");
     if(!fd){
         printf("initMTRef(): failed to open %s\n", fname);
@@ -97,6 +156,29 @@ void initMTRef(const char *fname){
 
     fclose(fd);
 }
+
+void RandomRef(
+    float *h_Random,
+    int NPerRng,
+    unsigned int seed
+){
+    int iRng, iOut;
+
+    for(iRng = 0; iRng < MT_RNG_COUNT; iRng++){
+        MT[iRng].state = state;
+        sgenrand_mt(seed, &MT[iRng]);
+
+        for(iOut = 0; iOut < NPerRng; iOut++)
+           h_Random[iRng * NPerRng + iOut] = ((float)genrand_mt(&MT[iRng]) + 1.0f) / 4294967296.0f;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Fast GPU random number generator and Box-Muller transform
+///////////////////////////////////////////////////////////////////////////////
+__device__ static mt_struct_stripped ds_MT[MT_RNG_COUNT];
+static mt_struct_stripped h_MT[MT_RNG_COUNT];
+
 
 //Load twister configurations
 void loadMTGPU(const char *fname){
@@ -128,6 +210,7 @@ void seedMTGPU(unsigned int seed){
 
     free(MT);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Write MT_RNG_COUNT vertical lanes of NPerRng random numbers to *d_Random.
@@ -188,32 +271,19 @@ __global__ void RandomGPU(
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Transform each of MT_RNG_COUNT lanes of NPerRng uniformly distributed 
-// random samples, produced by RandomGPU(), to normally distributed lanes
-// using Cartesian form of Box-Muller transformation.
-// NPerRng must be even.
-////////////////////////////////////////////////////////////////////////////////
-#define PI 3.14159265358979f
-__device__ void BoxMuller(float& u1, float& u2){
-    float   r = sqrtf(-2.0f * logf(u1));
-    float phi = 2 * PI * u2;
-    u1 = r * __cosf(phi);
-    u2 = r * __sinf(phi);
-}
 
-__global__ void BoxMullerGPU(float *d_Random, int NPerRng){
-    const int      tid = blockDim.x * blockIdx.x + threadIdx.x;
-    const int THREAD_N = blockDim.x * gridDim.x;
+///////////////////////////////////////////////////////////////////////////////
+// Data configuration
+///////////////////////////////////////////////////////////////////////////////
+const int    PATH_N = 80; //24000000;
+const int N_PER_RNG = iAlignUp(iDivUp(PATH_N, MT_RNG_COUNT), 2);
+const int    RAND_N = MT_RNG_COUNT * N_PER_RNG;
 
-    for(int iRng = tid; iRng < MT_RNG_COUNT; iRng += THREAD_N)
-        for(int iOut = 0; iOut < NPerRng; iOut += 2)
-            BoxMuller(
-                d_Random[iRng + (iOut + 0) * MT_RNG_COUNT],
-                d_Random[iRng + (iOut + 1) * MT_RNG_COUNT]
-            );
-}
+const unsigned int SEED = 777;
 
+
+
+//#define DO_BOXMULLER
 ///////////////////////////////////////////////////////////////////////////////
 // Main program
 ///////////////////////////////////////////////////////////////////////////////
@@ -222,73 +292,56 @@ int main(int argc, char **argv){
         *d_Rand;
 
     float
+        *h_RandCPU,
         *h_RandGPU;
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // Data configuration
-    ///////////////////////////////////////////////////////////////////////////////
-    int PATH_N = 80; //atoi(argv[1]); //24000000;
-    int N_PER_RNG = iAlignUp(iDivUp(PATH_N, MT_RNG_COUNT), 2);
-    int RAND_N = MT_RNG_COUNT * N_PER_RNG;
-    unsigned int SEED = 777; //atoi(argv[2]);
+    double
+        rCPU, rGPU, delta, sum_delta, max_delta, sum_ref, L1norm, gpuTime;
 
-    fprintf(stdout, "[DEBUG] PATH_N: %d\n", PATH_N);
-    fprintf(stdout, "[DEBUG] SEED  : %d\n", SEED);
+    int i, j;
+    unsigned int hTimer;
 
     cudaSetDevice(2);
 
     printf("Initializing data for %i samples...\n", PATH_N);
-    h_RandGPU  = (float *)malloc(RAND_N * sizeof(float));
-    cudaMalloc((void **)&d_Rand, RAND_N * sizeof(float));
+        h_RandCPU  = (float *)malloc(RAND_N * sizeof(float));
+        h_RandGPU  = (float *)malloc(RAND_N * sizeof(float));
+        cudaMalloc((void **)&d_Rand, RAND_N * sizeof(float));
 
     printf("Loading CPU and GPU twisters configurations...\n");
-
 	char *data_path = "/home/siturria/cuda/palsGPU-MT/src/random/mersenne_twister/data/";
     
-    char raw_path[2048] = "";
-    strcat(raw_path, data_path);
-    strcat(raw_path, "MersenneTwister.raw");
+        char raw_path[2048] = "";
+        strcat(raw_path, data_path);
+        strcat(raw_path, "MersenneTwister.raw");
     
-    char dat_path[2048];
-    strcat(dat_path, data_path);
-    strcat(dat_path, "MersenneTwister.dat");
-        
-    initMTRef(raw_path);
-    loadMTGPU(dat_path);
-    seedMTGPU(SEED);
+        char dat_path[2048];
+        strcat(dat_path, data_path);
+        strcat(dat_path, "MersenneTwister.dat");
+
+        initMTRef(raw_path);
+        loadMTGPU(dat_path);
+        seedMTGPU(SEED);
 
     printf("Generating random numbers on GPU...\n");
+        cudaThreadSynchronize();
+        RandomGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
+        cudaThreadSynchronize();
 
-    //CUDA_SAFE_CALL( 
-    cudaThreadSynchronize();
-
-    RandomGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
-
-    //CUT_CHECK_ERROR("RandomGPU() execution failed\n");
-    cudaThreadSynchronize();
- 
     printf("Generated samples : %i \n", RAND_N);
-
-	/*
-    printf("Applying Box-Muller transformation on GPU...\n");
-
-    cudaThreadSynchronize();
-
-    BoxMullerGPU<<<32, 128>>>(d_Rand, N_PER_RNG);
-
-    //CUT_CHECK_ERROR("BoxMullerGPU() execution failed\n");
-    cudaThreadSynchronize();
-	*/
-	
-    printf("Transformed samples : %i \n", RAND_N);
-
+ 
     printf("Reading back the results...\n");
-    cudaMemcpy(h_RandGPU, d_Rand, RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaMemcpy(h_RandGPU, d_Rand, RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
 
-    for (int i = 0; i < PATH_N; i++) {
-        fprintf(stdout, "[%d] %f\n", i, h_RandGPU[i]);
+    for(i = 0; i < MT_RNG_COUNT; i++) {
+        for(j = 0; j < N_PER_RNG; j++){
+           rGPU = h_RandGPU[i + j * MT_RNG_COUNT];
+           printf("%f\n", rGPU);
+        }
     }
 
-	cudaFree(d_Rand);
-    free(h_RandGPU);
+    printf("Shutting down...\n");
+        cudaFree(d_Rand);
+        free(h_RandGPU);
+        free(h_RandCPU);
 }
