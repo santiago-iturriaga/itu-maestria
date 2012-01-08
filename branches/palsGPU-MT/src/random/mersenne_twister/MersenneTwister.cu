@@ -279,10 +279,10 @@ __global__ void RandomGPU(
 void mersenne_twister_init(char *data_path, int count, mersenne_twister_init_data &empty_init_data) {
     empty_init_data.count = count;
     empty_init_data.N_PER_RNG = iAlignUp(iDivUp(count, MT_RNG_COUNT), 2);
-    empty_init_data.RAND_N = MT_RNG_COUNT * N_PER_RNG;
+    empty_init_data.RAND_N = MT_RNG_COUNT * empty_init_data.N_PER_RNG;
 
     printf("Initializing data for %i samples...\n", count);
-    cudaMalloc((void **)&gpu_Rand, RAND_N * sizeof(float));
+    cudaMalloc((void **)&empty_init_data.gpu_Rand, empty_init_data.RAND_N * sizeof(float));
 
     printf("Loading CPU and GPU twisters configurations...\n");
     //char *data_path = "/home/siturria/cuda/palsGPU-MT/src/random/mersenne_twister/data/";
@@ -316,10 +316,9 @@ void mersenne_twister_read_results(mersenne_twister_init_data &init_data, float 
     printf("Reading back the results...\n");
         cudaMemcpy(results, init_data.gpu_Rand, init_data.RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
 
-    for(i = 0; i < MT_RNG_COUNT; i++) {
-        for(j = 0; j < init_data.N_PER_RNG; j++){
-           rGPU = results[i + j * MT_RNG_COUNT];
-           printf("%f\n", rGPU);
+    for(int i = 0; i < MT_RNG_COUNT; i++) {
+        for(int j = 0; j < init_data.N_PER_RNG; j++){
+           printf("%f\n", results[i + j * MT_RNG_COUNT]);
         }
     }
 }
