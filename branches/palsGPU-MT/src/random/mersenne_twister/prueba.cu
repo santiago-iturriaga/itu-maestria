@@ -6,7 +6,7 @@
 #include "MersenneTwister.h"
 
 int main(int argc, char** argv) {
-    mersenne_twister_init_data init;
+    mersenne_twister_init_data init_data;
 
     char *data_path = "/home/siturria/cuda/palsGPU-MT/src/random/mersenne_twister/data/";
     mersenne_twister_init(data_path, 15, init_data);
