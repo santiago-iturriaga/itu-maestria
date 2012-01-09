@@ -9,10 +9,10 @@ int main(int argc, char** argv) {
     mersenne_twister_init_data init_data;
 
     char *data_path = "/home/siturria/cuda/palsGPU-MT/src/random/mersenne_twister/data/";
-    mersenne_twister_init(data_path, 15, init_data);
+    mersenne_twister_init(data_path, 80, init_data);
     mersenne_twister_generate(init_data, 777);
     
-    float results[15];
+    float results[80];
     
     mersenne_twister_read_results(init_data, results);
     mersenne_twister_free(init_data);

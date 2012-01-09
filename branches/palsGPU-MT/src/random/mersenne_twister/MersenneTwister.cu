@@ -313,14 +313,24 @@ void mersenne_twister_generate(mersenne_twister_init_data &init_data, int seed) 
 }
 
 void mersenne_twister_read_results(mersenne_twister_init_data &init_data, float *results) {
-    printf("Reading back the results...\n");
-        cudaMemcpy(results, init_data.gpu_Rand, init_data.RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
+    float *host_Rand;
+    host_Rand = (float*)malloc(sizeof(float) * init_data.RAND_N);
 
+    printf("Reading back the results...\n");
+        cudaMemcpy(host_Rand, init_data.gpu_Rand, init_data.RAND_N * sizeof(float), cudaMemcpyDeviceToHost);
+
+    int results_offset = 0;
     for(int i = 0; i < MT_RNG_COUNT; i++) {
         for(int j = 0; j < init_data.N_PER_RNG; j++){
-           printf("%f\n", results[i + j * MT_RNG_COUNT]);
+           if (results_offset < init_data.count) {
+              results[results_offset] = host_Rand[i + j * MT_RNG_COUNT];
+              printf("%f\n", results[results_offset]);
+              results_offset++;
+           }
         }
     }
+
+    free(host_Rand);
 }
 
 void mersenne_twister_free(mersenne_twister_init_data &init_data) {
