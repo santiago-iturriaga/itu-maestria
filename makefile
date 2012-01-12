@@ -1,88 +1,59 @@
-#CC=gcc
+CC=gcc -Wall -std=c99
+CX=g++ -Wall
+LIBS=-lpthread
 
-#NVCC=/home/santiago/cuda/bin/nvcc
-NVCC=/usr/local/cuda/bin/nvcc 
-NVCCLocal=/home/santiago/cuda/bin/nvcc 
-
-all: pals-opt verificador minmin
+all: pals-opt verificador
 
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
 	
-minmin: minmin.c
-	$(CC) -O3 minmin.c -o bin/minmin
+pals-gdb: src/main.cpp \
+		src/load_params.cpp \
+		src/load_instance.cpp \
+		src/etc_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/random/cpu_rand.cpp \
+		src/pals/pals_cpu_rtask.cpp \
+		src/pals/pals_serial.cpp 
+	$(CX) -g src/main.cpp \
+		src/load_instance.cpp \
+		src/load_params.cpp \
+		src/etc_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/random/cpu_rand.cpp \
+		src/pals/pals_cpu_rtask.cpp \
+		src/pals/pals_serial.cpp \
+			-o bin/pals_cpu $(LIBS)
 
-pals-gdb: src/main.cu \
-		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu 
-	$(NVCC) -g --ptxas-options=-v -maxrregcount=16 src/main.cu \
-		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu \
-			-o bin/pals
-
-pals-opt: src/main.cu \
-		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu 
-	$(NVCC) -O3 -maxrregcount=16 src/main.cu \
-		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu \
-			-o bin/pals
-
-pals-local: src/main.cu \
-		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu 
-	$(NVCCLocal) -g --ptxas-options=-v -maxrregcount=16 src/main.cu \
-		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
-		src/solution.cu src/utils.cu src/gpu_utils.cu \
-		src/basic/mct.cu \
-		src/basic/minmin.cu \
-		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
-		src/pals/pals_gpu.cu \
-		src/pals/pals_gpu_rtask.cu \
-		src/pals/pals_gpu_prtask.cu \
-		src/pals/pals_serial.cu \
-			-o bin/pals
+pals-opt: src/main.cpp \
+		src/load_params.cpp \
+		src/load_instance.cpp \
+		src/etc_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/random/cpu_rand.cpp \
+		src/pals/pals_cpu_rtask.cpp \
+		src/pals/pals_serial.cpp 
+	$(CX) -O3 src/main.cpp \
+		src/load_instance.cpp \
+		src/load_params.cpp \
+		src/etc_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/random/cpu_rand.cpp \
+		src/pals/pals_cpu_rtask.cpp \
+		src/pals/pals_serial.cpp \
+			-o bin/pals_cpu $(LIBS)
 
 clean:
 	rm bin/*

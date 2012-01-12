@@ -11,8 +11,8 @@
 #ifndef PALS_SERIAL_H_
 #define PALS_SERIAL_H_
 
-void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s, ushort &best_swap_task_a, 
-	ushort &best_swap_task_b, float &best_swap_delta);
+void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s, int &best_swap_task_a, 
+	int &best_swap_task_b, float &best_swap_delta);
 
 /*
  * Ejecuta el algoritmo.

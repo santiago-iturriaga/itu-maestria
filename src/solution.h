@@ -10,7 +10,7 @@
 #define SOLUTION_H_
 
 struct solution {
-	ushort *task_assignment;
+	int *task_assignment;
 	float *machine_compute_time;	
 	float makespan;
 };
