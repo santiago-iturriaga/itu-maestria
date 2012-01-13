@@ -1,6 +1,6 @@
 CC=gcc -Wall -std=c99
 CX=g++ -Wall
-LIBS=-lpthread
+LIBS=-lpthread -lrt
 
 all: pals-opt verificador
 
