@@ -16,17 +16,23 @@
 #ifndef PALS_CPU_RTASK_H_
 #define PALS_CPU_RTASK_H_
 
+#define WORK__DO_SEARCH 0
+#define WORK__DO_EXIT   1
+
 struct pals_cpu_rtask_instance {
     // Estado del problema.
     struct matrix *etc_matrix;
     struct solution *current_solution;
+    struct solution *best_solution;
 
     // Referencia a los threads del disponibles.
-    pthread_t *threads;
-    struct pals_cpu_rtask_thread_arg *threads_args;
+    pthread_t *master_thread;
+    pthread_t *slave_threads;
+    struct pals_cpu_rtask_thread_arg *slave_threads_args;
 
 	// Espacio de memoria para comunicación con los threads.
 	int work_type;
+	pthread_barrier_t *sync_barrier;
 
 	// Estado de los generadores aleatorios.
     struct cpu_rand_state *random_states;
@@ -48,6 +54,10 @@ struct pals_cpu_rtask_instance {
 	// Cantidad de resultados obtenidos por iteración.
 	// (¿siempre es igual a cantidad de bloques del kernel?)
 	int result_count;
+	
+	// Inner state...
+	char *__result_task_history;
+	char *__result_machine_history;
 };
 
 struct pals_cpu_rtask_thread_arg {
@@ -60,6 +70,7 @@ struct pals_cpu_rtask_thread_arg {
 
     // Comunicación con el thread actual.
 	int *work_type;
+	pthread_barrier_t *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
     struct cpu_rand_state *thread_random_state;
@@ -91,8 +102,7 @@ void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance);
 /*
  * Ejecuta PALS.
  */
-void pals_cpu_rtask_search(struct pals_cpu_rtask_instance &instance);
-
-void* pals_cpu_rtask_thread(void *thread_arg);
+void* pals_cpu_rtask_master_thread(void *thread_arg);
+void* pals_cpu_rtask_slave_thread(void *thread_arg);
 
 #endif /* PALS_CPU_H_ */
