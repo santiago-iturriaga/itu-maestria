@@ -435,8 +435,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 			}
 
 			if (DEBUG) {
-				fprintf(stdout, "   swaps performed  : %ld.\n", cantidad_swaps_iter);
-				fprintf(stdout, "   movs performed   : %ld.\n", cantidad_movs_iter);
+				fprintf(stdout, "   swaps performed  : %d.\n", cantidad_swaps_iter);
+				fprintf(stdout, "   movs performed   : %d.\n", cantidad_movs_iter);
 			}
 			
 			cantidad_swaps += cantidad_swaps_iter;
@@ -483,6 +483,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
 	}
+
+	return NULL;
 }
 
 void* pals_cpu_rtask_slave_thread(void *thread_arg)
@@ -650,4 +652,6 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
 		gpu_best_deltas[block_idx] = block_deltas[0];  // Best movement delta.
 	}
 	*/
+
+	return NULL;
 }
