@@ -36,7 +36,7 @@ struct pals_cpu_rtask_instance {
 
 	// Estado de los generadores aleatorios.
     struct cpu_rand_state *random_states;
-    float *random_numbers;
+    double *random_numbers;
 	
 	// Espacio de memoria para almacenar los mejores movimientos encontrados en cada iteración.
 	int *move_type;
@@ -64,6 +64,10 @@ struct pals_cpu_rtask_instance {
 struct pals_cpu_rtask_thread_arg {
     // Id del thread actual.
     int thread_idx;
+
+	// Parámetros de ejecución.
+	int count_loops;
+	int count_evals;
     
     // Estado del problema.
     struct matrix *etc_matrix;
@@ -75,7 +79,7 @@ struct pals_cpu_rtask_thread_arg {
 	
 	// Estado del generador aleatorio para el thread actual.
     struct cpu_rand_state *thread_random_state;
-    float *thread_random_numbers;
+    double *thread_random_numbers;
 
     // Mejor movimiento del thread actual.
 	int *thread_move_type;
