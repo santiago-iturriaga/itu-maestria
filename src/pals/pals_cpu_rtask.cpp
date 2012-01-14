@@ -28,8 +28,8 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 	// Inicializo la memoria y los hilos de ejecución.
 	struct pals_cpu_rtask_instance instance;
-	pals_cpu_rtask_init(etc_matrix, current_solution, input.seed, instance);
-
+	pals_cpu_rtask_init(input, etc_matrix, current_solution, input.seed, instance);
+    
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_cpu_rtask_init", ts_init);
 	// Timming -----------------------------------------------------
@@ -104,11 +104,11 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------		
 }
 
-void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed,
+void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct solution *s, int seed,
 	struct pals_cpu_rtask_instance &empty_instance) {
 	
 	// Asignación del paralelismo del algoritmo.
-	empty_instance.count_threads = 4;
+	empty_instance.count_threads = input.thread_count;
 	empty_instance.count_loops = 4;
 	empty_instance.count_evals = 128;
 	

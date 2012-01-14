@@ -37,18 +37,19 @@ int load_params(int argc, char **argv, struct params *input) {
 		}
 
 		if (argc >= 6) {
-			input->seed = atoi(argv[5]);
-			if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+			input->thread_count = atoi(argv[5]);
+			if (input->thread_count < 2) input->thread_count = 2;
+			
+			if (DEBUG) fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
 		} else {
-			input->seed = 0;
-			input->gpu_device = 0;
+			input->thread_count = 2;
 		}
 
 		if (argc >= 7) {
-			input->gpu_device = atoi(argv[6]);
-			if (DEBUG) fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
+			input->seed = atoi(argv[6]);
+			if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
 		} else {
-			input->gpu_device = 0;
+			input->seed = 0;
 		}
 
 		// Input validation.
@@ -70,7 +71,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		return EXIT_SUCCESS;
 	} else {
 		fprintf(stdout, "Usage:\n");	
-		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device]\n\n", argv[0]);
+		fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [threads count] [seed]\n\n", argv[0]);
 		fprintf(stdout, "       Algorithms\n");
 		fprintf(stdout, "           0 CPU full (serial)\n");
 		fprintf(stdout, "           3 CPU rand. task (multi-threaded)\n");

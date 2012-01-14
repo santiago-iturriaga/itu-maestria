@@ -21,7 +21,7 @@ struct params {
 	int machines_count;
 	int tasks_count;
 	int seed;
-	int gpu_device;
+	int thread_count;
 	int algorithm;
 };
 

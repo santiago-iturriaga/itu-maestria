@@ -98,7 +98,7 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 /*
  * Reserva e inicializa la memoria con los datos del problema.
  */
-void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance);
+void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance);
 
 /*
  * Libera la memoria.
