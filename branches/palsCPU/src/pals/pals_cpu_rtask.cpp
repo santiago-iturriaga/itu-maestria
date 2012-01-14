@@ -85,17 +85,17 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	// <=========== DEBUG
 	
-	//if (DEBUG) {
+	if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
 		fprintf(stdout, "[DEBUG] Mejora: %.2f\n", 100 - (current_solution->makespan / makespan_inicial) * 100);
-	/*} else {
-        if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
-        //fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
-        //fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
-        //fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
-        //fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
-	}*/
+	} else {
+	        if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
+        	fprintf(stderr, "CANT_ITERACIONES|%d\n", 0);
+        	fprintf(stderr, "BEST_FOUND|%d\n", 0);
+	        fprintf(stderr, "TOTAL_SWAPS|%ld\n", 0);
+        	fprintf(stderr, "TOTAL_MOVES|%ld\n", 0);
+	}
 
 	// Libero la memoria del dispositivo.
 	pals_cpu_rtask_finalize(instance);
