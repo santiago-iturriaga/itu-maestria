@@ -23,9 +23,9 @@ do
 		SEED=$RANDOM
 		echo "... pals CPU ${j} (seed: ${SEED})"
 
-		echo "time (${BASE_PATH}/bin/pals_cpu ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 2 ${THREAD_COUNT} ${SEED} 1> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.sol 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.info) 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.time"
+		#echo "time (${BASE_PATH}/bin/pals_cpu ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 2 ${THREAD_COUNT} ${SEED} 1> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.sol 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.info) 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.time"
 
-		time (${BASE_PATH}/bin/pals_cpu ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 2 ${THREAD_COUNT} ${SEED} 1> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.sol 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.info) 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.time
+		time (${BASE_PATH}/bin/pals_cpu ${INSTANCE_PATH}/${INSTANCE} ${DIM_SIZE} 3 ${THREAD_COUNT} ${SEED} 1> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.sol 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.info) 2> ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.time
 		${BASE_PATH}/bin/verificador ${INSTANCE_PATH}/${INSTANCE} ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.sol ${DIM_SIZE} > ${SOL_PATH}/${INSTANCE}.palsCPU.${j}.makespan
 	done
 done
