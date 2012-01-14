@@ -26,7 +26,7 @@ int load_params(int argc, char **argv, struct params *input) {
 			} else if (input->algorithm == PALS_GPU_randTask) {
 				fprintf(stdout, " (PALS_GPU_randTask)\n");
 			} else if (input->algorithm == PALS_CPU_randTask) {
-				fprintf(stdout, " (PALS_GPU_randMachine)\n");
+				fprintf(stdout, " (PALS_CPU_randTask)\n");
 			} else if (input->algorithm == MinMin) {
 				fprintf(stdout, " (Min-Min)\n");
 			} else if (input->algorithm == MCT) {

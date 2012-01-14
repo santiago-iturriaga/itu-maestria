@@ -85,16 +85,17 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	}
 	// <=========== DEBUG
 	
-	if (DEBUG) {
+	//if (DEBUG) {
 		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
 		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
-	} else {
+		fprintf(stdout, "[DEBUG] Mejora: %.2f\n", 100 - (current_solution->makespan / makespan_inicial) * 100);
+	/*} else {
         if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
-        /*fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
-        fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
-        fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
-        fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);*/
-	}
+        //fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
+        //fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
+        //fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
+        //fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
+	}*/
 
 	// Libero la memoria del dispositivo.
 	pals_cpu_rtask_finalize(instance);
@@ -109,7 +110,7 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
 	
 	// Asignación del paralelismo del algoritmo.
 	empty_instance.count_threads = input.thread_count;
-	empty_instance.count_loops = 4;
+	empty_instance.count_loops = 32;
 	empty_instance.count_evals = 128;
 	
 	// Cantidad total de movimientos a evaluar.
@@ -131,11 +132,11 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
     
     empty_instance.etc_matrix = etc_matrix;
     
-    empty_instance.current_solution = (struct solution*)malloc(sizeof(struct solution));
-    clone_solution(etc_matrix, empty_instance.best_solution, s);
-    
-    empty_instance.best_solution = (struct solution*)malloc(sizeof(struct solution));
+    empty_instance.current_solution = create_empty_solution(etc_matrix);
     clone_solution(etc_matrix, empty_instance.current_solution, s);
+    
+    empty_instance.best_solution = create_empty_solution(etc_matrix);
+    clone_solution(etc_matrix, empty_instance.best_solution, s);
 
 	empty_instance.__result_task_history = (char*)malloc(sizeof(char) * etc_matrix->tasks_count);
 	empty_instance.__result_machine_history = (char*)malloc(sizeof(char) * etc_matrix->machines_count);
@@ -229,8 +230,8 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
 }
 
 void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {
-    free(instance.current_solution);
-    free(instance.best_solution);
+    free_solution(instance.current_solution);
+    free_solution(instance.best_solution);
     
     free(instance.random_states);
     free(instance.random_numbers);
