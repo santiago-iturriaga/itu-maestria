@@ -322,7 +322,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	    for (int i = 0; i < instance->result_count; i++) {
 		    int result_idx = (i + best_block_idx) % instance->result_count;
 
-			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
+			if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, instance->delta[result_idx]);
 		
 			if (instance->delta[result_idx] < 0.0) { //|| (increase_depth < 50)) {
 				if (instance->move_type[result_idx] == PALS_CPU_RTASK_SWAP) {
@@ -332,8 +332,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 					int machine_a = instance->current_solution->task_assignment[instance->origin[result_idx]];
 					int machine_b = instance->current_solution->task_assignment[instance->destination[result_idx]];
 			
-					/*if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-						result.origin[result_idx], machine_a, result.destination[result_idx], machine_b, result.delta[result_idx]);*/
+					if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+						instance->origin[result_idx], machine_a, instance->destination[result_idx], machine_b, instance->delta[result_idx]);
 			
 					if ((instance->__result_task_history[task_x] == 0) && (instance->__result_task_history[task_y] == 0) &&
 						(instance->__result_machine_history[machine_a] == 0) && (instance->__result_machine_history[machine_b] == 0))	{
@@ -345,11 +345,11 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 						instance->__result_machine_history[machine_a] = 1;
 						instance->__result_machine_history[machine_b] = 1;
 						
-						/*if (DEBUG) {
+						if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
-							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-						}*/
+							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, instance->current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, instance->current_solution->machine_compute_time[machine_b]);
+						}
 			
 						// Actualizo la asignación de cada tarea en el host.
 						instance->current_solution->task_assignment[task_x] = machine_b;
@@ -366,24 +366,24 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 							get_etc_value(instance->etc_matrix, machine_b, task_x) - 
 							get_etc_value(instance->etc_matrix, machine_b, task_y);
 
-						/*if (DEBUG) {
+						if (DEBUG) {
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
 							fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
-							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
-						}*/
+							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, instance->current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, instance->current_solution->machine_compute_time[machine_b]);
+							fprintf(stdout, "   old_makespan: %f.\n", instance->current_solution->makespan);
+						}
 					} else {
-						//if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
 				} else if (instance->move_type[result_idx] == PALS_CPU_RTASK_MOVE) {
 					int task_x = instance->origin[result_idx];
 					int machine_a = instance->current_solution->task_assignment[task_x];
 					int machine_b = instance->destination[result_idx];
 
-					/*if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-						result.origin[result_idx], machine_a, result.destination[result_idx], result.delta[result_idx]);*/
+					if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+						instance->origin[result_idx], machine_a, instance->destination[result_idx], instance->delta[result_idx]);
 					
 					if ((instance->__result_task_history[task_x] == 0) &&
 	 					(instance->__result_machine_history[machine_a] == 0) &&
@@ -395,11 +395,11 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 						instance->__result_machine_history[machine_a] = 1;
 						instance->__result_machine_history[machine_b] = 1;
 					
-						/*if (DEBUG) {
+				        if (DEBUG) {
 							fprintf(stdout, ">> [pre-update]:\n");
-							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-						}*/
+							fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, instance->current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, instance->current_solution->machine_compute_time[machine_b]);
+						}
 				
 						instance->current_solution->task_assignment[task_x] = machine_b;
 					
@@ -412,15 +412,15 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 							instance->current_solution->machine_compute_time[machine_b] +
 							get_etc_value(instance->etc_matrix, machine_b, task_x);
 				
-						/*if (DEBUG) {
+						if (DEBUG) {
 							fprintf(stdout, ">> [update]:\n");
 							fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, current_solution->machine_compute_time[machine_a]);
-							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, current_solution->machine_compute_time[machine_b]);
-							fprintf(stdout, "   old_makespan: %f.\n", current_solution->makespan);
-						}*/
+							fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, instance->current_solution->machine_compute_time[machine_a]);
+							fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, instance->current_solution->machine_compute_time[machine_b]);
+							fprintf(stdout, "   old_makespan: %f.\n", instance->current_solution->makespan);
+						}
 					} else {
-						//if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+						if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
 					}
 				}
 			}
@@ -546,7 +546,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
         	    for (int eval = 0; eval < thread_instance->count_evals; eval++) {	
 			        // ================= Obtengo las tareas sorteadas (2).
 				
-			        task_y = (int)(floor((random1 * (thread_instance->etc_matrix->tasks_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
+			        task_y = (int)(floor((random2 * (thread_instance->etc_matrix->tasks_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
 			            % (thread_instance->etc_matrix->tasks_count - 1);
 			        if (task_y >= task_x) task_y++;
 		
@@ -628,7 +628,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
 			        machine_a_ct_old = thread_instance->current_solution->machine_compute_time[machine_a];	
 							
 			        // ================= Obtengo la máquina destino sorteada.	
-			        machine_b = (int)(floor((random1 * (thread_instance->etc_matrix->machines_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
+			        machine_b = (int)(floor((random2 * (thread_instance->etc_matrix->machines_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
 			            % (thread_instance->etc_matrix->machines_count - 1);
 			        if (machine_b >= machine_a) machine_b++;
 		
