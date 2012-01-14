@@ -155,6 +155,9 @@ void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed
 	    cpu_rand_init(random_seed, empty_instance.random_states[i]);
 	}
 	
+	int random_number_per_thread = 3;
+	empty_instance.random_numbers = (float*)malloc(sizeof(float) * empty_instance.count_threads * random_number_per_thread);
+	
 	timming_end(".. cpu_rand_buffers", ts_1);
 	
 	// =========================================================================
@@ -204,6 +207,8 @@ void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed
         empty_instance.slave_threads_args[i].sync_barrier = empty_instance.sync_barrier;
         	
         empty_instance.slave_threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
+        empty_instance.slave_threads_args[i].thread_random_numbers = &(empty_instance.random_numbers[i * random_number_per_thread]);
+        
         empty_instance.slave_threads_args[i].thread_move_type = &(empty_instance.move_type[i]);
         empty_instance.slave_threads_args[i].thread_origin = &(empty_instance.origin[i]);
         empty_instance.slave_threads_args[i].thread_destination = &(empty_instance.destination[i]);
@@ -225,6 +230,8 @@ void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {
     free(instance.best_solution);
     
     free(instance.random_states);
+    free(instance.random_numbers);
+        
 	free(instance.move_type);
 	free(instance.origin);
 	free(instance.destination);
@@ -419,13 +426,13 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		if ((cantidad_movs_iter > 0) || (cantidad_swaps_iter > 0)) {
 			// Actualiza el makespan de la solución.
 			// Si cambio el makespan, busco el nuevo makespan.
-			int machine = 0;		
+			//int machine = 0;		
 			instance->current_solution->makespan = instance->current_solution->machine_compute_time[0];
 
 			for (int i = 1; i < instance->etc_matrix->machines_count; i++) {
 				if (instance->current_solution->makespan < instance->current_solution->machine_compute_time[i]) {
 					instance->current_solution->makespan = instance->current_solution->machine_compute_time[i];
-					machine = i;
+					//machine = i;
 				}
 			}
 			
@@ -483,13 +490,12 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
 		fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
 	}
-
+	
 	return NULL;
 }
 
 void* pals_cpu_rtask_slave_thread(void *thread_arg)
-{	
-/*
+{	/*
 	const short mov_type = (short)(block_idx & 0x1);
 
 	const unsigned int random1 = gpu_random_numbers[block_idx];
@@ -651,7 +657,6 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
 		gpu_best_movements[(block_idx * 3) + 2] = (int)block_loops[0]; // Best movement loop index.
 		gpu_best_deltas[block_idx] = block_deltas[0];  // Best movement delta.
 	}
-	*/
-
+*/
 	return NULL;
 }
