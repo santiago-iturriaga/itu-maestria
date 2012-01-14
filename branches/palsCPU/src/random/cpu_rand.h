@@ -6,7 +6,7 @@ struct cpu_rand_state {
 };
 
 void cpu_rand_init(long int seed, struct cpu_rand_state &empty_state);
-void cpu_rand_generate(int *gpu_destination, int size);
-void cpu_rand_free(struct cpu_rand_state &empty_state);
+void cpu_rand_generate(struct cpu_rand_state &state, int count, double *result);
+void cpu_rand_free(struct cpu_rand_state &state);
 
 #endif

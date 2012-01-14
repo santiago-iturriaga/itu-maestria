@@ -8,10 +8,11 @@
 
 #include "../config.h"
 #include "../utils.h"
-
 #include "../random/cpu_rand.h"
 
 #include "pals_cpu_rtask.h"
+
+#define RANDOM_NUMBERS_PER_THREAD_ITER 3
 
 void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {	
 	// ==============================================================================
@@ -155,8 +156,7 @@ void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed
 	    cpu_rand_init(random_seed, empty_instance.random_states[i]);
 	}
 	
-	int random_number_per_thread = 3;
-	empty_instance.random_numbers = (float*)malloc(sizeof(float) * empty_instance.count_threads * random_number_per_thread);
+	empty_instance.random_numbers = (double*)malloc(sizeof(double) * empty_instance.count_threads * RANDOM_NUMBERS_PER_THREAD_ITER);
 	
 	timming_end(".. cpu_rand_buffers", ts_1);
 	
@@ -200,6 +200,9 @@ void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed
 	for (int i = 0; i < empty_instance.count_threads; i++) {
    		empty_instance.slave_threads_args[i].thread_idx = i;
    		
+   		empty_instance.slave_threads_args[i].count_loops = empty_instance.count_loops;
+        empty_instance.slave_threads_args[i].count_evals = empty_instance.count_evals;
+   		
         empty_instance.slave_threads_args[i].etc_matrix = etc_matrix;
         empty_instance.slave_threads_args[i].current_solution = empty_instance.current_solution;
         
@@ -207,7 +210,7 @@ void pals_cpu_rtask_init(struct matrix *etc_matrix, struct solution *s, int seed
         empty_instance.slave_threads_args[i].sync_barrier = empty_instance.sync_barrier;
         	
         empty_instance.slave_threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
-        empty_instance.slave_threads_args[i].thread_random_numbers = &(empty_instance.random_numbers[i * random_number_per_thread]);
+        empty_instance.slave_threads_args[i].thread_random_numbers = &(empty_instance.random_numbers[i * RANDOM_NUMBERS_PER_THREAD_ITER]);
         
         empty_instance.slave_threads_args[i].thread_move_type = &(empty_instance.move_type[i]);
         empty_instance.slave_threads_args[i].thread_origin = &(empty_instance.origin[i]);
@@ -495,168 +498,189 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 }
 
 void* pals_cpu_rtask_slave_thread(void *thread_arg)
-{	/*
-	const short mov_type = (short)(block_idx & 0x1);
+{	
+    int rc;
+    pals_cpu_rtask_thread_arg *thread_instance;
 
-	const unsigned int random1 = gpu_random_numbers[block_idx];
-	const unsigned int random2 = gpu_random_numbers[block_idx + 1];
+    thread_instance = (pals_cpu_rtask_thread_arg*)thread_arg;
 
-	__shared__ short block_operations[PALS_GPU_RTASK__THREADS];
-	__shared__ ushort block_threads[PALS_GPU_RTASK__THREADS];
-	__shared__ ushort block_loops[PALS_GPU_RTASK__THREADS];
-	__shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
-	
-	for (ushort loop = 0; loop < loops_count; loop++) {
-		// Tipo de movimiento.
-		if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
-			// Si es impar... 
-			// Movimiento SWAP.
+    // Genero los números aleatorios necesarios para esta iteración (por las dudas).
+    cpu_rand_generate(*(thread_instance->thread_random_state), RANDOM_NUMBERS_PER_THREAD_ITER, thread_instance->thread_random_numbers);
+    
+    // Espero a que el master asigne trabajo.
+    rc = pthread_barrier_wait(thread_instance->sync_barrier);
+    if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+    {
+        printf("Could not wait on barrier\n");
+        exit(-1);
+    }
+
+    while (*(thread_instance->work_type) != WORK__DO_EXIT) {
+       	int mov_type;
+       	if (thread_instance->thread_random_numbers[0] < 0.75) {
+       	    mov_type = PALS_CPU_RTASK_SWAP;
+       	} else {
+       	    mov_type = PALS_CPU_RTASK_MOVE;
+       	}
+
+	    double random1 = thread_instance->thread_random_numbers[1];
+	    double random2 = thread_instance->thread_random_numbers[2];
+
+	    for (int loop = 0; loop < thread_instance->count_loops; loop++) {
+		    // Tipo de movimiento.
+		    if (mov_type == PALS_CPU_RTASK_SWAP) {
+			    // Movimiento SWAP.
 		
-			ushort task_x, task_y;
-			ushort machine_a, machine_b;
+			    int task_x, task_y;
+			    int machine_a, machine_b;
 		
-			float machine_a_ct_old, machine_b_ct_old;
-			float machine_a_ct_new, machine_b_ct_new;
+			    float machine_a_ct_old, machine_b_ct_old;
+			    float machine_a_ct_new, machine_b_ct_new;
 		
-			float delta;
-			delta = 0.0;
-		
-			// ================= Obtengo las tareas sorteadas.
-			task_x = (random1 + loop) % tasks_count;
+			    float delta;
+			    delta = 0.0;
+
+		        // ================= Obtengo las tareas sorteadas.
+		        task_x = (int)(floor(random1 * (thread_instance->etc_matrix->tasks_count - thread_instance->count_loops))) + loop;
+
+        	    for (int eval = 0; eval < thread_instance->count_evals; eval++) {	
+			        // ================= Obtengo las tareas sorteadas (2).
 				
-			task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);	
-			if (task_y >= task_x) task_y++;
+			        task_y = (int)(floor((random1 * (thread_instance->etc_matrix->tasks_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
+			            % (thread_instance->etc_matrix->tasks_count - 1);
+			        if (task_y >= task_x) task_y++;
 		
-			// ================= Obtengo las máquinas a las que estan asignadas las tareas.
-			machine_a = gpu_task_assignment[task_x]; // Máquina a.	
-			machine_b = gpu_task_assignment[task_y]; // Máquina b.	
+			        // ================= Obtengo las máquinas a las que estan asignadas las tareas.
+			        machine_a = thread_instance->current_solution->task_assignment[task_x]; // Máquina a.	
+			        machine_b = thread_instance->current_solution->task_assignment[task_y]; // Máquina b.	
 
-			if (machine_a != machine_b) {
-				// Calculo el delta del swap sorteado.
+			        if (machine_a != machine_b) {
+				        // Calculo el delta del swap sorteado.
 			
-				// Máquina 1.
-				machine_a_ct_old = gpu_machine_compute_time[machine_a];
+				        // Máquina 1.
+				        machine_a_ct_old = thread_instance->current_solution->machine_compute_time[machine_a];
 					
-				machine_a_ct_new = machine_a_ct_old;
-				machine_a_ct_new = machine_a_ct_new - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
-				machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
+				        machine_a_ct_new = machine_a_ct_old;
+				        machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
+				        machine_a_ct_new = machine_a_ct_new + get_etc_value(thread_instance->etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
 			
-				// Máquina 2.
-				machine_b_ct_old = gpu_machine_compute_time[machine_b];
+				        // Máquina 2.
+				        machine_b_ct_old = thread_instance->current_solution->machine_compute_time[machine_b];
 
-				machine_b_ct_new = machine_b_ct_old;
-				machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
-				machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+				        machine_b_ct_new = machine_b_ct_old;
+				        machine_b_ct_new = machine_b_ct_new - get_etc_value(thread_instance->etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
+				        machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Sumo el ETC de x en b.
 
-				if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
-					// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-					if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
-					if (machine_b_ct_new > current_makespan) delta = delta + (machine_b_ct_new - current_makespan);
-				} else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {	
-					// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+				        if ((machine_a_ct_new > thread_instance->current_solution->makespan) || (machine_b_ct_new > thread_instance->current_solution->makespan)) {
+					        // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+					        if (machine_a_ct_new > thread_instance->current_solution->makespan) delta = delta + (machine_a_ct_new - thread_instance->current_solution->makespan);
+					        if (machine_b_ct_new > thread_instance->current_solution->makespan) delta = delta + (machine_b_ct_new - thread_instance->current_solution->makespan);
+				        } else if ((machine_a_ct_old+1 >= thread_instance->current_solution->makespan) 
+				            || (machine_b_ct_old+1 >= thread_instance->current_solution->makespan)) {	
+				            
+					        // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
 				
-					if (machine_a_ct_old+1 >= current_makespan) {
-						delta = delta + (machine_a_ct_new - machine_a_ct_old);
-					} else {
-						delta = delta + 1/(machine_a_ct_new - machine_a_ct_old);
-					}
+					        if (machine_a_ct_old+1 >= thread_instance->current_solution->makespan) {
+						        delta = delta + (machine_a_ct_new - machine_a_ct_old);
+					        } else {
+						        delta = delta + 1/(machine_a_ct_new - machine_a_ct_old);
+					        }
 				
-					if (machine_b_ct_old+1 >= current_makespan) {
-						delta = delta + (machine_b_ct_new - machine_b_ct_old);
-					} else {
-						delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-					}
-				} else {
-					// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-					delta = delta + (machine_a_ct_new - machine_a_ct_old);
-					delta = delta + (machine_b_ct_new - machine_b_ct_old);
-					delta = 1 / delta;
-				}
-			}
+					        if (machine_b_ct_old+1 >= thread_instance->current_solution->makespan) {
+						        delta = delta + (machine_b_ct_new - machine_b_ct_old);
+					        } else {
+						        delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
+					        }
+				        } else {
+					        // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+					        delta = delta + (machine_a_ct_new - machine_a_ct_old);
+					        delta = delta + (machine_b_ct_new - machine_b_ct_old);
+					        delta = 1 / delta;
+				        }
+			        }
 
-			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-				block_operations[thread_idx] = PALS_GPU_RTASK_SWAP;
-				block_threads[thread_idx] = (short)thread_idx;
-				block_loops[thread_idx] = loop;
-				block_deltas[thread_idx] = delta;
-			}
-		} else {
-			// Si es par...
-			// Movimiento MOVE.
+			        if (((loop == 0) && (eval == 0))|| (thread_instance->thread_delta[0] > delta)) {			        
+			        	thread_instance->thread_move_type[0] = PALS_CPU_RTASK_SWAP;
+	                    thread_instance->thread_origin[0] = task_x;
+	                    thread_instance->thread_destination[0] = task_y;
+	                    thread_instance->thread_delta[0] = delta;
+			        }
+			    }
+		    } else {
+			    // Movimiento MOVE.
 		
-			ushort task_x;
-			ushort machine_a, machine_b;
+			    int task_x;
+			    int machine_a, machine_b;
 		
-			float machine_a_ct_old, machine_b_ct_old;
-			float machine_a_ct_new, machine_b_ct_new;
+			    float machine_a_ct_old, machine_b_ct_old;
+			    float machine_a_ct_new, machine_b_ct_new;
 
-			float delta;
-			delta = 0.0;
+			    float delta;
+			    delta = 0.0;
+
+			    // ================= Obtengo la tarea sorteada.
+        		task_x = (int)(floor(random1 * (thread_instance->etc_matrix->tasks_count - thread_instance->count_loops))) + loop;
 		
-			// ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
-			// ================= y el compute time de la máquina.
-			task_x = (random1 + loop) % tasks_count;
-			machine_a = gpu_task_assignment[task_x]; // Máquina a.
-			machine_a_ct_old = gpu_machine_compute_time[machine_a];	
+        	    for (int eval = 0; eval < thread_instance->count_evals; eval++) {	
+			        // ================= Obtengo la máquina a la que esta asignada,
+			        // ================= y el compute time de la máquina.
+			        machine_a = thread_instance->current_solution->task_assignment[task_x]; // Máquina a.
+			        machine_a_ct_old = thread_instance->current_solution->machine_compute_time[machine_a];	
 							
-			// ================= Obtengo la máquina destino sorteada.
-			machine_b = ((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
-			if (machine_b >= machine_a) machine_b++;
+			        // ================= Obtengo la máquina destino sorteada.	
+			        machine_b = (int)(floor((random1 * (thread_instance->etc_matrix->machines_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
+			            % (thread_instance->etc_matrix->machines_count - 1);
+			        if (machine_b >= machine_a) machine_b++;
 		
-			machine_b_ct_old = gpu_machine_compute_time[machine_b];
+			        machine_b_ct_old = thread_instance->current_solution->machine_compute_time[machine_b];
 		
-			// Calculo el delta del swap sorteado.
-			machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.		
-			machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+			        // Calculo el delta del swap sorteado.
+			        machine_a_ct_new = machine_a_ct_old - get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Resto del ETC de x en a.		
+			        machine_b_ct_new = machine_b_ct_old + get_etc_value(thread_instance->etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
 
-			if (machine_b_ct_new > current_makespan) {
-				// Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-				delta = delta + (machine_b_ct_new - current_makespan);
-			} else if (machine_a_ct_old+1 >= current_makespan) {	
-				// Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-				delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-			} else {
-				// Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-				delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				delta = delta + (machine_b_ct_new - machine_b_ct_old);
-				delta = 1 / delta;
-			}
-			
-			if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-				block_operations[thread_idx] = PALS_GPU_RTASK_MOVE;
-				block_threads[thread_idx] = (short)thread_idx;
-				block_loops[thread_idx] = loop;
-				block_deltas[thread_idx] = delta;
-			}
-		}
-	}
-	
-	__syncthreads();
+			        if (machine_b_ct_new > thread_instance->current_solution->makespan) {
+				        // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+				        delta = delta + (machine_b_ct_new - thread_instance->current_solution->makespan);
+			        } else if (machine_a_ct_old+1 >= thread_instance->current_solution->makespan) {	
+				        // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+				        delta = delta + (machine_a_ct_new - machine_a_ct_old);
+				        delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
+			        } else {
+				        // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+				        delta = delta + (machine_a_ct_new - machine_a_ct_old);
+				        delta = delta + (machine_b_ct_new - machine_b_ct_old);
+				        delta = 1 / delta;
+			        }
+			        
+			        if (((loop == 0) && (eval == 0))|| (thread_instance->thread_delta[0] > delta)) {			        
+			        	thread_instance->thread_move_type[0] = PALS_CPU_RTASK_MOVE;
+	                    thread_instance->thread_origin[0] = task_x;
+	                    thread_instance->thread_destination[0] = machine_b;
+	                    thread_instance->thread_delta[0] = delta;
+			        }
+                }
+		    }
+	    }
 
-	// Aplico reduce para quedarme con el mejor delta.
-	int pos;
-	for (int i = 1; i < block_dim; i *= 2) {
-		pos = 2 * i * thread_idx;
-	
-		if (pos < block_dim) {
-			if (block_deltas[pos] > block_deltas[pos + i]) {			
-				block_operations[pos] = block_operations[pos + i];
-				block_loops[pos] = block_loops[pos + i];
-				block_threads[pos] = block_threads[pos + i];
-				block_deltas[pos] = block_deltas[pos + i];
-			}
-		}
-	
-		__syncthreads();
-	}
-	
-	if (thread_idx == 0) {
-		gpu_best_movements[block_idx * 3] = (int)block_operations[0]; // Best movement operation.
-		gpu_best_movements[(block_idx * 3) + 1] = (int)block_threads[0]; // Best movement thread index.
-		gpu_best_movements[(block_idx * 3) + 2] = (int)block_loops[0]; // Best movement loop index.
-		gpu_best_deltas[block_idx] = block_deltas[0];  // Best movement delta.
-	}
-*/
+        // Espero a que todos los slave threads terminen.
+        rc = pthread_barrier_wait(thread_instance->sync_barrier);
+        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+        {
+            printf("Could not wait on barrier\n");
+            exit(-1);
+        }
+
+        // Genero los números aleatorios necesarios para esta iteración (por las dudas).
+        cpu_rand_generate(*(thread_instance->thread_random_state), RANDOM_NUMBERS_PER_THREAD_ITER, thread_instance->thread_random_numbers);
+    
+        // Espero a que el master asigne trabajo.
+        rc = pthread_barrier_wait(thread_instance->sync_barrier);
+        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+        {
+            printf("Could not wait on barrier\n");
+            exit(-1);
+        }    
+    } 
+
 	return NULL;
 }
