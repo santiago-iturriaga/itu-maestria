@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 		timming_end(">> MCT Time", ts_mct);
 		// Timming -----------------------------------------------------
 	
-		if (DEBUG) validate_solution(etc_matrix, current_solution);
+		if (DEBUG) validate_solution(current_solution);
 		
 		// =============================================================
 		// Serial. Versión de búsqueda completa.
@@ -96,6 +96,7 @@ int main(int argc, char** argv)
 		
 	} else if (input.algorithm == PALS_GPU) {
 
+        fprintf(stderr, "ERROR!! no es posible ejecutar pals GPU\n");
 		
 	} else if (input.algorithm == PALS_GPU_randTask) {
 
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
 		timming_end(">> MCT Time", ts_mct);
 		// Timming -----------------------------------------------------
 	
-		if (DEBUG) validate_solution(etc_matrix, current_solution);
+		if (DEBUG) validate_solution(current_solution);
 	
 		// =============================================================
 		// CUDA. Búsqueda aleatoria por tarea.
@@ -128,6 +129,7 @@ int main(int argc, char** argv)
 	} else if (input.algorithm == MinMin) {
 		
 		compute_minmin(etc_matrix, current_solution);
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", get_makespan(current_solution));
 		
 	} else if (input.algorithm == MCT) {
 		
@@ -141,7 +143,7 @@ int main(int argc, char** argv)
 	if (OUTPUT_SOLUTION) {
 		//fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
 		for (int task_id = 0; task_id < etc_matrix->tasks_count; task_id++) {
-			fprintf(stdout, "%d\n", current_solution->task_assignment[task_id]);
+			fprintf(stdout, "%d\n", get_task_assignment(current_solution,task_id));
 		}
 	}
 	

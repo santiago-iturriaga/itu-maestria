@@ -2,8 +2,6 @@
 #include "mct.h"
 
 void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
-	solution->makespan = 0.0;
-
 	for (int task = 0; task < etc_matrix->tasks_count; task++) {
 		int best_machine;
 		best_machine = 0;
@@ -15,21 +13,16 @@ void compute_mct(struct matrix *etc_matrix, struct solution *solution) {
 			float etc_value;
 			etc_value = get_etc_value(etc_matrix, machine, task);
 			
-			if (solution->machine_compute_time[machine] + etc_value < 
-				solution->machine_compute_time[best_machine] + best_etc_value) {
+			if (get_machine_compute_time(solution, machine) + etc_value < 
+				get_machine_compute_time(solution, best_machine) + best_etc_value) {
 				
 				best_etc_value = etc_value;
 				best_machine = machine;
 			}
 		}
 		
-		solution->task_assignment[task] = best_machine;
-		solution->machine_compute_time[best_machine] += best_etc_value;
-		
-		if (solution->machine_compute_time[best_machine] > solution->makespan) {
-			solution->makespan = solution->machine_compute_time[best_machine];
-		}
+		assign_task_to_machine(solution, best_machine, task);
 	}
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] MCT Solution makespan: %f.\n", solution->makespan);
+	if (DEBUG) fprintf(stdout, "[DEBUG] MCT Solution makespan: %f.\n", get_makespan(solution));
 }
