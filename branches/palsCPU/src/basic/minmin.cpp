@@ -37,13 +37,13 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 				
 				float best_machine_cost_for_task;
 				
-				best_machine_cost_for_task = solution->machine_compute_time[0] + 
+				best_machine_cost_for_task = get_machine_compute_time(solution, 0) + 
 					get_etc_value(etc_matrix, 0, task_i);
 			
 				for (int machine_x = 1; machine_x < etc_matrix->machines_count; machine_x++) {
 					float current_cost;
 					
-					current_cost = solution->machine_compute_time[machine_x] + 
+					current_cost = get_machine_compute_time(solution, machine_x) + 
 						get_etc_value(etc_matrix, machine_x, task_i);
 				
 					if (current_cost < best_machine_cost_for_task) {
@@ -63,26 +63,14 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 		assigned_tasks_count++;
 		assigned_tasks[best_task] = 1;
 		
-		solution->task_assignment[best_task] = best_machine;
+		assign_task_to_machine(solution, best_machine, best_task);
 	
 		/*if (DEBUG) {
 			fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
 		}*/
-	
-		solution->machine_compute_time[best_machine] = solution->machine_compute_time[best_machine] + 
-			get_etc_value(etc_matrix, best_machine, best_task);
 	}
 	
-	// Actualiza el makespan de la solución.
-	solution->makespan = solution->machine_compute_time[0];
-	
-	for (int i = 1; i < etc_matrix->machines_count; i++) {
-		if (solution->makespan < solution->machine_compute_time[i]) {
-			solution->makespan = solution->machine_compute_time[i];
-		}
-	}
-	
-	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", solution->makespan);
+	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", get_makespan(solution));
 
 	// Timming -----------------------------------------------------
 	timming_end("MinMin time", ts);
