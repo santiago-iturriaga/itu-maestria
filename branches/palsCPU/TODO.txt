@@ -20,3 +20,17 @@ TIEMPOS!
 100k x (128x128) = 1638M en ~9.5s
 50k x (128x128) =  819M en ~4.7s
 
+---
+
+(1) - Máquina que define makespan + rand. máquina
+      Un rand. task por cada máquina, hasta tope (10? 20?)
+
+    - Si no mejoro el makespan en 5 iteraciones. Convergencia!
+      Paso al modo (2)
+
+(2) - 2 máquinas rand.
+      Un rand. task por cada mñaquina, hasta tope (10? 20?)
+
+    - Si paso 25 iters mejorando, paso al modo (1)
+
+    - Si paso 5 iters sin mejorar, termino. Convergencia!

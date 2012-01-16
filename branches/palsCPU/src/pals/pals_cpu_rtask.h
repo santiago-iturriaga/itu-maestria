@@ -16,8 +16,14 @@
 #ifndef PALS_CPU_RTASK_H_
 #define PALS_CPU_RTASK_H_
 
-#define WORK__DO_SEARCH 0
-#define WORK__DO_EXIT   1
+#define PALS_CPU_RTASK_WORK__DO_GREEDY_SEARCH 0
+#define PALS_CPU_RTASK_WORK__DO_RANDOM_SEARCH 1
+#define PALS_CPU_RTASK_WORK__DO_EXIT 2
+
+#define PALS_CPU_RTASK_WORK__GREEDY_CONV 5
+#define PALS_CPU_RTASK_WORK__RANDOM_CONV 5
+#define PALS_CPU_RTASK_WORK__RANDOM_MAX_ITERS 25
+
 
 struct pals_cpu_rtask_instance {
     // Estado del problema.
