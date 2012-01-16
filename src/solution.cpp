@@ -280,12 +280,28 @@ void refresh_makespan(struct solution *s) {
     }
 }
 
-int get_task_in_machine(struct solution *s, int position) {
-
+int get_task_in_machine(struct solution *s, int machine_id, int task_position) {
+    if (s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] == MACHINE__EOT) {
+        return s->__machine_assignment[machine_id][task_position];
+    } else {
+        int current_position = -1;
+        
+        for (int i = 0; (i < s->etc_matrix->tasks_count) 
+            && (s->__machine_assignment[machine_id][i] != MACHINE__EOT); i++) {
+            
+            if (s->__machine_assignment[machine_id][i] != MACHINE__EMPTY) {
+                current_position++;
+                
+                if (current_position == task_position) return s->__machine_assignment[machine_id][i];
+            }
+        }
+        
+        return -1;
+    }
 }
 
-int* get_all_tasks(struct solution *s, int position) {
-
+int* get_all_tasks(struct solution *s, int machine_id) {
+    return s->__machine_assignment[machine_id];
 }
 
 float get_makespan(struct solution *s) {

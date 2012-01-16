@@ -37,8 +37,8 @@ void refresh_makespan(struct solution *s);
 int get_task_assignment(struct solution *s, int task_id);
 float get_machine_compute_time(struct solution *s, int machine_id);
 float get_makespan(struct solution *s);
-int get_task_in_machine(struct solution *s, int position);
-int* get_all_tasks(struct solution *s, int position);
+int get_task_in_machine(struct solution *s, int machine_id, int task_position);
+int* get_all_tasks(struct solution *s, int machine_id);
 
 void validate_solution(struct solution *s);
 void show_solution(struct solution *s);
