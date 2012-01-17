@@ -15,8 +15,13 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 		exit(EXIT_FAILURE);
 	}
 
+    init_empty_solution(etc_matrix, new_solution);
+	
+	return new_solution;
+}
+
+void init_empty_solution(struct matrix *etc_matrix, struct solution *new_solution) {
     new_solution->etc_matrix = etc_matrix;
-	new_solution->__makespan = 0.0;
 	
 	//=== Estructura orientada a tareas.
 	new_solution->__task_assignment = (int*)(malloc(sizeof(int) * etc_matrix->tasks_count));
@@ -56,6 +61,8 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 	}
 	
 	//=== Estructura de machine compute time.
+	new_solution->__makespan = 0.0;
+	new_solution->__worst_ct_machine_id = -1;
 	new_solution->__machine_compute_time = (float*)(malloc(sizeof(float) * etc_matrix->machines_count));
 	
 	if (new_solution->__machine_compute_time == NULL) {
@@ -67,7 +74,19 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
 		new_solution->__machine_compute_time[machine] = 0.0;
 	}
 	
-	return new_solution;
+	//=== Estructura de energy.
+	new_solution->__total_energy_consumption = 0.0;
+	new_solution->__worst_energy_machine_id = -1;
+	new_solution->__machine_energy_consumption = (float*)(malloc(sizeof(float) * etc_matrix->machines_count));
+	
+	if (new_solution->__machine_energy_consumption == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->__machine_energy_consumption.\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
+		new_solution->__machine_energy_consumption[machine] = 0.0;
+	}
 }
 
 void clone_solution(struct solution *dst, struct solution *src) {
@@ -83,8 +102,9 @@ void free_solution(struct solution *s) {
 		free(s->__machine_assignment[machine]);
 	}
 	free(s->__machine_assignment);
+	
 	free(s->__machine_compute_time);
-	free(s);
+	free(s->__machine_energy_consumption);
 }
 
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
@@ -254,6 +274,13 @@ void swap_tasks(struct solution *s, int task_a_id, int task_b_id) {
     }
     
     if (recompute_makespan == 1) refresh_makespan(s);
+}
+
+int get_tasks_count_in_machine(struct solution *s, int machine_id) {
+    assert(machine_id < s->etc_matrix->machines_count);
+    assert(machine_id >= 0);
+
+    return s->__machine_assignment_count[machine_id];
 }
 
 int get_task_assignment(struct solution *s, int task_id) {

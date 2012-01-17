@@ -96,10 +96,11 @@ int main(int argc, char** argv)
 		
 	} else if (input.algorithm == PALS_GPU) {
 
-        fprintf(stderr, "ERROR!! no es posible ejecutar pals GPU\n");
+        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
 		
 	} else if (input.algorithm == PALS_GPU_randTask) {
 
+        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
 			
 	} else if (input.algorithm == PALS_CPU_randTask) {
 		// =============================================================
@@ -137,6 +138,7 @@ int main(int argc, char** argv)
 		
 	} else if (input.algorithm == PALS_GPU_randParallelTask) {
 
+        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
 
 	}
 
@@ -155,7 +157,9 @@ int main(int argc, char** argv)
 	// Release memory
 	// =============================================================
 	free_etc_matrix(etc_matrix);
+	
 	free_solution(current_solution);
+	free(current_solution);
 
 	return EXIT_SUCCESS;
 }

@@ -20,11 +20,20 @@ struct solution {
     int **__machine_assignment;
     int *__machine_assignment_count;
     
+    // Makespan
 	float *__machine_compute_time;	
+	int __worst_ct_machine_id;
 	float __makespan;
+	
+	// Energy
+	float *__machine_energy_consumption;
+	int __worst_energy_machine_id;
+	float __total_energy_consumption;
 };
 
 struct solution* create_empty_solution(struct matrix *etc_matrix);
+void init_empty_solution(struct matrix *etc_matrix, struct solution *new_solution);
+
 void clone_solution(struct solution *dst, struct solution *src);
 void free_solution(struct solution *s);
 
@@ -35,10 +44,12 @@ void swap_tasks(struct solution *s, int task_a_id, int task_b_id);
 void refresh_makespan(struct solution *s);
 
 int get_task_assignment(struct solution *s, int task_id);
-float get_machine_compute_time(struct solution *s, int machine_id);
-float get_makespan(struct solution *s);
+int get_tasks_count_in_machine(struct solution *s, int machine_id);
 int get_task_in_machine(struct solution *s, int machine_id, int task_position);
 int* get_all_tasks(struct solution *s, int machine_id);
+
+float get_machine_compute_time(struct solution *s, int machine_id);
+float get_makespan(struct solution *s);
 
 void validate_solution(struct solution *s);
 void show_solution(struct solution *s);
