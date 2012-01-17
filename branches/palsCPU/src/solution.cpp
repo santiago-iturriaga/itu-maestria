@@ -50,15 +50,10 @@ void init_empty_solution(struct matrix *etc_matrix, struct solution *new_solutio
 		    fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->__machine_assignment[%d].\n", machine);
 		    exit(EXIT_FAILURE);
 	    }
-	
-	    new_solution->__machine_assignment[machine][0] = MACHINE__EOT;
 	}	
 	
 	new_solution->__machine_assignment_count = (int*)(malloc(sizeof(int) * etc_matrix->machines_count));
-	
-	for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
-	    new_solution->__machine_assignment_count[machine] = 0;
-	}
+	memset(new_solution->__machine_assignment_count, 0, sizeof(int) * etc_matrix->machines_count);
 	
 	//=== Estructura de machine compute time.
 	new_solution->__makespan = 0.0;
@@ -118,32 +113,13 @@ void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
     if (s->__machine_compute_time[machine_id] > s->__makespan) s->__makespan = s->__machine_compute_time[machine_id];
     
     s->__task_assignment[task_id] = machine_id;
-    
-    if (s->__machine_assignment_count[machine_id] > 0) {
-        if (s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] == MACHINE__EOT) {
-            s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] = task_id;
-            s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id] + 1] = MACHINE__EOT;
-        } else {
-            int ready = 0;
-            for (int i = 0; (i < s->etc_matrix->tasks_count) 
-                && (s->__machine_assignment[machine_id][i] != MACHINE__EOT)
-                && (ready == 0); i++) {
-                
-                if (s->__machine_assignment[machine_id][i] == MACHINE__EMPTY) {
-                    s->__machine_assignment[machine_id][i] = task_id;                
-                    ready = 1;
-                }
-            }
-        }
-    } else {
-        s->__machine_assignment[machine_id][0] = task_id;
-        s->__machine_assignment[machine_id][1] = MACHINE__EOT;    
-    }
-    
-    s->__machine_assignment_count[machine_id] = s->__machine_assignment_count[machine_id] + 1;
+
+	int current_machine_task_count = s->__machine_assignment_count[machine_id];
+	s->__machine_assignment[machine_id][current_machine_task_count] = task_id;
+	s->__machine_assignment_count[machine_id] = current_machine_task_count + 1;
 }
 
-void move_task_to_machine(struct solution *s, int machine_id, int task_id) {
+void move_task_to_machine(struct solution *s, int task_id, int machine_id) {
     assert(machine_id < s->etc_matrix->machines_count);
     assert(machine_id >= 0);
     assert(task_id < s->etc_matrix->tasks_count);
@@ -154,6 +130,7 @@ void move_task_to_machine(struct solution *s, int machine_id, int task_id) {
     int recompute_makespan = 0;    
     int machine_origin_id = s->__task_assignment[task_id];
     
+    // Actualizo los compute time.
     s->__machine_compute_time[machine_id] += get_etc_value(s->etc_matrix, machine_id, task_id);
     
     if (s->__machine_compute_time[machine_id] > s->__makespan) {
@@ -164,50 +141,26 @@ void move_task_to_machine(struct solution *s, int machine_id, int task_id) {
     
     s->__machine_compute_time[machine_origin_id] -= get_etc_value(s->etc_matrix, machine_origin_id, task_id);
     
+    // Quito la task a la máquina origen.
+    int current_machine_origin_task_count = get_machine_tasks_count(s, machine_origin_id);
+    int machine_origin_task_pos = get_machine_task_pos(s, machine_origin_id, task_id);
+    
+    if (machine_origin_task_pos + 1 == current_machine_origin_task_count) {
+        // Es la última...
+    } else {
+        s->__machine_assignment[machine_id][machine_origin_task_pos] = s->__machine_assignment[machine_id][current_machine_origin_task_count-1];
+    }
+
+    s->__machine_assignment_count[machine_id] = current_machine_origin_task_count - 1;
+     
     // Agrego la task a la máquina destino.
     s->__task_assignment[task_id] = machine_id;
     
-    if (s->__machine_assignment_count[machine_id] > 0) {
-        if (s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] == MACHINE__EOT) {
-            s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] = task_id;
-            s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id] + 1] = MACHINE__EOT;
-        } else {
-            int ready = 0;
-            for (int i = 0; (i < s->etc_matrix->tasks_count) 
-                && (s->__machine_assignment[machine_id][i] != MACHINE__EOT)
-                && (ready == 0); i++) {
-                
-                if (s->__machine_assignment[machine_id][i] == MACHINE__EMPTY) {
-                    s->__machine_assignment[machine_id][i] = task_id;                
-                    ready = 1;
-                }
-            }
-        }
-    } else {
-        s->__machine_assignment[machine_id][0] = task_id;
-        s->__machine_assignment[machine_id][1] = MACHINE__EOT;    
-    }
+    int current_machine_task_count = s->__machine_assignment_count[machine_id];
+	s->__machine_assignment[machine_id][current_machine_task_count] = task_id;
+	s->__machine_assignment_count[machine_id] = current_machine_task_count + 1;   
     
-    s->__machine_assignment_count[machine_id] = s->__machine_assignment_count[machine_id] + 1;
-    
-    // Elimino la task de la máquina origen.
-    if (s->__machine_assignment_count[machine_origin_id] > 1) {
-        int ready = 0;
-        for (int i = 0; (i < s->etc_matrix->tasks_count) 
-            && (s->__machine_assignment[machine_origin_id][i] != MACHINE__EOT)
-            && (ready == 0); i++) {
-            
-            if (s->__machine_assignment[machine_origin_id][i] == task_id) {
-                s->__machine_assignment[machine_origin_id][i] = MACHINE__EMPTY;                
-                ready = 1;
-            }
-        }
-    } else {
-        s->__machine_assignment[machine_origin_id][0] = MACHINE__EOT; 
-    }
-    
-    s->__machine_assignment_count[machine_id] = s->__machine_assignment_count[machine_origin_id] - 1;
-    
+    // Si es necesario recalculo el makespan de la solución.
     if (recompute_makespan == 1) refresh_makespan(s);
 }
 
@@ -246,48 +199,18 @@ void swap_tasks(struct solution *s, int task_a_id, int task_b_id) {
         }
     }
 
+    int task_a_pos, task_b_pos;
+    task_a_pos = get_machine_task_pos(s, machine_a_id, task_a_id);;
+    task_b_pos = get_machine_task_pos(s, machine_b_id, task_b_id);;
+
+    s->__machine_assignment[machine_a_id][task_a_pos] = task_b_id;
+    s->__machine_assignment[machine_b_id][task_b_pos] = task_a_id;
+
     s->__task_assignment[task_a_id] = machine_b_id;
     s->__task_assignment[task_b_id] = machine_a_id;
-    
-    // Agrego la task A a la máquina B.
-    int ready = 0;
-    for (int i = 0; (i < s->etc_matrix->tasks_count) 
-        && (s->__machine_assignment[machine_b_id][i] != MACHINE__EOT)
-        && (ready == 0); i++) {
-        
-        if (s->__machine_assignment[machine_b_id][i] == task_b_id) {
-            s->__machine_assignment[machine_b_id][i] = task_a_id;
-            ready = 1;
-        }
-    }
-    
-    // Agrego la task B a la máquina A.
-    ready = 0;
-    for (int i = 0; (i < s->etc_matrix->tasks_count) 
-        && (s->__machine_assignment[machine_a_id][i] != MACHINE__EOT)
-        && (ready == 0); i++) {
-        
-        if (s->__machine_assignment[machine_a_id][i] == task_a_id) {
-            s->__machine_assignment[machine_a_id][i] = task_b_id;                
-            ready = 1;
-        }
-    }
-    
+
+    // Si es necesario recalculo el makespan.    
     if (recompute_makespan == 1) refresh_makespan(s);
-}
-
-int get_tasks_count_in_machine(struct solution *s, int machine_id) {
-    assert(machine_id < s->etc_matrix->machines_count);
-    assert(machine_id >= 0);
-
-    return s->__machine_assignment_count[machine_id];
-}
-
-int get_task_assignment(struct solution *s, int task_id) {
-    assert(task_id < s->etc_matrix->tasks_count);
-    assert(task_id >= 0);
-    
-    return s->__task_assignment[task_id];
 }
 
 float get_machine_compute_time(struct solution *s, int machine_id) {
@@ -307,28 +230,51 @@ void refresh_makespan(struct solution *s) {
     }
 }
 
-int get_task_in_machine(struct solution *s, int machine_id, int task_position) {
-    if (s->__machine_assignment[machine_id][s->__machine_assignment_count[machine_id]] == MACHINE__EOT) {
-        return s->__machine_assignment[machine_id][task_position];
-    } else {
-        int current_position = -1;
-        
-        for (int i = 0; (i < s->etc_matrix->tasks_count) 
-            && (s->__machine_assignment[machine_id][i] != MACHINE__EOT); i++) {
-            
-            if (s->__machine_assignment[machine_id][i] != MACHINE__EMPTY) {
-                current_position++;
-                
-                if (current_position == task_position) return s->__machine_assignment[machine_id][i];
-            }
-        }
-        
-        return -1;
-    }
+int get_task_assigned_machine_id(struct solution *s, int task_id) {
+    assert(task_id < s->etc_matrix->tasks_count);
+    assert(task_id >= 0);
+    
+    return s->__task_assignment[task_id];
 }
 
-int* get_all_tasks(struct solution *s, int machine_id) {
-    return s->__machine_assignment[machine_id];
+int get_machine_tasks_count(struct solution *s, int machine_id) {
+    assert(machine_id < s->etc_matrix->machines_count);
+    assert(machine_id >= 0);
+
+    return s->__machine_assignment_count[machine_id];
+}
+
+int get_machine_task_id(struct solution *s, int machine_id, int task_position) {
+    assert(machine_id < s->etc_matrix->machines_count);
+    assert(machine_id >= 0);
+    assert(task_position >= 0);
+    assert(s->__machine_assignment_count[machine_id] < task_position);
+    
+    return s->__machine_assignment[machine_id][task_position];
+}
+
+int get_machine_task_pos(struct solution *s, int machine_id, int task_id) {
+    assert(machine_id < s->etc_matrix->machines_count);
+    assert(machine_id >= 0);
+    assert(task_id < s->etc_matrix->tasks_count);
+    assert(task_id >= 0);
+    assert(s->__task_assignment[task_id] == machine_id);
+
+    int i = 0;
+
+    if (s->__machine_assignment_count[machine_id] > 0) {
+        for (; (i < s->__machine_assignment_count[machine_id]) 
+            && (s->__machine_assignment[machine_id][i] != task_id); i++) {
+        }
+        
+        if (i < s->__machine_assignment_count[machine_id]) {
+            return i;
+        } else {
+            return -1;
+        }
+    } else {
+        return -1;
+    }
 }
 
 float get_makespan(struct solution *s) {

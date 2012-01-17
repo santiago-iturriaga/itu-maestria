@@ -14,8 +14,8 @@ void pals_serial_wrapper(struct matrix *etc_matrix, struct solution *s,
 
 	for (int task_a = 0; task_a < etc_matrix->tasks_count; task_a++) {
 		for (int task_b = 0; task_b < task_a; task_b++) {
-			int machine_a = get_task_assignment(s, task_a);
-			int machine_b = get_task_assignment(s, task_b);
+			int machine_a = get_task_assigned_machine_id(s, task_a);
+			int machine_b = get_task_assigned_machine_id(s, task_b);
 			
 			float current_swap_delta = 0.0;
 			current_swap_delta -= get_etc_value(etc_matrix, machine_a, task_a);
