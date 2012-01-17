@@ -10,26 +10,32 @@
 #include "../etc_matrix.h"
 #include "../solution.h"
 
-#define PALS_CPU_RTASK_SWAP 0
-#define PALS_CPU_RTASK_MOVE 1
-
 #ifndef PALS_CPU_RTASK_H_
 #define PALS_CPU_RTASK_H_
 
-#define PALS_CPU_RTASK_WORK__DO_GREEDY_SEARCH 0
-#define PALS_CPU_RTASK_WORK__DO_RANDOM_SEARCH 1
-#define PALS_CPU_RTASK_WORK__DO_EXIT 2
+#define PALS_CPU_RTASK_SWAP 0
+#define PALS_CPU_RTASK_MOVE 1
 
-#define PALS_CPU_RTASK_WORK__GREEDY_CONV 5
-#define PALS_CPU_RTASK_WORK__RANDOM_CONV 5
-#define PALS_CPU_RTASK_WORK__RANDOM_MAX_ITERS 25
+#define PALS_CPU_RTASK_MASTER_RANDOMS 3
 
+#define PALS_CPU_RTASK_WORK__DO_MAKESPAN_GREEDY_SEARCH 0
+#define PALS_CPU_RTASK_WORK__DO_ENERGY_GREEDY_SEARCH   1
+#define PALS_CPU_RTASK_WORK__DO_RANDOM_GREEDY_SEARCH   2
+#define PALS_CPU_RTASK_WORK__DO_EXIT                   99
+
+#define PALS_CPU_RTASK_WORK__CONVERGENCE 100
+
+#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 10
+#define PALS_CPU_RTASK_WORK__ELITE_POP_EMPTY    0
+#define PALS_CPU_RTASK_WORK__ELITE_POP_SOL      1
+
+#define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
+#define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
 
 struct pals_cpu_rtask_instance {
     // Estado del problema.
     struct matrix *etc_matrix;
-    struct solution *current_solution;
-    struct solution *best_solution;
+    struct solution *initial_solution;
 
     // Referencia a los threads del disponibles.
     pthread_t *master_thread;
@@ -37,50 +43,63 @@ struct pals_cpu_rtask_instance {
     struct pals_cpu_rtask_thread_arg *slave_threads_args;
 
 	// Espacio de memoria para comunicación con los threads.
-	int work_type;
+	int *slave_work_type;
+	int *slave_work_solution_idx;
+	
+    struct solution *elite_population;
+    int *elite_population_status;
+    int elite_population_count;   
+    
 	pthread_barrier_t *sync_barrier;
 
 	// Estado de los generadores aleatorios.
     struct cpu_rand_state *random_states;
-    double *random_numbers;
+	double master_random_numbers[PALS_CPU_RTASK_MASTER_RANDOMS];
+    double *slave_random_numbers;
 	
 	// Espacio de memoria para almacenar los mejores movimientos encontrados en cada iteración.
 	int *move_type;
 	int *origin;
 	int *destination;
-	float *delta;
+	float *delta_makespan;
+	float *delta_ct;
+	float *delta_energy;
 	
 	// Parámetros de ejecución.
 	int count_threads;
-	int count_loops;
-	int count_evals;
-	
-	// Cantidad de movimientos probados por iteración.
-    long total_evals;
 	
 	// Cantidad de resultados obtenidos por iteración.
-	// (¿siempre es igual a cantidad de bloques del kernel?)
 	int result_count;
 	
 	// Inner state...
 	char *__result_task_history;
 	char *__result_machine_history;
+	
+	// Statics
+    int total_iterations;
+    int last_elite_found_on_iter;
+    int total_makespan_greedy_searches;
+    int total_energy_greedy_searches;
+    int total_random_greedy_searches;
+	long total_swaps;
+    long total_moves;
 };
 
 struct pals_cpu_rtask_thread_arg {
     // Id del thread actual.
     int thread_idx;
-
-	// Parámetros de ejecución.
-	int count_loops;
-	int count_evals;
     
     // Estado del problema.
     struct matrix *etc_matrix;
-    struct solution *current_solution;
 
     // Comunicación con el thread actual.
+    struct solution *population;
+    int *population_status;
+    int *population_count;   
+    
+	int *work_solution_idx;
 	int *work_type;
+	
 	pthread_barrier_t *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
@@ -91,7 +110,9 @@ struct pals_cpu_rtask_thread_arg {
 	int *thread_move_type;
 	int *thread_origin;
 	int *thread_destination;
-	float *thread_delta;
+	float *thread_delta_makespan;
+	float *thread_delta_ct;
+	float *thread_delta_energy;
 };
 
 /*
