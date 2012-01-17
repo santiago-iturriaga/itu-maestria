@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 	if (OUTPUT_SOLUTION) {
 		//fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
 		for (int task_id = 0; task_id < etc_matrix->tasks_count; task_id++) {
-			fprintf(stdout, "%d\n", get_task_assignment(current_solution,task_id));
+			fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
 		}
 	}
 	

@@ -433,7 +433,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 						        get_machine_compute_time(instance->current_solution, machine_b));
 					    }
 			
-        				move_task_to_machine(instance->current_solution, machine_b, task_x);
+        				move_task_to_machine(instance->current_solution, task_x, machine_b);
 			
 					    if (DEBUG) {
 						    fprintf(stdout, ">> [update]:\n");
@@ -555,12 +555,13 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
 	    int task_x_pos = -1, task_y_pos = -1;
 	    int task_x_aux, task_y_aux;
 	    
-	    int tasks_in_machine_a = get_tasks_count_in_machine(&(thread_instance->population[current_solution_pos]), machine_a);
-	    int tasks_in_machine_b = get_tasks_count_in_machine(&(thread_instance->population[current_solution_pos]), machine_b);
+	    int tasks_in_machine_a = get_machine_tasks_count(&(thread_instance->population[current_solution_pos]), machine_a);
+	    int tasks_in_machine_b = get_machine_tasks_count(&(thread_instance->population[current_solution_pos]), machine_b);
 	    
         task_x_aux = (int)floor(random_task_x * tasks_in_machine_a);
         task_y_aux = (int)floor(random_task_y * tasks_in_machine_b);
 
+        /*
         int *tasks_a = get_all_tasks(&(thread_instance->population[current_solution_pos]), machine_a);
         int *tasks_b = get_all_tasks(&(thread_instance->population[current_solution_pos]), machine_b);
 
@@ -574,7 +575,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
             if (tasks_b[task_y_offset] != MACHINE__EMPTY) task_y_pos++;
         }
 
-        task_y_id = tasks_b[task_y_offset];
+        task_y_id = tasks_b[task_y_offset];*/
 
    	    int task_y_offset_current;
         for (int src_nhood_idx = 0; src_nhood_idx < PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD; src_nhood_idx++) {
@@ -727,22 +728,24 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
                     }*/
 	            }
 	            
+	            /*
 	            if (dst_nhood_idx + 1 < PALS_CPU_RTASK_WORK__DST_TASK_NHOOD) {
                     for (task_y_offset_current++; (tasks_b[task_y_offset_current] == MACHINE__EOT) && (tasks_b[task_y_offset_current] == MACHINE__EMPTY); task_y_offset++) {
                         if (tasks_b[task_y_offset_current] == MACHINE__EOT) task_y_offset_current = 0;
                     }
 
                     task_y_id = tasks_b[task_y_offset_current];
-                }
+                }*/
             }
             
+            /*
             if (src_nhood_idx + 1 < PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD) {
                 for (task_x_offset++; (tasks_a[task_x_offset] == MACHINE__EOT) && (tasks_a[task_x_offset] == MACHINE__EMPTY); task_x_offset++) {
                     if (tasks_a[task_x_offset] == MACHINE__EOT) task_x_offset_current = 0;
                 }
                 
                 task_x_id = tasks_a[task_x_offset];
-            }
+            }*/
         }
 
         // Espero a que todos los slave threads terminen.
