@@ -5,14 +5,14 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <time.h>
+#include <semaphores.h>
 
 #include "../config.h"
 #include "../utils.h"
 #include "../random/cpu_rand.h"
 
 #include "pals_cpu_rtask.h"
-
-#define RANDOM_NUMBERS_PER_THREAD_ITER 5
 
 void pals_cpu_rtask(struct params &input, struct solution *current_solution) {	
 	// ==============================================================================
@@ -87,7 +87,11 @@ void pals_cpu_rtask(struct params &input, struct solution *current_solution) {
         	    for (int i = 0; i < instance.elite_population_count; i++) {
     	            fprintf(stdout, "%f %f\n", get_makespan(&(instance.elite_population[i])), get_energy(&(instance.elite_population[i])));
     	        }
-	        }
+	        } else {
+				for (int task_id = 0; task_id < etc->tasks_count; task_id++) {
+					fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
+				}
+			}
         	fprintf(stderr, "CANT_ITERACIONES|%d\n", instance.total_iterations);
         	fprintf(stderr, "BEST_FOUND|%d\n", instance.last_elite_found_on_iter);
 	        fprintf(stderr, "TOTAL_SWAPS|%ld\n", instance.total_swaps);
@@ -105,13 +109,9 @@ void pals_cpu_rtask(struct params &input, struct solution *current_solution) {
 	// Timming -----------------------------------------------------		
 }
 
-void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance) {
-	
+void pals_cpu_rtask_init(struct params &input, int seed, struct pals_cpu_rtask_instance &empty_instance) {
 	// Asignación del paralelismo del algoritmo.
 	empty_instance.count_threads = input.thread_count;
-	
-	// Cantidad de resultados retornados por iteración.
-	empty_instance.result_count = empty_instance.count_threads - 1;
 	
 	if (DEBUG) {
 		fprintf(stdout, "[INFO] Seed                                    : %d\n", seed);
@@ -127,30 +127,58 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
     
     empty_instance.etc = s->etc;
     empty_instance.energy = s->energy;
-    empty_instance.initial_solution = s;
 
-    empty_instance.elite_population = (struct solution*)malloc(sizeof(struct solution) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
+	// Population.
+    empty_instance.population = (struct solution*)malloc(sizeof(struct solution) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
+    if (empty_instance.population == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para population.\n");
+		exit(EXIT_FAILURE);
+	}
+        
+    empty_instance.population_status = (int*)malloc(sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
+    if (empty_instance.population_status == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para population status.\n");
+		exit(EXIT_FAILURE);
+	}
+    
+	memset(empty_instance.population_status, 0, sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
+	empty_instance.population_count = 0;
+	
+	// Elite population.
+    empty_instance.elite_population = (struct solution**)malloc(sizeof(struct solution*) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
     if (empty_instance.elite_population == NULL) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para elite population.\n");
 		exit(EXIT_FAILURE);
 	}
-        
-    empty_instance.elite_population_status = (int*)malloc(sizeof(int) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
-    if (empty_instance.elite_population_status == NULL) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para elite population status.\n");
-		exit(EXIT_FAILURE);
-	}
-    
-    for (int i = 0; i < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE; i++) {
-        empty_instance.elite_population_status = PALS_CPU_RTASK_WORK__ELITE_POP_EMPTY;
-    }
+           
+	memset(empty_instance.elite_population, 0, sizeof(struct solution*) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
+	empty_instance.elite_population_count = 0;
+	
 
     // Clono la solución inicial y la pongo en la elite population.
+	
+	/*
+	// =============================================================
+	// Candidate solution
+	// =============================================================
+	if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+
+	// Timming -----------------------------------------------------
+	timespec ts_mct;
+	timming_start(ts_mct);
+	// Timming -----------------------------------------------------
+
+	compute_mct(current_solution);
+
+	// Timming -----------------------------------------------------
+	timming_end(">> MCT Time", ts_mct);
+	// Timming -----------------------------------------------------
+
+	if (DEBUG) validate_solution(current_solution);
+	
     empty_instance.elite_population_count = 1;
     clone_solution(&(empty_instance.elite_population[0]), s);
-
-	empty_instance.__result_task_history = (char*)malloc(sizeof(char) * s->etc->tasks_count);
-	empty_instance.__result_machine_history = (char*)malloc(sizeof(char) * s->etc->machines_count);
+	*/
 
 	// =========================================================================
 	// Pedido de memoria para la generación de numeros aleatorios.
@@ -168,35 +196,33 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
 	    cpu_rand_init(random_seed, empty_instance.random_states[i]);
 	}
 	
-	empty_instance.slave_random_numbers = (double*)malloc(sizeof(double) * (empty_instance.count_threads - 1) * RANDOM_NUMBERS_PER_THREAD_ITER);
-	
 	timming_end(".. cpu_rand_buffers", ts_1);
 	
-	// =========================================================================
-	// Pedido de memoria para almacenar los mejores movimientos de cada iteración.
-	
-	empty_instance.move_type = (int*)malloc(sizeof(int) * empty_instance.result_count);
-	empty_instance.origin = (int*)malloc(sizeof(int) * empty_instance.result_count);
-	empty_instance.destination = (int*)malloc(sizeof(int) * empty_instance.result_count);
-	empty_instance.delta_makespan = (float*)malloc(sizeof(float) * empty_instance.result_count);
-	empty_instance.delta_ct = (float*)malloc(sizeof(float) * empty_instance.result_count);
-	empty_instance.delta_energy = (float*)malloc(sizeof(float) * empty_instance.result_count);
-
 	// =========================================================================
 	// Creo e inicializo los threads y los mecanismos de sincronización del sistema.
 	
 	timespec ts_threads;
 	timming_start(ts_threads);
-	
-	empty_instance.sync_barrier = (pthread_barrier_t*)malloc(sizeof(pthread_barrier_t));
-	if (pthread_barrier_init(empty_instance.sync_barrier, NULL, empty_instance.count_threads))
+
+	if (pthread_barrier_init(&(empty_instance.population_mutex), NULL))
     {
-        printf("Could not create a barrier\n");
+        printf("Could not create a population_mutex\n");
+        exit(EXIT_FAILURE);
+    }
+	
+	if (pthread_barrier_init(&(empty_instance.sync_barrier), NULL, empty_instance.count_threads))
+    {
+        printf("Could not create a sync barrier\n");
+        exit(EXIT_FAILURE);
+    }
+	
+	if (sem_init(&(empty_instance.new_solutions_sem), 0, 0))
+    {
+        printf("Could not create a new solutions sem\n");
         exit(EXIT_FAILURE);
     }
 
-	empty_instance.master_thread = (pthread_t*)malloc(sizeof(pthread_t));
-	
+	// Creo los hilos.
 	empty_instance.slave_threads = (pthread_t*)
 	    malloc(sizeof(pthread_t) * (empty_instance.count_threads - 1));
 	
@@ -204,10 +230,16 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
 	    malloc(sizeof(struct pals_cpu_rtask_thread_arg) * (empty_instance.count_threads - 1));
 
     empty_instance.slave_work_type = (int*)malloc(sizeof(int) * (empty_instance.count_threads - 1));
-    empty_instance.slave_work_solution_idx = (int*)malloc(sizeof(int) * (empty_instance.count_threads - 1));
-
+	for (int i = 0; i < empty_instance.count_threads - 1; i++) {
+		if (i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) {
+			empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__INIT_POP;
+		} else {
+			empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__WAIT;
+		}
+	}
+	
     // Creo el hilo master.
-    if (pthread_create(empty_instance.master_thread, NULL, pals_cpu_rtask_master_thread, (void*) &(empty_instance)))
+    if (pthread_create(&(empty_instance.master_thread), NULL, pals_cpu_rtask_master_thread, (void*) &(empty_instance)))
     {
         printf("Could not create master thread\n");
         exit(EXIT_FAILURE);
@@ -224,22 +256,15 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
         empty_instance.slave_threads_args[i].population_status = empty_instance.elite_population_status;
         empty_instance.slave_threads_args[i].population_count = &(empty_instance.elite_population_count);
         
-        empty_instance.slave_threads_args[i].work_solution_idx = &(empty_instance.slave_work_solution_idx[i]);
     	empty_instance.slave_threads_args[i].work_type = &(empty_instance.slave_work_type[i]);
-        empty_instance.slave_threads_args[i].sync_barrier = empty_instance.sync_barrier;
+		
+        empty_instance.slave_threads_args[i].population_mutex = &(empty_instance.population_mutex);
+		empty_instance.slave_threads_args[i].new_solutions_sem = &(empty_instance.new_solutions_sem);
+		empty_instance.slave_threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
         	
         empty_instance.slave_threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
-        empty_instance.slave_threads_args[i].thread_random_numbers = &(empty_instance.slave_random_numbers[i * RANDOM_NUMBERS_PER_THREAD_ITER]);
-        
-        empty_instance.slave_threads_args[i].thread_move_type = &(empty_instance.move_type[i]);
-        empty_instance.slave_threads_args[i].thread_origin = &(empty_instance.origin[i]);
-        empty_instance.slave_threads_args[i].thread_destination = &(empty_instance.destination[i]);
-        empty_instance.slave_threads_args[i].thread_delta_makespan = &(empty_instance.delta_makespan[i]);
-        empty_instance.slave_threads_args[i].thread_delta_ct = &(empty_instance.delta_ct[i]);
-        empty_instance.slave_threads_args[i].thread_delta_energy = &(empty_instance.delta_energy[i]);
    		
-        if (pthread_create(&(empty_instance.slave_threads[i]), NULL, pals_cpu_rtask_slave_thread, 
-            (void*) &(empty_instance.slave_threads_args[i])))
+        if (pthread_create(&(empty_instance.slave_threads[i]), NULL, pals_cpu_rtask_slave_thread,  (void*) &(empty_instance.slave_threads_args[i])))
         {
             printf("Could not create slave thread %d\n", i);
             exit(EXIT_FAILURE);
@@ -250,28 +275,42 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
 }
 
 void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {      
-    free(instance.elite_population);
-    free(instance.elite_population_status);
+	free(instance.elite_population);
+    free(instance.population);
+    free(instance.population_status);
     
     free(instance.random_states);
-    free(instance.slave_random_numbers);
         
-	free(instance.move_type);
-	free(instance.origin);
-	free(instance.destination);
-	free(instance.delta_makespan);
-	free(instance.delta_ct);
-	free(instance.delta_energy);
-
 	free(instance.slave_threads);	
 	free(instance.slave_threads_args);
 	free(instance.slave_work_type);
-    free(instance.slave_work_solution_idx);
-		
-	free(instance.sync_barrier);
 	
-	free(instance.__result_task_history);
-	free(instance.__result_machine_history);
+	pthread_mutex_destroy(&(instance.population_mutex));
+	pthread_barrier_destroy(&(instance.sync_barrier));
+	sem_destroy(&(instance.new_solution_sem));
+}
+
+int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) {
+	int solutions_found = 0;
+	int s_idx = 0;
+	
+	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE)
+		&& (s_idx < instance->population_count); s_pos++) {
+		
+		if (instance->population_status[s_idx] == PALS_CPU_RTASK_WORK__POP_NEW) {
+			// Calculo no dominancia del elemento actual y lo agrego a la población elite si corresponde.
+			// TODO:.........
+			
+			instance->population_status[s_idx] == PALS_CPU_RTASK_WORK__POP_USED;
+			solutions_found++;
+		}
+		
+		if (instance->population_status[s_idx] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
+			s_idx++;
+		}
+	}
+	
+	return solutions_found;
 }
 
 void* pals_cpu_rtask_master_thread(void *thread_arg) {
@@ -280,46 +319,78 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 
     int rc;
 	
-	instance->total_iterations = 0;
-    instance->last_elite_found_on_iter = -1;
-    instance->total_makespan_greedy_searches = 0;
-    instance->total_energy_greedy_searches = 0;
-    instance->total_random_greedy_searches = 0;
-	instance->total_swaps = 0;
-    instance->total_moves = 0;
-	
 	int increase_depth = 0;
 	int convergence_flag = 0;
+   
+	timespec ts_start, ts_current;
+	clock_gettime(CLOCK_REALTIME, &ts_start);
+	clock_gettime(CLOCK_REALTIME, &ts_current);
 
-    // Genero numeros aletorios para la primer iteración.    
-    cpu_rand_generate(instance->random_states[instance->count_threads-1], PALS_CPU_RTASK_MASTER_RANDOMS, instance->master_random_numbers);
-    
-	int iter;
-	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
+	// ===========================================================================
+	// [SYNC POINT] Espero a que los esclavos terminen de inicializar la población.
+	rc = pthread_barrier_wait(instance->sync_barrier);
+	if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+	{
+		printf("Could not wait on barrier\n");
+		exit(EXIT_FAILURE);
+	}
 	
-		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
+	// Calculo no dominancia de la población inicial y separo la población elite.
+	// TODO:.........
+	
+	// Asigno trabajo de busqueda a todos los hilos.
+	for (int i = 0; i < empty_instance.count_threads - 1; i++) {
+		empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__SEARCH;
+	}
 
+	// [SYNC POINT] Aviso a los esclavos que pueden continuar.
+	rc = pthread_barrier_wait(instance->sync_barrier);
+	if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+	{
+		printf("Could not wait on barrier\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	int iter;
+	for (iter = 0; (convergence_flag == 0) && (ts_end.tv_sec - ts.tv_sec < PALS_CPU_RTASK_WORK__TIMEOUT); iter++) {
 		// Timming -----------------------------------------------------
 		timespec ts_search;
 		timming_start(ts_search);
 		// Timming -----------------------------------------------------
-
+	
         // ===========================================================================
-        // Asigno el trabajo para los hilos.
-        int current_work_type;
-        current_work_type = (int)floor(instance->master_random_numbers[0] * 3);
+        // Espero a que un esclavo encuentre una solución.
+		
+		if (sem_wait(instance->new_solution_sem) == -1) {
+			printf("Could not wait on semaphore\n");
+			exit(EXIT_FAILURE);
+		}
+	
+		int solutions_found;
+		solutions_found = pals_cpu_rtask_eval_new_solutions();
+		
+		if (solutions_found > 0) {
+			increase_depth = 0;
+		} else {
+			increase_depth++;
+		}
+	
+		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == 0) || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
+			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
+			// Asigno trabajo de busqueda a todos los hilos.
+			for (int i = 0; i < empty_instance.count_threads - 1; i++) {
+				empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__WAIT;
+			}
 
-        int current_work_solution_idx;
-        current_work_solution_idx = (int)floor(instance->master_random_numbers[1] * instance->elite_population_count);
-        
-        for (int i = 0; i < instance->count_threads - 1; i++) {
-            instance->slave_work_type[i] = current_work_type;
-            instance->slave_work_solution_idx[i] = current_work_solution_idx;
-
-            current_work_type = (current_work_type + 1) % 3;       
-            current_work_solution_idx = (current_work_solution_idx + 1) % instance->elite_population_count;
-        }
-
+			// [SYNC POINT] Espero a que los esclavos terminen.
+			rc = pthread_barrier_wait(instance->sync_barrier);
+			if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+			{
+				printf("Could not wait on barrier\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+	
         // ===========================================================================
         // Mando a los esclavos a buscar movimientos.
         rc = pthread_barrier_wait(instance->sync_barrier);
@@ -488,6 +559,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_cpu_rtask_post", ts_post);
 		// Timming -----------------------------------------------------
+		
+		clock_gettime(CLOCK_REALTIME, &ts_current);
 	}
 	
     // Mando a los esclavos a terminar.
@@ -508,10 +581,34 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 void* pals_cpu_rtask_slave_thread(void *thread_arg)
 {	
     int rc;
-    pals_cpu_rtask_thread_arg *thread_instance;
 
+    pals_cpu_rtask_thread_arg *thread_instance;
     thread_instance = (pals_cpu_rtask_thread_arg*)thread_arg;
 
+	thread_instance->total_iterations = 0;
+    thread_instance->total_makespan_greedy_searches = 0;
+    thread_instance->total_energy_greedy_searches = 0;
+    thread_instance->total_random_greedy_searches = 0;
+	thread_instance->total_swaps = 0;
+    thread_instance->total_moves = 0;
+	
+	        // ===========================================================================
+        // Asigno el trabajo para los hilos.
+        int current_work_type;
+        current_work_type = (int)floor(instance->master_random_numbers[0] * 3);
+
+        int current_work_solution_idx;
+        current_work_solution_idx = (int)floor(
+			cpu_rand_generate(instance->random_states[instance->count_threads-1]) * instance->elite_population_count);
+        
+        for (int i = 0; i < instance->count_threads - 1; i++) {
+            instance->slave_work_type[i] = current_work_type;
+            instance->slave_work_solution_idx[i] = current_work_solution_idx;
+
+            current_work_type = (current_work_type + 1) % 3;       
+            current_work_solution_idx = (current_work_solution_idx + 1) % instance->elite_population_count;
+        }
+	
     // Genero los números aleatorios necesarios para esta iteración (por las dudas).
     cpu_rand_generate(*(thread_instance->thread_random_state), RANDOM_NUMBERS_PER_THREAD_ITER, thread_instance->thread_random_numbers);
     
