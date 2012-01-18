@@ -34,7 +34,7 @@
 
 struct pals_cpu_rtask_instance {
     // Estado del problema.
-    struct matrix *etc_matrix;
+    struct etc_matrix *etc;
     struct solution *initial_solution;
 
     // Referencia a los threads del disponibles.
@@ -90,7 +90,7 @@ struct pals_cpu_rtask_thread_arg {
     int thread_idx;
     
     // Estado del problema.
-    struct matrix *etc_matrix;
+    struct etc_matrix *etc;
 
     // Comunicación con el thread actual.
     struct solution *population;
@@ -120,12 +120,12 @@ struct pals_cpu_rtask_thread_arg {
  * Búsqueda masivamente paralela sobre un subdominio del problema. 
  * Se sortea el subdominio por tarea.
  */
-void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
+void pals_cpu_rtask(struct params &input, struct solution *current_solution);
 
 /*
  * Reserva e inicializa la memoria con los datos del problema.
  */
-void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance);
+void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance);
 
 /*
  * Libera la memoria.

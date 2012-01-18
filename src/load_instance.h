@@ -11,6 +11,6 @@
 #ifndef LOAD_INSTANCE_H_
 #define LOAD_INSTANCE_H_
 
-int load_instance(struct params *input, struct matrix *etc_matrix);
+int load_instance(struct params *input, struct etc_matrix *etc);
 
 #endif /* LOAD_INSTANCE_H_ */

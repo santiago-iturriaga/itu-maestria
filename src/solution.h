@@ -12,7 +12,7 @@
 #define TASK__NOT_ASSIGNED -1
 
 struct solution {
-    struct matrix *etc_matrix;
+    struct etc_matrix *etc;
     
 	int *__task_assignment;
     int **__machine_assignment;
@@ -29,8 +29,8 @@ struct solution {
 	float __total_energy_consumption;
 };
 
-struct solution* create_empty_solution(struct matrix *etc_matrix);
-void init_empty_solution(struct matrix *etc_matrix, struct solution *new_solution);
+struct solution* create_empty_solution(struct etc_matrix *etc);
+void init_empty_solution(struct etc_matrix *etc, struct solution *new_solution);
 
 void clone_solution(struct solution *dst, struct solution *src);
 void free_solution(struct solution *s);

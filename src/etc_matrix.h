@@ -10,17 +10,17 @@
 #ifndef ETC_MATRIX_H_
 #define ETC_MATRIX_H_
 
-struct matrix {
+struct etc_matrix {
 	int tasks_count;
 	int machines_count;
 	float* data;
 };
 
-struct matrix* create_etc_matrix(struct params *input);
-void free_etc_matrix(struct matrix *etc_matrix);
-void show_etc_matrix(struct matrix *etc_matrix);
+struct etc_matrix* create_etc_matrix(struct params *input);
+void free_etc_matrix(struct etc_matrix *etc);
+void show_etc_matrix(struct etc_matrix *etc);
 
-void set_etc_value(struct matrix *etc_matrix, int machine, int task, float value);
-float get_etc_value(struct matrix *etc_matrix, int machine, int task);
+void set_etc_value(struct etc_matrix *etc, int machine, int task, float value);
+float get_etc_value(struct etc_matrix *etc, int machine, int task);
 
 #endif /* ETC_MATRIX_H_ */

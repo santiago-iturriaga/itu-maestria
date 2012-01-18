@@ -44,10 +44,10 @@ int main(int argc, char** argv)
 	if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance...\n");
 	
 	// Se pide el espacio de memoria para la matriz de ETC.
-	struct matrix *etc_matrix = create_etc_matrix(&input);
+	struct etc_matrix *etc = create_etc_matrix(&input);
 
 	// Se carga la matriz de ETC.
-	if (load_instance(&input, etc_matrix) == EXIT_FAILURE) {
+	if (load_instance(&input, etc) == EXIT_FAILURE) {
 		fprintf(stderr, "[ERROR] Ocurrió un error leyendo el archivo de instancia.\n");
 		return EXIT_FAILURE;
 	}
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	// Create empty solution
 	// =============================================================
 	if (DEBUG) fprintf(stdout, "[DEBUG] Creating empty solution...\n");
-	struct solution *current_solution = create_empty_solution(etc_matrix);
+	struct solution *current_solution = create_empty_solution(etc);
 
 	// =============================================================
 	// Solving the problem.
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 		timming_start(ts_mct);
 		// Timming -----------------------------------------------------
 
-		compute_mct(etc_matrix, current_solution);
+		compute_mct(current_solution);
 	
 		// Timming -----------------------------------------------------
 		timming_end(">> MCT Time", ts_mct);
@@ -92,7 +92,7 @@ int main(int argc, char** argv)
 		// =============================================================
 		// Serial. Versión de búsqueda completa.
 		// =============================================================
-		pals_serial(input, etc_matrix, current_solution);
+		pals_serial(current_solution);
 		
 	} else if (input.algorithm == PALS_GPU) {
 
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 		timming_start(ts_mct);
 		// Timming -----------------------------------------------------
 
-		compute_mct(etc_matrix, current_solution);
+		compute_mct(current_solution);
 	
 		// Timming -----------------------------------------------------
 		timming_end(">> MCT Time", ts_mct);
@@ -125,16 +125,16 @@ int main(int argc, char** argv)
 		// CUDA. Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		pals_cpu_rtask(input, etc_matrix, current_solution);		
+		pals_cpu_rtask(input, current_solution);		
 		
 	} else if (input.algorithm == MinMin) {
 		
-		compute_minmin(etc_matrix, current_solution);
+		compute_minmin(current_solution);
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", get_makespan(current_solution));
 		
 	} else if (input.algorithm == MCT) {
 		
-		compute_mct(etc_matrix, current_solution);
+		compute_mct(current_solution);
 		
 	} else if (input.algorithm == PALS_GPU_randParallelTask) {
 
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
 
 	if (OUTPUT_SOLUTION) {
 		//fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
-		for (int task_id = 0; task_id < etc_matrix->tasks_count; task_id++) {
+		for (int task_id = 0; task_id < etc->tasks_count; task_id++) {
 			fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
 		}
 	}
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 	// =============================================================
 	// Release memory
 	// =============================================================
-	free_etc_matrix(etc_matrix);
+	free_etc_matrix(etc);
 	
 	free_solution(current_solution);
 	free(current_solution);

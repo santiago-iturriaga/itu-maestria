@@ -11,6 +11,7 @@ pals-gdb: src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
 		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
 		src/solution.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
@@ -22,6 +23,7 @@ pals-gdb: src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
 		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
 		src/solution.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
@@ -35,6 +37,7 @@ pals-opt: src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
 		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
 		src/solution.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
@@ -46,6 +49,7 @@ pals-opt: src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
 		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
 		src/solution.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
