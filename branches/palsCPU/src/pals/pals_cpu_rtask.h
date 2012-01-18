@@ -8,6 +8,7 @@
 #include <pthread.h>
 
 #include "../etc_matrix.h"
+#include "../energy_matrix.h"
 #include "../solution.h"
 
 #ifndef PALS_CPU_RTASK_H_
@@ -35,6 +36,7 @@
 struct pals_cpu_rtask_instance {
     // Estado del problema.
     struct etc_matrix *etc;
+    struct energy_matrix *energy;
     struct solution *initial_solution;
 
     // Referencia a los threads del disponibles.
@@ -91,6 +93,7 @@ struct pals_cpu_rtask_thread_arg {
     
     // Estado del problema.
     struct etc_matrix *etc;
+    struct energy_matrix *energy;
 
     // Comunicación con el thread actual.
     struct solution *population;

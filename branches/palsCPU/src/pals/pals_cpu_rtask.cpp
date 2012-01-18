@@ -125,7 +125,8 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
     // =========================================================================
     // Pido la memoria e inicializo la solución de partida.
     
-    empty_instance.etc = s->etc;   
+    empty_instance.etc = s->etc;
+    empty_instance.energy = s->energy;
     empty_instance.initial_solution = s;
 
     empty_instance.elite_population = (struct solution*)malloc(sizeof(struct solution) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
@@ -144,6 +145,7 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
         empty_instance.elite_population_status = PALS_CPU_RTASK_WORK__ELITE_POP_EMPTY;
     }
 
+    // Clono la solución inicial y la pongo en la elite population.
     empty_instance.elite_population_count = 1;
     clone_solution(&(empty_instance.elite_population[0]), s);
 
@@ -216,6 +218,7 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
    		empty_instance.slave_threads_args[i].thread_idx = i;
    		
         empty_instance.slave_threads_args[i].etc = s->etc;
+        empty_instance.slave_threads_args[i].energy = s->energy;
         
         empty_instance.slave_threads_args[i].population = empty_instance.elite_population;
         empty_instance.slave_threads_args[i].population_status = empty_instance.elite_population_status;
@@ -272,16 +275,8 @@ void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {
 }
 
 void* pals_cpu_rtask_master_thread(void *thread_arg) {
-
     struct pals_cpu_rtask_instance *instance;
     instance = (struct pals_cpu_rtask_instance *)thread_arg;
-
-	// ===========> DEBUG
-	if (DEBUG) {
-	    //TODO: validar todas?
-		//validate_solution(instance->current_solution);
-	}
-	// <=========== DEBUG
 
     int rc;
 	
@@ -301,6 +296,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
     
 	int iter;
 	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
+	
 		if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
 		// Timming -----------------------------------------------------
@@ -334,7 +330,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
         }
 
         // ===========================================================================
-        // Mientras los hilos buscan, genero numeros aleatorios
+        // Mientras los hilos buscan intento adelantar trabajo.
         cpu_rand_generate(instance->random_states[instance->count_threads-1], PALS_CPU_RTASK_MASTER_RANDOMS, instance->master_random_numbers);
         
         // ===========================================================================
@@ -540,7 +536,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
             }
         }
 
-        // Determino que movimientos se van a realizar.
+        // Determino que tipo movimiento va a realizar el hilo.
        	int mov_type;
        	if (thread_instance->thread_random_numbers[0] < 0.75) {
        	    mov_type = PALS_CPU_RTASK_SWAP;
