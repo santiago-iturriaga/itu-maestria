@@ -16,6 +16,7 @@
 #include "load_params.h"
 #include "load_instance.h"
 #include "etc_matrix.h"
+#include "energy_matrix.h"
 #include "solution.h"
 #include "config.h"
 
@@ -43,11 +44,12 @@ int main(int argc, char** argv)
 	// =============================================================
 	if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance...\n");
 	
-	// Se pide el espacio de memoria para la matriz de ETC.
+	// Se pide el espacio de memoria para la matriz de ETC y de energía.
 	struct etc_matrix *etc = create_etc_matrix(&input);
+	struct energy_matrix *energy = create_energy_matrix(&input);
 
 	// Se carga la matriz de ETC.
-	if (load_instance(&input, etc) == EXIT_FAILURE) {
+	if (load_instance(&input, etc, energy) == EXIT_FAILURE) {
 		fprintf(stderr, "[ERROR] Ocurrió un error leyendo el archivo de instancia.\n");
 		return EXIT_FAILURE;
 	}
@@ -58,7 +60,7 @@ int main(int argc, char** argv)
 	// Create empty solution
 	// =============================================================
 	if (DEBUG) fprintf(stdout, "[DEBUG] Creating empty solution...\n");
-	struct solution *current_solution = create_empty_solution(etc);
+	struct solution *current_solution = create_empty_solution(etc, energy);
 
 	// =============================================================
 	// Solving the problem.
@@ -157,6 +159,7 @@ int main(int argc, char** argv)
 	// Release memory
 	// =============================================================
 	free_etc_matrix(etc);
+	free_energy_matrix(energy);
 	
 	free_solution(current_solution);
 	free(current_solution);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "etc_matrix.h"
+#include "energy_matrix.h"
 
 #ifndef SOLUTION_H_
 #define SOLUTION_H_
@@ -13,6 +14,7 @@
 
 struct solution {
     struct etc_matrix *etc;
+    struct energy_matrix *energy;
     
 	int *__task_assignment;
     int **__machine_assignment;
@@ -29,8 +31,8 @@ struct solution {
 	float __total_energy_consumption;
 };
 
-struct solution* create_empty_solution(struct etc_matrix *etc);
-void init_empty_solution(struct etc_matrix *etc, struct solution *new_solution);
+struct solution* create_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy);
+void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, struct solution *new_solution);
 
 void clone_solution(struct solution *dst, struct solution *src);
 void free_solution(struct solution *s);

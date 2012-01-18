@@ -6,7 +6,7 @@
 #include "config.h"
 #include "solution.h"
 
-struct solution* create_empty_solution(struct etc_matrix *etc) {
+struct solution* create_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy) {
 	struct solution *new_solution;
 	new_solution = (struct solution*)(malloc(sizeof(struct solution)));
 	
@@ -15,13 +15,14 @@ struct solution* create_empty_solution(struct etc_matrix *etc) {
 		exit(EXIT_FAILURE);
 	}
 
-    init_empty_solution(etc, new_solution);
+    init_empty_solution(etc, energy, new_solution);
 	
 	return new_solution;
 }
 
-void init_empty_solution(struct etc_matrix *etc, struct solution *new_solution) {
+void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, struct solution *new_solution) {
     new_solution->etc = etc;
+    new_solution->energy = energy;
 	
 	//=== Estructura orientada a tareas.
 	new_solution->__task_assignment = (int*)(malloc(sizeof(int) * etc->tasks_count));
