@@ -25,6 +25,7 @@ void pals_cpu_rtask(struct params &input, struct solution *current_solution) {
 	// Timming -----------------------------------------------------
 
 	float makespan_inicial = get_makespan(current_solution);
+	float energy_inicial = get_energy(current_solution);
 
 	// Inicializo la memoria y los hilos de ejecución.
 	struct pals_cpu_rtask_instance instance;
@@ -54,9 +55,7 @@ void pals_cpu_rtask(struct params &input, struct solution *current_solution) {
 	timespec ts_finalize;
 	timming_start(ts_finalize);
 	// Timming -----------------------------------------------------
-
-    // TODO: Hacer algo con las soluciones!!!
-		
+	
 	// ===========> DEBUG
 	if (DEBUG) {
 		fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", instance.total_iterations);
@@ -66,17 +65,29 @@ void pals_cpu_rtask(struct params &input, struct solution *current_solution) {
 		fprintf(stdout, "[INFO] Total de random searches       : %d\n", instance.total_random_greedy_searches);
 		fprintf(stdout, "[INFO] Total de swaps                 : %ld\n", instance.total_swaps);
 		fprintf(stdout, "[INFO] Total de moves                 : %ld\n", instance.total_moves);
+		fprintf(stdout, "[INFO] Cantidad de soluciones ND      : %d\n", instance.elite_population_count);
 	
-		validate_solution(current_solution);
+	    for (int i = 0; i < instance.elite_population_count; i++) {
+		    validate_solution(&(instance.elite_population[i]));
+		}
 	}
 	// <=========== DEBUG
 	
 	if (DEBUG) {
-		fprintf(stdout, "[DEBUG] Viejo makespan: %f\n", makespan_inicial);
-		fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", get_makespan(current_solution));
-		fprintf(stdout, "[DEBUG] Mejora: %.2f\n", 100 - (get_makespan(current_solution) / makespan_inicial) * 100);
+		fprintf(stdout, "[DEBUG] Starting solution: %f | %f\n", makespan_inicial, energy_inicial);
+		
+	    for (int i = 0; i < instance.elite_population_count; i++) {
+    		fprintf(stdout, "[DEBUG] Solution %d: %f | %f (%.2f\% | %.2f\%)\n", i, 
+    		    get_makespan(&(instance.elite_population[i])), get_energy(&(instance.elite_population[i])),
+    		    100 - (get_makespan(&(instance.elite_population[i])) * 100 / makespan_inicial), 
+    		    100 - (get_energy(&(instance.elite_population[i])) * 100 / energy_inicial));
+	    }
 	} else {
-	        if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", get_makespan(current_solution));
+	        if (!OUTPUT_SOLUTION) { 
+        	    for (int i = 0; i < instance.elite_population_count; i++) {
+    	            fprintf(stdout, "%f %f\n", get_makespan(&(instance.elite_population[i])), get_energy(&(instance.elite_population[i])));
+    	        }
+	        }
         	fprintf(stderr, "CANT_ITERACIONES|%d\n", instance.total_iterations);
         	fprintf(stderr, "BEST_FOUND|%d\n", instance.last_elite_found_on_iter);
 	        fprintf(stderr, "TOTAL_SWAPS|%ld\n", instance.total_swaps);

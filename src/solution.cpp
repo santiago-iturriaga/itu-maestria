@@ -460,18 +460,15 @@ void validate_solution(struct solution *s) {
 	fprintf(stdout, "[INFO] Validate solution =========================== \n");
 	fprintf(stdout, "[INFO] Dimension (%d x %d).\n", s->etc->tasks_count, s->etc->machines_count);
 	fprintf(stdout, "[INFO] Makespan: %f.\n", s->__makespan);
+	fprintf(stdout, "[INFO] Energy  : %f.\n", s->__total_energy_consumption);
 	
-	{
-		float aux_makespan = 0.0;
-
-		for (int machine = 0; machine < s->etc->machines_count; machine++) {
-			if (aux_makespan < s->__machine_compute_time[machine]) {
-				aux_makespan = s->__machine_compute_time[machine];
-			}
-		}
+	float current_makespan = s->__makespan;
+	refresh_makespan(s);
+	assert(current_makespan == s->__makespan);	
 	
-		assert(s->__makespan == aux_makespan);
-	}
+	float current_energy = s->__total_energy_consumption;
+	refresh_energy(s);
+	assert(current_energy == s->__total_energy_consumption);
 	
 	for (int machine = 0; machine < s->etc->machines_count; machine++) {
 		float aux_compute_time;
@@ -482,6 +479,9 @@ void validate_solution(struct solution *s) {
 		for (int task = 0; task < s->etc->tasks_count; task++) {
 			if (s->__task_assignment[task] == machine) {
 				aux_compute_time += get_etc_value(s->etc, machine, task);
+				
+				assert(get_machine_task_pos(s, machine, task) >= 0);
+				
 				assigned_tasks_count++;
 			}
 		}
@@ -492,12 +492,19 @@ void validate_solution(struct solution *s) {
 		}*/
 		
 		assert(s->__machine_compute_time[machine] == aux_compute_time);
+		assert(s->__machine_assignment_count[machine] == assigned_tasks_count);
 	}
 	
 	for (int task = 0; task < s->etc->tasks_count; task++) {
 		assert(s->__task_assignment[task] >= 0);
 		assert(s->__task_assignment[task] < s->etc->machines_count);
 	}
+	
+	assert(s->__machine_compute_time[s->__worst_ct_machine_id] == s->__makespan);
+	
+	int current_worst_energy = s->__worst_ct_machine_id;
+	refresh_worst_energy(s);
+	assert(current_worst_energy == s->__worst_ct_machine_id);
 	
 	fprintf(stdout, "[INFO] The current solution is valid.\n");
 	fprintf(stdout, "[INFO] ============================================= \n");	
