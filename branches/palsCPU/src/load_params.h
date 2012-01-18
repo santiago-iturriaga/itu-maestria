@@ -17,9 +17,12 @@
 #define PALS_GPU_randParallelTask 6
 
 struct params {
-	char *instance_path;
+	char *scenario_path;
+	char *workload_path;
+	
 	int machines_count;
 	int tasks_count;
+	
 	int seed;
 	int thread_count;
 	int algorithm;
