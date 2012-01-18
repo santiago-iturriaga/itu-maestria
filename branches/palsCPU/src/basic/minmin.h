@@ -8,6 +8,6 @@
 #ifndef MINMIN_H_
 #define MINMIN_H_
 
-void compute_minmin(struct matrix *etc_matrix, struct solution *solution);
+void compute_minmin(struct solution *solution);
 
 #endif

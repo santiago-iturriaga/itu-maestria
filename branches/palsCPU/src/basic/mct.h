@@ -8,6 +8,6 @@
 #ifndef MCT_H_
 #define MCT_H_
 
-void compute_mct(struct matrix *etc_matrix, struct solution *solution);
+void compute_mct(struct solution *solution);
 
 #endif

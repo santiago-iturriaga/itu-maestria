@@ -12,57 +12,56 @@
 #include "load_params.h"
 #include "etc_matrix.h"
 
-struct matrix* create_etc_matrix(struct params *input) {
-	struct matrix *etc_matrix;
-	etc_matrix = (struct matrix*)malloc(sizeof(struct matrix));
+struct etc_matrix* create_etc_matrix(struct params *input) {
+	struct etc_matrix *etc;
+	etc = (struct etc_matrix*)malloc(sizeof(struct etc_matrix));
 
-	if (etc_matrix == NULL) {
+	if (etc == NULL) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el struct etc_matrix.\n");
 		exit(EXIT_FAILURE);
 	}
 		
-	etc_matrix->tasks_count = input->tasks_count;
-	etc_matrix->machines_count = input->machines_count;
-	etc_matrix->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
+	etc->tasks_count = input->tasks_count;
+	etc->machines_count = input->machines_count;
+	etc->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
 	
-	if (etc_matrix->data == NULL) {
+	if (etc->data == NULL) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el etc_matrix->data.\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	return etc_matrix;
+	return etc;
 }
 
-void free_etc_matrix(struct matrix *etc_matrix) {
-	free(etc_matrix->data);
-	free(etc_matrix);
+void free_etc_matrix(struct etc_matrix *etc) {
+	free(etc->data);
+	free(etc);
 }
 
-int get_matrix_coord(struct matrix *etc_matrix, int machine, int task) {
-	assert(machine < etc_matrix->machines_count);
+int get_etc_coord(struct etc_matrix *etc, int machine, int task) {
+	assert(machine < etc->machines_count);
 	assert(machine >= 0);
-	assert(task < etc_matrix->tasks_count);
+	assert(task < etc->tasks_count);
 	assert(task >= 0);
 	
-	return (machine * etc_matrix->tasks_count) + task;
+	return (machine * etc->tasks_count) + task;
 }
 
-void set_etc_value(struct matrix *etc_matrix, int machine, int task, float value) {
-	// TODO: Ojo! esto no debería ser válido. Pero queda comentado porque la instancia de 65536x2048 tiene 0.0.
-	// assert(value > 0.0);
+void set_etc_value(struct etc_matrix *etc, int machine, int task, float value) {
+	assert(value > 0.0);
 	
-	etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)] = value;
+	etc->data[get_etc_coord(etc, machine, task)] = value;
 }
 
-float get_etc_value(struct matrix *etc_matrix, int machine, int task) {
-	return etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)];
+float get_etc_value(struct etc_matrix *etc, int machine, int task) {
+	return etc->data[get_etc_coord(etc, machine, task)];
 }
 
-void show_etc_matrix(struct matrix *etc_matrix) {
+void show_etc_matrix(struct etc_matrix *etc) {
 	fprintf(stdout, "[INFO] ETC Matrix =========================== \n");
-	for (int task = 0; task < etc_matrix->tasks_count; task++) {
-		for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
-			fprintf(stdout, "    Task %i on machine %i -> %f\n", task, machine, etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)]);
+	for (int task = 0; task < etc->tasks_count; task++) {
+		for (int machine = 0; machine < etc->machines_count; machine++) {
+			fprintf(stdout, "    Task %i on machine %i -> %f\n", task, machine, etc->data[get_etc_coord(etc, machine, task)]);
 		}
 	}
 	fprintf(stdout, "[INFO] ====================================== \n");

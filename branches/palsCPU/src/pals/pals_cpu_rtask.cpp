@@ -14,7 +14,7 @@
 
 #define RANDOM_NUMBERS_PER_THREAD_ITER 5
 
-void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution) {	
+void pals_cpu_rtask(struct params &input, struct solution *current_solution) {	
 	// ==============================================================================
 	// PALS aleatorio por tarea.
 	// ==============================================================================
@@ -28,7 +28,7 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
 	// Inicializo la memoria y los hilos de ejecución.
 	struct pals_cpu_rtask_instance instance;
-	pals_cpu_rtask_init(input, etc_matrix, current_solution, input.seed, instance);
+	pals_cpu_rtask_init(input, current_solution, input.seed, instance);
     
 	// Timming -----------------------------------------------------
 	timming_end(">> pals_cpu_rtask_init", ts_init);
@@ -94,8 +94,7 @@ void pals_cpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 	// Timming -----------------------------------------------------		
 }
 
-void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct solution *s, int seed,
-	struct pals_cpu_rtask_instance &empty_instance) {
+void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance) {
 	
 	// Asignación del paralelismo del algoritmo.
 	empty_instance.count_threads = input.thread_count;
@@ -115,7 +114,7 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
     // =========================================================================
     // Pido la memoria e inicializo la solución de partida.
     
-    empty_instance.etc_matrix = etc_matrix;   
+    empty_instance.etc = s->etc;   
     empty_instance.initial_solution = s;
 
     empty_instance.elite_population = (struct solution*)malloc(sizeof(struct solution) * PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
@@ -137,8 +136,8 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
     empty_instance.elite_population_count = 1;
     clone_solution(&(empty_instance.elite_population[0]), s);
 
-	empty_instance.__result_task_history = (char*)malloc(sizeof(char) * etc_matrix->tasks_count);
-	empty_instance.__result_machine_history = (char*)malloc(sizeof(char) * etc_matrix->machines_count);
+	empty_instance.__result_task_history = (char*)malloc(sizeof(char) * s->etc->tasks_count);
+	empty_instance.__result_machine_history = (char*)malloc(sizeof(char) * s->etc->machines_count);
 
 	// =========================================================================
 	// Pedido de memoria para la generación de numeros aleatorios.
@@ -205,7 +204,7 @@ void pals_cpu_rtask_init(struct params &input, struct matrix *etc_matrix, struct
 	for (int i = 0; i < (empty_instance.count_threads - 1); i++) {
    		empty_instance.slave_threads_args[i].thread_idx = i;
    		
-        empty_instance.slave_threads_args[i].etc_matrix = etc_matrix;
+        empty_instance.slave_threads_args[i].etc = s->etc;
         
         empty_instance.slave_threads_args[i].population = empty_instance.elite_population;
         empty_instance.slave_threads_args[i].population_status = empty_instance.elite_population_status;
@@ -346,8 +345,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		// Timming -----------------------------------------------------
 
 		// Aplico los movimientos.
-		memset(instance->__result_task_history, 0, instance->etc_matrix->tasks_count);
-		memset(instance->__result_machine_history, 0, instance->etc_matrix->machines_count);
+		memset(instance->__result_task_history, 0, instance->etc->tasks_count);
+		memset(instance->__result_machine_history, 0, instance->etc->machines_count);
 		
 		int cantidad_swaps_iter, cantidad_moves_iter;
 		cantidad_swaps_iter = 0;
@@ -542,8 +541,8 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
 	    double random_machine_b = thread_instance->thread_random_numbers[2];
 
 	    int machine_a, machine_b;
-        machine_a = (int)floor(random_machine_a * thread_instance->etc_matrix->machines_count);
-        machine_b = (int)floor(random_machine_b * thread_instance->etc_matrix->machines_count);
+        machine_a = (int)floor(random_machine_a * thread_instance->etc->machines_count);
+        machine_b = (int)floor(random_machine_b * thread_instance->etc->machines_count);
 
         if (machine_a == machine_b) machine_b++;
 

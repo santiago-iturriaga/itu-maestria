@@ -4,7 +4,7 @@
 #include "../config.h"
 #include "minmin.h"
 
-void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
+void compute_minmin(struct solution *solution) {
 	if (DEBUG) fprintf(stdout, "[DEBUG] calculando MinMin...\n");
 
 	// Timming -----------------------------------------------------
@@ -12,14 +12,14 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 	timming_start(ts);
 	// Timming -----------------------------------------------------
 
-	int assigned_tasks[etc_matrix->tasks_count];
-	for (int i = 0; i < etc_matrix->tasks_count; i++) {
+	int assigned_tasks[solution->etc->tasks_count];
+	for (int i = 0; i < solution->etc->tasks_count; i++) {
 		assigned_tasks[i] = 0;
 	}
 
 	int assigned_tasks_count = 0;
 	
-	while (assigned_tasks_count < etc_matrix->tasks_count) { // Mientras quede una tarea sin asignar.
+	while (assigned_tasks_count < solution->etc->tasks_count) { // Mientras quede una tarea sin asignar.
 		int best_task;
 		int best_machine;
 		float best_cost;
@@ -29,7 +29,7 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 		best_cost = 0.0;
 	
 		// Recorro las tareas.
-		for (int task_i = 0; task_i < etc_matrix->tasks_count; task_i++) {			
+		for (int task_i = 0; task_i < solution->etc->tasks_count; task_i++) {			
 			// Si la tarea task_i no esta asignada.
 			if (assigned_tasks[task_i] == 0) {
 				int best_machine_for_task;
@@ -38,13 +38,13 @@ void compute_minmin(struct matrix *etc_matrix, struct solution *solution) {
 				float best_machine_cost_for_task;
 				
 				best_machine_cost_for_task = get_machine_compute_time(solution, 0) + 
-					get_etc_value(etc_matrix, 0, task_i);
+					get_etc_value(solution->etc, 0, task_i);
 			
-				for (int machine_x = 1; machine_x < etc_matrix->machines_count; machine_x++) {
+				for (int machine_x = 1; machine_x < solution->etc->machines_count; machine_x++) {
 					float current_cost;
 					
 					current_cost = get_machine_compute_time(solution, machine_x) + 
-						get_etc_value(etc_matrix, machine_x, task_i);
+						get_etc_value(solution->etc, machine_x, task_i);
 				
 					if (current_cost < best_machine_cost_for_task) {
 						best_machine_cost_for_task = current_cost;

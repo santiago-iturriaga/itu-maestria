@@ -7,7 +7,7 @@
 #define _LOAD_INSTANCE_C_
 
 /* Reads the input file and stores de data in the ETC matrix */
-int load_instance(struct params *input, struct matrix *etc_matrix) {
+int load_instance(struct params *input, struct etc_matrix *etc) {
 	FILE *fi;
 
 	if ((fi = fopen(input->instance_path, "r")) == NULL) {
@@ -20,7 +20,7 @@ int load_instance(struct params *input, struct matrix *etc_matrix) {
 		for (int machine = 0; machine < input->machines_count; machine++) {
 			fscanf(fi, "%f", &value);
 			
-			set_etc_value(etc_matrix, machine, task, value); 
+			set_etc_value(etc, machine, task, value); 
 		}
 	}
 
