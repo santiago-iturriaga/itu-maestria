@@ -42,6 +42,8 @@ void move_task_to_machine(struct solution *s, int task_id, int machine_id);
 void swap_tasks(struct solution *s, int task_a_id, int task_b_id);
 
 void refresh_makespan(struct solution *s);
+void refresh_energy(struct solution *s);
+void refresh_worst_energy(struct solution *s);
 
 int get_task_assigned_machine_id(struct solution *s, int task_id);
 int get_machine_tasks_count(struct solution *s, int machine_id);
@@ -50,6 +52,10 @@ int get_machine_task_pos(struct solution *s, int machine_id, int task_id);
 
 float get_machine_compute_time(struct solution *s, int machine_id);
 float get_makespan(struct solution *s);
+float get_energy(struct solution *s);
+
+int get_worst_ct_machine_id(struct solution *s);
+int get_worst_energy_machine_id(struct solution *s);
 
 void validate_solution(struct solution *s);
 void show_solution(struct solution *s);
