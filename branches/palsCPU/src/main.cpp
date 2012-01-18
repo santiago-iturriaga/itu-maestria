@@ -53,15 +53,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "[ERROR] Ocurrió un error leyendo el archivo de instancia.\n");
 		return EXIT_FAILURE;
 	}
-
-	//show_etc_matrix(etc_matrix);
 	
-	// =============================================================
-	// Create empty solution
-	// =============================================================
-	if (DEBUG) fprintf(stdout, "[DEBUG] Creating empty solution...\n");
-	struct solution *current_solution = create_empty_solution(etc, energy);
-
 	// =============================================================
 	// Solving the problem.
 	// =============================================================
@@ -73,28 +65,8 @@ int main(int argc, char** argv)
 	// Timming -----------------------------------------------------
 
 	if (input.algorithm == PALS_Serial) {	
-		// =============================================================
-		// Candidate solution
-		// =============================================================
-		if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
-
-		// Timming -----------------------------------------------------
-		timespec ts_mct;
-		timming_start(ts_mct);
-		// Timming -----------------------------------------------------
-
-		compute_mct(current_solution);
 	
-		// Timming -----------------------------------------------------
-		timming_end(">> MCT Time", ts_mct);
-		// Timming -----------------------------------------------------
-	
-		if (DEBUG) validate_solution(current_solution);
-		
-		// =============================================================
-		// Serial. Versión de búsqueda completa.
-		// =============================================================
-		pals_serial(current_solution);
+		fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
 		
 	} else if (input.algorithm == PALS_GPU) {
 
@@ -106,49 +78,35 @@ int main(int argc, char** argv)
 			
 	} else if (input.algorithm == PALS_CPU_randTask) {
 		// =============================================================
-		// Candidate solution
-		// =============================================================
-		if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
-
-		// Timming -----------------------------------------------------
-		timespec ts_mct;
-		timming_start(ts_mct);
-		// Timming -----------------------------------------------------
-
-		compute_mct(current_solution);
-	
-		// Timming -----------------------------------------------------
-		timming_end(">> MCT Time", ts_mct);
-		// Timming -----------------------------------------------------
-	
-		if (DEBUG) validate_solution(current_solution);
-	
-		// =============================================================
-		// CUDA. Búsqueda aleatoria por tarea.
+		// Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		pals_cpu_rtask(input, current_solution);		
+		pals_cpu_rtask(input);
 		
 	} else if (input.algorithm == MinMin) {
-		
+	
+		struct solution *current_solution = create_empty_solution(etc, energy);
 		compute_minmin(current_solution);
-		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", get_makespan(current_solution));
+		
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
+		
+		free_solution(current_solution);
+		free(current_solution);
 		
 	} else if (input.algorithm == MCT) {
 		
+		struct solution *current_solution = create_empty_solution(etc, energy);
 		compute_mct(current_solution);
+		
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
+		
+		free_solution(current_solution);
+		free(current_solution);
 		
 	} else if (input.algorithm == PALS_GPU_randParallelTask) {
 
         fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
 
-	}
-
-	if (OUTPUT_SOLUTION) {
-		//fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
-		for (int task_id = 0; task_id < etc->tasks_count; task_id++) {
-			fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
-		}
 	}
 	
 	// Timming -----------------------------------------------------
@@ -160,9 +118,6 @@ int main(int argc, char** argv)
 	// =============================================================
 	free_etc_matrix(etc);
 	free_energy_matrix(energy);
-	
-	free_solution(current_solution);
-	free(current_solution);
 
 	return EXIT_SUCCESS;
 }

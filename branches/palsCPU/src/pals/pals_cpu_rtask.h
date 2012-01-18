@@ -14,21 +14,33 @@
 #ifndef PALS_CPU_RTASK_H_
 #define PALS_CPU_RTASK_H_
 
-#define PALS_CPU_RTASK_SWAP 0
-#define PALS_CPU_RTASK_MOVE 1
+#define PALS_CPU_RTASK_MASTER_RANDOM_NUMBERS 3
+#define PALS_CPU_RTASK_SLAVE_RANDOM_NUMBERS  5
 
-#define PALS_CPU_RTASK_MASTER_RANDOMS 3
-
-#define PALS_CPU_RTASK_WORK__DO_MAKESPAN_GREEDY_SEARCH 0
-#define PALS_CPU_RTASK_WORK__DO_ENERGY_GREEDY_SEARCH   1
-#define PALS_CPU_RTASK_WORK__DO_RANDOM_GREEDY_SEARCH   2
-#define PALS_CPU_RTASK_WORK__DO_EXIT                   99
-
+#define PALS_CPU_RTASK_WORK__TIMEOUT     5
 #define PALS_CPU_RTASK_WORK__CONVERGENCE 100
+#define PALS_CPU_RTASK_WORK__RESET_POP   50
+
+#define PALS_CPU_RTASK_SEARCH_OP__SWAP 0
+#define PALS_CPU_RTASK_SEARCH_OP__MOVE 1
+
+#define PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY 0
+#define PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY   1
+#define PALS_CPU_RTASK_SEARCH__RANDOM_GREEDY   2
+
+#define PALS_CPU_RTASK_WORK__INIT_POP 0
+#define PALS_CPU_RTASK_WORK__SEARCH   1
+#define PALS_CPU_RTASK_WORK__WAIT     2
+#define PALS_CPU_RTASK_WORK__EXIT     3
 
 #define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 10
 #define PALS_CPU_RTASK_WORK__ELITE_POP_EMPTY    0
-#define PALS_CPU_RTASK_WORK__ELITE_POP_SOL      1
+#define PALS_CPU_RTASK_WORK__ELITE_POP_USED     1
+
+#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE 25
+#define PALS_CPU_RTASK_WORK__POP_EMPTY    0
+#define PALS_CPU_RTASK_WORK__POP_USED     1
+#define PALS_CPU_RTASK_WORK__POP_NEW      2
 
 #define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
 #define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
@@ -37,54 +49,31 @@ struct pals_cpu_rtask_instance {
     // Estado del problema.
     struct etc_matrix *etc;
     struct energy_matrix *energy;
-    struct solution *initial_solution;
 
     // Referencia a los threads del disponibles.
-    pthread_t *master_thread;
+    pthread_t master_thread;
     pthread_t *slave_threads;
     struct pals_cpu_rtask_thread_arg *slave_threads_args;
 
 	// Espacio de memoria para comunicación con los threads.
 	int *slave_work_type;
-	int *slave_work_solution_idx;
+
+    struct solution *population;
+    int *population_status;
+    int population_count;  
 	
     struct solution *elite_population;
-    int *elite_population_status;
     int elite_population_count;   
     
-	pthread_barrier_t *sync_barrier;
+	pthread_mutex_t population_mutex;
+	sem_t master_new_soltions_sem;
+	pthread_barrier_t sync_barrier;
 
 	// Estado de los generadores aleatorios.
     struct cpu_rand_state *random_states;
-	double master_random_numbers[PALS_CPU_RTASK_MASTER_RANDOMS];
-    double *slave_random_numbers;
-	
-	// Espacio de memoria para almacenar los mejores movimientos encontrados en cada iteración.
-	int *move_type;
-	int *origin;
-	int *destination;
-	float *delta_makespan;
-	float *delta_ct;
-	float *delta_energy;
 	
 	// Parámetros de ejecución.
-	int count_threads;
-	
-	// Cantidad de resultados obtenidos por iteración.
-	int result_count;
-	
-	// Inner state...
-	char *__result_task_history;
-	char *__result_machine_history;
-	
-	// Statics
-    int total_iterations;
-    int last_elite_found_on_iter;
-    int total_makespan_greedy_searches;
-    int total_energy_greedy_searches;
-    int total_random_greedy_searches;
-	long total_swaps;
-    long total_moves;
+	int count_threads;	
 };
 
 struct pals_cpu_rtask_thread_arg {
@@ -100,35 +89,33 @@ struct pals_cpu_rtask_thread_arg {
     int *population_status;
     int *population_count;   
     
-	int *work_solution_idx;
 	int *work_type;
 	
+	pthread_mutex_t *population_mutex;
+	sem_t *new_solutions_sem;
 	pthread_barrier_t *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
     struct cpu_rand_state *thread_random_state;
-    double *thread_random_numbers;
-
-    // Mejor movimiento del thread actual.
-	int *thread_move_type;
-	int *thread_origin;
-	int *thread_destination;
-	float *thread_delta_makespan;
-	float *thread_delta_ct;
-	float *thread_delta_energy;
+	
+	// Statics
+	int total_iterations;
+    int total_makespan_greedy_searches;
+    int total_energy_greedy_searches;
+    int total_random_greedy_searches;
+	int total_swaps;
+    int total_moves;
 };
 
 /*
  * Ejecuta el algoritmo.
- * Búsqueda masivamente paralela sobre un subdominio del problema. 
- * Se sortea el subdominio por tarea.
  */
-void pals_cpu_rtask(struct params &input, struct solution *current_solution);
+void pals_cpu_rtask(struct params &input);
 
 /*
  * Reserva e inicializa la memoria con los datos del problema.
  */
-void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, struct pals_cpu_rtask_instance &empty_instance);
+void pals_cpu_rtask_init(struct params &input, int seed, struct pals_cpu_rtask_instance &empty_instance);
 
 /*
  * Libera la memoria.
@@ -136,7 +123,7 @@ void pals_cpu_rtask_init(struct params &input, struct solution *s, int seed, str
 void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance);
 
 /*
- * Ejecuta PALS.
+ * Ejecuta PALS multi-hilado.
  */
 void* pals_cpu_rtask_master_thread(void *thread_arg);
 void* pals_cpu_rtask_slave_thread(void *thread_arg);
