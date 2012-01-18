@@ -377,7 +377,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	
 		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == 0) || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
 			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
-			// Asigno trabajo de busqueda a todos los hilos.
+			
+			// Solicito a los hilos que se detengan.
 			for (int i = 0; i < empty_instance.count_threads - 1; i++) {
 				empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__WAIT;
 			}
@@ -389,168 +390,32 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				printf("Could not wait on barrier\n");
 				exit(EXIT_FAILURE);
 			}
-		}
-	
-        // ===========================================================================
-        // Mando a los esclavos a buscar movimientos.
-        rc = pthread_barrier_wait(instance->sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
-        }
+			
+			// Proceso las soluciones que pudieron haber sido encontradas mientras detenía los threads.
+			pals_cpu_rtask_eval_new_solutions();
+			
+			// Reinicializo la población con la población elite.
+			// TODO:.............
+			
+			increase_depth = 0;
+			
+			// Asigno trabajo de busqueda a todos los hilos.
+			for (int i = 0; i < empty_instance.count_threads - 1; i++) {
+				empty_instance.slave_work_type[i] = PALS_CPU_RTASK_WORK__SEARCH;
+			}
 
-        // ===========================================================================
-        // Mientras los hilos buscan intento adelantar trabajo.
-        cpu_rand_generate(instance->random_states[instance->count_threads-1], PALS_CPU_RTASK_MASTER_RANDOMS, instance->master_random_numbers);
-        
-        // ===========================================================================
-        // Espero a que los esclavos terminen.
-        rc = pthread_barrier_wait(instance->sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
-        }        
+			// [SYNC POINT] Aviso a los esclavos que pueden continuar.
+			rc = pthread_barrier_wait(instance->sync_barrier);
+			if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+			{
+				printf("Could not wait on barrier\n");
+				exit(EXIT_FAILURE);
+			}
+		}
                 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_cpu_rtask_search", ts_search);
 		// Timming -----------------------------------------------------
-        
-		// Timming -----------------------------------------------------
-		timespec ts_post;
-		timming_start(ts_post);
-		// Timming -----------------------------------------------------
-
-		// Aplico los movimientos.
-		memset(instance->__result_task_history, 0, instance->etc->tasks_count);
-		memset(instance->__result_machine_history, 0, instance->etc->machines_count);
-		
-		int cantidad_swaps_iter, cantidad_moves_iter;
-		cantidad_swaps_iter = 0;
-		cantidad_moves_iter = 0;
-	
-	    // Busco el thread que encontró el mejor movimiento.
-	    int initial_idx = (int)floor(instance->master_random_numbers[2] * instance->result_count);
-		
-	    for (int i = 0; i < instance->result_count; i++) {
-		    int result_idx = (initial_idx + i) % instance->result_count;
-
-			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, instance->delta[result_idx]);
-
-            // Nunca hago movimiento negativos sobre los objetivos.
-			if ((instance->delta_makespan[result_idx] <= 0.0) && (instance->delta_energy[result_idx] <= 0.0)) {	
-			    if (instance->move_type[result_idx] == PALS_CPU_RTASK_SWAP) {
-			        /*
-				    int task_x = instance->origin[result_idx];
-				    int task_y = instance->destination[result_idx];
-		
-				    int machine_a = get_task_assignment(instance->current_solution, instance->origin[result_idx]);
-				    int machine_b = get_task_assignment(instance->current_solution, instance->destination[result_idx]);
-		
-				    if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-					    instance->origin[result_idx], machine_a, instance->destination[result_idx], machine_b, instance->delta[result_idx]);
-		
-				    if ((instance->__result_task_history[task_x] == 0) && (instance->__result_task_history[task_y] == 0) &&
-					    (instance->__result_machine_history[machine_a] == 0) && (instance->__result_machine_history[machine_b] == 0))	{
-
-					    cantidad_swaps_iter++;
-		
-					    instance->__result_task_history[task_x] = 1;
-					    instance->__result_task_history[task_y] = 1;
-					    instance->__result_machine_history[machine_a] = 1;
-					    instance->__result_machine_history[machine_b] = 1;
-					
-					    if (DEBUG) {
-						    fprintf(stdout, ">> [pre-update]:\n");
-						    fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
-						        get_machine_compute_time(instance->current_solution, machine_a));
-						    fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
-						        get_machine_compute_time(instance->current_solution, machine_b));
-					    }
-		
-		                swap_tasks(instance->current_solution, task_x, task_y);
-
-					    if (DEBUG) {
-						    fprintf(stdout, ">> [update]:\n");
-						    fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-						    fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
-						    fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
-						        get_machine_compute_time(instance->current_solution, machine_a));
-						    fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
-						        get_machine_compute_time(instance->current_solution, machine_b));
-						    fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
-					    }
-				    } else {
-					    if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
-				    }*/
-			    } else if (instance->move_type[result_idx] == PALS_CPU_RTASK_MOVE) {
-				    /*int task_x = instance->origin[result_idx];
-				    int machine_a = get_task_assignment(instance->current_solution, task_x);
-				    int machine_b = instance->destination[result_idx];
-
-				    if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-					    instance->origin[result_idx], machine_a, instance->destination[result_idx], instance->delta[result_idx]);
-				
-				    if ((instance->__result_task_history[task_x] == 0) &&
-     					(instance->__result_machine_history[machine_a] == 0) &&
-					    (instance->__result_machine_history[machine_b] == 0))	{
-		
-					    cantidad_movs_iter++;
-		
-					    instance->__result_task_history[task_x] = 1;
-					    instance->__result_machine_history[machine_a] = 1;
-					    instance->__result_machine_history[machine_b] = 1;
-				
-			            if (DEBUG) {
-						    fprintf(stdout, ">> [pre-update]:\n");
-						    fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
-						        get_machine_compute_time(instance->current_solution, machine_a));
-						    fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
-						        get_machine_compute_time(instance->current_solution, machine_b));
-					    }
-			
-        				move_task_to_machine(instance->current_solution, task_x, machine_b);
-			
-					    if (DEBUG) {
-						    fprintf(stdout, ">> [update]:\n");
-						    fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-						    fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
-						        get_machine_compute_time(instance->current_solution, machine_a));
-						    fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
-						        get_machine_compute_time(instance->current_solution, machine_b));
-						    fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
-					    }
-				    } else {
-					    if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
-				    }*/
-			    }
-			}
-		}
-
-		if ((cantidad_moves_iter > 0) || (cantidad_swaps_iter > 0)) {
-			if (DEBUG) {
-				fprintf(stdout, "   swaps performed  : %d.\n", cantidad_swaps_iter);
-				fprintf(stdout, "   movs performed   : %d.\n", cantidad_moves_iter);
-			}
-			
-			instance->total_swaps += cantidad_swaps_iter;
-			instance->total_moves += cantidad_moves_iter;
-		}
-		
-		if (instance->last_elite_found_on_iter == iter) {
-			increase_depth = 0;
-		
-			if (DEBUG) {
-				fprintf(stdout, "   elite solution found.\n");
-			}
-		} else {
-			increase_depth++;
-
-			if (DEBUG) {
-				fprintf(stdout, "   elite population unchanged (%d).\n", increase_depth);
-			}
-		}
 
 		if (increase_depth >= PALS_CPU_RTASK_WORK__CONVERGENCE) {
 			convergence_flag = 1;
@@ -578,8 +443,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	return NULL;
 }
 
-void* pals_cpu_rtask_slave_thread(void *thread_arg)
-{	
+void* pals_cpu_rtask_slave_thread(void *thread_arg) {	
     int rc;
 
     pals_cpu_rtask_thread_arg *thread_instance;
@@ -851,6 +715,145 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg)
             }*/
         }
 
+		/*
+		
+				// Timming -----------------------------------------------------
+		timespec ts_post;
+		timming_start(ts_post);
+		// Timming -----------------------------------------------------
+
+		// Aplico los movimientos.
+		memset(instance->__result_task_history, 0, instance->etc->tasks_count);
+		memset(instance->__result_machine_history, 0, instance->etc->machines_count);
+		
+		int cantidad_swaps_iter, cantidad_moves_iter;
+		cantidad_swaps_iter = 0;
+		cantidad_moves_iter = 0;
+	
+	    // Busco el thread que encontró el mejor movimiento.
+	    int initial_idx = (int)floor(instance->master_random_numbers[2] * instance->result_count);
+		
+	    for (int i = 0; i < instance->result_count; i++) {
+		    int result_idx = (initial_idx + i) % instance->result_count;
+
+			//if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, instance->delta[result_idx]);
+
+            // Nunca hago movimiento negativos sobre los objetivos.
+			if ((instance->delta_makespan[result_idx] <= 0.0) && (instance->delta_energy[result_idx] <= 0.0)) {	
+			    if (instance->move_type[result_idx] == PALS_CPU_RTASK_SWAP) {
+			     
+				    int task_x = instance->origin[result_idx];
+				    int task_y = instance->destination[result_idx];
+		
+				    int machine_a = get_task_assignment(instance->current_solution, instance->origin[result_idx]);
+				    int machine_b = get_task_assignment(instance->current_solution, instance->destination[result_idx]);
+		
+				    if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
+					    instance->origin[result_idx], machine_a, instance->destination[result_idx], machine_b, instance->delta[result_idx]);
+		
+				    if ((instance->__result_task_history[task_x] == 0) && (instance->__result_task_history[task_y] == 0) &&
+					    (instance->__result_machine_history[machine_a] == 0) && (instance->__result_machine_history[machine_b] == 0))	{
+
+					    cantidad_swaps_iter++;
+		
+					    instance->__result_task_history[task_x] = 1;
+					    instance->__result_task_history[task_y] = 1;
+					    instance->__result_machine_history[machine_a] = 1;
+					    instance->__result_machine_history[machine_b] = 1;
+					
+					    if (DEBUG) {
+						    fprintf(stdout, ">> [pre-update]:\n");
+						    fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
+						        get_machine_compute_time(instance->current_solution, machine_a));
+						    fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
+						        get_machine_compute_time(instance->current_solution, machine_b));
+					    }
+		
+		                swap_tasks(instance->current_solution, task_x, task_y);
+
+					    if (DEBUG) {
+						    fprintf(stdout, ">> [update]:\n");
+						    fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
+						    fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
+						    fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
+						        get_machine_compute_time(instance->current_solution, machine_a));
+						    fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
+						        get_machine_compute_time(instance->current_solution, machine_b));
+						    fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
+					    }
+				    } else {
+					    if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+				    }
+			    } else if (instance->move_type[result_idx] == PALS_CPU_RTASK_MOVE) {
+				    int task_x = instance->origin[result_idx];
+				    int machine_a = get_task_assignment(instance->current_solution, task_x);
+				    int machine_b = instance->destination[result_idx];
+
+				    if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
+					    instance->origin[result_idx], machine_a, instance->destination[result_idx], instance->delta[result_idx]);
+				
+				    if ((instance->__result_task_history[task_x] == 0) &&
+     					(instance->__result_machine_history[machine_a] == 0) &&
+					    (instance->__result_machine_history[machine_b] == 0))	{
+		
+					    cantidad_movs_iter++;
+		
+					    instance->__result_task_history[task_x] = 1;
+					    instance->__result_machine_history[machine_a] = 1;
+					    instance->__result_machine_history[machine_b] = 1;
+				
+			            if (DEBUG) {
+						    fprintf(stdout, ">> [pre-update]:\n");
+						    fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
+						        get_machine_compute_time(instance->current_solution, machine_a));
+						    fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
+						        get_machine_compute_time(instance->current_solution, machine_b));
+					    }
+			
+        				move_task_to_machine(instance->current_solution, task_x, machine_b);
+			
+					    if (DEBUG) {
+						    fprintf(stdout, ">> [update]:\n");
+						    fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
+						    fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
+						        get_machine_compute_time(instance->current_solution, machine_a));
+						    fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
+						        get_machine_compute_time(instance->current_solution, machine_b));
+						    fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
+					    }
+				    } else {
+					    if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
+				    }
+			    }
+			}
+		}
+
+		if ((cantidad_moves_iter > 0) || (cantidad_swaps_iter > 0)) {
+			if (DEBUG) {
+				fprintf(stdout, "   swaps performed  : %d.\n", cantidad_swaps_iter);
+				fprintf(stdout, "   movs performed   : %d.\n", cantidad_moves_iter);
+			}
+			
+			instance->total_swaps += cantidad_swaps_iter;
+			instance->total_moves += cantidad_moves_iter;
+		}
+		
+		if (instance->last_elite_found_on_iter == iter) {
+			increase_depth = 0;
+		
+			if (DEBUG) {
+				fprintf(stdout, "   elite solution found.\n");
+			}
+		} else {
+			increase_depth++;
+
+			if (DEBUG) {
+				fprintf(stdout, "   elite population unchanged (%d).\n", increase_depth);
+			}
+		}
+		
+		*/
+		
         // Espero a que todos los slave threads terminen.
         rc = pthread_barrier_wait(thread_instance->sync_barrier);
         if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
