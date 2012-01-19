@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 		// Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		pals_cpu_rtask(input);
+		pals_cpu_rtask(input, etc, energy);
 		
 	} else if (input.algorithm == MinMin) {
 	

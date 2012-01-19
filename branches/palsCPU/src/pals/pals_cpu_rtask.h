@@ -6,6 +6,7 @@
  */
 
 #include <pthread.h>
+#include <semaphore.h>
 
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
@@ -41,9 +42,11 @@
 #define PALS_CPU_RTASK_WORK__POP_EMPTY    0
 #define PALS_CPU_RTASK_WORK__POP_USED     1
 #define PALS_CPU_RTASK_WORK__POP_NEW      2
+#define PALS_CPU_RTASK_WORK__POP_TO_DEL   3
 
 #define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
 #define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
+#define PALS_CPU_RTASK_WORK__DST_MACH_NHOOD 10
 
 struct pals_cpu_rtask_instance {
     // Estado del problema.
@@ -60,13 +63,14 @@ struct pals_cpu_rtask_instance {
 
     struct solution *population;
     int *population_status;
+    int *population_locked;
     int population_count;  
 	
-    struct solution *elite_population;
+    struct solution **elite_population;
     int elite_population_count;   
     
 	pthread_mutex_t population_mutex;
-	sem_t master_new_soltions_sem;
+	sem_t new_solutions_sem;
 	pthread_barrier_t sync_barrier;
 
 	// Estado de los generadores aleatorios.
@@ -87,8 +91,11 @@ struct pals_cpu_rtask_thread_arg {
     // Comunicación con el thread actual.
     struct solution *population;
     int *population_status;
-    int *population_count;   
+    int *population_locked;
+    int *population_count;
     
+    struct solution local_solution;
+	
 	int *work_type;
 	
 	pthread_mutex_t *population_mutex;
@@ -110,12 +117,13 @@ struct pals_cpu_rtask_thread_arg {
 /*
  * Ejecuta el algoritmo.
  */
-void pals_cpu_rtask(struct params &input);
+void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy);
 
 /*
  * Reserva e inicializa la memoria con los datos del problema.
  */
-void pals_cpu_rtask_init(struct params &input, int seed, struct pals_cpu_rtask_instance &empty_instance);
+void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
+    int seed, struct pals_cpu_rtask_instance &empty_instance);
 
 /*
  * Libera la memoria.

@@ -2,7 +2,14 @@
 #include "mct.h"
 
 void compute_mct(struct solution *solution) {
-	for (int task = 0; task < solution->etc->tasks_count; task++) {
+	compute_custom_mct(solution, 0);
+}
+
+void compute_custom_mct(struct solution *solution, int starting_task) {
+    int task;
+	for (int index = 0; index < solution->etc->tasks_count; index++) {
+	    task = (starting_task + index) % solution->etc->tasks_count;
+	
 		int best_machine;
 		best_machine = 0;
 		
