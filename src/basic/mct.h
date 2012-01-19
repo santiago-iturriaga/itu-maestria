@@ -9,5 +9,6 @@
 #define MCT_H_
 
 void compute_mct(struct solution *solution);
+void compute_custom_mct(struct solution *solution, int starting_task);
 
 #endif

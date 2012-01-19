@@ -20,5 +20,5 @@ double cpu_rand_generate(struct cpu_rand_state &state) {
 }
 
 void cpu_rand_free(struct cpu_rand_state &state) {
-    free(state.buffer);
+
 }
