@@ -56,6 +56,7 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
 	
 	// ===========> DEBUG
 	if (DEBUG) {
+	    // TODO:................
 		/*fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", instance.total_iterations);
 		fprintf(stdout, "[INFO] Último mejor encontrado en     : %d\n", instance.last_elite_found_on_iter);
 		fprintf(stdout, "[INFO] Total de makespan searches     : %d\n", instance.total_makespan_greedy_searches);
@@ -86,6 +87,7 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
 					fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
 				}*/
 			}
+		    // TODO:................
         	/*fprintf(stderr, "CANT_ITERACIONES|%d\n", instance.total_iterations);
         	fprintf(stderr, "BEST_FOUND|%d\n", instance.last_elite_found_on_iter);
 	        fprintf(stderr, "TOTAL_SWAPS|%ld\n", instance.total_swaps);
@@ -276,18 +278,75 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 	int solutions_found = 0;
 	int s_idx = 0;
 	
-	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE)
-		&& (s_idx < instance->population_count); s_pos++) {
+	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
+		if (instance->population_status[s_pos] == PALS_CPU_RTASK_WORK__POP_NEW) {
+		    int is_non_dominated;
+		    is_non_dominated = 1;
 		
-		if (instance->population_status[s_idx] == PALS_CPU_RTASK_WORK__POP_NEW) {
 			// Calculo no dominancia del elemento actual y lo agrego a la población elite si corresponde.
-			// TODO:.........
+			float makespan_candidate, energy_candidate;
+			makespan_candidate = get_makespan(&(instance->population[s_pos]));
+			energy_candidate = get_energy(&(instance->population[s_pos]));
 			
-			instance->population_status[s_idx] == PALS_CPU_RTASK_WORK__POP_USED;
+			int elite_s_idx = -1, added_to_elite = 0, end_loop = 0;
+			float makespan_elite_sol, energy_elite_sol;
+			
+			for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE) 
+			    && (elite_s_idx < instance->elite_population_count) && (end_loop == 0); elite_s_pos++) {
+			    
+			    if (instance->elite_population[elite_s_pos] != NULL) {
+			        elite_s_idx++;
+			    
+			        makespan_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
+ 			        energy_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
+ 			        
+ 			        if ((makespan_candidate < makespan_elite_sol) && (energy_candidate < energy_elite_sol)) {
+ 			            // Domina a una solución de la elite.
+ 			            if (added_to_elite == 0) {
+ 			                added_to_elite = 1;
+     			            instance->elite_population[elite_s_pos] = &(instance->population[s_pos]);
+ 			            } else {
+     			            elite_s_idx--;
+     			            instance->elite_population_count--;
+     			            instance->elite_population[elite_s_pos] = NULL;
+     			        }
+ 			        } else if ((makespan_candidate < makespan_elite_sol) || (energy_candidate < energy_elite_sol)) {
+ 			            // Es no dominada.
+ 			            end_loop = 1;
+ 			        } else if ((makespan_candidate >= makespan_elite_sol) && (energy_candidate >= energy_elite_sol)) {
+ 			            // Es dominada.
+ 			            is_non_dominated = 0;
+ 			            end_loop = 1;
+ 			        }
+			    }
+		    }
+			
+			if (is_non_dominated == 1) {
+			    if ((added_to_elite == 0) && (instance->elite_population_count < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE)) {
+			        for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE) && 
+			            (added_to_elite == 0); elite_s_pos++) {
+			            
+			            if (instance->elite_population[elite_s_pos] == NULL) {
+			                added_to_elite = 1;
+     			            instance->elite_population_count++;
+     			            instance->elite_population[elite_s_pos] = &(instance->population[s_pos]);
+			            }
+			        }
+			    }
+
+                if (added_to_elite == 1) {			
+    			    instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_ELITE;
+    			} else {
+        			instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_DOMINATED;
+    			}
+			} else {
+    			instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_DOMINATED;
+    		}
+    		
 			solutions_found++;
 		}
 		
-		if (instance->population_status[s_idx] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
+		if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
 			s_idx++;
 		}
 	}
@@ -324,7 +383,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	}
 		
 	// Calculo no dominancia de la población inicial y separo la población elite.
-	// TODO:.........
+	pals_cpu_rtask_eval_new_solutions(instance);
 	
 	// Asigno trabajo de busqueda a todos los hilos.
 	for (int i = 0; i < instance->count_threads - 1; i++) {
@@ -382,8 +441,19 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 			// Proceso las soluciones que pudieron haber sido encontradas mientras detenía los threads.
 			pals_cpu_rtask_eval_new_solutions(instance);
 			
-			// Reinicializo la población con la población elite.
-			// TODO:.............
+			// Elimino toda la población que no sea elite.
+			int s_idx = -1;
+            for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
+                if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
+                    s_idx++;
+                
+                    if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_ELITE) {
+                        instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_EMPTY;
+                    }
+                }
+            }
+			
+			instance->population_count = instance->elite_population_count;
 			
 			increase_depth = 0;
 			
@@ -468,7 +538,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             int random_task = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * thread_instance->etc->tasks_count);
 	        compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
 
-            thread_instance->population_status[thread_instance->thread_idx] = PALS_CPU_RTASK_WORK__POP_USED;
+            thread_instance->population_status[thread_instance->thread_idx] = PALS_CPU_RTASK_WORK__POP_NEW;
 
 	        // Timming -----------------------------------------------------
 	        timming_end(">> Random MCT Time", ts_mct);
@@ -502,7 +572,8 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             // Sorteo la solución con la que me toca trabajar.
             pthread_mutex_lock(thread_instance->population_mutex);
             
-            int random_sol_index = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * (double)*(thread_instance->population_count));
+            int random_sol_index = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) 
+                * (double)*(thread_instance->population_count));
             
             int current_sol_pos = 0;
             int current_sol_index = -1;
@@ -517,10 +588,8 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             }
             
             // Continúo solo si la tarea sorteada no estaba marcada para eliminar.
-            if ((thread_instance->population_status[current_sol_pos] == PALS_CPU_RTASK_WORK__POP_USED)
-                || (thread_instance->population_status[current_sol_pos] == PALS_CPU_RTASK_WORK__POP_NEW))  {
-            
-                thread_instance->population_locked[current_sol_index] = thread_instance->population_locked[current_sol_index] + 1;
+            if (thread_instance->population_status[current_sol_pos] != PALS_CPU_RTASK_WORK__POP_TO_DEL)  {
+                thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] + 1;
                 solution_selected = 1;
             }
                         
@@ -888,6 +957,13 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 		
 		        */
             }
+            
+            // Libero el recurso de lock de la población.
+            pthread_mutex_lock(thread_instance->population_mutex);
+                        
+            thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
+                        
+            pthread_mutex_unlock(thread_instance->population_mutex);
         }  
     } 
 
