@@ -48,7 +48,9 @@ void free_solution(struct solution *s);
 
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id);
 void move_task_to_machine(struct solution *s, int task_id, int machine_id);
+void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_src_pos, int machine_dst);
 void swap_tasks(struct solution *s, int task_a_id, int task_b_id);
+void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int machine_b, int task_b_pos);
 
 void refresh_makespan(struct solution *s);
 void refresh_energy(struct solution *s);

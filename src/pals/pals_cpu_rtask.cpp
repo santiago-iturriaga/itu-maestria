@@ -522,6 +522,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	thread_instance->total_swaps = 0;
     thread_instance->total_moves = 0;
     thread_instance->total_population_full = 0;
+    thread_instance->total_to_delete_solutions = 0;
 	   
     while (*(thread_instance->work_type) != PALS_CPU_RTASK_WORK__EXIT) {
         if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__WAIT) {
@@ -671,23 +672,22 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                     
 	                task_x = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_a_task_count);
 
-                    float current_makespan = get_makespan(selected_solution);
-
                     float machine_a_energy_idle = get_energy_idle_value(thread_instance->energy, machine_a);
                     float machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
                     float machine_b_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b);
                     float machine_b_energy_max = get_energy_max_value(thread_instance->energy, machine_b);
 
                     float machine_a_ct_old, machine_b_ct_old;
-                    float machine_a_energy_old, machine_b_energy_old;
-                    
                     float machine_a_ct_new, machine_b_ct_new;
-                    float machine_a_energy_new, machine_b_energy_new;
                     
                     float delta_makespan, delta_ct, delta_energy;
                     
-                    int search_ended = 0;
-
+                    int search_ended;
+                    search_ended = 0;
+                    
+                    int task_x_best_move_pos = -1, machine_b_best_move_id = -1;
+                    int task_x_best_swap_pos = -1, task_y_best_swap_pos = -1;
+	                    
                     if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
                         int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
                         int task_y = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_b_task_count);
@@ -698,7 +698,6 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	                    int top_task_b = PALS_CPU_RTASK_WORK__DST_TASK_NHOOD;
 	                    if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
 	                    
-	                    int task_x_best_swap_pos, task_y_best_swap_pos;
 	                    int task_x_pos, task_y_pos;	                
 	                    int task_x_current, task_y_current;
 	                    
@@ -768,7 +767,6 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	                    int top_machine_b = PALS_CPU_RTASK_WORK__DST_MACH_NHOOD;
 	                    if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
 	                    
-	                    int task_x_best_move_pos, machine_b_best_move_id;
 	                    int task_x_pos;
 	                    int task_x_current, machine_b_current;
 	                    
@@ -863,12 +861,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                 
                                 // Listo, tengo el espacio libre para mi nuevo individuo. Lo clono.
                                 clone_solution(&(thread_instance->population[dst_solution_pos]), selected_solution);      
-
-                                // Ya tengo el clon. Puedo liberar el recurso de lock de la población.
-                                pthread_mutex_lock(thread_instance->population_mutex);
-                                thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
-                                pthread_mutex_unlock(thread_instance->population_mutex);
-                                
+                               
                                 // Continúo las iteraciones desde el clon.
                                 selected_solution = &(thread_instance->population[dst_solution_pos]);
                                 is_solution_cloned = 1;
@@ -883,11 +876,29 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                         if (is_solution_cloned == 1) {
                             solution_improved_on = search_iteration;
                             
+                            // Hago los cambios ======================================================================================
                             if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
-                                // TODO: Calcular movimiento!!!!............................                            
+                                // Intercambio las tareas!
+                                swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
                             } if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {
-                                // TODO: Calcular movimiento!!!!............................
+                                // Muevo la tarea!
+                                move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                             }
+                            
+                            // Ya tengo el clon. Puedo liberar el recurso de lock de la población.
+                            pthread_mutex_lock(thread_instance->population_mutex);
+                            thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
+                            
+                            if ((get_makespan(selected_solution) < get_makespan(&(thread_instance->population[current_sol_pos]))) 
+                                && (get_energy(selected_solution) < get_energy(&(thread_instance->population[current_sol_pos])))) {
+                                    
+                                // La nueva tarea domina completamente a la tarea original.
+                                // Marco la original para borrado.
+                                thread_instance->population[current_sol_pos].status = SOLUTION__STATUS_TO_DEL;
+                                thread_instance->total_to_delete_solutions++;
+                            }
+                            
+                            pthread_mutex_unlock(thread_instance->population_mutex);
                         }
                     }
                 }
