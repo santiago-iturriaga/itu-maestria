@@ -18,9 +18,12 @@
 #define PALS_CPU_RTASK_MASTER_RANDOM_NUMBERS 3
 #define PALS_CPU_RTASK_SLAVE_RANDOM_NUMBERS  5
 
-#define PALS_CPU_RTASK_WORK__TIMEOUT     5
-#define PALS_CPU_RTASK_WORK__CONVERGENCE 100
-#define PALS_CPU_RTASK_WORK__RESET_POP   50
+#define PALS_CPU_RTASK_WORK__TIMEOUT      5
+#define PALS_CPU_RTASK_WORK__CONVERGENCE  100
+#define PALS_CPU_RTASK_WORK__RESET_POP    50
+
+#define PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE  3
+#define PALS_CPU_RTASK_WORK__THREAD_ITERATIONS   9
 
 #define PALS_CPU_RTASK_SEARCH_OP__SWAP 0
 #define PALS_CPU_RTASK_SEARCH_OP__MOVE 1
@@ -35,15 +38,7 @@
 #define PALS_CPU_RTASK_WORK__EXIT     3
 
 #define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 10
-#define PALS_CPU_RTASK_WORK__ELITE_POP_EMPTY    0
-#define PALS_CPU_RTASK_WORK__ELITE_POP_USED     1
-
 #define PALS_CPU_RTASK_WORK__POP_MAX_SIZE  25
-#define PALS_CPU_RTASK_WORK__POP_EMPTY     0
-#define PALS_CPU_RTASK_WORK__POP_DOMINATED 1
-#define PALS_CPU_RTASK_WORK__POP_NEW       2
-#define PALS_CPU_RTASK_WORK__POP_ELITE     3
-#define PALS_CPU_RTASK_WORK__POP_TO_DEL    4
 
 #define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
 #define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
@@ -63,7 +58,6 @@ struct pals_cpu_rtask_instance {
 	int *slave_work_type;
 
     struct solution *population;
-    int *population_status;
     int *population_locked;
     int population_count;  
 	
@@ -79,6 +73,10 @@ struct pals_cpu_rtask_instance {
 	
 	// Parámetros de ejecución.
 	int count_threads;	
+
+	// Statics	
+	int total_reinicializaciones;
+    int total_elite_population_full;
 };
 
 struct pals_cpu_rtask_thread_arg {
@@ -91,11 +89,8 @@ struct pals_cpu_rtask_thread_arg {
 
     // Comunicación con el thread actual.
     struct solution *population;
-    int *population_status;
     int *population_locked;
     int *population_count;
-    
-    struct solution local_solution;
 	
 	int *work_type;
 	
@@ -113,6 +108,7 @@ struct pals_cpu_rtask_thread_arg {
     int total_random_greedy_searches;
 	int total_swaps;
     int total_moves;
+    int total_population_full;
 };
 
 /*
