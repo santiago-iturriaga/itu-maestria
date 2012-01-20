@@ -403,11 +403,13 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	
         // ===========================================================================
         // Espero a que un esclavo encuentre una solución.
-		
-		if (sem_wait(&(instance->new_solutions_sem)) == -1) {
-			printf("Could not wait on semaphore\n");
-			exit(EXIT_FAILURE);
-		}
+	
+    	timespec sem_wait_timeout;
+		clock_gettime(CLOCK_REALTIME, &sem_wait_timeout);
+        //sem_wait_timeout.tv_sec += 1;
+        sem_wait_timeout.tv_nsec += 500000000L; // 1/2 segundo.
+        		
+		sem_timedwait(&(instance->new_solutions_sem), &sem_wait_timeout);
 	
         // ===========================================================================
         // Busco las soluciones nuevas y calculo si son dominadas o no dominadas.
@@ -896,8 +898,9 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                     selected_solution->status = SOLUTION__STATUS_NEW;
                     pthread_mutex_unlock(thread_instance->population_mutex);
                 }
-                                
-                // SEMAFOROOOOOOOOOOOOOOOO!!!!
+
+                // Le notifico al master que terminé una iteración completa.
+                sem_post(thread_instance->new_solutions_sem);
             }
         }  
     } 
