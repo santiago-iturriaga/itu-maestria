@@ -33,7 +33,7 @@ void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, s
 	}
 	
 	for (int task = 0; task < etc->tasks_count; task++) {
-		new_solution->__task_assignment[task] = TASK__NOT_ASSIGNED; /* not yet assigned */
+		new_solution->__task_assignment[task] = SOLUTION__TASK_NOT_ASSIGNED; /* not yet assigned */
 	}
 	
 	//=== Estructura orientada a máquinas.
@@ -120,7 +120,7 @@ void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
     assert(machine_id >= 0);
     assert(task_id < s->etc->tasks_count);
     assert(task_id >= 0);
-    assert(s->__task_assignment[task_id] == TASK__NOT_ASSIGNED);
+    assert(s->__task_assignment[task_id] == SOLUTION__TASK_NOT_ASSIGNED);
        
     // Actualizo el makespan.
     s->__machine_compute_time[machine_id] += get_etc_value(s->etc, machine_id, task_id);
@@ -157,7 +157,7 @@ void move_task_to_machine(struct solution *s, int task_id, int machine_id) {
     assert(machine_id >= 0);
     assert(task_id < s->etc->tasks_count);
     assert(task_id >= 0);
-    assert(s->__task_assignment[task_id] != TASK__NOT_ASSIGNED);
+    assert(s->__task_assignment[task_id] != SOLUTION__TASK_NOT_ASSIGNED);
     assert(s->__task_assignment[task_id] != machine_id);
     
     int recompute_makespan = 0;
@@ -248,8 +248,8 @@ void swap_tasks(struct solution *s, int task_a_id, int task_b_id) {
     assert(task_a_id >= 0);
     assert(task_b_id < s->etc->tasks_count);
     assert(task_b_id >= 0);
-    assert(s->__task_assignment[task_a_id] != TASK__NOT_ASSIGNED);
-    assert(s->__task_assignment[task_b_id] != TASK__NOT_ASSIGNED);
+    assert(s->__task_assignment[task_a_id] != SOLUTION__TASK_NOT_ASSIGNED);
+    assert(s->__task_assignment[task_b_id] != SOLUTION__TASK_NOT_ASSIGNED);
     
     int recompute_makespan = 0;
     int recompute_energy = 0;

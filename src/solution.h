@@ -10,11 +10,20 @@
 #ifndef SOLUTION_H_
 #define SOLUTION_H_
 
-#define TASK__NOT_ASSIGNED -1
+#define SOLUTION__TASK_NOT_ASSIGNED -1
+
+#define SOLUTION__STATUS_NOT_READY  -1
+#define SOLUTION__STATUS_EMPTY      0
+#define SOLUTION__STATUS_NEW        1
+#define SOLUTION__STATUS_READY      2
+#define SOLUTION__STATUS_TO_DEL     3
 
 struct solution {
     struct etc_matrix *etc;
     struct energy_matrix *energy;
+    
+    int status;
+    int initialized;
     
 	int *__task_assignment;
     int **__machine_assignment;

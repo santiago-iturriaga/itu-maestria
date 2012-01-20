@@ -133,13 +133,10 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 		exit(EXIT_FAILURE);
 	}
         
-    empty_instance.population_status = (int*)malloc(sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
-    if (empty_instance.population_status == NULL) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para population status.\n");
-		exit(EXIT_FAILURE);
-	}
-    
-	memset(empty_instance.population_status, 0, sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
+    for (int i = 0; i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; i++) {
+        empty_instance.population[i].status = SOLUTION__STATUS_EMPTY;
+        empty_instance.population[i].initialized = 0;
+    }
 
     empty_instance.population_locked = (int*)malloc(sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
     if (empty_instance.population_locked == NULL) {
@@ -234,7 +231,6 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
         empty_instance.slave_threads_args[i].energy = empty_instance.energy;
         
         empty_instance.slave_threads_args[i].population = empty_instance.population;
-        empty_instance.slave_threads_args[i].population_status = empty_instance.population_status;
         empty_instance.slave_threads_args[i].population_locked = empty_instance.population_locked;
         empty_instance.slave_threads_args[i].population_count = &(empty_instance.population_count);
         
@@ -260,7 +256,6 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {      
 	free(instance.elite_population);
     free(instance.population);
-    free(instance.population_status);
     free(instance.population_locked);
     
     free(instance.random_states);
@@ -279,7 +274,7 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 	int s_idx = 0;
 	
 	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
-		if (instance->population_status[s_pos] == PALS_CPU_RTASK_WORK__POP_NEW) {
+		if (instance->population[s_pos].status == SOLUTION__STATUS_NEW) {
 		    int is_non_dominated;
 		    is_non_dominated = 1;
 		
@@ -323,8 +318,7 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 			
 			if (is_non_dominated == 1) {
 			    if ((added_to_elite == 0) && (instance->elite_population_count < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE)) {
-			        for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE) && 
-			            (added_to_elite == 0); elite_s_pos++) {
+			        for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE) && (added_to_elite == 0); elite_s_pos++) {
 			            
 			            if (instance->elite_population[elite_s_pos] == NULL) {
 			                added_to_elite = 1;
@@ -334,19 +328,21 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 			        }
 			    }
 
-                if (added_to_elite == 1) {			
-    			    instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_ELITE;
-    			} else {
-        			instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_DOMINATED;
+                if (added_to_elite != 1) {
+                    instance->total_elite_population_full++;
+                    fprintf(stderr, "[WARNING] Población elite llena!!!");
     			}
-			} else {
-    			instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_DOMINATED;
-    		}
+			}
+
+            // Bloqueo la población para actualizar el estado del individuo.
+			pthread_mutex_lock(&(instance->population_mutex));
+			instance->population[s_pos].status = SOLUTION__STATUS_READY;
+            pthread_mutex_unlock(&(instance->population_mutex));
     		
 			solutions_found++;
 		}
 		
-		if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
+		if (instance->population[s_pos].status > SOLUTION__STATUS_EMPTY) {
 			s_idx++;
 		}
 	}
@@ -413,17 +409,31 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 			exit(EXIT_FAILURE);
 		}
 	
+        // ===========================================================================
+        // Busco las soluciones nuevas y calculo si son dominadas o no dominadas.
+	
 		int solutions_found;
 		solutions_found = pals_cpu_rtask_eval_new_solutions(instance);
 		
+		// Si no encuentro soluciones nuevas, aumento el contador de convergencia.
+		// De lo contrario lo reinicializo.
 		if (solutions_found > 0) {
 			increase_depth = 0;
 		} else {
 			increase_depth++;
 		}
 	
+	    // Después de K iteraciones, o si se llena la población principal, reinicializo la población y dejo
+	    // solo los individuos elite.
 		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == 0) || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
 			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
+			
+			if (DEBUG) {
+			    fprintf(stdout, "[DEBUG] Limpio la población con >> \n");
+			    fprintf(stdout, "        Cantidad de iteraciones: %d\n", iter % PALS_CPU_RTASK_WORK__RESET_POP);
+			    fprintf(stdout, "        Población              : %d\n", instance->population_count);
+			    fprintf(stdout, "        Población elite        : %d\n", instance->elite_population_count);
+			}
 			
 			// Solicito a los hilos que se detengan.
 			for (int i = 0; i < instance->count_threads - 1; i++) {
@@ -442,17 +452,17 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 			pals_cpu_rtask_eval_new_solutions(instance);
 			
 			// Elimino toda la población que no sea elite.
-			int s_idx = -1;
-            for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
-                if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
-                    s_idx++;
-                
-                    if (instance->population_status[s_pos] != PALS_CPU_RTASK_WORK__POP_ELITE) {
-                        instance->population_status[s_pos] = PALS_CPU_RTASK_WORK__POP_EMPTY;
-                    }
+            for (int s_pos = 0; s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; s_pos++) {
+                instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
+            }
+            
+            // Recorro toda la población elite y los dejo ready.
+            for (int s_pos = 0; s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE; s_pos++) {
+                if (instance->elite_population[s_pos] != NULL) {
+                    instance->elite_population[s_pos]->status = SOLUTION__STATUS_READY;                    
                 }
             }
-			
+            			
 			instance->population_count = instance->elite_population_count;
 			
 			increase_depth = 0;
@@ -509,8 +519,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
     thread_instance->total_random_greedy_searches = 0;
 	thread_instance->total_swaps = 0;
     thread_instance->total_moves = 0;
-	   
-    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->local_solution));
+    thread_instance->total_population_full = 0;
 	   
     while (*(thread_instance->work_type) != PALS_CPU_RTASK_WORK__EXIT) {
         if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__WAIT) {
@@ -538,7 +547,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             int random_task = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * thread_instance->etc->tasks_count);
 	        compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
 
-            thread_instance->population_status[thread_instance->thread_idx] = PALS_CPU_RTASK_WORK__POP_NEW;
+            thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NEW;
 
 	        // Timming -----------------------------------------------------
 	        timming_end(">> Random MCT Time", ts_mct);
@@ -565,7 +574,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             }
         } else if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__SEARCH) {
             // PALS_CPU_RTASK_WORK__SEARCH ====================================================================
-         
+
             int solution_selected;
             solution_selected = 0;
          
@@ -582,13 +591,13 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                 && (current_sol_index < *(thread_instance->population_count))
                 && (current_sol_index != random_sol_index); current_sol_pos++) {
                 
-                if (thread_instance->population_status[current_sol_pos] != PALS_CPU_RTASK_WORK__POP_EMPTY) {
+                if (thread_instance->population[current_sol_pos].status > SOLUTION__STATUS_EMPTY) {
                     current_sol_index++;
                 }
             }
             
             // Continúo solo si la tarea sorteada no estaba marcada para eliminar.
-            if (thread_instance->population_status[current_sol_pos] != PALS_CPU_RTASK_WORK__POP_TO_DEL)  {
+            if (thread_instance->population[current_sol_pos].status != SOLUTION__STATUS_TO_DEL)  {
                 thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] + 1;
                 solution_selected = 1;
             }
@@ -596,374 +605,300 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             pthread_mutex_unlock(thread_instance->population_mutex);
             
             if (solution_selected == 1) {
-                // Clono la solución sorteada.
-                clone_solution(&(thread_instance->local_solution), &(thread_instance->population[current_sol_pos]));
-
                 // Determino la estrategia de busqueda del hilo.
                	int search_type;
                	if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.33) {
                     search_type = PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY;
+                    thread_instance->total_makespan_greedy_searches++;
+                    
                	} else if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.66) {
                     search_type = PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY;
+                    thread_instance->total_energy_greedy_searches++;
+                    
                 } else {
                     search_type = PALS_CPU_RTASK_SEARCH__RANDOM_GREEDY;
+                    thread_instance->total_random_greedy_searches++;
                	}
+
+                struct solution *selected_solution;
+                selected_solution = &(thread_instance->population[current_sol_pos]);
                 
-                // Determino que tipo movimiento va a realizar el hilo.
-               	int mov_type;
-               	if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.75) {
-               	    mov_type = PALS_CPU_RTASK_SEARCH_OP__SWAP;
-               	} else {
-               	    mov_type = PALS_CPU_RTASK_SEARCH_OP__MOVE;
-               	}
+                int is_solution_cloned = 0;
+                int solution_improved_on = 0;
+                
+                for (int search_iteration = 0; (search_iteration < PALS_CPU_RTASK_WORK__THREAD_ITERATIONS) 
+                    && (search_iteration - solution_improved_on < PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE); search_iteration++) {
+                                
+                    thread_instance->total_iterations++;                
+                  
+                    // Determino que tipo movimiento va a realizar el hilo.
+                   	int mov_type;
+                   	if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.75) {
+                   	    mov_type = PALS_CPU_RTASK_SEARCH_OP__SWAP;
+                   	} else {
+                   	    mov_type = PALS_CPU_RTASK_SEARCH_OP__MOVE;
+                   	}
 
-                // Determino las máquinas de inicio para la búsqueda.
-                int machine_a, machine_b;
+                    // Determino las máquinas de inicio para la búsqueda.
+                    int machine_a, machine_b;
 
-                if (search_type == PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY) {
-                    // La estrategia es mejorar makespan, siempre selecciono la máquina que define el makespan.
-                    machine_a = get_worst_ct_machine_id(&(thread_instance->local_solution));
+                    if (search_type == PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY) {
+                        // La estrategia es mejorar makespan, siempre selecciono la máquina que define el makespan.
+                        machine_a = get_worst_ct_machine_id(selected_solution);
+                        
+                    } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
+                        // La estrategia es mejorar energía, siempre selecciono la máquina que consume más energía.
+                        machine_a = get_worst_energy_machine_id(selected_solution);
+                        
+                    } else {
+                        // La estrategia es aleatoria.
+	                    machine_a = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
+	                        thread_instance->etc->machines_count);
+	                        
+                    }
                     
-                } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
-                    // La estrategia es mejorar energía, siempre selecciono la máquina que consume más energía.
-                    machine_a = get_worst_energy_machine_id(&(thread_instance->local_solution));
-                    
-                } else {
-                    // La estrategia es aleatoria.
-	                machine_a = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
-	                    thread_instance->etc->machines_count);
+                    // Siempre selecciono la segunda máquina aleatoriamente.
+	                machine_b = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
+	                    (thread_instance->etc->machines_count - 1));
 	                    
+                    if (machine_a == machine_b) machine_b++;
+
+                    // Determino las tareas de inicio para la búsqueda.
+                    int task_x;
+                    int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
+                    
+	                task_x = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_a_task_count);
+
+                    float current_makespan = get_makespan(selected_solution);
+
+                    float machine_a_energy_idle = get_energy_idle_value(thread_instance->energy, machine_a);
+                    float machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
+                    float machine_b_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b);
+                    float machine_b_energy_max = get_energy_max_value(thread_instance->energy, machine_b);
+
+                    float machine_a_ct_old, machine_b_ct_old;
+                    float machine_a_energy_old, machine_b_energy_old;
+                    
+                    float machine_a_ct_new, machine_b_ct_new;
+                    float machine_a_energy_new, machine_b_energy_new;
+                    
+                    float delta_makespan, delta_ct, delta_energy;
+                    
+                    int search_ended = 0;
+
+                    if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
+                        int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
+                        int task_y = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_b_task_count);
+	                    
+	                    int top_task_a = PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD;
+	                    if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
+	                    
+	                    int top_task_b = PALS_CPU_RTASK_WORK__DST_TASK_NHOOD;
+	                    if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
+	                    
+	                    int task_x_best_swap_pos, task_y_best_swap_pos;
+	                    int task_x_pos, task_y_pos;	                
+	                    int task_x_current, task_y_current;
+	                    
+	                    for (int task_x_offset = 0; (task_x_offset < top_task_a) && (search_ended == 0); task_x_offset++) {
+	                        task_x_pos = (task_x + task_x_offset) % machine_a_task_count;
+	                        task_x_current = get_machine_task_id(selected_solution, machine_a, task_x_pos);
+	                    
+	                        for (int task_y_offset = 0; (task_y_offset < top_task_b) && (search_ended == 0); task_y_offset++) {
+	                            task_y_pos = (task_y + task_y_offset) % machine_b_task_count;                        
+	                            task_y_current = get_machine_task_id(selected_solution, machine_a, task_y_pos);
+	                            
+	                            // Máquina 1.
+	                            machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
+		
+	                            machine_a_ct_new = machine_a_ct_old;
+	                            machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc, machine_a, task_x_current); // Resto del ETC de x en a.
+	                            machine_a_ct_new = machine_a_ct_new + get_etc_value(thread_instance->etc, machine_a, task_y_current); // Sumo el ETC de y en a.
+
+	                            // Máquina 2.
+	                            machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b);
+
+	                            machine_b_ct_new = machine_b_ct_old;
+	                            machine_b_ct_new = machine_b_ct_new - get_etc_value(thread_instance->etc, machine_b, task_y_current); // Resto el ETC de y en b.
+	                            machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_a, task_x); // Sumo el ETC de x en b.
+	                                                    
+                                if (search_type == PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY) {
+                                    // La estrategia es mejorar makespan.
+                                    delta_makespan = (machine_a_ct_old - machine_a_ct_new) + (machine_a_ct_old - machine_b_ct_new);
+                                    
+                                    if (delta_makespan > 0) {
+                                        search_ended = 1;
+                    	                task_x_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_x_pos;
+	                                }
+                                } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
+                                    // La estrategia es mejorar energía.                                                                
+                                    delta_energy = 
+                                        ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
+                                        
+                                    if (delta_energy > 0) {
+                                        search_ended = 1;
+                    	                task_x_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_x_pos;
+                    	            }
+                                } else {
+                                    // La estrategia es aleatoria.
+                                    delta_ct = (machine_a_ct_old - machine_a_ct_new) + (machine_b_ct_old - machine_b_ct_new);	                        
+                                    
+                                    delta_energy = 
+                                        ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));     
+                                        
+                                    if ((delta_energy > 0) || (delta_ct > 0)) {
+                                        search_ended = 1;
+                    	                task_x_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_x_pos;
+                                    }
+                                }
+                            }
+                        }
+
+                   	} else if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {                
+	                    int top_task_a = PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD;
+	                    if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
+	                    
+	                    int top_machine_b = PALS_CPU_RTASK_WORK__DST_MACH_NHOOD;
+	                    if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
+	                    
+	                    int task_x_best_move_pos, machine_b_best_move_id;
+	                    int task_x_pos;
+	                    int task_x_current, machine_b_current;
+	                    
+	                    for (int task_x_offset = 0; (task_x_offset < top_task_a) && (search_ended == 0); task_x_offset++) {
+	                        task_x_pos = (task_x + task_x_offset) % machine_a_task_count;
+	                        task_x_current = get_machine_task_id(selected_solution, machine_a, task_x_pos);
+	                    
+	                        for (int machine_b_offset = 0; (machine_b_offset < top_machine_b) && (search_ended == 0); machine_b_offset++) {
+	                            machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count;
+	                            
+	                            if (machine_b_current != machine_a) {
+	                                // Máquina 1.
+	                                machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
+		
+	                                machine_a_ct_new = machine_a_ct_old;
+	                                machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc, machine_a, task_x_current); // Resto del ETC de x en a.
+
+	                                // Máquina 2.
+	                                machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b);
+
+	                                machine_b_ct_new = machine_b_ct_old;
+	                                machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_a, task_x); // Sumo el ETC de x en b.
+	                                                        
+                                    if (search_type == PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY) {
+                                        // La estrategia es mejorar makespan.
+                                        delta_makespan = (machine_a_ct_old - machine_b_ct_new);
+                                        
+                                        if (delta_makespan > 0) {
+                                            search_ended = 1;
+                        	                task_x_best_move_pos = task_x_current;
+                        	                machine_b_best_move_id = machine_b_current;
+	                                    }
+                                    } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
+                                        // La estrategia es mejorar energía.                                                                
+                                        delta_energy = 
+                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
+                                            
+                                        if (delta_energy > 0) {
+                                            search_ended = 1;
+                        	                task_x_best_move_pos = task_x_current;
+                        	                machine_b_best_move_id = machine_b_current;
+                        	            }
+                                    } else {
+                                        // La estrategia es aleatoria.
+                                        delta_ct = (machine_a_ct_old - machine_a_ct_new) + (machine_b_ct_old - machine_b_ct_new);	                        
+                                        
+                                        delta_energy = 
+                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));     
+                                            
+                                        if ((delta_energy > 0) || (delta_ct > 0)) {
+                                            search_ended = 1;
+                        	                task_x_best_move_pos = task_x_current;
+                        	                machine_b_best_move_id = machine_b_current;
+                                        }
+                                    }
+                                }
+                   	        }
+                   	    }
+                   	}
+                   	
+       	            if (search_ended == 1) {
+       	                if (is_solution_cloned == 0) {
+           	                // Bloqueo la población para encontrar un lugar donde guardar mi nueva solución.
+                            pthread_mutex_lock(thread_instance->population_mutex);
+
+           	                int dst_solution_pos;
+           	                int dst_solution_found = 0;            
+           	                
+           	                for (dst_solution_pos = -1; (dst_solution_pos < (PALS_CPU_RTASK_WORK__POP_MAX_SIZE-1)) && (dst_solution_found == 0); ) {
+               	                dst_solution_pos++;
+           	                
+           	                    if (thread_instance->population_locked[dst_solution_pos] == 0) {
+           	                        if ((thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_EMPTY) ||
+           	                            (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_TO_DEL)) {
+
+                                        thread_instance->population[dst_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                                        dst_solution_found = 1;
+           	                        }
+           	                    }  
+           	                }
+                                        
+                            pthread_mutex_unlock(thread_instance->population_mutex);
+                            
+                            if (dst_solution_found == 1) {
+                                if (thread_instance->population[dst_solution_pos].initialized == 0) {
+                                    // Si nunca utilicé este espacio, lo inicializo.
+                                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[dst_solution_pos]));
+                                    thread_instance->population[dst_solution_pos].initialized = 1;
+                                }
+                                
+                                // Listo, tengo el espacio libre para mi nuevo individuo. Lo clono.
+                                clone_solution(&(thread_instance->population[dst_solution_pos]), selected_solution);      
+
+                                // Ya tengo el clon. Puedo liberar el recurso de lock de la población.
+                                pthread_mutex_lock(thread_instance->population_mutex);
+                                thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
+                                pthread_mutex_unlock(thread_instance->population_mutex);
+                                
+                                // Continúo las iteraciones desde el clon.
+                                selected_solution = &(thread_instance->population[dst_solution_pos]);
+                                is_solution_cloned = 1;
+                            } else {
+                                // No enocontré lugar? la población esta llena?
+                                // Implemento una politica de reemplazo?
+                                thread_instance->total_population_full++;
+                                fprintf(stderr, "[WARNING] Población llena!!!");
+                            }
+                        } 
+                        
+                        if (is_solution_cloned == 1) {
+                            solution_improved_on = search_iteration;
+                            
+                            if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
+                                // TODO: Calcular movimiento!!!!............................                            
+                            } if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {
+                                // TODO: Calcular movimiento!!!!............................
+                            }
+                        }
+                    }
                 }
                 
-                // Selecciono la otra máquina aleatoriamente.
-	            machine_b = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
-	                (thread_instance->etc->machines_count - 1));
-	                
-                if (machine_a == machine_b) machine_b++;
-
-                // Determino las tareas de inicio para la búsqueda.
-                int task_x;
-                int machine_a_task_count = get_machine_tasks_count(&(thread_instance->local_solution), machine_a);
-                
-	            task_x = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_a_task_count);
-
-                if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
-                
-                    int task_y;
-                    int machine_b_task_count = get_machine_tasks_count(&(thread_instance->local_solution), machine_b);
-                    
-	                task_y = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_b_task_count);
-	                 
-	                int task_x_current, task_y_current;
-	                for (int task_x_offset = 0; task_x_offset < PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD; task_x_offset++) {
-	                    task_x_current = (task_x + task_x_offset) % machine_a_task_count;
-	                
-	                    for (int task_y_offset = 0; task_y_offset < PALS_CPU_RTASK_WORK__DST_TASK_NHOOD; task_y_offset++) {
-	                        task_y_current = (task_y + task_y_offset) % machine_b_task_count;
-	                        
-		                    // Movimiento SWAP.
-	
-	                        /*
-		                    float machine_a_ct_old, machine_b_ct_old;
-		                    float machine_a_ct_new, machine_b_ct_new;
-		                    float machine_a_energy_old, machine_b_energy_old;
-		                    float machine_a_energy_new, machine_b_energy_new;
-	
-		                    float delta_makespan;
-		                    delta_makespan = 0.0;
-
-		                    float delta_ct;
-		                    delta_ct = 0.0;
-		                    
-                            float delta_energy;
-		                    delta_energy = 0.0;
-
-
-	                        // ================= Obtengo las tareas sorteadas.
-                            
-
-                    	    for (int eval = 0; eval < thread_instance->count_evals; eval++) {	
-		                        // ================= Obtengo las tareas sorteadas (2).
-			
-		                        task_y = (int)(floor((random2 * (thread_instance->etc_matrix->tasks_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
-		                            % (thread_instance->etc_matrix->tasks_count - 1);
-		                        if (task_y >= task_x) task_y++;
-	
-		                        // ================= Obtengo las máquinas a las que estan asignadas las tareas.
-		                        machine_a = get_task_assignment(thread_instance->current_solution, task_x); // Máquina a.	
-		                        machine_b = get_task_assignment(thread_instance->current_solution, task_y); // Máquina b.	
-
-		                        if (machine_a != machine_b) {
-			                        // Calculo el delta del swap sorteado.
-		
-			                        // Máquina 1.
-			                        machine_a_ct_old = get_machine_compute_time(thread_instance->current_solution, machine_a);
-				
-			                        machine_a_ct_new = machine_a_ct_old;
-			                        machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Resto del ETC de x en a.
-			                        machine_a_ct_new = machine_a_ct_new + get_etc_value(thread_instance->etc_matrix, machine_a, task_y); // Sumo el ETC de y en a.
-		
-			                        // Máquina 2.
-			                        machine_b_ct_old = get_machine_compute_time(thread_instance->current_solution, machine_b);
-
-			                        machine_b_ct_new = machine_b_ct_old;
-			                        machine_b_ct_new = machine_b_ct_new - get_etc_value(thread_instance->etc_matrix, machine_b, task_y); // Resto el ETC de y en b.
-			                        machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Sumo el ETC de x en b.
-
-			                        if ((machine_a_ct_new > get_makespan(thread_instance->current_solution)) 
-			                            || (machine_b_ct_new > get_makespan(thread_instance->current_solution))) {
-			                            
-				                        // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-				                        if (machine_a_ct_new > get_makespan(thread_instance->current_solution)) 
-				                            delta = delta + (machine_a_ct_new - get_makespan(thread_instance->current_solution));
-				                        if (machine_b_ct_new > get_makespan(thread_instance->current_solution)) 
-				                            delta = delta + (machine_b_ct_new - get_makespan(thread_instance->current_solution));
-			                        } else if ((machine_a_ct_old+1 >= get_makespan(thread_instance->current_solution)) 
-			                            || (machine_b_ct_old+1 >= get_makespan(thread_instance->current_solution))) {	
-			                            
-				                        // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-			
-				                        if (machine_a_ct_old+1 >= get_makespan(thread_instance->current_solution)) {
-					                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				                        } else {
-					                        delta = delta + 1/(machine_a_ct_new - machine_a_ct_old);
-				                        }
-			
-				                        if (machine_b_ct_old+1 >= get_makespan(thread_instance->current_solution)) {
-					                        delta = delta + (machine_b_ct_new - machine_b_ct_old);
-				                        } else {
-					                        delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-				                        }
-			                        } else {
-				                        // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-				                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
-				                        delta = delta + (machine_b_ct_new - machine_b_ct_old);
-				                        delta = 1 / delta;
-			                        }
-		                        }
-
-		                        if (((loop == 0) && (eval == 0))|| (thread_instance->thread_delta[0] > delta)) {			        
-		                        	thread_instance->thread_move_type[0] = PALS_CPU_RTASK_SWAP;
-                                    thread_instance->thread_origin[0] = task_x;
-                                    thread_instance->thread_destination[0] = task_y;
-                                    thread_instance->thread_delta[0] = delta;
-		                        }
-		                    }*/	                        
-	                    }
-	                }
-	                        
-               	} else if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {
-               	
-               	    int task_id, machine_id;
-               	    for (int task_offset = 0; task_offset < PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD; task_offset++) {
-               	        task_id = (task_x + task_offset) % machine_a_task_count;
-               	    
-               	        for (int machine_offset = 0; machine_offset < PALS_CPU_RTASK_WORK__DST_MACH_NHOOD; machine_offset++) {
-               	            machine_id = (machine_b + machine_offset) % thread_instance->etc->machines_count;
-               	            
-		                    // Movimiento MOVE.
-	
-	                        /*
-		                    int task_x;
-		                    int machine_a, machine_b;
-	
-		                    float machine_a_ct_old, machine_b_ct_old;
-		                    float machine_a_ct_new, machine_b_ct_new;
-
-		                    float delta;
-		                    delta = 0.0;
-
-		                    // ================= Obtengo la tarea sorteada.
-                    		task_x = (int)(floor(random1 * (thread_instance->etc_matrix->tasks_count - thread_instance->count_loops))) + loop;
-	
-                    	    for (int eval = 0; eval < thread_instance->count_evals; eval++) {	
-		                        // ================= Obtengo la máquina a la que esta asignada,
-		                        // ================= y el compute time de la máquina.
-		                        machine_a = get_task_assignment(thread_instance->current_solution, task_x); // Máquina a.
-		                        machine_a_ct_old = get_machine_compute_time(thread_instance->current_solution, machine_a);
-						
-		                        // ================= Obtengo la máquina destino sorteada.	
-		                        machine_b = (int)(floor((random2 * (thread_instance->etc_matrix->machines_count - 1)) + (loop * thread_instance->count_evals) + eval)) 
-		                            % (thread_instance->etc_matrix->machines_count - 1);
-		                        if (machine_b >= machine_a) machine_b++;
-	
-		                        machine_b_ct_old = get_machine_compute_time(thread_instance->current_solution, machine_b);
-	
-		                        // Calculo el delta del swap sorteado.
-		                        machine_a_ct_new = machine_a_ct_old - get_etc_value(thread_instance->etc_matrix, machine_a, task_x); // Resto del ETC de x en a.		
-		                        machine_b_ct_new = machine_b_ct_old + get_etc_value(thread_instance->etc_matrix, machine_b, task_x); // Sumo el ETC de x en b.
-
-		                        if (machine_b_ct_new > get_makespan(thread_instance->current_solution)) {
-			                        // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-			                        delta = delta + (machine_b_ct_new - get_makespan(thread_instance->current_solution));
-		                        } else if (machine_a_ct_old+1 >= get_makespan(thread_instance->current_solution)) {	
-			                        // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-			                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
-			                        delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-		                        } else {
-			                        // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-			                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
-			                        delta = delta + (machine_b_ct_new - machine_b_ct_old);
-			                        delta = 1 / delta;
-		                        }
-		                        
-		                        if (((loop == 0) && (eval == 0))|| (thread_instance->thread_delta[0] > delta)) {			        
-		                        	thread_instance->thread_move_type[0] = PALS_CPU_RTASK_MOVE;
-                                    thread_instance->thread_origin[0] = task_x;
-                                    thread_instance->thread_destination[0] = machine_b;
-                                    thread_instance->thread_delta[0] = delta;
-		                        }
-                            }*/               	            
-               	        }
-               	    }
-               	}
-
-		        /*
-		
-		        // Timming -----------------------------------------------------
-		        timespec ts_post;
-		        timming_start(ts_post);
-		        // Timming -----------------------------------------------------
-
-		        // Aplico los movimientos.
-		        memset(instance->__result_task_history, 0, instance->etc->tasks_count);
-		        memset(instance->__result_machine_history, 0, instance->etc->machines_count);
-		
-		        int cantidad_swaps_iter, cantidad_moves_iter;
-		        cantidad_swaps_iter = 0;
-		        cantidad_moves_iter = 0;
-	
-	            // Busco el thread que encontró el mejor movimiento.
-	            int initial_idx = (int)floor(instance->master_random_numbers[2] * instance->result_count);
-		
-	            for (int i = 0; i < instance->result_count; i++) {
-		            int result_idx = (initial_idx + i) % instance->result_count;
-
-			        //if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, instance->delta[result_idx]);
-
-                    // Nunca hago movimiento negativos sobre los objetivos.
-			        if ((instance->delta_makespan[result_idx] <= 0.0) && (instance->delta_energy[result_idx] <= 0.0)) {	
-			            if (instance->move_type[result_idx] == PALS_CPU_RTASK_SWAP) {
-			             
-				            int task_x = instance->origin[result_idx];
-				            int task_y = instance->destination[result_idx];
-		
-				            int machine_a = get_task_assignment(instance->current_solution, instance->origin[result_idx]);
-				            int machine_b = get_task_assignment(instance->current_solution, instance->destination[result_idx]);
-		
-				            if (DEBUG) fprintf(stdout, "        (swap) Task %d in %d swaps with task %d in %d. Delta %f.\n",
-					            instance->origin[result_idx], machine_a, instance->destination[result_idx], machine_b, instance->delta[result_idx]);
-		
-				            if ((instance->__result_task_history[task_x] == 0) && (instance->__result_task_history[task_y] == 0) &&
-					            (instance->__result_machine_history[machine_a] == 0) && (instance->__result_machine_history[machine_b] == 0))	{
-
-					            cantidad_swaps_iter++;
-		
-					            instance->__result_task_history[task_x] = 1;
-					            instance->__result_task_history[task_y] = 1;
-					            instance->__result_machine_history[machine_a] = 1;
-					            instance->__result_machine_history[machine_b] = 1;
-					
-					            if (DEBUG) {
-						            fprintf(stdout, ">> [pre-update]:\n");
-						            fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
-						                get_machine_compute_time(instance->current_solution, machine_a));
-						            fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
-						                get_machine_compute_time(instance->current_solution, machine_b));
-					            }
-		
-		                        swap_tasks(instance->current_solution, task_x, task_y);
-
-					            if (DEBUG) {
-						            fprintf(stdout, ">> [update]:\n");
-						            fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-						            fprintf(stdout, "   task_y: %d, task_y_machine: %d.\n", task_y, machine_a);
-						            fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
-						                get_machine_compute_time(instance->current_solution, machine_a));
-						            fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
-						                get_machine_compute_time(instance->current_solution, machine_b));
-						            fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
-					            }
-				            } else {
-					            if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
-				            }
-			            } else if (instance->move_type[result_idx] == PALS_CPU_RTASK_MOVE) {
-				            int task_x = instance->origin[result_idx];
-				            int machine_a = get_task_assignment(instance->current_solution, task_x);
-				            int machine_b = instance->destination[result_idx];
-
-				            if (DEBUG) fprintf(stdout, "        (move) Task %d in %d is moved to machine %d. Delta %f.\n",
-					            instance->origin[result_idx], machine_a, instance->destination[result_idx], instance->delta[result_idx]);
-				
-				            if ((instance->__result_task_history[task_x] == 0) &&
-             					(instance->__result_machine_history[machine_a] == 0) &&
-					            (instance->__result_machine_history[machine_b] == 0))	{
-		
-					            cantidad_movs_iter++;
-		
-					            instance->__result_task_history[task_x] = 1;
-					            instance->__result_machine_history[machine_a] = 1;
-					            instance->__result_machine_history[machine_b] = 1;
-				
-			                    if (DEBUG) {
-						            fprintf(stdout, ">> [pre-update]:\n");
-						            fprintf(stdout, "   machine_a: %d, old_machine_a_ct: %f.\n", machine_a, 
-						                get_machine_compute_time(instance->current_solution, machine_a));
-						            fprintf(stdout, "   machine_b: %d, old_machine_b_ct: %f.\n", machine_b, 
-						                get_machine_compute_time(instance->current_solution, machine_b));
-					            }
-			
-                				move_task_to_machine(instance->current_solution, task_x, machine_b);
-			
-					            if (DEBUG) {
-						            fprintf(stdout, ">> [update]:\n");
-						            fprintf(stdout, "   task_x: %d, task_x_machine: %d.\n", task_x, machine_b);
-						            fprintf(stdout, "   machine_a: %d, machine_a_ct: %f.\n", machine_a, 
-						                get_machine_compute_time(instance->current_solution, machine_a));
-						            fprintf(stdout, "   machine_b: %d, machine_b_ct: %f.\n", machine_b, 
-						                get_machine_compute_time(instance->current_solution, machine_b));
-						            fprintf(stdout, "   old_makespan: %f.\n", get_makespan(instance->current_solution));
-					            }
-				            } else {
-					            if (DEBUG) fprintf(stdout, "[DEBUG] Lo ignoro porque una tarea o máquina de este movimiento ya fue modificada.\n");
-				            }
-			            }
-			        }
-		        }
-
-		        if ((cantidad_moves_iter > 0) || (cantidad_swaps_iter > 0)) {
-			        if (DEBUG) {
-				        fprintf(stdout, "   swaps performed  : %d.\n", cantidad_swaps_iter);
-				        fprintf(stdout, "   movs performed   : %d.\n", cantidad_moves_iter);
-			        }
-			
-			        instance->total_swaps += cantidad_swaps_iter;
-			        instance->total_moves += cantidad_moves_iter;
-		        }
-		
-		        if (instance->last_elite_found_on_iter == iter) {
-			        increase_depth = 0;
-		
-			        if (DEBUG) {
-				        fprintf(stdout, "   elite solution found.\n");
-			        }
-		        } else {
-			        increase_depth++;
-
-			        if (DEBUG) {
-				        fprintf(stdout, "   elite population unchanged (%d).\n", increase_depth);
-			        }
-		        }
-		
-		        */
+                if (is_solution_cloned == 1) {
+                    // Dejo pronto el nuevo individuo para ser usado.
+                    pthread_mutex_lock(thread_instance->population_mutex);
+                    selected_solution->status = SOLUTION__STATUS_NEW;
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+                }
+                                
+                // SEMAFOROOOOOOOOOOOOOOOO!!!!
             }
-            
-            // Libero el recurso de lock de la población.
-            pthread_mutex_lock(thread_instance->population_mutex);
-                        
-            thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
-                        
-            pthread_mutex_unlock(thread_instance->population_mutex);
         }  
     } 
 
