@@ -109,6 +109,7 @@ struct pals_cpu_rtask_thread_arg {
 	int total_swaps;
     int total_moves;
     int total_population_full;
+    int total_to_delete_solutions;
 };
 
 /*
