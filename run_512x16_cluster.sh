@@ -1,0 +1,7 @@
+INSTANCES_PATH=instancias
+
+#make clean
+#make pals-gdb
+
+bin/pals_cpu ${INSTANCES_PATH}/scenario.0 ${INSTANCES_PATH}/workload.0 3 8 0
+
