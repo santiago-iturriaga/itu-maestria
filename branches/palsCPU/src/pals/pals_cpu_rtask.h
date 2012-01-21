@@ -16,14 +16,13 @@
 #define PALS_CPU_RTASK_H_
 
 #define PALS_CPU_RTASK_WORK__TIMEOUT      5
-#define PALS_CPU_RTASK_WORK__CONVERGENCE  500
-#define PALS_CPU_RTASK_WORK__RESET_POP    250
+#define PALS_CPU_RTASK_WORK__CONVERGENCE  1000
 
 #define PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE  50
 #define PALS_CPU_RTASK_WORK__THREAD_ITERATIONS   250
 
 #define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 50
-#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE       100
+#define PALS_CPU_RTASK_WORK__POP_SIZE_FACTOR    20
 
 #define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 20
 #define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 20
@@ -56,7 +55,8 @@ struct pals_cpu_rtask_instance {
 
     struct solution *population;
     int *population_locked;
-    int population_count;  
+    int population_count;
+    int population_max_size;
 	
     struct solution **elite_population;
     int elite_population_count;   
@@ -90,6 +90,7 @@ struct pals_cpu_rtask_thread_arg {
     struct solution *population;
     int *population_locked;
     int *population_count;
+    int population_max_size;
 	
 	int *work_type;
 	
