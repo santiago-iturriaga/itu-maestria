@@ -43,7 +43,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		}
 
 		if (argc >= 6) {
-			input->seed = atoi(argv[6]);
+			input->seed = atoi(argv[5]);
 			if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
 		} else {
 			input->seed = 0;

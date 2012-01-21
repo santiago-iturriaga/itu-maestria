@@ -12,17 +12,8 @@
 #include "load_params.h"
 #include "energy_matrix.h"
 
-struct energy_matrix* create_energy_matrix(struct params *input) {
-	struct energy_matrix *energy;
-	energy = (struct energy_matrix*)malloc(sizeof(struct energy_matrix));
-
-	if (energy == NULL) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para el struct energy_matrix.\n");
-		exit(EXIT_FAILURE);
-	}
-		
+void init_energy_matrix(struct params *input, struct energy_matrix *energy) {	
 	energy->machines_count = input->machines_count;
-	
 	energy->idle_energy = (float*)malloc(sizeof(float) * input->machines_count);
 	
 	if (energy->idle_energy == NULL) {
@@ -36,14 +27,11 @@ struct energy_matrix* create_energy_matrix(struct params *input) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el energy_matrix->max_energy.\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	return energy;
 }
 
 void free_energy_matrix(struct energy_matrix *energy) {
 	free(energy->idle_energy);
 	free(energy->max_energy);
-	free(energy);
 }
 
 void set_energy_value(struct energy_matrix *energy, int machine, float idle_value, float max_value) {

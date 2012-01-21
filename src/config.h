@@ -2,8 +2,8 @@
 #define CONFIG_H_
 
 #define OUTPUT_SOLUTION 0
-#define           DEBUG 0
-#define         TIMMING 0
+#define DEBUG 1
+#define TIMMING 1
 
 //#define PALS_COUNT 1
 //#define PALS_COUNT 2

@@ -43,7 +43,7 @@ struct solution {
 struct solution* create_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy);
 void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, struct solution *new_solution);
 
-void clone_solution(struct solution *dst, struct solution *src);
+void clone_solution(struct solution *dst, struct solution *src, int clone_status);
 void free_solution(struct solution *s);
 
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id);

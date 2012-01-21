@@ -45,11 +45,11 @@ int main(int argc, char** argv)
 	if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance...\n");
 	
 	// Se pide el espacio de memoria para la matriz de ETC y de energía.
-	struct etc_matrix *etc = create_etc_matrix(&input);
-	struct energy_matrix *energy = create_energy_matrix(&input);
+	struct etc_matrix etc;
+	struct energy_matrix energy;
 
 	// Se carga la matriz de ETC.
-	if (load_instance(&input, etc, energy) == EXIT_FAILURE) {
+	if (load_instance(&input, &etc, &energy) == EXIT_FAILURE) {
 		fprintf(stderr, "[ERROR] Ocurrió un error leyendo el archivo de instancia.\n");
 		return EXIT_FAILURE;
 	}
@@ -81,11 +81,11 @@ int main(int argc, char** argv)
 		// Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		pals_cpu_rtask(input, etc, energy);
+		pals_cpu_rtask(input, &etc, &energy);
 		
 	} else if (input.algorithm == MinMin) {
 	
-		struct solution *current_solution = create_empty_solution(etc, energy);
+		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_minmin(current_solution);
 		
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 		
 	} else if (input.algorithm == MCT) {
 		
-		struct solution *current_solution = create_empty_solution(etc, energy);
+		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_mct(current_solution);
 		
 		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
@@ -116,8 +116,8 @@ int main(int argc, char** argv)
 	// =============================================================
 	// Release memory
 	// =============================================================
-	free_etc_matrix(etc);
-	free_energy_matrix(energy);
+	free_etc_matrix(&etc);
+	free_energy_matrix(&energy);
 
 	return EXIT_SUCCESS;
 }

@@ -16,7 +16,7 @@ struct etc_matrix {
 	float* data;
 };
 
-struct etc_matrix* create_etc_matrix(struct params *input);
+void init_etc_matrix(struct params *input, struct etc_matrix *etc);
 void free_etc_matrix(struct etc_matrix *etc);
 void show_etc_matrix(struct etc_matrix *etc);
 

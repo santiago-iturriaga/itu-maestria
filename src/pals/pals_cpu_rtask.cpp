@@ -15,6 +15,56 @@
 
 #include "pals_cpu_rtask.h"
 
+void validate_instance(struct pals_cpu_rtask_instance *instance) {
+    pthread_mutex_lock(&(instance->population_mutex));
+    int cantidad = 0;
+    
+    for (int i = 0; i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; i++) {
+        if (instance->population[i].status > 0) {
+            cantidad++;
+        }
+    }
+    
+    if (cantidad != instance->population_count) {
+        fprintf(stdout, "[DEBUG] Population:\n");
+	    fprintf(stdout, "        Expected population count: %d\n", instance->population_count);
+	    fprintf(stdout, "        Real population count: %d\n", cantidad);
+        for (int j = 0; j < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; j++) {
+            fprintf(stdout, "        [%d] status      %d\n", j, instance->population[j].status);
+            fprintf(stdout, "        [%d] initialized %d\n", j, instance->population[j].initialized);
+        }
+    }
+
+    pthread_mutex_unlock(&(instance->population_mutex));
+    
+    assert(cantidad == instance->population_count);
+}
+
+void validate_thread_instance(struct pals_cpu_rtask_thread_arg *instance) {
+    pthread_mutex_lock(instance->population_mutex);
+    int cantidad = 0;
+    
+    for (int i = 0; i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; i++) {
+        if (instance->population[i].status > 0) {
+            cantidad++;
+        }
+    }
+    
+    if (cantidad != *(instance->population_count)) {
+        fprintf(stdout, "[DEBUG] Population:\n");
+	    fprintf(stdout, "        Expected population count: %d\n", *(instance->population_count));
+	    fprintf(stdout, "        Real population count: %d\n", cantidad);
+        for (int j = 0; j < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; j++) {
+            fprintf(stdout, "        [%d] status      %d\n", j, instance->population[j].status);
+            fprintf(stdout, "        [%d] initialized %d\n", j, instance->population[j].initialized);
+        }
+    }
+
+    pthread_mutex_unlock(instance->population_mutex);
+    
+    assert(cantidad == *(instance->population_count));
+}
+
 void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy) {
 	// ==============================================================================
 	// PALS aleatorio por tarea.
@@ -38,14 +88,18 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
     {
         printf("Could not join master thread\n");
         exit(EXIT_FAILURE);
+    } else {
+        if (DEBUG) printf("[DEBUG] Master thread <OK>\n");
     }
     
-    for(int i = 0; i < instance.count_threads; i++)
+    for(int i = 0; i < instance.count_threads - 1; i++)
     {
         if(pthread_join(instance.slave_threads[i], NULL))
         {
             printf("Could not join slave thread %d\n", i);
             exit(EXIT_FAILURE);
+        } else {
+            if (DEBUG) printf("[DEBUG] Slave thread %d <OK>\n", i);
         }
     }
 	
@@ -56,16 +110,39 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
 	
 	// ===========> DEBUG
 	if (DEBUG) {
-	    // TODO:................
-		/*fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", instance.total_iterations);
-		fprintf(stdout, "[INFO] Último mejor encontrado en     : %d\n", instance.last_elite_found_on_iter);
-		fprintf(stdout, "[INFO] Total de makespan searches     : %d\n", instance.total_makespan_greedy_searches);
-		fprintf(stdout, "[INFO] Total de energy searches       : %d\n", instance.total_energy_greedy_searches);
-		fprintf(stdout, "[INFO] Total de random searches       : %d\n", instance.total_random_greedy_searches);
-		fprintf(stdout, "[INFO] Total de swaps                 : %ld\n", instance.total_swaps);
-		fprintf(stdout, "[INFO] Total de moves                 : %ld\n", instance.total_moves);
+	    int total_iterations = 0;
+        int total_makespan_greedy_searches = 0;
+        int total_energy_greedy_searches = 0;
+        int total_random_greedy_searches = 0;
+	    int total_swaps = 0;
+        int total_moves = 0;
+        int total_population_full = 0;
+        int total_to_delete_solutions = 0;
+
+        for (int i = 0; i < instance.count_threads - 1; i++) {
+            total_iterations += instance.slave_threads_args[i].total_iterations;
+            total_makespan_greedy_searches += instance.slave_threads_args[i].total_makespan_greedy_searches;
+            total_energy_greedy_searches += instance.slave_threads_args[i].total_energy_greedy_searches;
+            total_random_greedy_searches += instance.slave_threads_args[i].total_random_greedy_searches;
+            total_swaps += instance.slave_threads_args[i].total_swaps;
+            total_moves += instance.slave_threads_args[i].total_moves;
+            total_population_full += instance.slave_threads_args[i].total_population_full;
+            total_to_delete_solutions += instance.slave_threads_args[i].total_to_delete_solutions;
+        }
+	
+		fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", total_iterations);
+		fprintf(stdout, "[INFO] Cantidad de reinicializaciones : %d\n", instance.total_reinicializaciones);
+		fprintf(stdout, "[INFO] Total de makespan searches     : %d\n", total_makespan_greedy_searches);
+		fprintf(stdout, "[INFO] Total de energy searches       : %d\n", total_energy_greedy_searches);
+		fprintf(stdout, "[INFO] Total de random searches       : %d\n", total_random_greedy_searches);
+		fprintf(stdout, "[INFO] Total de swaps                 : %ld\n", total_swaps);
+		fprintf(stdout, "[INFO] Total de moves                 : %ld\n", total_moves);
+		fprintf(stdout, "[INFO] Total poblaciones llenas       : %ld\n", total_population_full);
+		fprintf(stdout, "[INFO] Total poblaciones elite llenas : %ld\n", instance.total_elite_population_full);
+    	fprintf(stdout, "[INFO] Total soluciones to_del        : %ld\n", total_to_delete_solutions);
+		fprintf(stdout, "[INFO] Cantidad de soluciones         : %d\n", instance.population_count);
 		fprintf(stdout, "[INFO] Cantidad de soluciones ND      : %d\n", instance.elite_population_count);
-	    */
+
 	    for (int i = 0; i < instance.elite_population_count; i++) {
 		    validate_solution(instance.elite_population[i]);
 		}
@@ -115,6 +192,7 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 		fprintf(stdout, "[INFO] Seed                                    : %d\n", seed);
 		fprintf(stdout, "[INFO] Number of threads                       : %d\n", empty_instance.count_threads);
 		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__CONVERGENCE        : %d\n", PALS_CPU_RTASK_WORK__CONVERGENCE);
+		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__POP_MAX_SIZE       : %d\n", PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
 		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE : %d\n", PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
         fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD);
         fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__DST_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__DST_TASK_NHOOD);
@@ -145,7 +223,6 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 	}
     
 	memset(empty_instance.population_locked, 0, sizeof(int) * PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
-
 	empty_instance.population_count = 0;
 	
 	// Elite population.
@@ -181,6 +258,12 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 	
 	timespec ts_threads;
 	timming_start(ts_threads);
+
+	if (pthread_mutex_init(&(empty_instance.work_type_mutex), NULL))
+    {
+        printf("Could not create a work type mutex\n");
+        exit(EXIT_FAILURE);
+    }
 
 	if (pthread_mutex_init(&(empty_instance.population_mutex), NULL))
     {
@@ -235,7 +318,8 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
         empty_instance.slave_threads_args[i].population_count = &(empty_instance.population_count);
         
     	empty_instance.slave_threads_args[i].work_type = &(empty_instance.slave_work_type[i]);
-		
+
+        empty_instance.slave_threads_args[i].work_type_mutex = &(empty_instance.work_type_mutex);		
         empty_instance.slave_threads_args[i].population_mutex = &(empty_instance.population_mutex);
 		empty_instance.slave_threads_args[i].new_solutions_sem = &(empty_instance.new_solutions_sem);
 		empty_instance.slave_threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
@@ -263,7 +347,8 @@ void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance) {
 	free(instance.slave_threads);	
 	free(instance.slave_threads_args);
 	free(instance.slave_work_type);
-	
+
+	pthread_mutex_destroy(&(instance.work_type_mutex));	
 	pthread_mutex_destroy(&(instance.population_mutex));
 	pthread_barrier_destroy(&(instance.sync_barrier));
 	sem_destroy(&(instance.new_solutions_sem));
@@ -373,7 +458,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	}
 	
     if (instance->count_threads < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) {
-		instance->population_count = instance->count_threads;
+		instance->population_count = instance->count_threads - 1;
 	} else {
     	instance->population_count = PALS_CPU_RTASK_WORK__POP_MAX_SIZE;
 	}
@@ -394,6 +479,8 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		exit(EXIT_FAILURE);
 	}
 	
+   	if (DEBUG) validate_instance(instance);
+	
 	int iter;
 	for (iter = 0; (convergence_flag == 0) && (ts_current.tv_sec - ts_start.tv_sec < PALS_CPU_RTASK_WORK__TIMEOUT); iter++) {
 		// Timming -----------------------------------------------------
@@ -404,12 +491,16 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
         // ===========================================================================
         // Espero a que un esclavo encuentre una solución.
 	
+    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero en el semaforo\n");
+	
     	timespec sem_wait_timeout;
 		clock_gettime(CLOCK_REALTIME, &sem_wait_timeout);
-        //sem_wait_timeout.tv_sec += 1;
-        sem_wait_timeout.tv_nsec += 500000000L; // 1/2 segundo.
-        		
-		sem_timedwait(&(instance->new_solutions_sem), &sem_wait_timeout);
+        sem_wait_timeout.tv_sec += 1;
+        //sem_wait_timeout.tv_nsec += 500000000L; // 1/2 segundo.
+		//sem_timedwait(&(instance->new_solutions_sem), &sem_wait_timeout);
+    	sem_wait(&(instance->new_solutions_sem));
+    	
+    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Proceso la iteración %d\n", iter);
 	
         // ===========================================================================
         // Busco las soluciones nuevas y calculo si son dominadas o no dominadas.
@@ -424,23 +515,34 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		} else {
 			increase_depth++;
 		}
-	
+
 	    // Después de K iteraciones, o si se llena la población principal, reinicializo la población y dejo
 	    // solo los individuos elite.
-		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == 0) || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
+		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == (PALS_CPU_RTASK_WORK__RESET_POP-1)) 
+		    || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
+		    
 			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
+		    instance->total_reinicializaciones++;
 			
 			if (DEBUG) {
-			    fprintf(stdout, "[DEBUG] Limpio la población con >> \n");
+			    fprintf(stdout, "[DEBUG] [MASTER] Limpio la población con >> \n");
 			    fprintf(stdout, "        Cantidad de iteraciones: %d\n", iter % PALS_CPU_RTASK_WORK__RESET_POP);
 			    fprintf(stdout, "        Población              : %d\n", instance->population_count);
 			    fprintf(stdout, "        Población elite        : %d\n", instance->elite_population_count);
 			}
 			
+			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Pido lock para detener hilos\n");
+			
 			// Solicito a los hilos que se detengan.
+			pthread_mutex_lock(&(instance->work_type_mutex));
+			
 			for (int i = 0; i < instance->count_threads - 1; i++) {
 				instance->slave_work_type[i] = PALS_CPU_RTASK_WORK__WAIT;
 			}
+			
+			pthread_mutex_unlock(&(instance->work_type_mutex));
+
+			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero que se detengan\n");
 
 			// [SYNC POINT] Espero a que los esclavos terminen.
 			rc = pthread_barrier_wait(&(instance->sync_barrier));
@@ -450,8 +552,12 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				exit(EXIT_FAILURE);
 			}
 			
+			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Proceso las soluciones nuevas\n");
+			
 			// Proceso las soluciones que pudieron haber sido encontradas mientras detenía los threads.
-			pals_cpu_rtask_eval_new_solutions(instance);
+			if (pals_cpu_rtask_eval_new_solutions(instance) > 0) {
+    			increase_depth = 0;
+			}
 			
 			// Elimino toda la población que no sea elite.
             for (int s_pos = 0; s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; s_pos++) {
@@ -465,14 +571,14 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
                 }
             }
             			
-			instance->population_count = instance->elite_population_count;
-			
-			increase_depth = 0;
+			instance->population_count = instance->elite_population_count;			
 			
 			// Asigno trabajo de busqueda a todos los hilos.
 			for (int i = 0; i < instance->count_threads - 1; i++) {
 				instance->slave_work_type[i] = PALS_CPU_RTASK_WORK__SEARCH;
 			}
+
+			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo, pueden seguir los esclavos\n");
 
 			// [SYNC POINT] Aviso a los esclavos que pueden continuar.
 			rc = pthread_barrier_wait(&(instance->sync_barrier));
@@ -481,7 +587,11 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				printf("Could not wait on barrier\n");
 				exit(EXIT_FAILURE);
 			}
+			
+			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo, ok\n");
 		}
+             
+       	if (DEBUG) validate_instance(instance);
                 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_cpu_rtask_search", ts_search);
@@ -492,12 +602,23 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		}
 		
 		clock_gettime(CLOCK_REALTIME, &ts_current);
+		
+	    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%d) - ts_start.tv_sec (%d) = %d\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
+    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%d) - ts_start.tv_nsec (%d) = %d\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
 	}
+
+    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Mando a los esclavos a terminar\n");
 	
     // Mando a los esclavos a terminar.
+    pthread_mutex_lock(&(instance->work_type_mutex));
+    
     for (int i = 0; i < instance->count_threads - 1; i++) {
         instance->slave_work_type[i] = PALS_CPU_RTASK_WORK__EXIT;
     }
+    
+    pthread_mutex_unlock(&(instance->work_type_mutex));
+
+    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero que los hilos terminen\n");
 
     rc = pthread_barrier_wait(&(instance->sync_barrier));
     if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
@@ -505,6 +626,17 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
         printf("Could not wait on barrier\n");
         exit(EXIT_FAILURE);
     }
+        	
+    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Terminamos todos los slaves.\n");
+     
+    // ===========================================================================
+    // Busco las soluciones nuevas por última vez y calculo si son 
+    // dominadas o no dominadas.
+
+	int solutions_found;
+	solutions_found = pals_cpu_rtask_eval_new_solutions(instance);
+
+    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo! Termina el master.\n");
         	
 	return NULL;
 }
@@ -524,10 +656,28 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
     thread_instance->total_population_full = 0;
     thread_instance->total_to_delete_solutions = 0;
 	   
-    while (*(thread_instance->work_type) != PALS_CPU_RTASK_WORK__EXIT) {
-        if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__WAIT) {
+	int terminate = 0; 
+	int work_type = -1;
+	  
+    while (terminate == 0) {
+        pthread_mutex_lock(thread_instance->work_type_mutex);
+        work_type = *(thread_instance->work_type);
+        if (DEBUG) printf("[DEBUG] [SLAVE] Work type = %d\n", work_type);
+        pthread_mutex_unlock(thread_instance->work_type_mutex);
+    
+        if (work_type == PALS_CPU_RTASK_WORK__EXIT) {
+            terminate = 1;
+        } else if (work_type == PALS_CPU_RTASK_WORK__WAIT) {
             // PALS_CPU_RTASK_WORK__DO_WAIT ====================================================================
         
+            // Espero a que todos los threads se detengan.
+            rc = pthread_barrier_wait(thread_instance->sync_barrier);
+            if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+            {
+                printf("Could not wait on barrier\n");
+                exit(EXIT_FAILURE);
+            }
+            
             // Espero a que el master me permita seguir.
             rc = pthread_barrier_wait(thread_instance->sync_barrier);
             if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
@@ -535,7 +685,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                 printf("Could not wait on barrier\n");
                 exit(EXIT_FAILURE);
             }
-        } else if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__INIT_POP) {
+        } else if (work_type == PALS_CPU_RTASK_WORK__INIT_POP) {
             // PALS_CPU_RTASK_WORK__INIT_POP ===================================================================
 
             // Inicializo el individuo que me tocó.
@@ -575,7 +725,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                 printf("Could not wait on barrier\n");
                 exit(EXIT_FAILURE);
             }
-        } else if (*(thread_instance->work_type) == PALS_CPU_RTASK_WORK__SEARCH) {
+        } else if (work_type == PALS_CPU_RTASK_WORK__SEARCH) {
             // PALS_CPU_RTASK_WORK__SEARCH ====================================================================
 
             int solution_selected;
@@ -584,15 +734,30 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             // Sorteo la solución con la que me toca trabajar.
             pthread_mutex_lock(thread_instance->population_mutex);
             
-            int random_sol_index = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) 
-                * (double)*(thread_instance->population_count));
+            double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
             
-            int current_sol_pos = 0;
+            if (DEBUG) {
+                fprintf(stdout, "[DEBUG] Random selection\n");
+                fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                fprintf(stdout, "        Random          : %f\n", random);
+                fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+
+                /*fprintf(stdout, "[DEBUG] Population:\n");
+                for (int i = 0; i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; i++) {
+                    fprintf(stdout, "        [%d] status      %d\n", i, thread_instance->population[i].status);
+                    fprintf(stdout, "        [%d] initialized %d\n", i, thread_instance->population[i].initialized);
+                }*/
+            }
+            
+            int current_sol_pos = -1;
             int current_sol_index = -1;
             
             for (; (current_sol_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) 
                 && (current_sol_index < *(thread_instance->population_count))
-                && (current_sol_index != random_sol_index); current_sol_pos++) {
+                && (current_sol_index != random_sol_index); ) {
+                
+                current_sol_pos++;
                 
                 if (thread_instance->population[current_sol_pos].status > SOLUTION__STATUS_EMPTY) {
                     current_sol_index++;
@@ -625,8 +790,16 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 
                 struct solution *selected_solution;
                 selected_solution = &(thread_instance->population[current_sol_pos]);
+                                
+                if (DEBUG) {
+                    fprintf(stdout, "[DEBUG] Selected individual\n");
+                    fprintf(stdout, "        Current_sol_pos = %d\n", current_sol_pos);
+                    fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
+                    fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
+                }
                 
                 int is_solution_cloned = 0;
+                int cloned_solution_pos = -1;
                 int solution_improved_on = 0;
                 
                 for (int search_iteration = 0; (search_iteration < PALS_CPU_RTASK_WORK__THREAD_ITERATIONS) 
@@ -707,7 +880,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	                    
 	                        for (int task_y_offset = 0; (task_y_offset < top_task_b) && (search_ended == 0); task_y_offset++) {
 	                            task_y_pos = (task_y + task_y_offset) % machine_b_task_count;                        
-	                            task_y_current = get_machine_task_id(selected_solution, machine_a, task_y_pos);
+	                            task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
 	                            
 	                            // Máquina 1.
 	                            machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
@@ -730,7 +903,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                     if (delta_makespan > 0) {
                                         search_ended = 1;
                     	                task_x_best_swap_pos = task_x_pos;
-                    	                task_y_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_y_pos;
 	                                }
                                 } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
                                     // La estrategia es mejorar energía.                                                                
@@ -741,7 +914,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                     if (delta_energy > 0) {
                                         search_ended = 1;
                     	                task_x_best_swap_pos = task_x_pos;
-                    	                task_y_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_y_pos;
                     	            }
                                 } else {
                                     // La estrategia es aleatoria.
@@ -754,7 +927,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                     if ((delta_energy > 0) || (delta_ct > 0)) {
                                         search_ended = 1;
                     	                task_x_best_swap_pos = task_x_pos;
-                    	                task_y_best_swap_pos = task_x_pos;
+                    	                task_y_best_swap_pos = task_y_pos;
                                     }
                                 }
                             }
@@ -796,7 +969,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                         
                                         if (delta_makespan > 0) {
                                             search_ended = 1;
-                        	                task_x_best_move_pos = task_x_current;
+                        	                task_x_best_move_pos = task_x_pos;
                         	                machine_b_best_move_id = machine_b_current;
 	                                    }
                                     } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
@@ -807,7 +980,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                             
                                         if (delta_energy > 0) {
                                             search_ended = 1;
-                        	                task_x_best_move_pos = task_x_current;
+                        	                task_x_best_move_pos = task_x_pos;
                         	                machine_b_best_move_id = machine_b_current;
                         	            }
                                     } else {
@@ -820,7 +993,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                             
                                         if ((delta_energy > 0) || (delta_ct > 0)) {
                                             search_ended = 1;
-                        	                task_x_best_move_pos = task_x_current;
+                        	                task_x_best_move_pos = task_x_pos;
                         	                machine_b_best_move_id = machine_b_current;
                                         }
                                     }
@@ -837,15 +1010,24 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
            	                int dst_solution_pos;
            	                int dst_solution_found = 0;            
            	                
+           	                if (DEBUG) fprintf(stdout, "[DEBUG] count(%d) population_locked[", *(thread_instance->population_count));
+           	                
            	                for (dst_solution_pos = -1; (dst_solution_pos < (PALS_CPU_RTASK_WORK__POP_MAX_SIZE-1)) && (dst_solution_found == 0); ) {
                	                dst_solution_pos++;
+
+               	                if (DEBUG) fprintf(stdout, "%d=%d, ", thread_instance->population_locked[dst_solution_pos], thread_instance->population[dst_solution_pos].status);
            	                
            	                    if (thread_instance->population_locked[dst_solution_pos] == 0) {
-           	                        if ((thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_EMPTY) ||
-           	                            (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_TO_DEL)) {
-
+           	                        if (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_EMPTY) {
+           	                        
                                         thread_instance->population[dst_solution_pos].status = SOLUTION__STATUS_NOT_READY;
                                         dst_solution_found = 1;
+           	                        } else if (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_TO_DEL) {
+           	                        
+                                        thread_instance->population[dst_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                                        dst_solution_found = 1;
+                                        
+                                        *(thread_instance->population_count) = *(thread_instance->population_count) + 1;
            	                        }
            	                    }  
            	                }
@@ -855,21 +1037,41 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                             if (dst_solution_found == 1) {
                                 if (thread_instance->population[dst_solution_pos].initialized == 0) {
                                     // Si nunca utilicé este espacio, lo inicializo.
-                                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[dst_solution_pos]));
+                                    init_empty_solution(thread_instance->etc, thread_instance->energy, 
+                                        &(thread_instance->population[dst_solution_pos]));
+                                        
                                     thread_instance->population[dst_solution_pos].initialized = 1;
                                 }
                                 
                                 // Listo, tengo el espacio libre para mi nuevo individuo. Lo clono.
-                                clone_solution(&(thread_instance->population[dst_solution_pos]), selected_solution);      
+                                if (DEBUG) fprintf(stdout, "[DEBUG] Clono la solución!!!\n");
+                                clone_solution(&(thread_instance->population[dst_solution_pos]), selected_solution, 0);      
                                
                                 // Continúo las iteraciones desde el clon.
                                 selected_solution = &(thread_instance->population[dst_solution_pos]);
+                                cloned_solution_pos = dst_solution_pos;
                                 is_solution_cloned = 1;
+                                
+                                // Ya tengo el clon. Puedo liberar el individuo de lock de la población.
+                                pthread_mutex_lock(thread_instance->population_mutex);
+                                
+                                thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
+                                
+                                if ((get_makespan(selected_solution) < get_makespan(&(thread_instance->population[current_sol_pos]))) 
+                                    && (get_energy(selected_solution) < get_energy(&(thread_instance->population[current_sol_pos])))) {
+                                        
+                                    // La nueva tarea domina completamente a la tarea original.
+                                    // Marco la original para borrado.
+                                    thread_instance->population[current_sol_pos].status = SOLUTION__STATUS_TO_DEL;
+                                    thread_instance->total_to_delete_solutions++;
+                                }
+                                
+                                pthread_mutex_unlock(thread_instance->population_mutex);
                             } else {
                                 // No enocontré lugar? la población esta llena?
                                 // Implemento una politica de reemplazo?
                                 thread_instance->total_population_full++;
-                                fprintf(stderr, "[WARNING] Población llena!!!");
+                                fprintf(stderr, "[WARNING] Población llena (%d)!!!\n", *(thread_instance->population_count));
                             }
                         } 
                         
@@ -879,26 +1081,22 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                             // Hago los cambios ======================================================================================
                             if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
                                 // Intercambio las tareas!
+                                if (DEBUG) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", 
+                                    machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                                    
                                 swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
+                                
+                                thread_instance->total_swaps++;
                             } if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {
                                 // Muevo la tarea!
+                                if (DEBUG) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                                
                                 move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                                
+                                thread_instance->total_moves++;
                             }
                             
-                            // Ya tengo el clon. Puedo liberar el recurso de lock de la población.
-                            pthread_mutex_lock(thread_instance->population_mutex);
-                            thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
-                            
-                            if ((get_makespan(selected_solution) < get_makespan(&(thread_instance->population[current_sol_pos]))) 
-                                && (get_energy(selected_solution) < get_energy(&(thread_instance->population[current_sol_pos])))) {
-                                    
-                                // La nueva tarea domina completamente a la tarea original.
-                                // Marco la original para borrado.
-                                thread_instance->population[current_sol_pos].status = SOLUTION__STATUS_TO_DEL;
-                                thread_instance->total_to_delete_solutions++;
-                            }
-                            
-                            pthread_mutex_unlock(thread_instance->population_mutex);
+                	        if (DEBUG) validate_solution(selected_solution);
                         }
                     }
                 }
@@ -906,7 +1104,21 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                 if (is_solution_cloned == 1) {
                     // Dejo pronto el nuevo individuo para ser usado.
                     pthread_mutex_lock(thread_instance->population_mutex);
+                    
                     selected_solution->status = SOLUTION__STATUS_NEW;
+                    *(thread_instance->population_count) = *(thread_instance->population_count) + 1;
+                                       
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+                    
+                    if (DEBUG) fprintf(stdout, "[DEBUG] Cantidad de individuos en la población: %d\n", *(thread_instance->population_count));
+                    
+                    validate_thread_instance(thread_instance);
+                } else {
+                    // No cloné el individuo porque no pude mejorarlo.Y Libero el individuo original de lock de la población.
+                    pthread_mutex_lock(thread_instance->population_mutex);
+                    
+                    thread_instance->population_locked[current_sol_pos] = thread_instance->population_locked[current_sol_pos] - 1;
+                                        
                     pthread_mutex_unlock(thread_instance->population_mutex);
                 }
 
@@ -915,6 +1127,15 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             }
         }  
     } 
+
+    if (DEBUG) fprintf(stdout, "[DEBUG] Me mandaron a terminar!!!\n");
+
+    rc = pthread_barrier_wait(thread_instance->sync_barrier);
+    if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+    {
+        printf("Could not wait on barrier\n");
+        exit(EXIT_FAILURE);
+    }
 
 	return NULL;
 }
