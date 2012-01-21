@@ -239,7 +239,7 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
     assert(task_src_pos >= 0);
     assert(s->__machine_assignment_count[machine_src] > task_src_pos);
     
-    if (DEBUG) {
+    if (DEBUG_DEV) {
         fprintf(stdout, "[DEBUG] Move task sol. %i: from (%d, %d=%d) to (%d)\n", 
             s, machine_src, task_src_pos, s->__machine_assignment[machine_src][task_src_pos], machine_dst);
         
@@ -458,7 +458,7 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     assert(task_a_pos >= 0);
     assert(task_b_pos >= 0);
 
-    if (DEBUG) {
+    if (DEBUG_DEV) {
         fprintf(stdout, "[DEBUG] Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
             machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
             machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);

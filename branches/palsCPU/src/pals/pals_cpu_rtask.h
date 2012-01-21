@@ -15,15 +15,12 @@
 #ifndef PALS_CPU_RTASK_H_
 #define PALS_CPU_RTASK_H_
 
-#define PALS_CPU_RTASK_MASTER_RANDOM_NUMBERS 3
-#define PALS_CPU_RTASK_SLAVE_RANDOM_NUMBERS  5
-
-#define PALS_CPU_RTASK_WORK__TIMEOUT      1
+#define PALS_CPU_RTASK_WORK__TIMEOUT      5
 #define PALS_CPU_RTASK_WORK__CONVERGENCE  100
-#define PALS_CPU_RTASK_WORK__RESET_POP    50
+#define PALS_CPU_RTASK_WORK__RESET_POP    100
 
-#define PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE  3
-#define PALS_CPU_RTASK_WORK__THREAD_ITERATIONS   9
+#define PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE  50
+#define PALS_CPU_RTASK_WORK__THREAD_ITERATIONS   500
 
 #define PALS_CPU_RTASK_SEARCH_OP__SWAP 0
 #define PALS_CPU_RTASK_SEARCH_OP__MOVE 1
@@ -37,12 +34,12 @@
 #define PALS_CPU_RTASK_WORK__WAIT     2
 #define PALS_CPU_RTASK_WORK__EXIT     3
 
-#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 3
-#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE  5
+#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 20
+#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE       100
 
-#define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
-#define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
-#define PALS_CPU_RTASK_WORK__DST_MACH_NHOOD 10
+#define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 20
+#define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 20
+#define PALS_CPU_RTASK_WORK__DST_MACH_NHOOD 20
 
 struct pals_cpu_rtask_instance {
     // Estado del problema.
@@ -76,6 +73,7 @@ struct pals_cpu_rtask_instance {
 	int count_threads;	
 
 	// Statics	
+	int total_mater_iteraciones;
 	int total_reinicializaciones;
     int total_elite_population_full;
 };

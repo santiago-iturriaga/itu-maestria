@@ -130,6 +130,7 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
             total_to_delete_solutions += instance.slave_threads_args[i].total_to_delete_solutions;
         }
 	
+	    fprintf(stdout, "[INFO] Cantidad de master iter        : %d\n", instance.total_mater_iteraciones);
 		fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", total_iterations);
 		fprintf(stdout, "[INFO] Cantidad de reinicializaciones : %d\n", instance.total_reinicializaciones);
 		fprintf(stdout, "[INFO] Total de makespan searches     : %d\n", total_makespan_greedy_searches);
@@ -358,19 +359,25 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 	int solutions_found = 0;
 	int s_idx = 0;
 	
+	if (DEBUG_DEV) fprintf(stdout, "============================================================\n");
+	
 	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
 		if (instance->population[s_pos].status == SOLUTION__STATUS_NEW) {
 		    int is_non_dominated;
 		    is_non_dominated = 1;
-		
+	
 			// Calculo no dominancia del elemento actual y lo agrego a la población elite si corresponde.
 			float makespan_candidate, energy_candidate;
 			makespan_candidate = get_makespan(&(instance->population[s_pos]));
 			energy_candidate = get_energy(&(instance->population[s_pos]));
+
+   			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Evaluo nueva sol (%f, %f)\n", makespan_candidate, energy_candidate);
 			
 			int elite_s_idx = -1, added_to_elite = 0, end_loop = 0;
 			float makespan_elite_sol, energy_elite_sol;
 			
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Población elite (%d)\n", instance->elite_population_count);
+
 			for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE) 
 			    && (elite_s_idx < instance->elite_population_count) && (end_loop == 0); elite_s_pos++) {
 			    
@@ -378,9 +385,14 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 			        elite_s_idx++;
 			    
 			        makespan_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
- 			        energy_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
- 			        
- 			        if ((makespan_candidate < makespan_elite_sol) && (energy_candidate < energy_elite_sol)) {
+ 			        energy_elite_sol = get_energy(instance->elite_population[elite_s_pos]);
+
+        			if (DEBUG_DEV) fprintf(stdout, "        (%f, %f)\n", makespan_elite_sol, energy_elite_sol);
+
+ 			        if ((makespan_candidate == makespan_elite_sol) && (energy_candidate == energy_elite_sol)) {
+ 			            is_non_dominated = 0;
+ 			            end_loop = 1;
+ 			        } else if ((makespan_candidate <= makespan_elite_sol) && (energy_candidate <= energy_elite_sol)) {
  			            // Domina a una solución de la elite.
  			            if (added_to_elite == 0) {
  			                added_to_elite = 1;
@@ -390,9 +402,6 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
      			            instance->elite_population_count--;
      			            instance->elite_population[elite_s_pos] = NULL;
      			        }
- 			        } else if ((makespan_candidate < makespan_elite_sol) || (energy_candidate < energy_elite_sol)) {
- 			            // Es no dominada.
- 			            end_loop = 1;
  			        } else if ((makespan_candidate >= makespan_elite_sol) && (energy_candidate >= energy_elite_sol)) {
  			            // Es dominada.
  			            is_non_dominated = 0;
@@ -415,7 +424,9 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 
                 if (added_to_elite != 1) {
                     instance->total_elite_population_full++;
-                    fprintf(stderr, "[WARNING] Población elite llena!!!");
+                    if (DEBUG_DEV) fprintf(stderr, "[WARNING] [MASTER] Población elite llena!!!");
+    			} else {
+                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] AGREGADA!!!!\n");
     			}
 			}
 
@@ -479,10 +490,12 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		exit(EXIT_FAILURE);
 	}
 	
-   	if (DEBUG) validate_instance(instance);
+   	if (DEBUG_DEV) validate_instance(instance);
+	
+    int reset_pop_rate = PALS_CPU_RTASK_WORK__RESET_POP; // * (instance->count_threads-1);
 	
 	int iter;
-	for (iter = 0; (convergence_flag == 0) && (ts_current.tv_sec - ts_start.tv_sec < PALS_CPU_RTASK_WORK__TIMEOUT); iter++) {
+	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0) && (ts_current.tv_sec - ts_start.tv_sec < PALS_CPU_RTASK_WORK__TIMEOUT); iter++) {
 		// Timming -----------------------------------------------------
 		timespec ts_search;
 		timming_start(ts_search);
@@ -491,7 +504,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
         // ===========================================================================
         // Espero a que un esclavo encuentre una solución.
 	
-    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero en el semaforo\n");
+    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero en el semaforo\n");
 	
     	timespec sem_wait_timeout;
 		clock_gettime(CLOCK_REALTIME, &sem_wait_timeout);
@@ -500,7 +513,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 		//sem_timedwait(&(instance->new_solutions_sem), &sem_wait_timeout);
     	sem_wait(&(instance->new_solutions_sem));
     	
-    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Proceso la iteración %d\n", iter);
+    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Proceso la iteración %d\n", iter);
 	
         // ===========================================================================
         // Busco las soluciones nuevas y calculo si son dominadas o no dominadas.
@@ -518,20 +531,20 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 
 	    // Después de K iteraciones, o si se llena la población principal, reinicializo la población y dejo
 	    // solo los individuos elite.
-		if ((iter % PALS_CPU_RTASK_WORK__RESET_POP == (PALS_CPU_RTASK_WORK__RESET_POP-1)) 
+		if ((iter % reset_pop_rate == (reset_pop_rate-1)) 
 		    || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
 		    
 			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
 		    instance->total_reinicializaciones++;
 			
-			if (DEBUG) {
+			if (DEBUG_DEV) {
 			    fprintf(stdout, "[DEBUG] [MASTER] Limpio la población con >> \n");
 			    fprintf(stdout, "        Cantidad de iteraciones: %d\n", iter % PALS_CPU_RTASK_WORK__RESET_POP);
 			    fprintf(stdout, "        Población              : %d\n", instance->population_count);
 			    fprintf(stdout, "        Población elite        : %d\n", instance->elite_population_count);
 			}
 			
-			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Pido lock para detener hilos\n");
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Pido lock para detener hilos\n");
 			
 			// Solicito a los hilos que se detengan.
 			pthread_mutex_lock(&(instance->work_type_mutex));
@@ -542,7 +555,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 			
 			pthread_mutex_unlock(&(instance->work_type_mutex));
 
-			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero que se detengan\n");
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero que se detengan\n");
 
 			// [SYNC POINT] Espero a que los esclavos terminen.
 			rc = pthread_barrier_wait(&(instance->sync_barrier));
@@ -552,7 +565,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				exit(EXIT_FAILURE);
 			}
 			
-			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Proceso las soluciones nuevas\n");
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Proceso las soluciones nuevas\n");
 			
 			// Proceso las soluciones que pudieron haber sido encontradas mientras detenía los threads.
 			if (pals_cpu_rtask_eval_new_solutions(instance) > 0) {
@@ -578,7 +591,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				instance->slave_work_type[i] = PALS_CPU_RTASK_WORK__SEARCH;
 			}
 
-			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo, pueden seguir los esclavos\n");
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo, pueden seguir los esclavos\n");
 
 			// [SYNC POINT] Aviso a los esclavos que pueden continuar.
 			rc = pthread_barrier_wait(&(instance->sync_barrier));
@@ -588,26 +601,29 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 				exit(EXIT_FAILURE);
 			}
 			
-			if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo, ok\n");
+			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo, ok\n");
 		}
              
-       	if (DEBUG) validate_instance(instance);
+       	if (DEBUG_DEV) validate_instance(instance);
                 
 		// Timming -----------------------------------------------------
 		timming_end(">> pals_cpu_rtask_search", ts_search);
 		// Timming -----------------------------------------------------
 
 		if (increase_depth >= PALS_CPU_RTASK_WORK__CONVERGENCE) {
+		    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Finalizo por convergencia!!!\n");
 			convergence_flag = 1;
 		}
 		
 		clock_gettime(CLOCK_REALTIME, &ts_current);
 		
-	    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%d) - ts_start.tv_sec (%d) = %d\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
-    	if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%d) - ts_start.tv_nsec (%d) = %d\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
+	    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%d) - ts_start.tv_sec (%d) = %d\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
+    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%d) - ts_start.tv_nsec (%d) = %d\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
 	}
 
-    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Mando a los esclavos a terminar\n");
+    instance->total_mater_iteraciones = iter;
+
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Mando a los esclavos a terminar\n");
 	
     // Mando a los esclavos a terminar.
     pthread_mutex_lock(&(instance->work_type_mutex));
@@ -618,7 +634,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
     
     pthread_mutex_unlock(&(instance->work_type_mutex));
 
-    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Espero que los hilos terminen\n");
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero que los hilos terminen\n");
 
     rc = pthread_barrier_wait(&(instance->sync_barrier));
     if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
@@ -627,7 +643,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
         exit(EXIT_FAILURE);
     }
         	
-    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Terminamos todos los slaves.\n");
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Terminamos todos los slaves.\n");
      
     // ===========================================================================
     // Busco las soluciones nuevas por última vez y calculo si son 
@@ -636,7 +652,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	int solutions_found;
 	solutions_found = pals_cpu_rtask_eval_new_solutions(instance);
 
-    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Listo! Termina el master.\n");
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo! Termina el master.\n");
         	
 	return NULL;
 }
@@ -662,7 +678,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
     while (terminate == 0) {
         pthread_mutex_lock(thread_instance->work_type_mutex);
         work_type = *(thread_instance->work_type);
-        if (DEBUG) printf("[DEBUG] [SLAVE] Work type = %d\n", work_type);
+        if (DEBUG_DEV) printf("[DEBUG] [SLAVE] Work type = %d\n", work_type);
         pthread_mutex_unlock(thread_instance->work_type_mutex);
     
         if (work_type == PALS_CPU_RTASK_WORK__EXIT) {
@@ -706,7 +722,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	        timming_end(">> Random MCT Time", ts_mct);
 	        // Timming -----------------------------------------------------
 
-	        if (DEBUG) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
+	        if (DEBUG_DEV) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
 	            
             // Espero a que los demas esclavos terminen.
             rc = pthread_barrier_wait(thread_instance->sync_barrier);
@@ -737,7 +753,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             double random = cpu_rand_generate(*(thread_instance->thread_random_state));
             int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
             
-            if (DEBUG) {
+            if (DEBUG_DEV) {
                 fprintf(stdout, "[DEBUG] Random selection\n");
                 fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
                 fprintf(stdout, "        Random          : %f\n", random);
@@ -791,7 +807,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                 struct solution *selected_solution;
                 selected_solution = &(thread_instance->population[current_sol_pos]);
                                 
-                if (DEBUG) {
+                if (DEBUG_DEV) {
                     fprintf(stdout, "[DEBUG] Selected individual\n");
                     fprintf(stdout, "        Current_sol_pos = %d\n", current_sol_pos);
                     fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
@@ -1010,25 +1026,25 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
            	                int dst_solution_pos;
            	                int dst_solution_found = 0;            
            	                
-           	                if (DEBUG) fprintf(stdout, "[DEBUG] count(%d) population_locked[", *(thread_instance->population_count));
+           	                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] count(%d) population_locked[", *(thread_instance->population_count));
            	                
            	                for (dst_solution_pos = -1; (dst_solution_pos < (PALS_CPU_RTASK_WORK__POP_MAX_SIZE-1)) && (dst_solution_found == 0); ) {
                	                dst_solution_pos++;
 
-               	                if (DEBUG) fprintf(stdout, "%d=%d, ", thread_instance->population_locked[dst_solution_pos], thread_instance->population[dst_solution_pos].status);
+               	                if (DEBUG_DEV) fprintf(stdout, "%d=%d, ", thread_instance->population_locked[dst_solution_pos], thread_instance->population[dst_solution_pos].status);
            	                
            	                    if (thread_instance->population_locked[dst_solution_pos] == 0) {
            	                        if (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_EMPTY) {
            	                        
                                         thread_instance->population[dst_solution_pos].status = SOLUTION__STATUS_NOT_READY;
                                         dst_solution_found = 1;
-           	                        } else if (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_TO_DEL) {
+           	                        } /*else if (thread_instance->population[dst_solution_pos].status == SOLUTION__STATUS_TO_DEL) {
            	                        
                                         thread_instance->population[dst_solution_pos].status = SOLUTION__STATUS_NOT_READY;
                                         dst_solution_found = 1;
                                         
                                         *(thread_instance->population_count) = *(thread_instance->population_count) + 1;
-           	                        }
+           	                        }*/
            	                    }  
            	                }
                                         
@@ -1044,7 +1060,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                 }
                                 
                                 // Listo, tengo el espacio libre para mi nuevo individuo. Lo clono.
-                                if (DEBUG) fprintf(stdout, "[DEBUG] Clono la solución!!!\n");
+                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Clono la solución!!!\n");
                                 clone_solution(&(thread_instance->population[dst_solution_pos]), selected_solution, 0);      
                                
                                 // Continúo las iteraciones desde el clon.
@@ -1071,7 +1087,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                 // No enocontré lugar? la población esta llena?
                                 // Implemento una politica de reemplazo?
                                 thread_instance->total_population_full++;
-                                fprintf(stderr, "[WARNING] Población llena (%d)!!!\n", *(thread_instance->population_count));
+                                if (DEBUG_DEV) fprintf(stderr, "[WARNING] Población llena (%d)!!!\n", *(thread_instance->population_count));
                             }
                         } 
                         
@@ -1081,7 +1097,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                             // Hago los cambios ======================================================================================
                             if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
                                 // Intercambio las tareas!
-                                if (DEBUG) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", 
+                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", 
                                     machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
                                     
                                 swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
@@ -1089,19 +1105,21 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                 thread_instance->total_swaps++;
                             } if (mov_type == PALS_CPU_RTASK_SEARCH_OP__MOVE) {
                                 // Muevo la tarea!
-                                if (DEBUG) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
                                 
                                 move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                                 
                                 thread_instance->total_moves++;
                             }
                             
-                	        if (DEBUG) validate_solution(selected_solution);
+                	        if (DEBUG_DEV) validate_solution(selected_solution);
                         }
                     }
                 }
                 
                 if (is_solution_cloned == 1) {
+                    refresh_energy(selected_solution);
+                
                     // Dejo pronto el nuevo individuo para ser usado.
                     pthread_mutex_lock(thread_instance->population_mutex);
                     
@@ -1110,9 +1128,10 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                                        
                     pthread_mutex_unlock(thread_instance->population_mutex);
                     
-                    if (DEBUG) fprintf(stdout, "[DEBUG] Cantidad de individuos en la población: %d\n", *(thread_instance->population_count));
-                    
-                    validate_thread_instance(thread_instance);
+                    if (DEBUG_DEV) {
+                        fprintf(stdout, "[DEBUG] Cantidad de individuos en la población: %d\n", *(thread_instance->population_count));
+                        validate_thread_instance(thread_instance);
+                    }
                 } else {
                     // No cloné el individuo porque no pude mejorarlo.Y Libero el individuo original de lock de la población.
                     pthread_mutex_lock(thread_instance->population_mutex);
@@ -1128,7 +1147,7 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
         }  
     } 
 
-    if (DEBUG) fprintf(stdout, "[DEBUG] Me mandaron a terminar!!!\n");
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar!!!\n");
 
     rc = pthread_barrier_wait(thread_instance->sync_barrier);
     if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)

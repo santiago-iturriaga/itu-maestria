@@ -3,7 +3,8 @@
 
 #define OUTPUT_SOLUTION 0
 #define DEBUG 1
-#define TIMMING 1
+#define DEBUG_DEV 0
+#define TIMMING 0
 
 //#define PALS_COUNT 1
 //#define PALS_COUNT 2
