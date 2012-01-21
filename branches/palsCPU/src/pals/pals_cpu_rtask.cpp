@@ -394,7 +394,7 @@ int pals_cpu_rtask_eval_new_solutions(struct pals_cpu_rtask_instance *instance) 
 	int solutions_found = 0;
 	int s_idx = 0;
 	
-	if (DEBUG_DEV) fprintf(stdout, "============================================================\n");
+	if (DEBUG_DEV) fprintf(stdout, "== pals_cpu_rtask_eval_new_solutions ====================\n");
 	
 	for (int s_pos = 0; (s_pos < PALS_CPU_RTASK_WORK__POP_MAX_SIZE) && (s_idx < instance->population_count); s_pos++) {
 		if (instance->population[s_pos].status == SOLUTION__STATUS_NEW) {
@@ -571,7 +571,7 @@ void* pals_cpu_rtask_master_thread(void *thread_arg) {
 	    // Después de K iteraciones, o si se llena la población principal, reinicializo la población y dejo
 	    // solo los individuos elite.
 		if ((iter % reset_pop_rate == (reset_pop_rate-1)) 
-		    || (instance->population_count == PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
+		    || ((instance->population_count + instance->count_threads + 1) >= PALS_CPU_RTASK_WORK__POP_MAX_SIZE)) {
 		    
 			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
 		    instance->total_reinicializaciones++;
