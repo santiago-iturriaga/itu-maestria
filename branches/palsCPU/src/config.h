@@ -2,7 +2,7 @@
 #define CONFIG_H_
 
 #define OUTPUT_SOLUTION 0
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_DEV 0
 #define TIMMING 0
 

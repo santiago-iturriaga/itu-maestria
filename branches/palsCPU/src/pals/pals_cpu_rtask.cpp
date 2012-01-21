@@ -109,7 +109,7 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
 	// Timming -----------------------------------------------------
 	
 	// ===========> DEBUG
-	if (DEBUG) {
+	if (!OUTPUT_SOLUTION) {
 	    int total_iterations = 0;
         int total_makespan_greedy_searches = 0;
         int total_energy_greedy_searches = 0;
@@ -177,14 +177,14 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
         	    for (int i = 0; i < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE; i++) {
 	                if (instance.elite_population[i] != NULL) {
 	                    if (instance.elite_population[i]->status > 0) {
-            	            fprintf(stdout, "%f %f\n", get_makespan(instance.elite_population[i]), get_energy(instance.elite_population[i]));
+            	            fprintf(stdout, "%f|%f\n", get_makespan(instance.elite_population[i]), get_energy(instance.elite_population[i]));
             	        }
         	        }
         	    }
 	            fprintf(stdout, "== Population =================================================\n");
         	    for (int i = 0; i < PALS_CPU_RTASK_WORK__POP_MAX_SIZE; i++) {
         	        if (instance.population[i].status > 0) {
-    	                fprintf(stdout, "%f %f\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
+    	                fprintf(stdout, "%f|%f\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
     	            }
     	        }
 	        } else {
@@ -216,14 +216,22 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 	// Asignación del paralelismo del algoritmo.
 	empty_instance.count_threads = input.thread_count;
 	
-	if (DEBUG) {
-		fprintf(stdout, "[INFO] Seed                                    : %d\n", seed);
-		fprintf(stdout, "[INFO] Number of threads                       : %d\n", empty_instance.count_threads);
-		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__CONVERGENCE        : %d\n", PALS_CPU_RTASK_WORK__CONVERGENCE);
-		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__POP_MAX_SIZE       : %d\n", PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
-		fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE : %d\n", PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
-        fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD);
-        fprintf(stdout, "[INFO] PALS_CPU_RTASK_WORK__DST_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__DST_TASK_NHOOD);
+	if (!OUTPUT_SOLUTION) {
+		fprintf(stdout, "[INFO] == Input arguments ==================================\n");
+		fprintf(stdout, "       Seed                                    : %d\n", seed);
+		fprintf(stdout, "       Number of threads                       : %d\n", empty_instance.count_threads);
+		fprintf(stdout, "[INFO] == Configuration constants ==========================\n");
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__TIMEOUT            : %d\n", PALS_CPU_RTASK_WORK__TIMEOUT);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__CONVERGENCE        : %d\n", PALS_CPU_RTASK_WORK__CONVERGENCE);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__RESET_POP          : %d\n", PALS_CPU_RTASK_WORK__RESET_POP);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__POP_MAX_SIZE       : %d\n", PALS_CPU_RTASK_WORK__POP_MAX_SIZE);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE : %d\n", PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE : %d\n", PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE);
+		fprintf(stdout, "       PALS_CPU_RTASK_WORK__THREAD_ITERATIONS  : %d\n", PALS_CPU_RTASK_WORK__THREAD_ITERATIONS);
+        fprintf(stdout, "       PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_RTASK_WORK__DST_TASK_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__DST_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_RTASK_WORK__DST_MACH_NHOOD     : %d\n", PALS_CPU_RTASK_WORK__DST_MACH_NHOOD);
+		fprintf(stdout, "[INFO] =====================================================\n");
 	}
 
     // =========================================================================
