@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 		mach[j] = 0.0;
 	}
 
-	close(fp);
+	fclose(fp);
 
 	if((fi=fopen(arch_inst, "r"))==NULL)
 	{
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	close(fi);
+	fclose(fi);
 
 	// Number of applications array
 	int *napp = (int*) malloc(sizeof(float)*NM);

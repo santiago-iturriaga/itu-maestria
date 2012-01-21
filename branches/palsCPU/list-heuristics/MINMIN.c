@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 		mach[j] = 0.0;
 	}
 
-	close(fp);
+	fclose(fp);
 
 	if((fi=fopen(arch_inst, "r"))==NULL)
 	{
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	close(fi);
+	fclose(fi);
 
 	float *energy_mach = (float*) malloc(sizeof(float)*NM);
 	if (energy_mach == NULL)
@@ -192,7 +192,21 @@ int main(int argc, char *argv[])
 					// Evaluate delta energy of (ti, mj)
 					// mach[j] has the makespan for machine j.
 					et = mach[j]+ETC[i][j];
-					delta_energy = ETC[i][j] * E_MAX[j];
+					
+					if (et <= mak_temp) {
+					    delta_energy = (E_MAX[j] - E_IDLE[j]) * ETC[i][j];
+					} else {
+					    delta_energy = 0.0;
+				        float mak_diff = et - mak_temp;
+				        
+					    for (int aux_j = 0; aux_j < NM; aux_j++) {
+					        if (aux_j == j) {
+                                delta_energy += (ETC[i][j] * E_MAX[j]) - (mak_diff * E_IDLE[j]);
+					        } else {
+                                delta_energy += (mak_diff * E_IDLE[aux_j]);
+					        }
+					    }
+                    }
 					
 					#if DEBUG
 					printf("energy_mach[%d]: %f, delta energy (%d,%d):%f -",j,energy_mach[j],i,j,delta_energy);

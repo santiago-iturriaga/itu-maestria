@@ -114,7 +114,7 @@ main (int argc, char *argv[])
 		mach[j] = 0.0;
 	}
 
-	close (fp);
+	fclose (fp);
 
 	if ((fi = fopen (arch_inst, "r")) == NULL)
 	{
@@ -131,7 +131,7 @@ main (int argc, char *argv[])
 		}
 	}
 
-	close (fi);
+	fclose (fi);
 
 	float *energy_mach = (float *) malloc (sizeof (float) * NM);
 	if (energy_mach == NULL)
@@ -220,8 +220,21 @@ main (int argc, char *argv[])
 				printf ("End loop machines: MCT best pair(%d,%d):%f\n", i,
 					best_mach_task, min_ct);
 				#endif
-
-				delta_energy = ETC[i][best_mach_task] * E_MAX[best_mach_task];
+			
+				if (mct_i_j <= mak_temp) {
+				    delta_energy = (E_MAX[best_mach_task] - E_IDLE[best_mach_task]) * ETC[i][best_mach_task];
+				} else {
+				    delta_energy = 0.0;
+			        float mak_diff = mct_i_j - mak_temp;
+			        
+				    for (int aux_j = 0; aux_j < NM; aux_j++) {
+				        if (aux_j == best_mach_task) {
+                            delta_energy += (ETC[i][best_mach_task] * E_MAX[best_mach_task]) - (mak_diff * E_IDLE[best_mach_task]);
+				        } else {
+                            delta_energy += (mak_diff * E_IDLE[aux_j]);
+				        }
+				    }
+                }
 
 				#if DEBUG
 				printf ("delta energy (%d,%d): %f\n", i, best_mach_task,
