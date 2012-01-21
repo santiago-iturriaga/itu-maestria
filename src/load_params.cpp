@@ -5,14 +5,20 @@
 #include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
-	if (argc >= 4) {
+	if (argc >= 8) {
 		input->scenario_path = argv[1];
 		if (DEBUG) fprintf(stdout, "[PARAMS] scenario path: %s\n", input->scenario_path);
 
 		input->workload_path = argv[2];
 		if (DEBUG) fprintf(stdout, "[PARAMS] workload path: %s\n", input->workload_path);
 
-		input->algorithm = atoi(argv[3]);
+		input->tasks_count = atoi(argv[3]);
+		if (DEBUG) fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
+		
+		input->machines_count = atoi(argv[4]);
+		if (DEBUG) fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
+
+		input->algorithm = atoi(argv[5]);
 		if (DEBUG) fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
 
 		if (DEBUG) {
@@ -33,21 +39,12 @@ int load_params(int argc, char **argv, struct params *input) {
 			}
 		}
 
-		if (argc >= 5) {
-			input->thread_count = atoi(argv[4]);
-			if (input->thread_count < 2) input->thread_count = 2;
-			
-			if (DEBUG) fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
-		} else {
-			input->thread_count = 2;
-		}
+		input->thread_count = atoi(argv[6]);
+		if (input->thread_count < 2) input->thread_count = 2;	
+		if (DEBUG) fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
 
-		if (argc >= 6) {
-			input->seed = atoi(argv[5]);
-			if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
-		} else {
-			input->seed = 0;
-		}
+		input->seed = atoi(argv[7]);
+		if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
 
 		if ((input->algorithm < 0)||(input->algorithm > 6)) {
 			fprintf(stderr, "[ERROR] Invalid algorithm.\n");
@@ -57,7 +54,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		return EXIT_SUCCESS;
 	} else {
 		fprintf(stdout, "Usage:\n");	
-		fprintf(stdout, "       %s <scenario> <workload> <algorithm> [#threads] [seed]\n\n", argv[0]);
+		fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed>\n\n", argv[0]);
 		fprintf(stdout, "       Algorithms\n");
 		fprintf(stdout, "           0 CPU full (serial)\n");
 		fprintf(stdout, "           3 CPU rand. task (multi-threaded)\n");
