@@ -12,15 +12,7 @@
 #include "load_params.h"
 #include "etc_matrix.h"
 
-struct etc_matrix* create_etc_matrix(struct params *input) {
-	struct etc_matrix *etc;
-	etc = (struct etc_matrix*)malloc(sizeof(struct etc_matrix));
-
-	if (etc == NULL) {
-		fprintf(stderr, "[ERROR] Solicitando memoria para el struct etc_matrix.\n");
-		exit(EXIT_FAILURE);
-	}
-		
+void init_etc_matrix(struct params *input, struct etc_matrix *etc) {	
 	etc->tasks_count = input->tasks_count;
 	etc->machines_count = input->machines_count;
 	etc->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
@@ -29,13 +21,10 @@ struct etc_matrix* create_etc_matrix(struct params *input) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el etc_matrix->data.\n");
 		exit(EXIT_FAILURE);
 	}
-	
-	return etc;
 }
 
 void free_etc_matrix(struct etc_matrix *etc) {
 	free(etc->data);
-	free(etc);
 }
 
 int get_etc_coord(struct etc_matrix *etc, int machine, int task) {

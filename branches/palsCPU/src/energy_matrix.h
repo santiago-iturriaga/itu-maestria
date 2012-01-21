@@ -17,7 +17,7 @@ struct energy_matrix {
 	float* max_energy;
 };
 
-struct energy_matrix* create_energy_matrix(struct params *input);
+void init_energy_matrix(struct params *input, struct energy_matrix *energy);
 void free_energy_matrix(struct energy_matrix *energy);
 void show_energy_matrix(struct energy_matrix *energy);
 

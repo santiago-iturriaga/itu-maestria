@@ -18,7 +18,7 @@
 #define PALS_CPU_RTASK_MASTER_RANDOM_NUMBERS 3
 #define PALS_CPU_RTASK_SLAVE_RANDOM_NUMBERS  5
 
-#define PALS_CPU_RTASK_WORK__TIMEOUT      5
+#define PALS_CPU_RTASK_WORK__TIMEOUT      1
 #define PALS_CPU_RTASK_WORK__CONVERGENCE  100
 #define PALS_CPU_RTASK_WORK__RESET_POP    50
 
@@ -37,8 +37,8 @@
 #define PALS_CPU_RTASK_WORK__WAIT     2
 #define PALS_CPU_RTASK_WORK__EXIT     3
 
-#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 10
-#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE  25
+#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 3
+#define PALS_CPU_RTASK_WORK__POP_MAX_SIZE  5
 
 #define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 10
 #define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 10
@@ -63,10 +63,11 @@ struct pals_cpu_rtask_instance {
 	
     struct solution **elite_population;
     int elite_population_count;   
-    
-	pthread_mutex_t population_mutex;
-	sem_t new_solutions_sem;
-	pthread_barrier_t sync_barrier;
+
+	pthread_mutex_t     work_type_mutex;
+	pthread_mutex_t     population_mutex;
+	sem_t               new_solutions_sem;
+	pthread_barrier_t   sync_barrier;
 
 	// Estado de los generadores aleatorios.
     struct cpu_rand_state *random_states;
@@ -94,9 +95,10 @@ struct pals_cpu_rtask_thread_arg {
 	
 	int *work_type;
 	
-	pthread_mutex_t *population_mutex;
-	sem_t *new_solutions_sem;
-	pthread_barrier_t *sync_barrier;
+	pthread_mutex_t     *work_type_mutex;
+	pthread_mutex_t     *population_mutex;
+	sem_t               *new_solutions_sem;
+	pthread_barrier_t   *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
     struct cpu_rand_state *thread_random_state;

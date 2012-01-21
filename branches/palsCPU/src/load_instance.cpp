@@ -23,15 +23,21 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
 	if (fscanf(workload_file, "%d %d %d", &(input->tasks_count), &(input->machines_count), &unknown_param) != 3) {
 	    return EXIT_FAILURE;	    
 	}
-	if (DEBUG) fprintf(stdout, "[PARAMS] tasks   : %d", input->tasks_count);
-	if (DEBUG) fprintf(stdout, "[PARAMS] machines: %d", input->machines_count);
-	if (DEBUG) fprintf(stdout, "[PARAMS] unknown : %d", unknown_param);
+	if (DEBUG) fprintf(stdout, "[PARAMS] tasks   : %d\n", input->tasks_count);
+	if (DEBUG) fprintf(stdout, "[PARAMS] machines: %d\n", input->machines_count);
+	if (DEBUG) fprintf(stdout, "[PARAMS] unknown : %d\n", unknown_param);
+
+    init_etc_matrix(input, etc);
+    init_energy_matrix(input, energy);
 
 	float value;
 	for (int task = 0; task < input->tasks_count; task++) {
 		for (int machine = 0; machine < input->machines_count; machine++) {
 			if (fscanf(workload_file, "%f", &value) != 1) {
+    			fprintf(stderr, "[ERROR] Leyendo dato de workload de la tarea %d para la máquina %d.\n", task, machine);
 			    return EXIT_FAILURE;
+			} else {
+    			//if (DEBUG) fprintf(stdout, "%f\n", value);
 			}
 			
 			set_etc_value(etc, machine, task, value); 
@@ -54,17 +60,18 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
 	float energy_idle;
 	float energy_max;
 	
-	for (int task = 0; task < input->tasks_count; task++) {
-		for (int machine = 0; machine < input->machines_count; machine++) {
-            if (fscanf(scenario_file,"%d %f %f %f\n",&cores,&ssj,&energy_idle,&energy_max) != 4) {
-			    return EXIT_FAILURE;
-            }
+	for (int machine = 0; machine < input->machines_count; machine++) {
+        if (fscanf(scenario_file,"%d %f %f %f\n",&cores,&ssj,&energy_idle,&energy_max) != 4) {
+   			fprintf(stderr, "[ERROR] Leyendo dato de scenario de la máquina %d.\n", machine);
+		    return EXIT_FAILURE;
+        }
 
-            // Cambio el energy_max para utilizar solo un core del procesador.
-            energy_max = energy_max + ((energy_max - energy_idle) / cores);
+        //if (DEBUG) fprintf(stderr, "%f\n", value);
 
-			set_energy_value(energy, machine, energy_idle, energy_max); 
-		}
+        // Cambio el energy_max para utilizar solo un core del procesador.
+        energy_max = energy_max + ((energy_max - energy_idle) / cores);
+
+		set_energy_value(energy, machine, energy_idle, energy_max); 
 	}
 
 	fclose(scenario_file);
