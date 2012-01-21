@@ -20,9 +20,9 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
 	}
 
     int unknown_param;
-	if (fscanf(workload_file, "%d %d %d", &(input->tasks_count), &(input->machines_count), &unknown_param) != 3) {
+	/*if (fscanf(workload_file, "%d %d %d", &(input->tasks_count), &(input->machines_count), &unknown_param) != 3) {
 	    return EXIT_FAILURE;	    
-	}
+	}*/
 	if (DEBUG) fprintf(stdout, "[PARAMS] tasks   : %d\n", input->tasks_count);
 	if (DEBUG) fprintf(stdout, "[PARAMS] machines: %d\n", input->machines_count);
 	if (DEBUG) fprintf(stdout, "[PARAMS] unknown : %d\n", unknown_param);

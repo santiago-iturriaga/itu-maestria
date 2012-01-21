@@ -68,9 +68,13 @@ void compute_minmin(struct solution *solution) {
 		/*if (DEBUG) {
 			fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
 		}*/
+		
+	    refresh_makespan(solution);
+        refresh_energy(solution);
 	}
 	
-	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", get_makespan(solution));
+	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution >> makespan: %f || energy: %f.\n", get_makespan(solution), get_energy(solution));
+	else fprintf(stdout, "%f|%f\n", get_makespan(solution), get_energy(solution));
 
 	// Timming -----------------------------------------------------
 	timming_end("MinMin time", ts);
