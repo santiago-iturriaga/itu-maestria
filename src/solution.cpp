@@ -459,19 +459,24 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     assert(task_b_pos >= 0);
 
     if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
+        fprintf(stdout, "[DEBUG] >>>> Pre Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
             machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
             machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
               
-        /*fprintf(stdout, "        Maquina %d (%d) >> ", machine_a, s->__machine_assignment_count[machine_a]);
+        fprintf(stdout, "        Maquina %d (%d) (%f) >> ", 
+            machine_a, s->__machine_assignment_count[machine_a], s->__machine_compute_time[machine_a]);
+            
         for (int i = 0; i < s->__machine_assignment_count[machine_a]; i++) {
             fprintf(stdout, "%d ", s->__machine_assignment[machine_a][i]);
         }
-        fprintf(stdout, "\n        Maquina %d (%d) >> ", machine_b, s->__machine_assignment_count[machine_b]);
+        
+        fprintf(stdout, "\n        Maquina %d (%d) (%f) >> ", 
+            machine_b, s->__machine_assignment_count[machine_b], s->__machine_compute_time[machine_b]);
+            
         for (int i = 0; i < s->__machine_assignment_count[machine_b]; i++) {
             fprintf(stdout, "%d ", s->__machine_assignment[machine_b][i]);
         }
-        fprintf(stdout, "\n");*/
+        fprintf(stdout, "\n");
     }    
 
     assert(s->__machine_assignment_count[machine_a] > task_a_pos);
@@ -495,6 +500,7 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     
     s->__machine_compute_time[machine_a_id] += get_etc_value(s->etc, machine_a_id, task_b_id);
     s->__machine_compute_time[machine_a_id] -= get_etc_value(s->etc, machine_a_id, task_a_id);
+    
     s->__machine_compute_time[machine_b_id] += get_etc_value(s->etc, machine_b_id, task_a_id);
     s->__machine_compute_time[machine_b_id] -= get_etc_value(s->etc, machine_b_id, task_b_id);
     
@@ -574,6 +580,27 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     // Si es necesario recalculo el makespan o la energía de la solución.
     if (recompute_makespan == 1) refresh_makespan(s);
     if (recompute_energy == 1) refresh_energy(s);
+    
+    if (DEBUG_DEV) {
+        fprintf(stdout, "[DEBUG] >>>> Post Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
+            machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
+            machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
+              
+        fprintf(stdout, "        Maquina %d (%d) (%f) >> ", 
+            machine_a, s->__machine_assignment_count[machine_a], s->__machine_compute_time[machine_a]);
+            
+        for (int i = 0; i < s->__machine_assignment_count[machine_a]; i++) {
+            fprintf(stdout, "%d ", s->__machine_assignment[machine_a][i]);
+        }
+        
+        fprintf(stdout, "\n        Maquina %d (%d) (%f) >> ", 
+            machine_b, s->__machine_assignment_count[machine_b], s->__machine_compute_time[machine_b]);
+            
+        for (int i = 0; i < s->__machine_assignment_count[machine_b]; i++) {
+            fprintf(stdout, "%d ", s->__machine_assignment[machine_b][i]);
+        }
+        fprintf(stdout, "\n");
+    } 
 }
 
 float get_machine_compute_time(struct solution *s, int machine_id) {

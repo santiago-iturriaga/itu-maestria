@@ -30,24 +30,6 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
     init_etc_matrix(input, etc);
     init_energy_matrix(input, energy);
 
-	float value;
-	for (int task = 0; task < input->tasks_count; task++) {
-		for (int machine = 0; machine < input->machines_count; machine++) {
-			if (fscanf(workload_file, "%f", &value) != 1) {
-    			fprintf(stderr, "[ERROR] Leyendo dato de workload de la tarea %d para la máquina %d.\n", task, machine);
-			    return EXIT_FAILURE;
-			} else {
-    			//if (DEBUG) fprintf(stdout, "%f\n", value);
-			}
-			
-			set_etc_value(etc, machine, task, value); 
-		}
-	}
-
-	fclose(workload_file);
-	
-	// -------------------------------------------------------------------
-	
 	FILE *scenario_file;
 
 	if ((scenario_file = fopen(input->scenario_path, "r")) == NULL) {
@@ -66,15 +48,26 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
 		    return EXIT_FAILURE;
         }
 
-        //if (DEBUG) fprintf(stderr, "%f\n", value);
-
-        // Cambio el energy_max para utilizar solo un core del procesador.
-        energy_max = energy_max + ((energy_max - energy_idle) / cores);
-
-		set_energy_value(energy, machine, energy_idle, energy_max); 
+		set_energy_value(energy, machine, ssj, energy_idle, energy_max); 
 	}
 
 	fclose(scenario_file);
+
+	float value;
+	for (int task = 0; task < input->tasks_count; task++) {
+		for (int machine = 0; machine < input->machines_count; machine++) {
+			if (fscanf(workload_file, "%f", &value) != 1) {
+    			fprintf(stderr, "[ERROR] Leyendo dato de workload de la tarea %d para la máquina %d.\n", task, machine);
+			    return EXIT_FAILURE;
+			} else {
+    			//if (DEBUG) fprintf(stdout, "%f\n", value);
+			}
+			
+			set_etc_value(etc, machine, task, value / get_ssj_value(energy, machine)); 
+		}
+	}
+
+	fclose(workload_file);
 	
 	return EXIT_SUCCESS;
 }

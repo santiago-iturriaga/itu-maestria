@@ -13,6 +13,7 @@
 struct energy_matrix {
 	int machines_count;
 	
+	float* ssj;
 	float* idle_energy;
 	float* max_energy;
 };
@@ -21,7 +22,9 @@ void init_energy_matrix(struct params *input, struct energy_matrix *energy);
 void free_energy_matrix(struct energy_matrix *energy);
 void show_energy_matrix(struct energy_matrix *energy);
 
-void set_energy_value(struct energy_matrix *energy, int machine, float idle_value, float max_value);
+void set_energy_value(struct energy_matrix *energy, int machine, float ssj, float idle_value, float max_value);
+
+float get_ssj_value(struct energy_matrix *energy, int machine);
 float get_energy_idle_value(struct energy_matrix *energy, int machine);
 float get_energy_max_value(struct energy_matrix *energy, int machine);
 
