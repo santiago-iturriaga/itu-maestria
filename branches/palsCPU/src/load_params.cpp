@@ -22,20 +22,14 @@ int load_params(int argc, char **argv, struct params *input) {
 		if (DEBUG) fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
 
 		if (DEBUG) {
-			if (input->algorithm == PALS_Serial) {
-				fprintf(stdout, " (PALS_Serial)\n");
-			} else if (input->algorithm == PALS_GPU) {
-				fprintf(stdout, " (PALS_GPU)\n");
-			} else if (input->algorithm == PALS_GPU_randTask) {
-				fprintf(stdout, " (PALS_GPU_randTask)\n");
-			} else if (input->algorithm == PALS_CPU_randTask) {
-				fprintf(stdout, " (PALS_CPU_randTask)\n");
-			} else if (input->algorithm == MinMin) {
-				fprintf(stdout, " (Min-Min)\n");
+			if (input->algorithm == PALS_2POP) {
+				fprintf(stdout, " (PALS 2-populations)\n");
+			} else if (input->algorithm == PALS_1POP) {
+				fprintf(stdout, " (PALS 1-population)\n");
+			} else if (input->algorithm == MINMIN) {
+				fprintf(stdout, " (MinMin)\n");
 			} else if (input->algorithm == MCT) {
 				fprintf(stdout, " (MCT)\n");
-			} else if (input->algorithm == PALS_GPU_randParallelTask) {
-				fprintf(stdout, " (PALS_GPU_randParallelTask)\n");
 			}
 		}
 
@@ -46,7 +40,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		input->seed = atoi(argv[7]);
 		if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
 
-		if ((input->algorithm < 0)||(input->algorithm > 6)) {
+		if ((input->algorithm < 0)||(input->algorithm > 3)) {
 			fprintf(stderr, "[ERROR] Invalid algorithm.\n");
 			return EXIT_FAILURE;
 		}
@@ -56,11 +50,11 @@ int load_params(int argc, char **argv, struct params *input) {
 		fprintf(stdout, "Usage:\n");	
 		fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed>\n\n", argv[0]);
 		fprintf(stdout, "       Algorithms\n");
-		fprintf(stdout, "           0 CPU full (serial)\n");
-		fprintf(stdout, "           3 CPU rand. task (multi-threaded)\n");
-		fprintf(stdout, "           4 Min-Min\n");
-		fprintf(stdout, "           5 MCT\n");
-		//fprintf(stdout, "           6 GPU rand. parallel task\n");
+		fprintf(stdout, "           0 PALS 2-populations\n");
+		fprintf(stdout, "           1 PALS 1-population\n");
+		fprintf(stdout, "           2 MinMin\n");
+		fprintf(stdout, "           3 MCT\n");
+		
 		fprintf(stdout, "\n");
 
 		return EXIT_FAILURE;

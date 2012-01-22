@@ -5,7 +5,8 @@ THREADS=9
 VERIFICADOR="bin/verificador"
 
 ALGORITHMS[0]="bin/pals_cpu"
-ALGORITHMS_OUTNAME[0]="pals.rand_r.a3"
+ALGORITHMS_ID[0]=0
+ALGORITHMS_OUTNAME[0]="pals.0"
 
 SCENARIOS[0]=0
 SCENARIOS[1]=10
@@ -28,7 +29,7 @@ do
 			rm ${OUT}.*
 			
 			RAND=$RANDOM
-			EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} 3 ${THREADS} ${RAND}"
+			EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND}"
 			echo ${EXEC}
 			time (${EXEC} >> ${OUT}.sols 2> ${OUT}.err) 2> ${OUT}.time
 			
