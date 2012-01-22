@@ -188,18 +188,24 @@ void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_
     	            }
     	        }*/
 	        } else {
-				/*for (int task_id = 0; task_id < instance.etc->tasks_count; task_id++) {
-					fprintf(stdout, "%d\n", get_task_assigned_machine_id(current_solution,task_id));
-				}*/
+				fprintf(stdout, "%d\n", instance.elite_population_count);
+        	    for (int i = 0; i < PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE; i++) {
+	                if (instance.elite_population[i] != NULL) {
+						for (int task = 0; task < etc->tasks_count; task++) {
+							fprintf(stdout, "%d\n", get_task_assigned_machine_id(instance.elite_population[i], task));
+						}
+        	        }
+        	    }
+        	    
+				// TODO:................
+				/*fprintf(stderr, "CANT_ITERACIONES|%d\n", instance.total_iterations);
+				fprintf(stderr, "BEST_FOUND|%d\n", instance.last_elite_found_on_iter);
+				fprintf(stderr, "TOTAL_SWAPS|%ld\n", instance.total_swaps);
+				fprintf(stderr, "TOTAL_MOVES|%ld\n", instance.total_moves);
+				fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", instance.total_makespan_greedy_searches);
+				fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", instance.total_energy_greedy_searches);
+				fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", instance.total_random_greedy_searches);*/
 			}
-		    // TODO:................
-        	/*fprintf(stderr, "CANT_ITERACIONES|%d\n", instance.total_iterations);
-        	fprintf(stderr, "BEST_FOUND|%d\n", instance.last_elite_found_on_iter);
-	        fprintf(stderr, "TOTAL_SWAPS|%ld\n", instance.total_swaps);
-        	fprintf(stderr, "TOTAL_MOVES|%ld\n", instance.total_moves);
-	        fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", instance.total_makespan_greedy_searches);
-	        fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", instance.total_energy_greedy_searches);
-	        fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", instance.total_random_greedy_searches);*/
 	}
 
 	// Libero la memoria del dispositivo.

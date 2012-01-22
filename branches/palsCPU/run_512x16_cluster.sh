@@ -1,4 +1,4 @@
-INSTANCES_PATH=instancias
+INSTANCES_PATH=instancias/512x16
 
 #make clean
 #make pals-gdb

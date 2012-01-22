@@ -74,7 +74,7 @@ void compute_minmin(struct solution *solution) {
 	}
 	
 	if (DEBUG) fprintf(stdout, "[DEBUG] MinMin Solution >> makespan: %f || energy: %f.\n", get_makespan(solution), get_energy(solution));
-	else fprintf(stdout, "%f|%f\n", get_makespan(solution), get_energy(solution));
+	//else fprintf(stdout, "%f|%f\n", get_makespan(solution), get_energy(solution));
 
 	// Timming -----------------------------------------------------
 	timming_end("MinMin time", ts);
