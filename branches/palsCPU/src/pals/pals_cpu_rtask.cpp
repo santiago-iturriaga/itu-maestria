@@ -12,6 +12,7 @@
 #include "../utils.h"
 #include "../basic/mct.h"
 #include "../random/cpu_rand.h"
+#include "../random/cpu_mt.h"
 
 #include "pals_cpu_rtask.h"
 
@@ -289,11 +290,20 @@ void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct en
 	srand(seed);
 	long int random_seed;
 	
+	#ifdef CPU_MERSENNE_TWISTER
+	empty_instance.random_states = (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
+	#else
 	empty_instance.random_states = (struct cpu_rand_state*)malloc(sizeof(struct cpu_rand_state) * empty_instance.count_threads);
+	#endif
 	
 	for (int i = 0; i < empty_instance.count_threads; i++) {
 	    random_seed = rand();
+	    
+		#ifdef CPU_MERSENNE_TWISTER
+	    cpu_mt_init(random_seed, empty_instance.random_states[i]);
+	    #else
 	    cpu_rand_init(random_seed, empty_instance.random_states[i]);
+	    #endif
 	}
 	
 	timming_end(".. cpu_rand_buffers", ts_1);
@@ -760,7 +770,13 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 
             init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
             
-            int random_task = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * thread_instance->etc->tasks_count);
+            #ifdef CPU_MERSENNE_TWISTER
+            double random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #else
+            double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            
+            int random_task = (int)floor(random * thread_instance->etc->tasks_count);
 	        compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
 
             thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NEW;
@@ -797,7 +813,12 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             // Sorteo la solución con la que me toca trabajar.
             pthread_mutex_lock(thread_instance->population_mutex);
             
+			#ifdef CPU_MERSENNE_TWISTER
+            double random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #else
             double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            
             int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
             
             if (DEBUG_DEV) {
@@ -838,11 +859,18 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
             if (solution_selected == 1) {
                 // Determino la estrategia de busqueda del hilo.
                	int search_type;
-               	if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.33) {
+               	
+				#ifdef CPU_MERSENNE_TWISTER
+				random = cpu_mt_generate(*(thread_instance->thread_random_state));
+				#else
+				random = cpu_rand_generate(*(thread_instance->thread_random_state));
+				#endif
+               	
+               	if (random < 0.80) {
                     search_type = PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY;
                     thread_instance->total_makespan_greedy_searches++;
                     
-               	} else if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.66) {
+               	} else if (random < 0.90) {
                     search_type = PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY;
                     thread_instance->total_energy_greedy_searches++;
                     
@@ -871,8 +899,14 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                     thread_instance->total_iterations++;                
                   
                     // Determino que tipo movimiento va a realizar el hilo.
+					#ifdef CPU_MERSENNE_TWISTER
+					random = cpu_mt_generate(*(thread_instance->thread_random_state));
+					#else
+					random = cpu_rand_generate(*(thread_instance->thread_random_state));
+					#endif
+                    
                    	int mov_type;
-                   	if (cpu_rand_generate(*(thread_instance->thread_random_state)) < 0.75) {
+                   	if (random < 0.80) {
                    	    mov_type = PALS_CPU_RTASK_SEARCH_OP__SWAP;
                    	} else {
                    	    mov_type = PALS_CPU_RTASK_SEARCH_OP__MOVE;
@@ -887,19 +921,28 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                         
                     } else if (search_type == PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY) {
                         // La estrategia es mejorar energía, siempre selecciono la máquina que consume más energía.
-	                    machine_a = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
-	                        thread_instance->etc->machines_count);
+	                    machine_a = get_worst_energy_machine_id(selected_solution);
                         
                     } else {
+						#ifdef CPU_MERSENNE_TWISTER
+						random = cpu_mt_generate(*(thread_instance->thread_random_state));
+						#else
+						random = cpu_rand_generate(*(thread_instance->thread_random_state));
+						#endif
+						
                         // La estrategia es aleatoria.
-	                    machine_a = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
-	                        thread_instance->etc->machines_count);
+	                    machine_a = (int)floor(random * thread_instance->etc->machines_count);
 	                        
                     }
                     
+					#ifdef CPU_MERSENNE_TWISTER
+					random = cpu_mt_generate(*(thread_instance->thread_random_state));
+					#else
+					random = cpu_rand_generate(*(thread_instance->thread_random_state));
+					#endif
+                    
                     // Siempre selecciono la segunda máquina aleatoriamente.
-	                machine_b = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * 
-	                    (thread_instance->etc->machines_count - 1));
+	                machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
 	                    
                     if (machine_a == machine_b) machine_b++;
 
@@ -907,7 +950,13 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
                     int task_x;
                     int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
                     
-	                task_x = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_a_task_count);
+					#ifdef CPU_MERSENNE_TWISTER
+					random = cpu_mt_generate(*(thread_instance->thread_random_state));
+					#else
+					random = cpu_rand_generate(*(thread_instance->thread_random_state));
+					#endif
+                    
+	                task_x = (int)floor(random * machine_a_task_count);
 
                     float machine_a_energy_idle = get_energy_idle_value(thread_instance->energy, machine_a);
                     float machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
@@ -929,7 +978,14 @@ void* pals_cpu_rtask_slave_thread(void *thread_arg) {
 	                    
                     if (mov_type == PALS_CPU_RTASK_SEARCH_OP__SWAP) {
                         int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
-                        int task_y = (int)floor(cpu_rand_generate(*(thread_instance->thread_random_state)) * machine_b_task_count);
+                        
+						#ifdef CPU_MERSENNE_TWISTER
+						random = cpu_mt_generate(*(thread_instance->thread_random_state));
+						#else
+						random = cpu_rand_generate(*(thread_instance->thread_random_state));
+						#endif
+                        
+                        int task_y = (int)floor(random * machine_b_task_count);
 	                    
 	                    int top_task_a = PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD;
 	                    if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;

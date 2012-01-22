@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "../config.h"
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
 #include "../solution.h"
@@ -67,7 +68,11 @@ struct pals_cpu_rtask_instance {
 	pthread_barrier_t   sync_barrier;
 
 	// Estado de los generadores aleatorios.
+	#ifdef CPU_MERSENNE_TWISTER
+    struct cpu_mt_state *random_states;
+    #else
     struct cpu_rand_state *random_states;
+    #endif
 	
 	// Parámetros de ejecución.
 	int count_threads;	
@@ -100,7 +105,11 @@ struct pals_cpu_rtask_thread_arg {
 	pthread_barrier_t   *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
+    #ifdef CPU_MERSENNE_TWISTER
+    struct cpu_mt_state *thread_random_state;
+    #else
     struct cpu_rand_state *thread_random_state;
+    #endif
 	
 	// Statics
 	int total_iterations;
