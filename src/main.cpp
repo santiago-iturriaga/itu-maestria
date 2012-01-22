@@ -27,7 +27,7 @@
 
 #include "pals/pals_serial.h"
 #include "pals/pals_cpu_2pop.h"
-//#include "pals/pals_cpu_rtask.h"
+#include "pals/pals_cpu_1pop.h"
 
 int main(int argc, char** argv)
 {
@@ -66,19 +66,20 @@ int main(int argc, char** argv)
 	// Timming -----------------------------------------------------
 
 	if (input.algorithm == PALS_2POP) {	
-	
 		// =============================================================
-		// Búsqueda aleatoria por tarea.
+		// PALS de 2 poblaciones
 		// =============================================================
 			
 		pals_cpu_2pop(input, &etc, &energy);
 		
 	} else if (input.algorithm == PALS_1POP) {
-
-        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
+		// =============================================================
+		// PALS de 1 poblacion
+		// =============================================================
+			
+		pals_cpu_1pop(input, &etc, &energy);
 		
 	} else if (input.algorithm == MINMIN) {
-
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_minmin(current_solution);
 		
@@ -92,7 +93,6 @@ int main(int argc, char** argv)
 		free(current_solution);
 			
 	} else if (input.algorithm == MCT) {
-
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_mct(current_solution);
 		

@@ -137,11 +137,11 @@ void pals_cpu_2pop(struct params &input, struct etc_matrix *etc, struct energy_m
 		fprintf(stdout, "[INFO] Total de makespan searches     : %d\n", total_makespan_greedy_searches);
 		fprintf(stdout, "[INFO] Total de energy searches       : %d\n", total_energy_greedy_searches);
 		fprintf(stdout, "[INFO] Total de random searches       : %d\n", total_random_greedy_searches);
-		fprintf(stdout, "[INFO] Total de swaps                 : %ld\n", total_swaps);
-		fprintf(stdout, "[INFO] Total de moves                 : %ld\n", total_moves);
-		fprintf(stdout, "[INFO] Total poblaciones llenas       : %ld\n", total_population_full);
-		fprintf(stdout, "[INFO] Total poblaciones elite llenas : %ld\n", instance.total_elite_population_full);
-    	fprintf(stdout, "[INFO] Total soluciones to_del        : %ld\n", total_to_delete_solutions);
+		fprintf(stdout, "[INFO] Total de swaps                 : %d\n", total_swaps);
+		fprintf(stdout, "[INFO] Total de moves                 : %d\n", total_moves);
+		fprintf(stdout, "[INFO] Total poblaciones llenas       : %d\n", total_population_full);
+		fprintf(stdout, "[INFO] Total poblaciones elite llenas : %d\n", instance.total_elite_population_full);
+    	fprintf(stdout, "[INFO] Total soluciones to_del        : %d\n", total_to_delete_solutions);
 		fprintf(stdout, "[INFO] Cantidad de soluciones         : %d\n", instance.population_count);
 		fprintf(stdout, "[INFO] Cantidad de soluciones ND      : %d\n", instance.elite_population_count);
 
@@ -674,8 +674,8 @@ void* pals_cpu_2pop_master_thread(void *thread_arg) {
 		
 		clock_gettime(CLOCK_REALTIME, &ts_current);
 		
-	    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%d) - ts_start.tv_sec (%d) = %d\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
-    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%d) - ts_start.tv_nsec (%d) = %d\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
+	    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%ld) - ts_start.tv_sec (%ld) = %ld\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
+    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%ld) - ts_start.tv_nsec (%ld) = %ld\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
 	}
 
     instance->total_mater_iteraciones = iter;

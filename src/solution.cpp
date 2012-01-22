@@ -240,8 +240,8 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
     assert(s->__machine_assignment_count[machine_src] > task_src_pos);
     
     if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] Move task sol. %i: from (%d, %d=%d) to (%d)\n", 
-            s, machine_src, task_src_pos, s->__machine_assignment[machine_src][task_src_pos], machine_dst);
+        fprintf(stdout, "[DEBUG] Move task sol. %ld: from (%d, %d=%d) to (%d)\n", 
+            (long)s, machine_src, task_src_pos, s->__machine_assignment[machine_src][task_src_pos], machine_dst);
         
         /*
         fprintf(stdout, "        Maquina %d >> ", machine_src);
@@ -459,7 +459,7 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     assert(task_b_pos >= 0);
 
     if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] >>>> Pre Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
+        fprintf(stdout, "[DEBUG] >>>> Pre Move task sol. %ld: (%d, %d=%d) with (%d, %d=%d)\n", (long)s, 
             machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
             machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
               
@@ -582,7 +582,7 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     if (recompute_energy == 1) refresh_energy(s);
     
     if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] >>>> Post Move task sol. %i: (%d, %d=%d) with (%d, %d=%d)\n", s, 
+        fprintf(stdout, "[DEBUG] >>>> Post Move task sol. %ld: (%d, %d=%d) with (%d, %d=%d)\n", (long)s, 
             machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
             machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
               
@@ -705,12 +705,12 @@ int get_machine_task_pos(struct solution *s, int machine_id, int task_id) {
         if (i < s->__machine_assignment_count[machine_id]) {
             return i;
         } else {
-            fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n");
+            fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n", task_id, machine_id);
             assert(0);
             //return -1;
         }
     } else {
-        fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n");
+        fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n", task_id, machine_id);
         assert(0);
         //return -1;
     }
