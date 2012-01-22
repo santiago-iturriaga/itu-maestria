@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_minmin(current_solution);
 		
-		//if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
 		
 		free_solution(current_solution);
 		free(current_solution);
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_mct(current_solution);
 		
-		//if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
+		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
 		
 		free_solution(current_solution);
 		free(current_solution);
