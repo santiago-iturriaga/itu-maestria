@@ -1,7 +1,8 @@
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16"
-SOLUTIONS_DIR="512x16"
+SOLUTIONS_DIR="512x16.test"
 THREADS=3
+VERIFICADOR="bin/verificador"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_OUTNAME[0]="pals.rand_r.a3"
@@ -28,9 +29,22 @@ do
 			
 			RAND=$RANDOM
 			EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} 3 ${THREADS} ${RAND}"
+			echo ${EXEC}
+			time (${EXEC} >> ${OUT}.sols 2> ${OUT}.err) 2> ${OUT}.time
 			
-			echo ${EXEC}  >> ${OUT}.sols 2> ${OUT}.err
-			time (${EXEC}) &> ${OUT}.time
+			cat ${OUT}.time
+			
+			EXEC_VERIF="${VERIFICADOR} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${OUT}.sols ${DIMENSIONS}"
+			echo ${EXEC_VERIF}
+			${EXEC_VERIF} > ${OUT}.metrics
+			
+			echo "set term postscript" > ${OUT}.plot
+			echo "set output '${OUT}.ps'" >> ${OUT}.plot
+			echo "plot '${OUT}.metrics' using 1:2 title '${OUT}'" >> ${OUT}.plot
+			echo "set term png" >> ${OUT}.plot
+			echo "set output '${OUT}.png'" >> ${OUT}.plot
+			echo "replot" >> ${OUT}.plot
+			gnuplot ${OUT}.plot
 		done
 	done
 done
