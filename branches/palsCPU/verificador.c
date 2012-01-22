@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 			energy += (mach[j] * energy_max[j]) + ((makespan - mach[j]) * energy_idle[j]);
 		}		
 
-		printf("%f|%f\n",makespan, energy);
+		printf("%f %f\n",makespan, energy);
 	}
 	
 	fclose(fsolucion);
