@@ -19,6 +19,7 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
+		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp 
 	$(CX) -g src/main.cpp \
 		src/load_instance.cpp \
@@ -32,6 +33,7 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
+		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
 			-o bin/pals_cpu $(LIBS)
 
@@ -47,6 +49,7 @@ pals-opt: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
+		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp 
 	$(CX) -O3 src/main.cpp \
 		src/load_instance.cpp \
@@ -60,6 +63,7 @@ pals-opt: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
+		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
 			-o bin/pals_cpu $(LIBS)
 
