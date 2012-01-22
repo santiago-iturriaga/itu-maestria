@@ -17,6 +17,7 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_rtask.cpp \
 		src/pals/pals_serial.cpp 
 	$(CX) -g src/main.cpp \
@@ -29,6 +30,7 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_rtask.cpp \
 		src/pals/pals_serial.cpp \
 			-o bin/pals_cpu $(LIBS)
@@ -43,6 +45,7 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_rtask.cpp \
 		src/pals/pals_serial.cpp 
 	$(CX) -O3 src/main.cpp \
@@ -55,10 +58,10 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_rtask.cpp \
 		src/pals/pals_serial.cpp \
 			-o bin/pals_cpu $(LIBS)
 
 clean:
 	rm bin/*
-
