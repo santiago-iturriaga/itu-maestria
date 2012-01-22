@@ -13,35 +13,35 @@
 #include "../energy_matrix.h"
 #include "../solution.h"
 
-#ifndef PALS_CPU_RTASK_H_
-#define PALS_CPU_RTASK_H_
+#ifndef PALS_CPU_2POP_H_
+#define PALS_CPU_2POP_H_
 
-#define PALS_CPU_RTASK_WORK__TIMEOUT      5
-#define PALS_CPU_RTASK_WORK__CONVERGENCE  1000
+#define PALS_CPU_2POP_WORK__TIMEOUT      5
+#define PALS_CPU_2POP_WORK__CONVERGENCE  1000
 
-#define PALS_CPU_RTASK_WORK__THREAD_CONVERGENCE  50
-#define PALS_CPU_RTASK_WORK__THREAD_ITERATIONS   250
+#define PALS_CPU_2POP_WORK__THREAD_CONVERGENCE  50
+#define PALS_CPU_2POP_WORK__THREAD_ITERATIONS   250
 
-#define PALS_CPU_RTASK_WORK__ELITE_POP_MAX_SIZE 50
-#define PALS_CPU_RTASK_WORK__POP_SIZE_FACTOR    20
+#define PALS_CPU_2POP_WORK__ELITE_POP_MAX_SIZE 50
+#define PALS_CPU_2POP_WORK__POP_SIZE_FACTOR    20
 
-#define PALS_CPU_RTASK_WORK__SRC_TASK_NHOOD 20
-#define PALS_CPU_RTASK_WORK__DST_TASK_NHOOD 20
-#define PALS_CPU_RTASK_WORK__DST_MACH_NHOOD 20
+#define PALS_CPU_2POP_WORK__SRC_TASK_NHOOD 20
+#define PALS_CPU_2POP_WORK__DST_TASK_NHOOD 20
+#define PALS_CPU_2POP_WORK__DST_MACH_NHOOD 20
 
-#define PALS_CPU_RTASK_SEARCH_OP__SWAP 0
-#define PALS_CPU_RTASK_SEARCH_OP__MOVE 1
+#define PALS_CPU_2POP_SEARCH_OP__SWAP 0
+#define PALS_CPU_2POP_SEARCH_OP__MOVE 1
 
-#define PALS_CPU_RTASK_SEARCH__MAKESPAN_GREEDY 0
-#define PALS_CPU_RTASK_SEARCH__ENERGY_GREEDY   1
-#define PALS_CPU_RTASK_SEARCH__RANDOM_GREEDY   2
+#define PALS_CPU_2POP_SEARCH__MAKESPAN_GREEDY 0
+#define PALS_CPU_2POP_SEARCH__ENERGY_GREEDY   1
+#define PALS_CPU_2POP_SEARCH__RANDOM_GREEDY   2
 
-#define PALS_CPU_RTASK_WORK__INIT_POP 0
-#define PALS_CPU_RTASK_WORK__SEARCH   1
-#define PALS_CPU_RTASK_WORK__WAIT     2
-#define PALS_CPU_RTASK_WORK__EXIT     3
+#define PALS_CPU_2POP_WORK__INIT_POP 0
+#define PALS_CPU_2POP_WORK__SEARCH   1
+#define PALS_CPU_2POP_WORK__WAIT     2
+#define PALS_CPU_2POP_WORK__EXIT     3
 
-struct pals_cpu_rtask_instance {
+struct pals_cpu_2pop_instance {
     // Estado del problema.
     struct etc_matrix *etc;
     struct energy_matrix *energy;
@@ -49,7 +49,7 @@ struct pals_cpu_rtask_instance {
     // Referencia a los threads del disponibles.
     pthread_t master_thread;
     pthread_t *slave_threads;
-    struct pals_cpu_rtask_thread_arg *slave_threads_args;
+    struct pals_cpu_2pop_thread_arg *slave_threads_args;
 
 	// Espacio de memoria para comunicación con los threads.
 	int *slave_work_type;
@@ -83,7 +83,7 @@ struct pals_cpu_rtask_instance {
     int total_elite_population_full;
 };
 
-struct pals_cpu_rtask_thread_arg {
+struct pals_cpu_2pop_thread_arg {
     // Id del thread actual.
     int thread_idx;
     
@@ -125,23 +125,23 @@ struct pals_cpu_rtask_thread_arg {
 /*
  * Ejecuta el algoritmo.
  */
-void pals_cpu_rtask(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy);
+void pals_cpu_2pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy);
 
 /*
  * Reserva e inicializa la memoria con los datos del problema.
  */
-void pals_cpu_rtask_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
-    int seed, struct pals_cpu_rtask_instance &empty_instance);
+void pals_cpu_2pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
+    int seed, struct pals_cpu_2pop_instance &empty_instance);
 
 /*
  * Libera la memoria.
  */
-void pals_cpu_rtask_finalize(struct pals_cpu_rtask_instance &instance);
+void pals_cpu_2pop_finalize(struct pals_cpu_2pop_instance &instance);
 
 /*
  * Ejecuta PALS multi-hilado.
  */
-void* pals_cpu_rtask_master_thread(void *thread_arg);
-void* pals_cpu_rtask_slave_thread(void *thread_arg);
+void* pals_cpu_2pop_master_thread(void *thread_arg);
+void* pals_cpu_2pop_slave_thread(void *thread_arg);
 
 #endif /* PALS_CPU_H_ */

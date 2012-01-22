@@ -8,13 +8,10 @@
 #ifndef LOAD_PARAMS_H_
 #define LOAD_PARAMS_H_
 
-#define               PALS_Serial 0
-#define                  PALS_GPU 1
-#define         PALS_GPU_randTask 2
-#define         PALS_CPU_randTask 3
-#define                    MinMin 4
-#define                       MCT 5
-#define PALS_GPU_randParallelTask 6
+#define PALS_2POP 0
+#define PALS_1POP 1
+#define    MINMIN 2
+#define       MCT 3
 
 struct params {
 	char *scenario_path;

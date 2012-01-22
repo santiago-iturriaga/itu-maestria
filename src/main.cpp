@@ -26,7 +26,8 @@
 #include "basic/minmin.h"
 
 #include "pals/pals_serial.h"
-#include "pals/pals_cpu_rtask.h"
+#include "pals/pals_cpu_2pop.h"
+//#include "pals/pals_cpu_rtask.h"
 
 int main(int argc, char** argv)
 {
@@ -64,50 +65,47 @@ int main(int argc, char** argv)
 	timming_start(ts);
 	// Timming -----------------------------------------------------
 
-	if (input.algorithm == PALS_Serial) {	
+	if (input.algorithm == PALS_2POP) {	
 	
-		fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
-		
-	} else if (input.algorithm == PALS_GPU) {
-
-        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
-		
-	} else if (input.algorithm == PALS_GPU_randTask) {
-
-        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
-			
-	} else if (input.algorithm == PALS_CPU_randTask) {
 		// =============================================================
 		// Búsqueda aleatoria por tarea.
 		// =============================================================
 			
-		pals_cpu_rtask(input, &etc, &energy);
+		pals_cpu_2pop(input, &etc, &energy);
 		
-	} else if (input.algorithm == MinMin) {
-	
+	} else if (input.algorithm == PALS_1POP) {
+
+        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
+		
+	} else if (input.algorithm == MINMIN) {
+
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_minmin(current_solution);
 		
-		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
+		if (!OUTPUT_SOLUTION) {
+			fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
+		} else {
+			show_solution(current_solution);
+		}
 		
 		free_solution(current_solution);
 		free(current_solution);
-		
+			
 	} else if (input.algorithm == MCT) {
-		
+
 		struct solution *current_solution = create_empty_solution(&etc, &energy);
 		compute_mct(current_solution);
 		
-		if (!OUTPUT_SOLUTION) fprintf(stdout, "%f|%f\n", get_makespan(current_solution), get_energy(current_solution));
+		if (!OUTPUT_SOLUTION) {
+			fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
+		} else {
+			show_solution(current_solution);
+		}
 		
 		free_solution(current_solution);
 		free(current_solution);
 		
-	} else if (input.algorithm == PALS_GPU_randParallelTask) {
-
-        fprintf(stderr, "ERROR!! no es posible ejecutar!!!\n");
-
-	}
+	} 
 	
 	// Timming -----------------------------------------------------
 	timming_end("Elapsed algorithm total time", ts);
