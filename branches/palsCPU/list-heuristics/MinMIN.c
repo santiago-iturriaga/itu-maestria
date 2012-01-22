@@ -322,7 +322,7 @@ int main(int argc, char *argv[])
 	fprintf(stdout,"Makespan: %f energy consumption: %f heavy: %d\n",makespan,total_energy,heavy);
 	#endif
 
-	fprintf(stdout,"%f|%f\n",makespan,total_energy);
+	fprintf(stdout,"%f %f\n",makespan,total_energy);
 
 	#if DEBUG
 	fprintf(stdout,"[");

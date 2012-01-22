@@ -346,7 +346,7 @@ main (int argc, char *argv[])
 		makespan, total_energy, heavy);
 	#endif
 
-	fprintf (stdout, "%f|%f\n", makespan, total_energy);
+	fprintf (stdout, "%f %f\n", makespan, total_energy);
 
 	#if DEBUG
 	fprintf (stdout, "[");
