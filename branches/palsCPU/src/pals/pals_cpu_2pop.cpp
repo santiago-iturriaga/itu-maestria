@@ -412,12 +412,11 @@ void pals_cpu_2pop_finalize(struct pals_cpu_2pop_instance &instance) {
 
 int pals_cpu_2pop_eval_new_solutions(struct pals_cpu_2pop_instance *instance) {
 	int solutions_found = 0;
-	int s_idx = 0;
 	
 	if (DEBUG_DEV) fprintf(stdout, "== pals_cpu_2pop_eval_new_solutions ====================\n");
 	
-	for (int s_pos = 0; (s_pos < instance->population_max_size) && (s_idx < instance->population_count); s_pos++) {
-		if (instance->population[s_pos].status == SOLUTION__STATUS_NEW) {
+	for (int s_pos = 0; (s_pos < instance->population_max_size); s_pos++) {
+		if ((instance->population[s_pos].status == SOLUTION__STATUS_NEW)&&(instance->population[s_pos].initialized==1)) {
 		    int is_non_dominated;
 		    is_non_dominated = 1;
 	
@@ -428,17 +427,15 @@ int pals_cpu_2pop_eval_new_solutions(struct pals_cpu_2pop_instance *instance) {
 
    			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Evaluo nueva sol (%f, %f)\n", makespan_candidate, energy_candidate);
 			
-			int elite_s_idx = -1, added_to_elite = 0, end_loop = 0;
+			int added_to_elite = 0, end_loop = 0;
 			float makespan_elite_sol, energy_elite_sol;
 			
 			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Población elite (%d)\n", instance->elite_population_count);
 
 			for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_2POP_WORK__ELITE_POP_MAX_SIZE) 
-			    && (elite_s_idx < instance->elite_population_count) && (end_loop == 0); elite_s_pos++) {
+			    && (end_loop == 0); elite_s_pos++) {
 			    
-			    if (instance->elite_population[elite_s_pos] != NULL) {
-			        elite_s_idx++;
-			    
+			    if (instance->elite_population[elite_s_pos] != NULL) {		    
 			        makespan_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
  			        energy_elite_sol = get_energy(instance->elite_population[elite_s_pos]);
 
@@ -453,7 +450,6 @@ int pals_cpu_2pop_eval_new_solutions(struct pals_cpu_2pop_instance *instance) {
  			                added_to_elite = 1;
      			            instance->elite_population[elite_s_pos] = &(instance->population[s_pos]);
  			            } else {
-     			            elite_s_idx--;
      			            instance->elite_population_count--;
      			            instance->elite_population[elite_s_pos] = NULL;
      			        }
@@ -491,10 +487,6 @@ int pals_cpu_2pop_eval_new_solutions(struct pals_cpu_2pop_instance *instance) {
             pthread_mutex_unlock(&(instance->population_mutex));
     		
 			solutions_found++;
-		}
-		
-		if (instance->population[s_pos].status > SOLUTION__STATUS_EMPTY) {
-			s_idx++;
 		}
 	}
 	
