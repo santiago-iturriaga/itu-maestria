@@ -268,6 +268,9 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
 
 	empty_instance.work_type = PALS_CPU_1POP_WORK__INIT;
 	
+	timespec ts_start;
+	clock_gettime(CLOCK_REALTIME, &ts_start);
+	
 	for (int i = 0; i < empty_instance.count_threads; i++) {
    		empty_instance.threads_args[i].thread_idx = i;
    		
@@ -286,6 +289,7 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
 		empty_instance.threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
         	
         empty_instance.threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
+   		empty_instance.threads_args[i].ts_start = ts_start;
    		
         if (pthread_create(&(empty_instance.threads[i]), NULL, pals_cpu_1pop_thread,  (void*) &(empty_instance.threads_args[i])))
         {
@@ -352,220 +356,6 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
 	}
 }
 
-void* pals_cpu_1pop_master_thread(void *thread_arg) {
-    struct pals_cpu_1pop_instance *instance;
-    instance = (struct pals_cpu_1pop_instance *)thread_arg;
-
-/*    int rc;
-	
-	int increase_depth = 0;
-	int convergence_flag = 0;
-   
-	timespec ts_start, ts_current;
-	clock_gettime(CLOCK_REALTIME, &ts_start);
-	clock_gettime(CLOCK_REALTIME, &ts_current);
-
-	// ===========================================================================
-	// [SYNC POINT] Espero a que los esclavos terminen de inicializar la población.
-	rc = pthread_barrier_wait(&(instance->sync_barrier));
-	if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-	{
-		printf("Could not wait on barrier\n");
-		exit(EXIT_FAILURE);
-	}
-	
-    if (instance->count_threads < instance->population_max_size) {
-		instance->population_count = instance->count_threads - 1;
-	} else {
-    	instance->population_count = instance->population_max_size;
-	}
-		
-	// Calculo no dominancia de la población inicial y separo la población elite.
-	pals_cpu_1pop_eval_new_solutions(instance);
-	
-	// Asigno trabajo de busqueda a todos los hilos.
-	for (int i = 0; i < instance->count_threads - 1; i++) {
-		instance->slave_work_type[i] = PALS_CPU_1POP_WORK__SEARCH;
-	}
-
-	// [SYNC POINT] Aviso a los esclavos que pueden continuar.
-	rc = pthread_barrier_wait(&(instance->sync_barrier));
-	if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-	{
-		printf("Could not wait on barrier\n");
-		exit(EXIT_FAILURE);
-	}
-	
-   	if (DEBUG_DEV) validate_instance(instance);
-	
-	instance->total_mater_iteraciones = 0;
-	instance->total_reinicializaciones = 0;    
-	instance->total_elite_population_full = 0;
-	
-	int iter;
-	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0) && (ts_current.tv_sec - ts_start.tv_sec < PALS_CPU_1POP_WORK__TIMEOUT); iter++) {
-		// Timming -----------------------------------------------------
-		timespec ts_search;
-		timming_start(ts_search);
-		// Timming -----------------------------------------------------
-	
-        // ===========================================================================
-        // Espero a que un esclavo encuentre una solución.
-	
-    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero en el semaforo\n");
-	
-    	//timespec sem_wait_timeout;
-		//clock_gettime(CLOCK_REALTIME, &sem_wait_timeout);
-        //sem_wait_timeout.tv_sec += 1;
-        //sem_wait_timeout.tv_nsec += 500000000L; // 1/2 segundo.
-		//sem_timedwait(&(instance->new_solutions_sem), &sem_wait_timeout);
-    	sem_wait(&(instance->new_solutions_sem));
-    	
-    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Proceso la iteración %d\n", iter);
-	
-        // ===========================================================================
-        // Busco las soluciones nuevas y calculo si son dominadas o no dominadas.
-	
-		int solutions_found;
-		solutions_found = pals_cpu_1pop_eval_new_solutions(instance);
-		
-		// Si no encuentro soluciones nuevas, aumento el contador de convergencia.
-		// De lo contrario lo reinicializo.
-		if (solutions_found > 0) {
-			increase_depth = 0;
-		} else {
-			increase_depth++;
-		}
-
-	    // Después de K iteraciones, o si se llena la población principal, reinicializo la población y dejo
-	    // solo los individuos elite.
-		if ((increase_depth >= PALS_CPU_1POP_WORK__CONVERGENCE / 2) || 
-			((instance->population_count + (instance->count_threads * 2)) >= instance->population_max_size)) {
-		    
-			// Muevo toda la población elite a la población y elimino el resto. ---------------------------
-		    instance->total_reinicializaciones++;
-			
-			if (DEBUG_DEV) {
-			    fprintf(stdout, "[DEBUG] [MASTER] Limpio la población con >> \n");
-			    fprintf(stdout, "        Cantidad de iteraciones: %d\n", iter);
-			    fprintf(stdout, "        Población              : %d\n", instance->population_count);
-			    fprintf(stdout, "        Población elite        : %d\n", instance->elite_population_count);
-			}
-			
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Pido lock para detener hilos\n");
-			
-			// Solicito a los hilos que se detengan.
-			pthread_mutex_lock(&(instance->work_type_mutex));
-			
-			for (int i = 0; i < instance->count_threads - 1; i++) {
-				instance->slave_work_type[i] = PALS_CPU_1POP_WORK__WAIT;
-			}
-			
-			pthread_mutex_unlock(&(instance->work_type_mutex));
-
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero que se detengan\n");
-
-			// [SYNC POINT] Espero a que los esclavos terminen.
-			rc = pthread_barrier_wait(&(instance->sync_barrier));
-			if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-			{
-				printf("Could not wait on barrier\n");
-				exit(EXIT_FAILURE);
-			}
-			
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Proceso las soluciones nuevas\n");
-			
-			// Proceso las soluciones que pudieron haber sido encontradas mientras detenía los threads.
-			if (pals_cpu_1pop_eval_new_solutions(instance) > 0) {
-    			increase_depth = 0;
-			}
-			
-			// Elimino toda la población que no sea elite.
-            for (int s_pos = 0; s_pos < instance->population_max_size; s_pos++) {
-                instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
-            }
-            
-            // Recorro toda la población elite y los dejo ready.
-            for (int s_pos = 0; s_pos < PALS_CPU_1POP_WORK__ELITE_POP_MAX_SIZE; s_pos++) {
-                if (instance->elite_population[s_pos] != NULL) {
-                    instance->elite_population[s_pos]->status = SOLUTION__STATUS_READY;                    
-                }
-            }
-            			
-			instance->population_count = instance->elite_population_count;			
-			
-			// Asigno trabajo de busqueda a todos los hilos.
-			for (int i = 0; i < instance->count_threads - 1; i++) {
-				instance->slave_work_type[i] = PALS_CPU_1POP_WORK__SEARCH;
-			}
-
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo, pueden seguir los esclavos\n");
-
-			// [SYNC POINT] Aviso a los esclavos que pueden continuar.
-			rc = pthread_barrier_wait(&(instance->sync_barrier));
-			if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-			{
-				printf("Could not wait on barrier\n");
-				exit(EXIT_FAILURE);
-			}
-			
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo, ok\n");
-		}
-             
-       	if (DEBUG_DEV) validate_instance(instance);
-                
-		// Timming -----------------------------------------------------
-		timming_end(">> pals_cpu_1pop_search", ts_search);
-		// Timming -----------------------------------------------------
-
-		if (increase_depth >= PALS_CPU_1POP_WORK__CONVERGENCE) {
-		    if (DEBUG) fprintf(stdout, "[DEBUG] [MASTER] Finalizo por convergencia!!!\n");
-			convergence_flag = 1;
-		}
-		
-		clock_gettime(CLOCK_REALTIME, &ts_current);
-		
-	    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_sec (%ld) - ts_start.tv_sec (%ld) = %ld\n", ts_current.tv_sec, ts_start.tv_sec, ts_current.tv_sec - ts_start.tv_sec);
-    	if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] ts_current.tv_nsec (%ld) - ts_start.tv_nsec (%ld) = %ld\n", ts_current.tv_nsec, ts_start.tv_nsec, ts_current.tv_nsec - ts_start.tv_nsec);
-	}
-
-    instance->total_mater_iteraciones = iter;
-
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Mando a los esclavos a terminar\n");
-	
-    // Mando a los esclavos a terminar.
-    pthread_mutex_lock(&(instance->work_type_mutex));
-    
-    for (int i = 0; i < instance->count_threads - 1; i++) {
-        instance->slave_work_type[i] = PALS_CPU_1POP_WORK__EXIT;
-    }
-    
-    pthread_mutex_unlock(&(instance->work_type_mutex));
-
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Espero que los hilos terminen\n");
-
-    rc = pthread_barrier_wait(&(instance->sync_barrier));
-    if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-    {
-        printf("Could not wait on barrier\n");
-        exit(EXIT_FAILURE);
-    }
-        	
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Terminamos todos los slaves.\n");
-     
-    // ===========================================================================
-    // Busco las soluciones nuevas por última vez y calculo si son 
-    // dominadas o no dominadas.
-
-	int solutions_found;
-	solutions_found = pals_cpu_1pop_eval_new_solutions(instance);
-
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] [MASTER] Listo! Termina el master.\n");
-        	
-	return NULL;
-	*/
-}
-
 void* pals_cpu_1pop_thread(void *thread_arg) {	
     int rc;
 
@@ -581,8 +371,12 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 	   
 	int terminate = 0; 
 	int work_type = -1;
-	  
-    while (terminate == 0) {
+
+	timespec ts_current;
+	clock_gettime(CLOCK_REALTIME, &ts_current);
+
+    while ((terminate == 0) && (ts_current.tv_sec - thread_instance->ts_start.tv_sec < PALS_CPU_1POP_WORK__TIMEOUT)) {
+	
         work_type = *(thread_instance->work_type);
         if (DEBUG_DEV) printf("[DEBUG] [THREAD=%d] Work type = %d\n", thread_instance->thread_idx, work_type);
     
@@ -1022,9 +816,11 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 				validate_thread_instance(thread_instance);
 			}
 		}
+		
+		clock_gettime(CLOCK_REALTIME, &ts_current);
     } 
 
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar! Tengo algo para hacer?\n");
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabó el tiempo! Tengo algo para hacer?\n");
 
 	return NULL;
 }

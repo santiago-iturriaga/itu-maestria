@@ -110,6 +110,8 @@ struct pals_cpu_1pop_thread_arg {
     int total_random_greedy_searches;
 	int total_swaps;
     int total_moves;
+    
+	timespec ts_start;
 };
 
 /*
