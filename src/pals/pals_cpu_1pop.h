@@ -22,7 +22,7 @@
 #define PALS_CPU_1POP_WORK__THREAD_CONVERGENCE  50
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS   250
 
-#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    20
+#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    40
 
 #define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD 20
 #define PALS_CPU_1POP_WORK__DST_TASK_NHOOD 20
@@ -38,8 +38,8 @@
 #define PALS_CPU_1POP_SEARCH__ENERGY_GREEDY   1
 #define PALS_CPU_1POP_SEARCH__RANDOM_GREEDY   2
 
-#define PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN 0.80
-#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   0.10
+#define PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN 0.40
+#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   0.40
 
 #define PALS_CPU_1POP_WORK__INIT     0
 #define PALS_CPU_1POP_WORK__SEARCH   1
@@ -89,6 +89,7 @@ struct pals_cpu_1pop_thread_arg {
     int *population_count;
     int population_max_size;
 	
+	int count_threads;
 	int *work_type;
 	
 	pthread_mutex_t     *work_type_mutex;
@@ -110,6 +111,7 @@ struct pals_cpu_1pop_thread_arg {
     int total_random_greedy_searches;
 	int total_swaps;
     int total_moves;
+    int total_population_full;
     
 	timespec ts_start;
 };
