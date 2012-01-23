@@ -12,9 +12,8 @@ ALGORITHMS[1]="bin/pals_cpu"
 ALGORITHMS_ID[1]=1
 ALGORITHMS_OUTNAME[1]="pals.1"
 
-SCENARIOS[0]=0
-SCENARIOS[1]=10
-SCENARIOS[2]=19
+SCENARIOS[0]=10
+SCENARIOS[1]=19
 
 WORKLOADS[0]=1
 WORKLOADS[1]=10
@@ -25,7 +24,7 @@ mkdir ${SOLUTIONS_DIR}
 
 for a in {0..1}
 do
-	for s in {0..2}
+	for s in {0..1}
 	do
 		for w in {0..3}
 		do
