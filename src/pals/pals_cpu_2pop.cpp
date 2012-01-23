@@ -858,11 +858,11 @@ void* pals_cpu_2pop_slave_thread(void *thread_arg) {
 				random = cpu_rand_generate(*(thread_instance->thread_random_state));
 				#endif
                	
-               	if (random < 0.80) {
+               	if (random < 0.40) {
                     search_type = PALS_CPU_2POP_SEARCH__MAKESPAN_GREEDY;
                     thread_instance->total_makespan_greedy_searches++;
                     
-               	} else if (random < 0.90) {
+               	} else if (random < 0.40) {
                     search_type = PALS_CPU_2POP_SEARCH__ENERGY_GREEDY;
                     thread_instance->total_energy_greedy_searches++;
                     
