@@ -34,7 +34,7 @@ int load_params(int argc, char **argv, struct params *input) {
 		}
 
 		input->thread_count = atoi(argv[6]);
-		if (input->thread_count < 2) input->thread_count = 2;	
+		//if (input->thread_count < 2) input->thread_count = 2;	
 		if (DEBUG) fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
 
 		input->seed = atoi(argv[7]);

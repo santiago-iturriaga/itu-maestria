@@ -39,6 +39,7 @@ void init_energy_matrix(struct params *input, struct energy_matrix *energy) {
 void free_energy_matrix(struct energy_matrix *energy) {
 	free(energy->idle_energy);
 	free(energy->max_energy);
+	free(energy->ssj);
 }
 
 void set_energy_value(struct energy_matrix *energy, int machine, float ssj, float idle_value, float max_value) {

@@ -84,6 +84,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
         int total_random_greedy_searches = 0;
 	    int total_swaps = 0;
         int total_moves = 0;
+        int total_population_full = 0;
 
         for (int i = 0; i < instance.count_threads; i++) {
             total_iterations += instance.threads_args[i].total_iterations;
@@ -92,6 +93,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             total_random_greedy_searches += instance.threads_args[i].total_random_greedy_searches;
             total_swaps += instance.threads_args[i].total_swaps;
             total_moves += instance.threads_args[i].total_moves;
+            total_population_full += instance.threads_args[i].total_population_full;
         }
 	
 		fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", total_iterations);
@@ -100,6 +102,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 		fprintf(stdout, "[INFO] Total de random searches       : %d\n", total_random_greedy_searches);
 		fprintf(stdout, "[INFO] Total de swaps                 : %d\n", total_swaps);
 		fprintf(stdout, "[INFO] Total de moves                 : %d\n", total_moves);
+		fprintf(stdout, "[INFO] Total poblacion llena          : %d\n", total_population_full);
 		fprintf(stdout, "[INFO] Cantidad de soluciones         : %d\n", instance.population_count);
 
         if (DEBUG_DEV) {
@@ -171,6 +174,10 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
 		fprintf(stdout, "[INFO] == Configuration constants ==========================\n");
 		fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT            : %d\n", PALS_CPU_1POP_WORK__TIMEOUT);
 		fprintf(stdout, "       PALS_CPU_1POP_WORK__CONVERGENCE        : %d\n", PALS_CPU_1POP_WORK__CONVERGENCE);
+		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
+		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
+		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
+		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
 		fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    : %d (size=%d)\n", 
 			PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
 		fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_CONVERGENCE : %d\n", PALS_CPU_1POP_WORK__THREAD_CONVERGENCE);
@@ -290,6 +297,7 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         	
         empty_instance.threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
    		empty_instance.threads_args[i].ts_start = ts_start;
+   		empty_instance.threads_args[i].total_population_full = 0;
    		
         if (pthread_create(&(empty_instance.threads[i]), NULL, pals_cpu_1pop_thread,  (void*) &(empty_instance.threads_args[i])))
         {
@@ -301,7 +309,13 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
 	timming_end(".. thread creation", ts_threads);
 }
 
-void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance) {      
+void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance) {
+	for (int i = 0; i < instance.population_max_size; i++) {
+		if (instance.population[i].initialized == 1) {
+			free_solution(&(instance.population[i]));
+		}
+	}
+	    
     free(instance.population);
     free(instance.random_states);
 	free(instance.threads);	
@@ -333,24 +347,32 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
 			makespan = get_makespan(&(instance->population[s_pos]));
 			energy = get_energy(&(instance->population[s_pos]));
 
-			if ((makespan < makespan_new) && (energy < energy_new)) {
+			if ((makespan <= makespan_new) && (energy <= energy_new)) {
 				// La nueva solución es dominada por una ya existente.
 				new_solution_is_dominated = 1;
-			} else if ((makespan < makespan_new) && (energy < energy_new)) {
+			} else if ((makespan_new < makespan) && (energy_new < energy)) {
 				// La nueva solución domina a una ya existente.
 				solutions_deleted++;
-				instance->population_count--;
-				
+				instance->population_count[0] = instance->population_count[0] - 1;
 				instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
 			} else {
 				// Ninguna de las dos soluciones es dominada por la otra.
+				
 			}
 		}
 	}
 	
 	if (new_solution_is_dominated == 0) {
-		// Retorno 1 porque la solución es no dominada.
-		return 1;
+		if (*(instance->population_count) + instance->count_threads < instance->population_max_size) {
+			// Retorno 1 porque la solución es no dominada.
+			return 1;
+		} else {
+			//if (*(instance->population_count) + instance->count_threads == instance->population_max_size) {
+			//}
+			instance->total_population_full++;
+			
+			return 0;
+		}
 	} else {
 		return 0;
 	}
@@ -407,6 +429,16 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 				compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
 
 				thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NEW;
+				
+				pthread_mutex_lock(thread_instance->work_type_mutex);
+					thread_instance->population_count[0] = thread_instance->population_count[0] + 1;
+				pthread_mutex_unlock(thread_instance->work_type_mutex);
+
+				//if (DEBUG) {
+					fprintf(stdout, "[DEBUG] MCTing individual %d (%f %f)\n", 
+						thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])), 
+						get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+				//}
 
 				// Timming -----------------------------------------------------
 				timming_end(">> Random MCT Time", ts_mct);
@@ -486,6 +518,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 			}
 
             // Clono la solución elegida =====================================================
+           
             struct solution *selected_solution;
             int selected_solution_pos = -1;
             
@@ -493,19 +526,22 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 				for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++) {
 					if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY) {
 						thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-						thread_instance->population[current_sol_pos].status = SOLUTION__STATUS_NOT_READY;
 						selected_solution_pos = i;
+						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
 					}
 				}
-            pthread_mutex_unlock(thread_instance->population_mutex);
 
-			selected_solution = &(thread_instance->population[selected_solution_pos]);
-			
-			if (selected_solution->initialized == 0) init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
-			clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
-			
-			pthread_mutex_lock(thread_instance->population_mutex);
-				thread_instance->population[current_sol_pos].status = SOLUTION__STATUS_READY;
+				if (selected_solution_pos >= 0) {
+					selected_solution = &(thread_instance->population[selected_solution_pos]);
+					
+					if (selected_solution->initialized == 0) {
+						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
+						init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
+					}
+					
+					if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+					clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);				
+				}
             pthread_mutex_unlock(thread_instance->population_mutex);
 							
 			if (DEBUG_DEV) {
@@ -775,16 +811,13 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 					// Hago los cambios ======================================================================================
 					if (mov_type == PALS_CPU_1POP_SEARCH_OP__SWAP) {
 						// Intercambio las tareas!
-						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", 
-							machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-															   
+						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 						swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
 						
 						thread_instance->total_swaps++;
 					} if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
 						// Muevo la tarea!
 						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
-						
 						move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 						
 						thread_instance->total_moves++;
@@ -799,12 +832,11 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 		
 			// Dejo pronto el nuevo individuo para ser usado.
 			pthread_mutex_lock(thread_instance->population_mutex);
-
+				
 				int is_non_dominated = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
 				if (is_non_dominated == 1) {
 					thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_READY;
-					
-					*(thread_instance->population_count) = *(thread_instance->population_count) + 1;				
+					thread_instance->population_count[0] = thread_instance->population_count[0] + 1;
 				} else {
 					thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_EMPTY;
 				}

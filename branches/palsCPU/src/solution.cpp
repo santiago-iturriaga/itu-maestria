@@ -87,6 +87,18 @@ void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, s
 	}
 }
 
+void free_solution(struct solution *s) {
+	free(s->__task_assignment);
+	free(s->__machine_assignment_count);
+	for (int machine = 0; machine < s->etc->machines_count; machine++) {
+		free(s->__machine_assignment[machine]);
+	}
+	free(s->__machine_assignment);
+	
+	free(s->__machine_compute_time);
+	free(s->__machine_energy_consumption);
+}
+
 void clone_solution(struct solution *dst, struct solution *src, int clone_status) {
     if (clone_status == 1) {
         dst->status = src->status;
@@ -107,18 +119,6 @@ void clone_solution(struct solution *dst, struct solution *src, int clone_status
 	memcpy(dst->__machine_energy_consumption, src->__machine_energy_consumption, sizeof(float) * src->etc->machines_count);
 	dst->__worst_energy_machine_id = src->__worst_energy_machine_id;
 	dst->__total_energy_consumption = src->__total_energy_consumption;
-}
-
-void free_solution(struct solution *s) {
-	free(s->__task_assignment);
-	free(s->__machine_assignment_count);
-	for (int machine = 0; machine < s->etc->machines_count; machine++) {
-		free(s->__machine_assignment[machine]);
-	}
-	free(s->__machine_assignment);
-	
-	free(s->__machine_compute_time);
-	free(s->__machine_energy_consumption);
 }
 
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
