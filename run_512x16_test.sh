@@ -1,12 +1,16 @@
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16"
-SOLUTIONS_DIR="512x16.test"
+SOLUTIONS_BASE_DIR="512x16.test"
 THREADS=3
 VERIFICADOR="bin/verificador"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=0
 ALGORITHMS_OUTNAME[0]="pals.0"
+
+ALGORITHMS[1]="bin/pals_cpu"
+ALGORITHMS_ID[1]=1
+ALGORITHMS_OUTNAME[1]="pals.1"
 
 SCENARIOS[0]=0
 SCENARIOS[1]=10
@@ -17,14 +21,17 @@ WORKLOADS[1]=10
 WORKLOADS[2]=20
 WORKLOADS[3]=30
 
-mkdir ${SOLUTIONS_DIR}
+mkdir -p ${SOLUTIONS_DIR}
 
-for a in {0..0}
+for a in {0..1}
 do
-	for s in {0..2}
+	for s in {1..2}
 	do
 		for w in {0..3}
 		do
+			SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
+			mkdir -p ${SOLUTIONS_DIR}
+			
 			OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}"
 			rm ${OUT}.*
 			
