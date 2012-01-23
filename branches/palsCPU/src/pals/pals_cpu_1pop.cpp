@@ -309,96 +309,47 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance) {
 	sem_destroy(&(instance.new_solutions_sem));
 }
 
-int pals_cpu_1pop_eval_new_solutions(struct pals_cpu_1pop_instance *instance) {
-	/*int solutions_found = 0;
+int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos) {
+	int solutions_deleted = 0;	
+	int new_solution_is_dominated = 0;
+
+	float makespan_new, energy_new;
+	makespan_new = get_makespan(&(instance->population[new_solution_pos]));
+	energy_new = get_energy(&(instance->population[new_solution_pos]));
+	
 	int s_idx = 0;
-	
-	if (DEBUG_DEV) fprintf(stdout, "== pals_cpu_1pop_eval_new_solutions ====================\n");
-	
-	for (int s_pos = 0; (s_pos < instance->population_max_size) && (s_idx < instance->population_count); s_pos++) {
-		if (instance->population[s_pos].status == SOLUTION__STATUS_NEW) {
-		    int is_non_dominated;
-		    is_non_dominated = 1;
-	
-			// Calculo no dominancia del elemento actual y lo agrego a la población elite si corresponde.
-			float makespan_candidate, energy_candidate;
-			makespan_candidate = get_makespan(&(instance->population[s_pos]));
-			energy_candidate = get_energy(&(instance->population[s_pos]));
-
-   			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Evaluo nueva sol (%f, %f)\n", makespan_candidate, energy_candidate);
-			
-			int elite_s_idx = -1, added_to_elite = 0, end_loop = 0;
-			float makespan_elite_sol, energy_elite_sol;
-			
-			if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Población elite (%d)\n", instance->elite_population_count);
-
-			for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_1POP_WORK__ELITE_POP_MAX_SIZE) 
-			    && (elite_s_idx < instance->elite_population_count) && (end_loop == 0); elite_s_pos++) {
-			    
-			    if (instance->elite_population[elite_s_pos] != NULL) {
-			        elite_s_idx++;
-			    
-			        makespan_elite_sol = get_makespan(instance->elite_population[elite_s_pos]);
- 			        energy_elite_sol = get_energy(instance->elite_population[elite_s_pos]);
-
-        			if (DEBUG_DEV) fprintf(stdout, "        (%f, %f)\n", makespan_elite_sol, energy_elite_sol);
-
- 			        if ((makespan_candidate == makespan_elite_sol) && (energy_candidate == energy_elite_sol)) {
- 			            is_non_dominated = 0;
- 			            end_loop = 1;
- 			        } else if ((makespan_candidate <= makespan_elite_sol) && (energy_candidate <= energy_elite_sol)) {
- 			            // Domina a una solución de la elite.
- 			            if (added_to_elite == 0) {
- 			                added_to_elite = 1;
-     			            instance->elite_population[elite_s_pos] = &(instance->population[s_pos]);
- 			            } else {
-     			            elite_s_idx--;
-     			            instance->elite_population_count--;
-     			            instance->elite_population[elite_s_pos] = NULL;
-     			        }
- 			        } else if ((makespan_candidate >= makespan_elite_sol) && (energy_candidate >= energy_elite_sol)) {
- 			            // Es dominada.
- 			            is_non_dominated = 0;
- 			            end_loop = 1;
- 			        }
-			    }
-		    }
-			
-			if (is_non_dominated == 1) {
-			    if ((added_to_elite == 0) && (instance->elite_population_count < PALS_CPU_1POP_WORK__ELITE_POP_MAX_SIZE)) {
-			        for (int elite_s_pos = 0; (elite_s_pos < PALS_CPU_1POP_WORK__ELITE_POP_MAX_SIZE) && (added_to_elite == 0); elite_s_pos++) {
-			            
-			            if (instance->elite_population[elite_s_pos] == NULL) {
-			                added_to_elite = 1;
-     			            instance->elite_population_count++;
-     			            instance->elite_population[elite_s_pos] = &(instance->population[s_pos]);
-			            }
-			        }
-			    }
-
-                if (added_to_elite != 1) {
-                    instance->total_elite_population_full++;
-                    if (DEBUG_DEV) fprintf(stderr, "[WARNING] [MASTER] Población elite llena!!!");
-    			} else {
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] AGREGADA!!!!\n");
-    			}
-			}
-
-            // Bloqueo la población para actualizar el estado del individuo.
-			pthread_mutex_lock(&(instance->population_mutex));
-			instance->population[s_pos].status = SOLUTION__STATUS_READY;
-            pthread_mutex_unlock(&(instance->population_mutex));
-    		
-			solutions_found++;
-		}
+	for (int s_pos = 0; (s_pos < instance->population_max_size) && 
+		(s_idx < *(instance->population_count)) && (new_solution_is_dominated == 0); s_pos++) {
 		
-		if (instance->population[s_pos].status > SOLUTION__STATUS_EMPTY) {
+		if ((instance->population[s_pos].status > SOLUTION__STATUS_EMPTY) && (s_pos != new_solution_pos)) {
 			s_idx++;
+			
+			// Calculo no dominancia del elemento nuevo con el actual.
+			float makespan, energy;
+			makespan = get_makespan(&(instance->population[s_pos]));
+			energy = get_energy(&(instance->population[s_pos]));
+
+			if ((makespan < makespan_new) && (energy < energy_new)) {
+				// La nueva solución es dominada por una ya existente.
+				new_solution_is_dominated = 1;
+			} else if ((makespan < makespan_new) && (energy < energy_new)) {
+				// La nueva solución domina a una ya existente.
+				solutions_deleted++;
+				instance->population_count--;
+				
+				instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
+			} else {
+				// Ninguna de las dos soluciones es dominada por la otra.
+			}
 		}
 	}
 	
-	return solutions_found;*/
-	return 0;
+	if (new_solution_is_dominated == 0) {
+		// Retorno 1 porque la solución es no dominada.
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 void* pals_cpu_1pop_master_thread(void *thread_arg) {
@@ -618,7 +569,7 @@ void* pals_cpu_1pop_master_thread(void *thread_arg) {
 void* pals_cpu_1pop_thread(void *thread_arg) {	
     int rc;
 
-    pals_cpu_1pop_thread_arg *thread_instance;
+    struct pals_cpu_1pop_thread_arg *thread_instance;
     thread_instance = (pals_cpu_1pop_thread_arg*)thread_arg;
 
 	thread_instance->total_iterations = 0;
@@ -1054,9 +1005,15 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 		
 			// Dejo pronto el nuevo individuo para ser usado.
 			pthread_mutex_lock(thread_instance->population_mutex);
-			
-			selected_solution->status = SOLUTION__STATUS_READY;
-			*(thread_instance->population_count) = *(thread_instance->population_count) + 1;
+
+				int is_non_dominated = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
+				if (is_non_dominated == 1) {
+					thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_READY;
+					
+					*(thread_instance->population_count) = *(thread_instance->population_count) + 1;				
+				} else {
+					thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_EMPTY;
+				}
 							   
 			pthread_mutex_unlock(thread_instance->population_mutex);
 			
