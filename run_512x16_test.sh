@@ -23,7 +23,7 @@ WORKLOADS[3]=30
 
 mkdir -p ${SOLUTIONS_DIR}
 
-for a in {0..1}
+for a in {1..1}
 do
 	for s in {1..2}
 	do
