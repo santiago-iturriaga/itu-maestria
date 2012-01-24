@@ -129,13 +129,13 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 		fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", total_iterations);
 		fprintf(stdout, "[INFO] Total de makespan searches     : %d (%d = %.1f)\n", 
             total_makespan_greedy_searches, total_success_makespan_greedy_searches,
-            100.0 - (total_success_makespan_greedy_searches * 100.0 / total_makespan_greedy_searches));
+            (total_success_makespan_greedy_searches * 100.0 / total_makespan_greedy_searches));
 		fprintf(stdout, "[INFO] Total de energy searches       : %d (%d = %.1f)\n", 
             total_energy_greedy_searches, total_success_energy_greedy_searches,
-            100.0 - (total_success_energy_greedy_searches * 100.0 / total_energy_greedy_searches));
+            (total_success_energy_greedy_searches * 100.0 / total_energy_greedy_searches));
 		fprintf(stdout, "[INFO] Total de random searches       : %d (%d = %.1f)\n", 
             total_random_greedy_searches, total_success_random_greedy_searches,
-            100.0 - (total_success_random_greedy_searches * 100.0 / total_random_greedy_searches));
+            (total_success_random_greedy_searches * 100.0 / total_random_greedy_searches));
 		fprintf(stdout, "[INFO] Total de swaps                 : %d\n", total_swaps);
 		fprintf(stdout, "[INFO] Total de moves                 : %d\n", total_moves);
 		fprintf(stdout, "[INFO] Total poblacion llena          : %d\n", total_population_full);
@@ -161,36 +161,36 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             }
         }
 	} else {
-	        if (!OUTPUT_SOLUTION) { 
-	            fprintf(stdout, "== Population =================================================\n");
-        	    for (int i = 0; i < instance.population_max_size; i++) {
-        	        if (instance.population[i].status > SOLUTION__STATUS_EMPTY) {
-    	                fprintf(stdout, "%f %f\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
-    	            }
-    	        }
-	        } else {
-				fprintf(stdout, "%d\n", instance.population_count);
-        	    for (int i = 0; i < instance.population_max_size; i++) {
-        	        if (instance.population[i].status > SOLUTION__STATUS_EMPTY) {
-						for (int task = 0; task < etc->tasks_count; task++) {
-							fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
-						}
-        	        }
-        	    }
-        	    
-				fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
-                fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
-				fprintf(stderr, "BEST_FOUND_TIME|%.0f\n", elapsed_last_found);
-				fprintf(stderr, "TOTAL_SWAPS|%ld\n", total_swaps);
-				fprintf(stderr, "TOTAL_MOVES|%ld\n", total_moves);
-				fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
-				fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
-				fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
-				fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
-				fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
-				fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
-                fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
-			}
+        if (!OUTPUT_SOLUTION) { 
+            fprintf(stdout, "== Population =================================================\n");
+            for (int i = 0; i < instance.population_max_size; i++) {
+                if (instance.population[i].status > SOLUTION__STATUS_EMPTY) {
+                    fprintf(stdout, "%f %f\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
+                }
+            }
+        } else {
+            fprintf(stdout, "%d\n", instance.population_count);
+            for (int i = 0; i < instance.population_max_size; i++) {
+                if (instance.population[i].status > SOLUTION__STATUS_EMPTY) {
+                    for (int task = 0; task < etc->tasks_count; task++) {
+                        fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
+                    }
+                }
+            }
+            
+            fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
+            fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
+            fprintf(stderr, "BEST_FOUND_TIME|%.0f\n", elapsed_last_found);
+            fprintf(stderr, "TOTAL_SWAPS|%ld\n", total_swaps);
+            fprintf(stderr, "TOTAL_MOVES|%ld\n", total_moves);
+            fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
+            fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
+            fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_success_random_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
+            fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
+        }
 	}
 
 	// Libero la memoria del dispositivo.
