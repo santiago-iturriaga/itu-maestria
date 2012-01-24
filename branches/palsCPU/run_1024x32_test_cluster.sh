@@ -1,6 +1,6 @@
-DIMENSIONS="512 16"
-INSTANCES_PATH="instancias/512x16"
-SOLUTIONS_BASE_DIR="512x16.test"
+DIMENSIONS="1024 32"
+INSTANCES_PATH="instancias/1024x32"
+SOLUTIONS_BASE_DIR="1024x32.test"
 THREADS=9
 VERIFICADOR="bin/verificador"
 ITERATIONS=15
@@ -32,10 +32,10 @@ do
 		do
             for (( i=0; i < ${ITERATIONS}; i++ ))
             do
-                SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}.${i}"
+                SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
                 mkdir -p ${SOLUTIONS_DIR}
                 
-                OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}"
+                OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.${i}"
                 rm ${OUT}.*
                 
                 RAND=$RANDOM

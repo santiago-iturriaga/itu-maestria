@@ -16,17 +16,17 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-#define PALS_CPU_1POP_WORK__TIMEOUT      5
-#define PALS_CPU_1POP_WORK__CONVERGENCE  1000
+#define PALS_CPU_1POP_WORK__TIMEOUT      20
+#define PALS_CPU_1POP_WORK__CONVERGENCE  5000
 
-#define PALS_CPU_1POP_WORK__THREAD_CONVERGENCE  50
-#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS   250
+#define PALS_CPU_1POP_WORK__THREAD_CONVERGENCE  100
+#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS   500
 
-#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    40
+#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    10
 
-#define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD 12
+#define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD 16
 #define PALS_CPU_1POP_WORK__DST_TASK_NHOOD 6
-#define PALS_CPU_1POP_WORK__DST_MACH_NHOOD 2
+#define PALS_CPU_1POP_WORK__DST_MACH_NHOOD 6
 
 #define PALS_CPU_1POP_SEARCH_OP__SWAP 0
 #define PALS_CPU_1POP_SEARCH_OP__MOVE 1
@@ -38,8 +38,8 @@
 #define PALS_CPU_1POP_SEARCH__ENERGY_GREEDY   1
 #define PALS_CPU_1POP_SEARCH__RANDOM_GREEDY   2
 
-#define PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN 0.40
-#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   0.40
+#define PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN 0.60
+#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   0.20
 
 #define PALS_CPU_1POP_WORK__INIT     0
 #define PALS_CPU_1POP_WORK__SEARCH   1
@@ -92,9 +92,7 @@ struct pals_cpu_1pop_thread_arg {
 	int count_threads;
 	int *work_type;
 	
-	pthread_mutex_t     *work_type_mutex;
 	pthread_mutex_t     *population_mutex;
-	sem_t               *new_solutions_sem;
 	pthread_barrier_t   *sync_barrier;
 	
 	// Estado del generador aleatorio para el thread actual.
@@ -106,14 +104,21 @@ struct pals_cpu_1pop_thread_arg {
 	
 	// Statics
 	int total_iterations;
+    
     int total_makespan_greedy_searches;
     int total_energy_greedy_searches;
     int total_random_greedy_searches;
 	int total_swaps;
     int total_moves;
+
+    int total_success_makespan_greedy_searches;
+    int total_success_energy_greedy_searches;
+    int total_success_random_greedy_searches;
+
     int total_population_full;
     
 	timespec ts_start;
+    timespec ts_last_found;
 };
 
 /*

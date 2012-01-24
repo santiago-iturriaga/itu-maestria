@@ -29,7 +29,7 @@ do
 	do
 		for w in {0..3}
 		do
-			SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
+			SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}.1"
 			mkdir -p ${SOLUTIONS_DIR}
 			
 			OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}"
@@ -38,7 +38,7 @@ do
 			RAND=$RANDOM
 			EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND}"
 			echo ${EXEC}
-			time (${EXEC} >> ${OUT}.sols 2> ${OUT}.err) 2> ${OUT}.time
+			time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
 			
 			cat ${OUT}.time
 			
