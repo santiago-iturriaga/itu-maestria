@@ -3,9 +3,10 @@
 import os
 import math
 
-deterministas = ['MinMin', 'MINMin', 'MinMIN', 'MINMIN']
-deterministas_dir = 'list-heuristics/512x16'
-no_deterministas_dir = '512x16.test'
+list_heur = ['MinMin', 'MINMin', 'MinMIN', 'MINMIN']
+list_heur_dir = 'list-heuristics/512x16'
+palsRuso_dir = 'pals-ruso/512x16'
+pals_dir = '512x16.test'
 
 def calcular_medidas(valores):
     min = valores[0]
@@ -30,15 +31,14 @@ def calcular_medidas(valores):
 if __name__ == '__main__':
     instancias_raw = []
 
-    for filename in os.listdir(no_deterministas_dir):
-        instancias_raw.append(filename)
+    for filename in os.listdir(pals_dir):
+	nameParts = filename.split('.')
+        instancias_raw.append(nameParts[0] + '.' + nameParts[1])
 
-    ejecuciones_pals_0 = {}
-    ejecuciones_pals_1 = {}
+    ejecuciones_pals = {}
 
     for instancia in instancias_raw:
-        for filename in os.listdir(no_deterministas_dir + '/' + instancia):
-            #pals.0.s10.w1.err
+        for filename in os.listdir(pals_dir + '/' + instancia + '.1'):
             filename_parts = filename.split('.')
             
             if len(filename_parts) == 5:
@@ -47,91 +47,98 @@ if __name__ == '__main__':
                 file_type = filename_parts[4]
                 file_id = filename_parts[0] + '.' + filename_parts[1] + '.' + filename_parts[2] + '.' + filename_parts[3]
                 
-                if file_version == 'pals.0':                
-                    if not file_version in ejecuciones_pals_0:
-                        ejecuciones_pals_0[file_inst] = []
-                    ejecuciones_pals_0[file_inst].append(file_id)
-                elif file_version == 'pals.1':
-                    if not file_version in ejecuciones_pals_1:
-                        ejecuciones_pals_1[file_inst] = []
-                    ejecuciones_pals_1[file_inst].append(file_id)
+                if not file_version in ejecuciones_pals:
+                    ejecuciones_pals[file_inst] = []
+                    ejecuciones_pals[file_inst].append(file_id)
                              
     instancias = list(set(instancias_raw))
     instancias.sort()
 
-    #print instancias
-
-    resultados_deterministas = []
-    resultados_pals_0 = {}
-    resultados_pals_1 = {}
+    resultados_list_heur = []
+    resultados_pals = {}
+    resultados_palsRuso = {}
 
     for instancia in instancias:
-        for d in deterministas:
-            path = deterministas_dir + '/' + d + '.' + instancia + '.metrics'
-
+        for d in list_heur:
+            path = list_heur_dir + '/' + d + '.' + instancia + '.metrics'
+            print path
+            
             if os.path.isfile(path):
                 metrics_file = open(path)
                 values = metrics_file.readline().split(' ')
                 makespan = float(values[0])
                 energy = float(values[1])
 
-                resultados_deterministas.append((instancia, d, makespan, energy))
+                resultados_list_heur.append((instancia, d, makespan, energy))
             else:
+                print "[ERROR] cargando heuristica %s" % d
                 exit(-1)
 
-    for instancia in instancias:
-        ejecucion = ejecuciones_pals_0[instancia][0]
-        
-        path = no_deterministas_dir + '/' + instancia + '/' + ejecucion + '.metrics'
+    for instancia in instancias:           
+        path = palsRuso_dir + '/palsRuso.' + instancia + '.metrics'
         print path
-
+        
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
             makespan = float(values[0])
             energy = float(values[1])
 
-            resultados_pals_0[instancia] = (ejecucion, makespan, energy)
+            resultados_palsRuso[instancia] = (makespan, energy)
         else:
+            print "[ERROR] cargando heuristica palsRuso"
+            exit(-1)
+
+    for instancia in instancias:           
+        ejecucion = ejecuciones_pals[instancia][0]
+        
+        path = pals_dir + '/' + instancia + '.1/' + ejecucion + '.metrics'
+        print path
+
+        if os.path.isfile(path):
+            metrics_file = open(path)
+            
+            min_makespan = 0.0
+            min_energy = 0.0
+            
+            for line in metrics_file:
+                values = line.split(' ')
+                makespan = float(values[0])
+                energy = float(values[1])
+                
+                if min_makespan == 0.0: min_makespan = makespan
+                elif min_makespan > makespan: min_makespan = makespan
+                
+                if min_energy == 0.0: min_energy = energy
+                elif min_energy > energy: min_energy = energy
+
+            resultados_pals[instancia] = (min_makespan, min_energy)
+        else:
+            print "[ERROR] cargando heuristica pals"
             exit(-1)
             
-        ejecucion = ejecuciones_pals_1[instancia][0]
-        
-        path = no_deterministas_dir + '/' + instancia + '/' + ejecucion + '.metrics'
-        print path
-
-        if os.path.isfile(path):
-            metrics_file = open(path)
-            values = metrics_file.readline().split(' ')
-            makespan = float(values[0])
-            energy = float(values[1])
-
-            resultados_pals_1[instancia] = (ejecucion, makespan, energy)
-        else:
-            exit(-1)
-
     print "====== Tabla de makespan ======"
-    print "Instancia,MinMin,PALS 1p,PALS 1p vs MinMin,PALS 2p,PALS 2p vs MinMin"
+    print "Instancia,MinMin,PALS Ruso,PALS Ruso vs MinMin,PALS 2obj,PALS 2obj vs MinMin"
     for instancia in instancias:
         makespan_minmin = 0.0
     
-        for (r_instancia, r_d, r_makespan, r_energy) in resultados_deterministas:
+        for (r_instancia, r_d, r_makespan, r_energy) in resultados_list_heur:
             if instancia == r_instancia and r_d == 'MinMin':
                 makespan_minmin = r_makespan
 
         print "%s,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, makespan_minmin, \
-            resultados_pals_1[instancia][1], 100.0 - (resultados_pals_1[instancia][1] * 100.0 / makespan_minmin), \
-            resultados_pals_0[instancia][1], 100.0 - (resultados_pals_0[instancia][1] * 100.0 / makespan_minmin))
+            resultados_palsRuso[instancia][0], 100.0 - (resultados_palsRuso[instancia][0] * 100.0 / makespan_minmin), \
+            resultados_pals[instancia][0], 100.0 - (resultados_pals[instancia][0] * 100.0 / makespan_minmin))
 
     print "====== Tabla de energía ======"
-    print "Instancia,MinMin,PALS 1p,PALS 1p vs MinMin,PALS 2p,PALS 2p vs MinMin"
+    print "Instancia,MinMin,PALS Ruso,PALS Ruso vs MinMin,PALS 2obj,PALS 2obj vs MinMin"
     for instancia in instancias:
         energy_minmin = 0.0
     
-        for (r_instancia, r_d, r_makespan, r_energy) in resultados_deterministas:
+        for (r_instancia, r_d, r_makespan, r_energy) in resultados_list_heur:
             if instancia == r_instancia and r_d == 'MinMin':
                 energy_minmin = r_energy
 
         print "%s,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, energy_minmin, \
-            resultados_pals_1[instancia][2], 100.0 - (resultados_pals_1[instancia][2] * 100.0 / energy_minmin), \
-            resultados_pals_0[instancia][2], 100.0 - (resultados_pals_0[instancia][2] * 100.0 / energy_minmin))
+            resultados_palsRuso[instancia][1], 100.0 - (resultados_palsRuso[instancia][1] * 100.0 / energy_minmin), \
+            resultados_pals[instancia][1], 100.0 - (resultados_pals[instancia][1] * 100.0 / energy_minmin))
