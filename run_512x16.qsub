@@ -10,7 +10,7 @@
 #PBS -q publica
 
 # Working dir
-#PBS -d /home/santiago/GPGPU/palsCPU/
+#PBS -d /home/siturria/maestria/branches/palsCPU/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
@@ -23,8 +23,8 @@
 # e: mail is sent when the job terminates.
 
 # Output path
-#PBS -e /home/santiago/GPGPU/palsCPU/
-#PBS -o /home/santiago/GPGPU/palsCPU/
+#PBS -e /home/siturria/maestria/branches/palsCPU/
+#PBS -o /home/siturria/maestria/branches/palsCPU/
 
 #PBS -V
 
