@@ -616,10 +616,10 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
                         thread_instance->total_makespan_greedy_searches++;
                         
-                    /*} else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
+                    } else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
                         search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
                         thread_instance->total_energy_greedy_searches++;
-                    */    
+                        
                     } else {
                         search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
                         thread_instance->total_random_greedy_searches++;
@@ -767,37 +767,45 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                 machine_b_ct_new = machine_b_ct_old - 
 					get_etc_value(thread_instance->etc, machine_b, task_y_current) + 
 					get_etc_value(thread_instance->etc, machine_b, task_x_current);
-                            
-                                if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan)) {
-					best_delta_makespan = machine_a_ct_new;
-              	                        best_delta_energy = 0.0;
-                       	                task_x_best_swap_pos = task_x_pos;
-                               	        task_y_best_swap_pos = task_y_pos;
-                                      	task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
+                           
+				if (((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)||(search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY))
+					&&(best_delta_energy == 0.0)) {
 
-                                } else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan)) {
-					best_delta_makespan = machine_b_ct_new;
-              	                        best_delta_energy = 0.0;
-                       	                task_x_best_swap_pos = task_x_pos;
-                               	        task_y_best_swap_pos = task_y_pos;
-                                      	task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
+	                                if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan)) {
+						best_delta_makespan = machine_a_ct_new;
+	              	                        best_delta_energy = 0.0;
+	                       	                task_x_best_swap_pos = task_x_pos;
+	                               	        task_y_best_swap_pos = task_y_pos;
+	                                      	task_x_best_move_pos = -1;
+	                                        machine_b_best_move_id = -1;
+	                                } else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan)) {
+						best_delta_makespan = machine_b_ct_new;
+	              	                        best_delta_energy = 0.0;
+	                       	                task_x_best_swap_pos = task_x_pos;
+	                               	        task_y_best_swap_pos = task_y_pos;
+	                                      	task_x_best_move_pos = -1;
+	                                        machine_b_best_move_id = -1;
+					}	
 				}
-			/*
-                                float swap_diff_energy;
-                                swap_diff_energy = 
-                                    ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                    ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
-                                    
-                                if (((0 - swap_diff_energy) < delta_energy) && 
-                                    (machine_b_ct_new <= current_makespan) && 
-                                    (machine_a_ct_new <= current_makespan)) {
-                                    
-                                    delta_energy = 0 - swap_diff_energy;
-                                }
-
-                          */
+			
+				if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)||(best_delta_makespan == current_makespan)) {
+	                                float swap_diff_energy;
+	                                swap_diff_energy = 
+	                                    ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+	                                    ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
+	                                    
+	                                if ((swap_diff_energy > best_delta_energy) && 
+	                                    (machine_b_ct_new <= current_makespan) && 
+	                                    (machine_a_ct_new <= current_makespan)) {
+	                                    
+	                                    best_delta_energy = swap_diff_energy;
+					    best_delta_makespan = current_makespan;
+	                       	            task_x_best_swap_pos = task_x_pos;
+	                               	    task_y_best_swap_pos = task_y_pos;
+	                                    task_x_best_move_pos = -1;
+	                                    machine_b_best_move_id = -1;
+	                                }
+				}
                             } /* Termino el loop de TASK_B */
 
                         } else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
