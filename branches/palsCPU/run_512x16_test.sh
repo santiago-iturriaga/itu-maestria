@@ -4,8 +4,8 @@ SOLUTIONS_BASE_DIR="512x16.test"
 THREADS=8
 
 VERIFICADOR="bin/verificador"
-MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
-RUSO_METRICS_PATH="pals-ruso/1024x32/palsRuso"
+MINMIN_METRICS_PATH="list-heuristics/512x16/MinMin"
+RUSO_METRICS_PATH="pals-ruso/512x16/palsRuso"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=0

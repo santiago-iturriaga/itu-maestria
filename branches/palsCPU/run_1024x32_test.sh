@@ -54,7 +54,7 @@ do
                 
 	                echo "set term postscript" > ${OUT}.plot
         	        echo "set output '${OUT}.ps'" >> ${OUT}.plot
-                	echo "plot '${OUT}.metrics' using 1:2 title '${OUT}', '${MINMIN_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
+                	echo "plot '${OUT}.metrics' using 1:2 title '${OUT}.metrics', '${MINMIN_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
 	                echo "set term png" >> ${OUT}.plot
         	        echo "set output '${OUT}.png'" >> ${OUT}.plot
                 	echo "replot" >> ${OUT}.plot
