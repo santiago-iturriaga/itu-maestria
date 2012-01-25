@@ -22,7 +22,7 @@ do
     do
         rm ${SOLUTIONS_DIR}/palsRuso.s${SCENARIOS[s]}.w${WORKLOADS[w]}.*
         
-        ./palsRuso ${INSTANCES_PATH}/s${SCENARIOS[s]}.w${WORKLOADS[w]} ${ARGS} > ${SOLUTIONS_DIR}/palsRuso.s${SCENARIOS[s]}.w${WORKLOADS[w]}.sols
+        ./palsRuso.1024 ${INSTANCES_PATH}/s${SCENARIOS[s]}.w${WORKLOADS[w]} ${ARGS} > ${SOLUTIONS_DIR}/palsRuso.s${SCENARIOS[s]}.w${WORKLOADS[w]}.sols
             
         EXEC_VERIF="${VERIFICADOR} ${INSTANCES_NEW_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_NEW_PATH}/workload.${WORKLOADS[w]} ${SOLUTIONS_DIR}/palsRuso.s${SCENARIOS[s]}.w${WORKLOADS[w]}.sols ${DIMENSIONS}"
         echo ${EXEC_VERIF}

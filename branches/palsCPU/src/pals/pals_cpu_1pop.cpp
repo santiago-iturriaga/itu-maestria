@@ -585,29 +585,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
                 
-                // Determino la estrategia de busqueda del hilo  =====================================================
-                int search_type;
-                double search_type_random = 0.0;
-                
-                #ifdef CPU_MERSENNE_TWISTER
-                search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                #else
-                search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                #endif
-                
-                if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN) {
-                    search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
-                    thread_instance->total_makespan_greedy_searches++;
-                    
-                } else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
-                    search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
-                    thread_instance->total_energy_greedy_searches++;
-                    
-                } else {
-                    search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
-                    thread_instance->total_random_greedy_searches++;
-                }
-                                                
+                // Determino la estrategia de busqueda del hilo  =====================================================                                               
                 if (DEBUG_DEV) {
                     fprintf(stdout, "[DEBUG] Selected individual\n");
                     fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
@@ -623,6 +601,28 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                 
                     thread_instance->total_iterations++;                
                   
+                    int search_type;
+                    double search_type_random = 0.0;
+                    
+                    #ifdef CPU_MERSENNE_TWISTER
+                    search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                    #else
+                    search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                    #endif
+                  
+                    if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN) {
+                        search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
+                        thread_instance->total_makespan_greedy_searches++;
+                        
+                    } else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
+                        search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
+                        thread_instance->total_energy_greedy_searches++;
+                        
+                    } else {
+                        search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
+                        thread_instance->total_random_greedy_searches++;
+                    }
+                  
                     // Determino que tipo movimiento va a realizar el hilo.
                     #ifdef CPU_MERSENNE_TWISTER
                     random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -634,7 +634,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                     
                     if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP) {
                         mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
-                    } else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE) {
+                    } else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE) {
                         mov_type = PALS_CPU_1POP_SEARCH_OP__MOVE;
                     }
 
@@ -875,6 +875,14 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                             thread_instance->total_moves++;
                         }
                         
+                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
+                            thread_instance->total_success_makespan_greedy_searches++;
+                        } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
+                            thread_instance->total_success_energy_greedy_searches++;
+                        } else {
+                            thread_instance->total_success_random_greedy_searches++;
+                        }
+                        
                         if (DEBUG_DEV) validate_solution(selected_solution);
                     }
                 }
@@ -885,15 +893,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                 // Dejo pronto el nuevo individuo para ser usado.
                 pthread_mutex_lock(thread_instance->population_mutex);                    
                 
-                    if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) != 0) {                        
-                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
-                            thread_instance->total_success_makespan_greedy_searches++;
-                        } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
-                            thread_instance->total_success_energy_greedy_searches++;
-                        } else {
-                            thread_instance->total_success_random_greedy_searches++;
-                        }
-                    } else {
+                    if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) != 0) {
                         thread_instance->ts_last_found = ts_current;
                     }
                 
