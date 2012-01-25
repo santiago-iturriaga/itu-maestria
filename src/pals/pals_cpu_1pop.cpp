@@ -181,8 +181,8 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
             fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
             fprintf(stderr, "BEST_FOUND_TIME|%.0f\n", elapsed_last_found);
-            fprintf(stderr, "TOTAL_SWAPS|%ld\n", total_swaps);
-            fprintf(stderr, "TOTAL_MOVES|%ld\n", total_moves);
+            fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
+            fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
             fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
             fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
             fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
@@ -595,6 +595,8 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                 }
                 
                 int solution_improved_on = 0;
+                float original_makespan = get_makespan(selected_solution);
+                float original_energy = get_energy(selected_solution);
                 
                 for (int search_iteration = 0; (search_iteration < PALS_CPU_1POP_WORK__THREAD_ITERATIONS) 
                     && (search_iteration - solution_improved_on < PALS_CPU_1POP_WORK__THREAD_CONVERGENCE); search_iteration++) {
@@ -623,21 +625,6 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         thread_instance->total_random_greedy_searches++;
                     }
                   
-                    // Determino que tipo movimiento va a realizar el hilo.
-                    #ifdef CPU_MERSENNE_TWISTER
-                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                    #else
-                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                    #endif
-                    
-                    int mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
-                    
-                    if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP) {
-                        mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
-                    } else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE) {
-                        mov_type = PALS_CPU_1POP_SEARCH_OP__MOVE;
-                    }
-
                     // Determino las máquinas de inicio para la búsqueda.
                     int machine_a, machine_b;
 
@@ -647,7 +634,15 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         
                     } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
                         // La estrategia es mejorar energía, siempre selecciono la máquina que consume más energía.
-                        machine_a = get_worst_energy_machine_id(selected_solution);
+                        // machine_a = get_worst_energy_machine_id(selected_solution);
+                        
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
+                        
+                        machine_a = (int)floor(random * thread_instance->etc->machines_count);
                         
                     } else {
                         #ifdef CPU_MERSENNE_TWISTER
@@ -668,8 +663,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                     #endif
                     
                     // Siempre selecciono la segunda máquina aleatoriamente.
-                    machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-                        
+                    machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1)); 
                     if (machine_a == machine_b) machine_b++;
 
                     // Determino las tareas de inicio para la búsqueda.
@@ -691,42 +685,78 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 
                     float machine_a_ct_old, machine_b_ct_old;
                     float machine_a_ct_new, machine_b_ct_new;
-                    
-                    float delta_makespan, delta_ct, delta_energy;
-                    
-                    int search_ended;
-                    search_ended = 0;
-                    
-                    int task_x_best_move_pos = -1, machine_b_best_move_id = -1;
-                    int task_x_best_swap_pos = -1, task_y_best_swap_pos = -1;
-                        
+                       
                     float current_makespan = get_makespan(selected_solution);
-                        
-                    if (mov_type == PALS_CPU_1POP_SEARCH_OP__SWAP) {
-                        int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
-                        
+
+                    int task_x_pos;	                
+                    int task_x_current;
+                    int machine_b_current;
+                   
+                    int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
+                   
+                    int top_task_a = PALS_CPU_1POP_WORK__SRC_TASK_NHOOD;
+                    if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
+                    
+                    int top_task_b = PALS_CPU_1POP_WORK__DST_TASK_NHOOD;
+                    if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
+                   
+                    int top_machine_b = PALS_CPU_1POP_WORK__DST_MACH_NHOOD;
+                    if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
+                   
+                    int task_y = (int)floor(random * machine_b_task_count);
+                   
+                    float best_delta_makespan;
+                    best_delta_makespan = current_makespan;
+                    
+                    float best_delta_energy;
+                    best_delta_energy = 0;
+                    
+                    int task_x_best_move_pos;
+                    task_x_best_move_pos = -1;
+                    
+                    int machine_b_best_move_id;
+                    machine_b_best_move_id = -1;
+                    
+                    int task_x_best_swap_pos;
+                    task_x_best_swap_pos = -1;
+                    
+                    int task_y_best_swap_pos;
+                    task_y_best_swap_pos = -1;
+                   
+                    for (int task_x_offset = 0; (task_x_offset < top_task_a); task_x_offset++) {  
+                        task_x_pos = (task_x + task_x_offset) % machine_a_task_count;
+                        task_x_current = get_machine_task_id(selected_solution, machine_a, task_x_pos);
+                       
+                        // Determino que tipo movimiento va a realizar el hilo.
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #else
                         random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         
-                        int task_y = (int)floor(random * machine_b_task_count);
+                        int mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
                         
-                        int top_task_a = PALS_CPU_1POP_WORK__SRC_TASK_NHOOD;
-                        if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                        
-                        int top_task_b = PALS_CPU_1POP_WORK__DST_TASK_NHOOD;
-                        if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
-                        
-                        int task_x_pos, task_y_pos;	                
-                        int task_x_current, task_y_current;
-                        
-                        for (int task_x_offset = 0; (task_x_offset < top_task_a) && (search_ended == 0); task_x_offset++) {
-                            task_x_pos = (task_x + task_x_offset) % machine_a_task_count;
-                            task_x_current = get_machine_task_id(selected_solution, machine_a, task_x_pos);
-                        
-                            for (int task_y_offset = 0; (task_y_offset < top_task_b) && (search_ended == 0); task_y_offset++) {
+                        if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP) {
+                            mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
+                        } else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE) {
+                            mov_type = PALS_CPU_1POP_SEARCH_OP__MOVE;
+                        }
+                    
+                        if (mov_type == PALS_CPU_1POP_SEARCH_OP__SWAP) {                           
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+                            
+                            int task_y_pos, task_y_current;
+                            for (int task_y_offset = 0; (task_y_offset < top_task_b); task_y_offset++) {
+                                float delta_makespan;
+                                delta_makespan = best_delta_makespan + 1;
+                                
+                                float delta_energy;
+                                delta_energy = best_delta_energy + 1;
+                                
                                 task_y_pos = (task_y + task_y_offset) % machine_b_task_count;                        
                                 task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
                                 
@@ -743,63 +773,70 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                 machine_b_ct_new = machine_b_ct_old;
                                 machine_b_ct_new = machine_b_ct_new - get_etc_value(thread_instance->etc, machine_b, task_y_current); // Resto el ETC de y en b.
                                 machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_b, task_x_current); // Sumo el ETC de x en b.
-                                                        
-                                if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
-                                    // La estrategia es mejorar makespan.
+                            
+                                if ((machine_b_ct_new < machine_a_ct_new) && (machine_a_ct_new < delta_makespan)) {                                       
+                                    delta_makespan = machine_a_ct_new;
                                     
-                                    if ((machine_a_ct_new < machine_a_ct_old) && (machine_b_ct_new < machine_a_ct_old)) {
-                                        search_ended = 1;
+                                } else if ((machine_a_ct_new < machine_b_ct_new) && (machine_b_ct_new < delta_makespan)) {
+                                    delta_makespan = machine_b_ct_new;
+                                    
+                                }
+/*
+                                float swap_diff_energy;
+                                swap_diff_energy = 
+                                    ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                    ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
+                                    
+                                if (((0 - swap_diff_energy) < delta_energy) && 
+                                    (machine_b_ct_new <= current_makespan) && 
+                                    (machine_a_ct_new <= current_makespan)) {
+                                    
+                                    delta_energy = 0 - swap_diff_energy;
+                                }
+*/
+                                if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) || (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)) {
+                                    if (best_delta_makespan >= delta_makespan) {
+                                        best_delta_makespan = delta_makespan;
+                                        best_delta_energy = delta_energy;
                                         task_x_best_swap_pos = task_x_pos;
                                         task_y_best_swap_pos = task_y_pos;
+                                        task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
+                                    } else if (best_delta_energy >= delta_energy) {
+                                        best_delta_makespan = delta_makespan;
+                                        best_delta_energy = delta_energy;
+                                        task_x_best_swap_pos = task_x_pos;
+                                        task_y_best_swap_pos = task_y_pos;
+                                        task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
                                     }
                                 } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
-                                    // La estrategia es mejorar energía.                                                              
-                                    if ((machine_a_ct_new <= current_makespan) && (machine_b_ct_new <= current_makespan)) {
-                                        delta_energy = 
-                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
-                                            
-                                        if (delta_energy > 0) {                                       
-                                            search_ended = 1;
-                                            task_x_best_swap_pos = task_x_pos;
-                                            task_y_best_swap_pos = task_y_pos;
-                                        }
-                                    }
-                                } else {
-                                    // La estrategia es aleatoria.
-                                    if ((machine_a_ct_new <= current_makespan) && (machine_b_ct_new <= current_makespan)) {
-                                        delta_ct = (machine_a_ct_old - machine_a_ct_new) + (machine_b_ct_old - machine_b_ct_new);	                        
-                                        
-                                        delta_energy = 
-                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));     
-                                            
-                                        if ((delta_energy > 0) || (delta_ct > 0)) {
-                                            search_ended = 1;
-                                            task_x_best_swap_pos = task_x_pos;
-                                            task_y_best_swap_pos = task_y_pos;
-                                        }
+                                    if (best_delta_energy >= delta_energy) {
+                                        best_delta_makespan = delta_makespan;
+                                        best_delta_energy = delta_energy;
+                                        task_x_best_swap_pos = task_x_pos;
+                                        task_y_best_swap_pos = task_y_pos;
+                                        task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
+                                    } else if (best_delta_makespan >= delta_makespan) {
+                                        best_delta_makespan = delta_makespan;
+                                        best_delta_energy = delta_energy;
+                                        task_x_best_swap_pos = task_x_pos;
+                                        task_y_best_swap_pos = task_y_pos;
+                                        task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
                                     }
                                 }
-                            }
-                        }
+                            } /* Termino el loop de TASK_B */
 
-                    } else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
-                        int top_task_a = PALS_CPU_1POP_WORK__SRC_TASK_NHOOD;
-                        if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                        
-                        int top_machine_b = PALS_CPU_1POP_WORK__DST_MACH_NHOOD;
-                        if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
-                        
-                        int task_x_pos;
-                        int task_x_current, machine_b_current;
-                        
-                        for (int task_x_offset = 0; (task_x_offset < top_task_a) && (search_ended == 0); task_x_offset++) {
-                            task_x_pos = (task_x + task_x_offset) % machine_a_task_count;
-                            task_x_current = get_machine_task_id(selected_solution, machine_a, task_x_pos);
-                        
-                            for (int machine_b_offset = 0; (machine_b_offset < top_machine_b) && (search_ended == 0); machine_b_offset++) {
-                                machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count;
+                        } else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
+
+                            for (int machine_b_offset = 0; (machine_b_offset < top_machine_b); machine_b_offset++) {
+                                if (machine_b + machine_b_offset != machine_a) {
+                                    machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count;
+                                } else {
+                                    machine_b_current = (machine_b + machine_b_offset + 1) % thread_instance->etc->machines_count;
+                                }
                                                                 
                                 if (machine_b_current != machine_a) {
                                     // Máquina 1.
@@ -813,67 +850,80 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
 
                                     machine_b_ct_new = machine_b_ct_old;
                                     machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_b, task_x_current); // Sumo el ETC de x en b.
-                                                            
-                                    if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
-                                        // La estrategia es mejorar makespan.
-                                        delta_makespan = (machine_a_ct_old - machine_b_ct_new);
                                         
-                                        if (delta_makespan > 0) {
-                                            search_ended = 1;
+                                    float delta_makespan;
+                                    delta_makespan = best_delta_makespan + 1;
+                                    
+                                    float delta_energy;
+                                    delta_energy = best_delta_energy + 1;
+                                             
+                                    /*if ((machine_b_ct_new < machine_a_ct_new) && (machine_a_ct_new < delta_makespan)) {                                       
+                                        delta_makespan = machine_a_ct_new;
+                                        
+                                    } else if ((machine_a_ct_new < machine_b_ct_new) && (machine_b_ct_new < delta_makespan)) {
+                                        delta_makespan = machine_b_ct_new;
+                                        
+                                    }*/
+/*
+                                    float swap_diff_energy;
+                                    swap_diff_energy = 
+                                        ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
+                                        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
+                                        
+                                    if (((0 - swap_diff_energy) < delta_energy) && 
+                                        (machine_b_ct_new <= current_makespan) && 
+                                        (machine_a_ct_new <= current_makespan)) {
+                                        
+                                        delta_energy = 0 - swap_diff_energy;
+                                    }
+*/
+                                    if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) || (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)) {
+                                        if (best_delta_makespan >= delta_makespan) {
+                                            best_delta_makespan = delta_makespan;
+                                            best_delta_energy = delta_energy;
+                                            task_x_best_swap_pos = -1;
+                                            task_y_best_swap_pos = -1;
+                                            task_x_best_move_pos = task_x_pos;
+                                            machine_b_best_move_id = machine_b_current;
+                                        } else if (best_delta_energy >= delta_energy) {
+                                            best_delta_makespan = delta_makespan;
+                                            best_delta_energy = delta_energy;
+                                            task_x_best_swap_pos = -1;
+                                            task_y_best_swap_pos = -1;
                                             task_x_best_move_pos = task_x_pos;
                                             machine_b_best_move_id = machine_b_current;
                                         }
                                     } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
-                                        // La estrategia es mejorar energía.
-                                        if ((machine_a_ct_new <= current_makespan) && (machine_b_ct_new <= current_makespan)) {
-                                            delta_energy = 
-                                                ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                                ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));                    
-                                                
-                                            if (delta_energy > 0) {                                               
-                                                search_ended = 1;
-                                                task_x_best_move_pos = task_x_pos;
-                                                machine_b_best_move_id = machine_b_current;
-                                            }
-                                        }
-                                    } else {
-                                        // La estrategia es aleatoria.
-                                        if ((machine_a_ct_new <= current_makespan) && (machine_b_ct_new <= current_makespan)) {
-                                            delta_ct = (machine_a_ct_old - machine_a_ct_new) + (machine_b_ct_old - machine_b_ct_new);	                        
-                                            
-                                            delta_energy = 
-                                                ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                                ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));     
-                                                
-                                            if ((delta_energy > 0) || (delta_ct > 0)) {
-                                                search_ended = 1;
-                                                task_x_best_move_pos = task_x_pos;
-                                                machine_b_best_move_id = machine_b_current;
-                                            }
+                                        if (best_delta_energy >= delta_energy) {
+                                            best_delta_makespan = delta_makespan;
+                                            best_delta_energy = delta_energy;
+                                            task_x_best_swap_pos = -1;
+                                            task_y_best_swap_pos = -1;
+                                            task_x_best_move_pos = task_x_pos;
+                                            machine_b_best_move_id = machine_b_current;
+                                        } else if (best_delta_makespan >= delta_makespan) {
+                                            best_delta_makespan = delta_makespan;
+                                            best_delta_energy = delta_energy;
+                                            task_x_best_swap_pos = -1;
+                                            task_y_best_swap_pos = -1;
+                                            task_x_best_move_pos = task_x_pos;
+                                            machine_b_best_move_id = machine_b_current;
                                         }
                                     }
                                 }
-                            }
-                        }
-                    }
+                            } // Termino el loop de MACHINE_B
+                        } // Termino el IF de SWAP/MOVE
+                    } /* Termino el loop de TASK_A */
                     
-                    if (search_ended == 1) {
+                    // Hago los cambios ======================================================================================
+                    if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1)) {        
                         solution_improved_on = search_iteration;
                         
-                        // Hago los cambios ======================================================================================
-                        if (mov_type == PALS_CPU_1POP_SEARCH_OP__SWAP) {
-                            // Intercambio las tareas!
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! (%d, %d, %d, %d)\n", machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-                            swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
-                            
-                            thread_instance->total_swaps++;
-                        } if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
-                            // Muevo la tarea!
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
-                            move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
-                            
-                            thread_instance->total_moves++;
-                        }
+                        // Intercambio las tareas!
+                        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f (%d, %d, %d, %d)\n", best_delta_makespan, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                        swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);                   
+                        
+                        thread_instance->total_swaps++;
                         
                         if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
                             thread_instance->total_success_makespan_greedy_searches++;
@@ -882,26 +932,52 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         } else {
                             thread_instance->total_success_random_greedy_searches++;
                         }
+                    } else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1)) {
+                        solution_improved_on = search_iteration;
                         
-                        if (DEBUG_DEV) validate_solution(selected_solution);
+                        // Muevo la tarea!
+                        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                        move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                        
+                        thread_instance->total_moves++;
+                        
+                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) {
+                            thread_instance->total_success_makespan_greedy_searches++;
+                        } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
+                            thread_instance->total_success_energy_greedy_searches++;
+                        } else {
+                            thread_instance->total_success_random_greedy_searches++;
+                        }
                     }
-                }
+                    
+                    if (DEBUG_DEV) validate_solution(selected_solution);
+                    if (original_makespan < get_makespan(selected_solution)) { fprintf(stdout, "OUCH!!!!!\n"); exit(-1); }
+                    
+                } /* Termino el loop con la iteración del thread */
                 
                 // Refresco la energía porque a veces encuentro diferencias. (¿rendondeo?)
                 refresh_energy(selected_solution);
-            
-                // Dejo pronto el nuevo individuo para ser usado.
-                pthread_mutex_lock(thread_instance->population_mutex);                    
-                
-                    if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) != 0) {
-                        thread_instance->ts_last_found = ts_current;
+
+                if ((original_makespan > get_makespan(selected_solution)) || (original_energy > get_energy(selected_solution))) {
+                    fprintf(stdout, "ejecuto ND\n");
+                    // Lo mejoré. Chequeo si es ND.
+                    pthread_mutex_lock(thread_instance->population_mutex);                    
+                    
+                        if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) != 0) {
+                            thread_instance->ts_last_found = ts_current;
+                        }
+                    
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+                    
+                    if (DEBUG_DEV) {
+                        fprintf(stdout, "[DEBUG] Cantidad de individuos en la población: %d\n", *(thread_instance->population_count));
+                        validate_thread_instance(thread_instance);
                     }
-                
-                pthread_mutex_unlock(thread_instance->population_mutex);
-                
-                if (DEBUG_DEV) {
-                    fprintf(stdout, "[DEBUG] Cantidad de individuos en la población: %d\n", *(thread_instance->population_count));
-                    validate_thread_instance(thread_instance);
+                } else {
+                    fprintf(stdout, "no lo pude mejorar? %f %f\n", get_makespan(selected_solution), get_energy(selected_solution));
+                    
+                    // No lo pude mejorar.
+                    selected_solution->status = SOLUTION__STATUS_EMPTY;
                 }
             }
         }
