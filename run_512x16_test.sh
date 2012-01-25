@@ -1,8 +1,11 @@
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16"
 SOLUTIONS_BASE_DIR="512x16.test"
-THREADS=3
+THREADS=8
+
 VERIFICADOR="bin/verificador"
+MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
+RUSO_METRICS_PATH="pals-ruso/1024x32/palsRuso"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=0
@@ -12,8 +15,8 @@ ALGORITHMS[1]="bin/pals_cpu"
 ALGORITHMS_ID[1]=1
 ALGORITHMS_OUTNAME[1]="pals.1"
 
-SCENARIOS[0]=0
-SCENARIOS[1]=10
+SCENARIOS[0]=10
+SCENARIOS[1]=13
 SCENARIOS[2]=19
 
 WORKLOADS[0]=1
@@ -46,13 +49,13 @@ do
 			echo ${EXEC_VERIF}
 			${EXEC_VERIF} > ${OUT}.metrics
 			
-			echo "set term postscript" > ${OUT}.plot
-			echo "set output '${OUT}.ps'" >> ${OUT}.plot
-			echo "plot '${OUT}.metrics' using 1:2 title '${OUT}'" >> ${OUT}.plot
-			echo "set term png" >> ${OUT}.plot
-			echo "set output '${OUT}.png'" >> ${OUT}.plot
-			echo "replot" >> ${OUT}.plot
-			gnuplot ${OUT}.plot
+            echo "set term postscript" > ${OUT}.plot
+            echo "set output '${OUT}.ps'" >> ${OUT}.plot
+            echo "plot '${OUT}.metrics' using 1:2 title '${OUT}', '${MINMIN_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
+            echo "set term png" >> ${OUT}.plot
+            echo "set output '${OUT}.png'" >> ${OUT}.plot
+            echo "replot" >> ${OUT}.plot
+            gnuplot ${OUT}.plot
 		done
 	done
 done
