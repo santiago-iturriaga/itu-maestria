@@ -28,7 +28,7 @@ mkdir -p ${SOLUTIONS_DIR}
 
 for a in {1..1}
 do
-	for s in {1..2}
+	for s in {0..2}
 	do
 		for w in {0..3}
 		do
@@ -49,13 +49,13 @@ do
 			echo ${EXEC_VERIF}
 			${EXEC_VERIF} > ${OUT}.metrics
 			
-            echo "set term postscript" > ${OUT}.plot
-            echo "set output '${OUT}.ps'" >> ${OUT}.plot
-            echo "plot '${OUT}.metrics' using 1:2 title '${OUT}', '${MINMIN_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
-            echo "set term png" >> ${OUT}.plot
-            echo "set output '${OUT}.png'" >> ${OUT}.plot
-            echo "replot" >> ${OUT}.plot
-            gnuplot ${OUT}.plot
+		        echo "set term postscript" > ${OUT}.plot
+		        echo "set output '${OUT}.ps'" >> ${OUT}.plot
+			echo "plot '${OUT}.metrics' using 1:2 title '${OUT}.metrics', '${MINMIN_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
+			echo "set term png" >> ${OUT}.plot
+			echo "set output '${OUT}.png'" >> ${OUT}.plot
+			echo "replot" >> ${OUT}.plot
+			gnuplot ${OUT}.plot
 		done
 	done
 done
