@@ -616,10 +616,10 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
                         thread_instance->total_makespan_greedy_searches++;
                         
-                    } else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
+                    /*} else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY) {
                         search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
                         thread_instance->total_energy_greedy_searches++;
-                        
+                    */    
                     } else {
                         search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
                         thread_instance->total_random_greedy_searches++;
@@ -709,7 +709,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                     best_delta_makespan = current_makespan;
                     
                     float best_delta_energy;
-                    best_delta_energy = 0;
+                    best_delta_energy = 0.0;
                     
                     int task_x_best_move_pos;
                     task_x_best_move_pos = -1;
@@ -735,7 +735,6 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                         #endif
                         
                         int mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
-                        
                         if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP) {
                             mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
                         } else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE) {
@@ -748,40 +747,44 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                             #else
                             random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
-                            
+
                             int task_y_pos, task_y_current;
                             for (int task_y_offset = 0; (task_y_offset < top_task_b); task_y_offset++) {
-                                float delta_makespan;
-                                delta_makespan = best_delta_makespan + 1;
-                                
-                                float delta_energy;
-                                delta_energy = best_delta_energy + 1;
-                                
                                 task_y_pos = (task_y + task_y_offset) % machine_b_task_count;                        
                                 task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
-                                
+ 
+                              
                                 // Máquina 1.
                                 machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
         
-                                machine_a_ct_new = machine_a_ct_old;
-                                machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc, machine_a, task_x_current); // Resto del ETC de x en a.
-                                machine_a_ct_new = machine_a_ct_new + get_etc_value(thread_instance->etc, machine_a, task_y_current); // Sumo el ETC de y en a.
+                                machine_a_ct_new = machine_a_ct_old - 
+					get_etc_value(thread_instance->etc, machine_a, task_x_current) + 
+					get_etc_value(thread_instance->etc, machine_a, task_y_current);
 
                                 // Máquina 2.
                                 machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b);
 
-                                machine_b_ct_new = machine_b_ct_old;
-                                machine_b_ct_new = machine_b_ct_new - get_etc_value(thread_instance->etc, machine_b, task_y_current); // Resto el ETC de y en b.
-                                machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_b, task_x_current); // Sumo el ETC de x en b.
+                                machine_b_ct_new = machine_b_ct_old - 
+					get_etc_value(thread_instance->etc, machine_b, task_y_current) + 
+					get_etc_value(thread_instance->etc, machine_b, task_x_current);
                             
-                                if ((machine_b_ct_new < machine_a_ct_new) && (machine_a_ct_new < delta_makespan)) {                                       
-                                    delta_makespan = machine_a_ct_new;
-                                    
-                                } else if ((machine_a_ct_new < machine_b_ct_new) && (machine_b_ct_new < delta_makespan)) {
-                                    delta_makespan = machine_b_ct_new;
-                                    
-                                }
-/*
+                                if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan)) {
+					best_delta_makespan = machine_a_ct_new;
+              	                        best_delta_energy = 0.0;
+                       	                task_x_best_swap_pos = task_x_pos;
+                               	        task_y_best_swap_pos = task_y_pos;
+                                      	task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
+
+                                } else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan)) {
+					best_delta_makespan = machine_b_ct_new;
+              	                        best_delta_energy = 0.0;
+                       	                task_x_best_swap_pos = task_x_pos;
+                               	        task_y_best_swap_pos = task_y_pos;
+                                      	task_x_best_move_pos = -1;
+                                        machine_b_best_move_id = -1;
+				}
+			/*
                                 float swap_diff_energy;
                                 swap_diff_energy = 
                                     ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
@@ -793,40 +796,8 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                     
                                     delta_energy = 0 - swap_diff_energy;
                                 }
-*/
-                                if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) || (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)) {
-                                    if (best_delta_makespan >= delta_makespan) {
-                                        best_delta_makespan = delta_makespan;
-                                        best_delta_energy = delta_energy;
-                                        task_x_best_swap_pos = task_x_pos;
-                                        task_y_best_swap_pos = task_y_pos;
-                                        task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
-                                    } else if (best_delta_energy >= delta_energy) {
-                                        best_delta_makespan = delta_makespan;
-                                        best_delta_energy = delta_energy;
-                                        task_x_best_swap_pos = task_x_pos;
-                                        task_y_best_swap_pos = task_y_pos;
-                                        task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
-                                    }
-                                } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
-                                    if (best_delta_energy >= delta_energy) {
-                                        best_delta_makespan = delta_makespan;
-                                        best_delta_energy = delta_energy;
-                                        task_x_best_swap_pos = task_x_pos;
-                                        task_y_best_swap_pos = task_y_pos;
-                                        task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
-                                    } else if (best_delta_makespan >= delta_makespan) {
-                                        best_delta_makespan = delta_makespan;
-                                        best_delta_energy = delta_energy;
-                                        task_x_best_swap_pos = task_x_pos;
-                                        task_y_best_swap_pos = task_y_pos;
-                                        task_x_best_move_pos = -1;
-                                        machine_b_best_move_id = -1;
-                                    }
-                                }
+
+                          */
                             } /* Termino el loop de TASK_B */
 
                         } else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE) {
@@ -840,30 +811,28 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                                                 
                                 if (machine_b_current != machine_a) {
                                     // Máquina 1.
-                                    machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
-        
-                                    machine_a_ct_new = machine_a_ct_old;
-                                    machine_a_ct_new = machine_a_ct_new - get_etc_value(thread_instance->etc, machine_a, task_x_current); // Resto del ETC de x en a.
+                                    machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);      
+                                    machine_a_ct_new = machine_a_ct_old - get_etc_value(thread_instance->etc, machine_a, task_x_current);
 
                                     // Máquina 2.
                                     machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b);
-
-                                    machine_b_ct_new = machine_b_ct_old;
-                                    machine_b_ct_new = machine_b_ct_new + get_etc_value(thread_instance->etc, machine_b, task_x_current); // Sumo el ETC de x en b.
+                                    machine_b_ct_new = machine_b_ct_old + get_etc_value(thread_instance->etc, machine_b, task_x_current);
                                         
-                                    float delta_makespan;
-                                    delta_makespan = best_delta_makespan + 1;
-                                    
-                                    float delta_energy;
-                                    delta_energy = best_delta_energy + 1;
-                                             
-                                    /*if ((machine_b_ct_new < machine_a_ct_new) && (machine_a_ct_new < delta_makespan)) {                                       
-                                        delta_makespan = machine_a_ct_new;
-                                        
-                                    } else if ((machine_a_ct_new < machine_b_ct_new) && (machine_b_ct_new < delta_makespan)) {
-                                        delta_makespan = machine_b_ct_new;
-                                        
-                                    }*/
+                                    if ((machine_b_ct_new < machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan)) {
+                                        best_delta_makespan = machine_a_ct_new;
+                                        best_delta_energy = 0.0;
+                                        task_x_best_swap_pos = -1;
+                                        task_y_best_swap_pos = -1;
+                                        task_x_best_move_pos = task_x_pos;
+                                        machine_b_best_move_id = machine_b_current;
+                                    } else if ((machine_a_ct_new < machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan)) {
+                                        best_delta_makespan = machine_b_ct_new;
+                                        best_delta_energy = 0.0;
+                                        task_x_best_swap_pos = -1;
+                                        task_y_best_swap_pos = -1;
+                                        task_x_best_move_pos = task_x_pos;
+                                        machine_b_best_move_id = machine_b_current;
+                                    }
 /*
                                     float swap_diff_energy;
                                     swap_diff_energy = 
@@ -877,46 +846,13 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                                         delta_energy = 0 - swap_diff_energy;
                                     }
 */
-                                    if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) || (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)) {
-                                        if (best_delta_makespan >= delta_makespan) {
-                                            best_delta_makespan = delta_makespan;
-                                            best_delta_energy = delta_energy;
-                                            task_x_best_swap_pos = -1;
-                                            task_y_best_swap_pos = -1;
-                                            task_x_best_move_pos = task_x_pos;
-                                            machine_b_best_move_id = machine_b_current;
-                                        } else if (best_delta_energy >= delta_energy) {
-                                            best_delta_makespan = delta_makespan;
-                                            best_delta_energy = delta_energy;
-                                            task_x_best_swap_pos = -1;
-                                            task_y_best_swap_pos = -1;
-                                            task_x_best_move_pos = task_x_pos;
-                                            machine_b_best_move_id = machine_b_current;
-                                        }
-                                    } else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) {
-                                        if (best_delta_energy >= delta_energy) {
-                                            best_delta_makespan = delta_makespan;
-                                            best_delta_energy = delta_energy;
-                                            task_x_best_swap_pos = -1;
-                                            task_y_best_swap_pos = -1;
-                                            task_x_best_move_pos = task_x_pos;
-                                            machine_b_best_move_id = machine_b_current;
-                                        } else if (best_delta_makespan >= delta_makespan) {
-                                            best_delta_makespan = delta_makespan;
-                                            best_delta_energy = delta_energy;
-                                            task_x_best_swap_pos = -1;
-                                            task_y_best_swap_pos = -1;
-                                            task_x_best_move_pos = task_x_pos;
-                                            machine_b_best_move_id = machine_b_current;
-                                        }
-                                    }
-                                }
+                               }
                             } // Termino el loop de MACHINE_B
                         } // Termino el IF de SWAP/MOVE
                     } /* Termino el loop de TASK_A */
                     
                     // Hago los cambios ======================================================================================
-                    if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1)) {        
+                    if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1) && (best_delta_makespan > 0.0)) {        
                         solution_improved_on = search_iteration;
                         
                         // Intercambio las tareas!
@@ -951,7 +887,7 @@ void* pals_cpu_1pop_thread(void *thread_arg) {
                     }
                     
                     if (DEBUG_DEV) validate_solution(selected_solution);
-                    if (original_makespan < get_makespan(selected_solution)) { fprintf(stdout, "OUCH!!!!!\n"); exit(-1); }
+                    if (original_makespan < get_makespan(selected_solution)) { fprintf(stdout, "OUCH!!!!! %f ahora %f\n", original_makespan, get_makespan(selected_solution)); exit(-1); }
                     
                 } /* Termino el loop con la iteración del thread */
                 
