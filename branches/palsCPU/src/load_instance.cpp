@@ -48,7 +48,7 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
 		    return EXIT_FAILURE;
         }
 
-		set_energy_value(energy, machine, ssj, energy_idle, energy_max); 
+		set_energy_value(energy, machine, cores, ssj, energy_idle, energy_max); 
 	}
 
 	fclose(scenario_file);
@@ -63,7 +63,9 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
     			//if (DEBUG) fprintf(stdout, "%f\n", value);
 			}
 			
-			set_etc_value(etc, machine, task, value / get_ssj_value(energy, machine)); 
+			set_etc_value(etc, machine, task, 
+				value / (get_ssj_value(energy, machine)
+				/(get_cores_value(energy, machine)*1000)));
 		}
 	}
 
