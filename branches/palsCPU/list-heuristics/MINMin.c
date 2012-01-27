@@ -67,6 +67,13 @@ main (int argc, char *argv[])
 		exit (2);
 	}
 
+	int *CORES = (int *) malloc(sizeof(int)*NM);
+	if (CORES == NULL)
+	{
+		fprintf(stderr,"Error in malloc for CORES matrix, dimension %d\n",NM);
+		exit(2);
+	}
+
 	float **ETC = (float **) malloc (sizeof (float *) * NT);
 	if (ETC == NULL)
 	{
@@ -103,10 +110,9 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	int cores;
-	for (j = 0; j < NM; j++)
+	for (j=0;j<NM;j++)
 	{
-		fscanf (fp, "%d %f %f %f\n", &cores, &GFLOPS[j], &E_IDLE[j], &E_MAX[j]);
+		fscanf(fp,"%d %f %f %f\n",&CORES[j],&GFLOPS[j],&E_IDLE[j],&E_MAX[j]);
 	}
 
 	for (j = 0; j < NM; j++)
@@ -122,12 +128,12 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	for (i = 0; i < NT; i++)
+	for (i=0;i<NT;i++)
 	{
-		for (j = 0; j < NM; j++)
+		for (j=0;j<NM;j++)
 		{
-			fscanf (fi, "%f", &ETC[i][j]);
-			ETC[i][j] = ETC[i][j] / GFLOPS[j];
+			fscanf(fi,"%f",&ETC[i][j]);
+			ETC[i][j] = ETC[i][j] / (GFLOPS[j] / (CORES[j] * 1000));
 		}
 	}
 

@@ -34,6 +34,13 @@ void init_energy_matrix(struct params *input, struct energy_matrix *energy) {
 		fprintf(stderr, "[ERROR] Solicitando memoria para el energy_matrix->ssj.\n");
 		exit(EXIT_FAILURE);
 	}
+    
+    energy->cores = (int*)malloc(sizeof(int) * input->machines_count);
+    
+	if (energy->cores == NULL) {
+		fprintf(stderr, "[ERROR] Solicitando memoria para el energy_matrix->cores.\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void free_energy_matrix(struct energy_matrix *energy) {
@@ -42,16 +49,25 @@ void free_energy_matrix(struct energy_matrix *energy) {
 	free(energy->ssj);
 }
 
-void set_energy_value(struct energy_matrix *energy, int machine, float ssj, float idle_value, float max_value) {
+void set_energy_value(struct energy_matrix *energy, int machine, int cores, float ssj, float idle_value, float max_value) {
 	assert(machine < energy->machines_count);
 	assert(machine >= 0);
 	assert(idle_value > 0.0);
 	assert(max_value > 0.0);
 	assert(ssj > 0.0);
+    assert(cores > 0);
 	
+    energy->cores[machine] = cores;
 	energy->ssj[machine] = ssj;
 	energy->idle_energy[machine] = idle_value;
 	energy->max_energy[machine] = max_value;
+}
+
+int get_cores_value(struct energy_matrix *energy, int machine) {
+	assert(machine < energy->machines_count);
+	assert(machine >= 0);
+    
+    return energy->cores[machine];    
 }
 
 float get_energy_idle_value(struct energy_matrix *energy, int machine) {
