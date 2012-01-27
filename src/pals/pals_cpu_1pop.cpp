@@ -246,7 +246,6 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 		fprintf(stdout, "       Number of threads                       : %d\n", empty_instance.count_threads);
 		fprintf(stdout, "[INFO] == Configuration constants ==========================\n");
 		fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT            : %d\n", PALS_CPU_1POP_WORK__TIMEOUT);
-		fprintf(stdout, "       PALS_CPU_1POP_WORK__CONVERGENCE        : %d\n", PALS_CPU_1POP_WORK__CONVERGENCE);
 		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
 		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
 		fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
@@ -670,7 +669,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 					fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
 				}
 
-				int solution_improved_on = 0;
 				float original_makespan = get_makespan(selected_solution);
 				float original_energy = get_energy(selected_solution);
 
@@ -969,8 +967,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 					// Hago los cambios ======================================================================================
 					if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
 					{
-						solution_improved_on = search_iteration;
-
 						// Intercambio las tareas!
 						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f (%d, %d, %d, %d)\n", best_delta_makespan, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 						swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
@@ -992,8 +988,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 					}
 					else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
 					{
-						solution_improved_on = search_iteration;
-
 						// Muevo la tarea!
 						if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
 						move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
