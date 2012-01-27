@@ -15,16 +15,16 @@ mkdir ${SOLUTIONS_DIR}
 
 for a in {0..0}
 do
-	for s in {0..2}
-	do
-		for w in {0..3}
-		do
-			OUT="${SOLUTIONS_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
-			rm ${OUT}.*
-			
-			echo "scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]}"
-			
-			python sw2old_simple.py ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} > ${OUT}
-		done
-	done
+    for s in {0..2}
+    do
+        for w in {0..3}
+        do
+            OUT="${SOLUTIONS_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
+            rm ${OUT}.*
+            
+            echo "scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]}"
+            
+            python sw2old_simple.py ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} > ${OUT}
+        done
+    done
 done
