@@ -8,56 +8,31 @@ list_heur_dir = 'list-heuristics/1024x32'
 palsRuso_dir = 'pals-ruso/1024x32'
 pals_dir = '1024x32.test'
 
-def calcular_medidas(valores):
-    min = valores[0]
-    max = valores[0]
-    total = 0.0
-
-    for valor in valores:
-        total += valor
-        if valor < min: min = valor
-        if valor > max: max = valor
-
-    avg = float(total) / float(len(valores))
-    
-    aux_valor = 0.0
-    for valor in valores:
-        aux_valor += math.pow(valor-avg,2)
-
-    stddev = math.sqrt(aux_valor / (len(valores)-1))
-
-    return (min, max, avg, stddev)
-
 if __name__ == '__main__':
     instancias_raw = []
 
     for filename in os.listdir(pals_dir):
-	nameParts = filename.split('.')
+        nameParts = filename.split('.')
         instancias_raw.append(nameParts[0] + '.' + nameParts[1])
 
     ejecuciones_pals = {}
 
     for instancia in instancias_raw:
         for filename in os.listdir(pals_dir + '/' + instancia):
-	    print filename
             filename_parts = filename.split('.')
             
-            if len(filename_parts) == 6:
+            if len(filename_parts) == 5:
                 file_inst = filename_parts[2] + '.' + filename_parts[3]
                 file_version = filename_parts[0] + '.' + filename_parts[1]
-                file_type = filename_parts[5]
+                file_type = filename_parts[4]
                 file_id = filename_parts[0] + '.' + filename_parts[1] + '.' + filename_parts[2] + '.' + filename_parts[3]
                 
                 if not file_version in ejecuciones_pals:
                     ejecuciones_pals[file_inst] = []
                     ejecuciones_pals[file_inst].append(file_id)
-	    else:
-                exit(-1)
                              
     instancias = list(set(instancias_raw))
     instancias.sort()
-
-    print ejecuciones_pals
 
     resultados_list_heur = []
     resultados_pals = {}
@@ -97,7 +72,7 @@ if __name__ == '__main__':
     for instancia in instancias:           
         ejecucion = ejecuciones_pals[instancia][0]
         
-        path = pals_dir + '/' + instancia + '/' + ejecucion + '.0.metrics'
+        path = pals_dir + '/' + instancia + '/' + ejecucion + '.metrics'
         print path
 
         if os.path.isfile(path):
