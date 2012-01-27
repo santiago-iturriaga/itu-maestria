@@ -1,7 +1,7 @@
 DIMENSIONS="1024 32"
 INSTANCES_PATH="instancias/1024x32"
 SOLUTIONS_BASE_DIR="1024x32.test"
-THREADS=9
+THREADS=5
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
@@ -28,9 +28,9 @@ WORKLOADS[3]=30
 
 for a in {1..1}
 do
-    for s in {0..2}
+    for s in {0..0}
     do
-        for w in {0..3}
+        for w in {0..0}
         do
             SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
             mkdir -p ${SOLUTIONS_DIR}
