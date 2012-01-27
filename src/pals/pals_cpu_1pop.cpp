@@ -678,36 +678,36 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 random = cpu_rand_generate(*(thread_instance->thread_random_state));
                 #endif
 
+                int search_type;
+                double search_type_random = 0.0;
+
+                #ifdef CPU_MERSENNE_TWISTER
+                search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                #else
+                search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                #endif
+
+                if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN)
+                {
+                    search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
+                    thread_instance->total_makespan_greedy_searches++;
+
+                }
+                else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY)
+                {
+                    search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
+                    thread_instance->total_energy_greedy_searches++;
+
+                }
+                else
+                {
+                    search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
+                    thread_instance->total_random_greedy_searches++;
+                }
+
                 for (int search_iteration = 0; (search_iteration < (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS)); search_iteration++)
                 {
                     thread_instance->total_iterations++;
-
-                    int search_type;
-                    double search_type_random = 0.0;
-
-                    #ifdef CPU_MERSENNE_TWISTER
-                    search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                    #else
-                    search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                    #endif
-
-                    if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN)
-                    {
-                        search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
-                        thread_instance->total_makespan_greedy_searches++;
-
-                    }
-                    else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY)
-                    {
-                        search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
-                        thread_instance->total_energy_greedy_searches++;
-
-                    }
-                    else
-                    {
-                        search_type = PALS_CPU_1POP_SEARCH__RANDOM_GREEDY;
-                        thread_instance->total_random_greedy_searches++;
-                    }
 
                     // Determino las mquinas de inicio para la bsqueda.
                     int machine_a, machine_b;
@@ -1096,58 +1096,34 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                     {
                         // Intercambio las tareas!
-                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f (%d, %d, %d, %d)\n", best_delta_makespan, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n", 
+                            best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
                         swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                         thread_instance->total_swaps++;
-
-                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
-                        {
-                            thread_instance->total_success_makespan_greedy_searches++;
-                        }
-                        else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-                        {
-                            thread_instance->total_success_energy_greedy_searches++;
-                        }
-                        else
-                        {
-                            thread_instance->total_success_random_greedy_searches++;
-                        }
                     }
                     else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                     {
                         // Muevo la tarea!
-                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! (%d, %d, %d)\n", machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n", 
+                            best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                         move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                         thread_instance->total_moves++;
-
-                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
-                        {
-                            thread_instance->total_success_makespan_greedy_searches++;
-                        }
-                        else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-                        {
-                            thread_instance->total_success_energy_greedy_searches++;
-                        }
-                        else
-                        {
-                            thread_instance->total_success_random_greedy_searches++;
-                        }
                     }
 
+                    // Refresco la energa porque a veces encuentro diferencias. (rendondeo?)
+                    refresh_energy(selected_solution);
+
                     if (DEBUG_DEV) validate_solution(selected_solution);
-                    if (DEBUG_DEV) {
+                    /*if (DEBUG_DEV) {*/
                         if ((original_makespan < get_makespan(selected_solution)) && (original_energy < get_energy(selected_solution))) { 
                             fprintf(stdout, "[ERROR] EMPEORA!\n"); 
                             fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution)); 
                             fprintf(stdout, "[ERROR] Energy %f ahora %f\n", original_energy, get_energy(selected_solution));
                             exit(-1);
                         }
-                    }
-                    
-                    // Refresco la energa porque a veces encuentro diferencias. (rendondeo?)
-                    refresh_energy(selected_solution);
+                    /*}*/
                 }                // Termino el loop con la iteracin del thread
 
                 if ((original_makespan > get_makespan(selected_solution)) || (original_energy > get_energy(selected_solution)))
@@ -1158,6 +1134,19 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) == 1)
                     {
                         thread_instance->ts_last_found = ts_current;
+                        
+                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+                        {
+                            thread_instance->total_success_makespan_greedy_searches++;
+                        }
+                        else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
+                        {
+                            thread_instance->total_success_energy_greedy_searches++;
+                        }
+                        else
+                        {
+                            thread_instance->total_success_random_greedy_searches++;
+                        }
                     }
 
                     pthread_mutex_unlock(thread_instance->population_mutex);
