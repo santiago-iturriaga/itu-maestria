@@ -394,12 +394,16 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
 
 int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
+    //fprintf(stdout, "===========================\n");
+    double random = 0.0;
+    
+    int candidato_reemplazo = -1;
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
 
     float makespan_new, energy_new;
-    makespan_new = get_makespan(&(instance->population[new_solution_pos]));
-    energy_new = get_energy(&(instance->population[new_solution_pos]));
+    makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
+    energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
 
     int s_idx = -1;
     for (int s_pos = 0; (s_pos < instance->population_max_size) && (new_solution_is_dominated == 0); s_pos++)
@@ -409,17 +413,16 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             (instance->population[s_pos].initialized == 1) &&
             (s_pos != new_solution_pos))
         {
-
             s_idx++;
 
             // Calculo no dominancia del elemento nuevo con el actual.
             float makespan, energy;
-            makespan = get_makespan(&(instance->population[s_pos]));
-            energy = get_energy(&(instance->population[s_pos]));
+            makespan = floor(get_makespan(&(instance->population[s_pos])));
+            energy = floor(get_energy(&(instance->population[s_pos])));
 
-            if ((makespan <= makespan_new) && (energy <= energy_new))
+            if ((makespan <= makespan_new) && (energy == energy_new))
             {
-                // La nueva solucin es dominada por una ya existente.
+                // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
                 if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
@@ -430,19 +433,63 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
                 solutions_deleted++;
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
+                
                 if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
             }
             else
             {
-                // Ninguna de las dos soluciones es dominada por la otra.
+                if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size) {
+                    // Ninguna de las dos soluciones es dominada por la otra.
+                    if (candidato_reemplazo == -1) {
+                        candidato_reemplazo = s_pos;
+                    } else {
+                        float diff_makespan_candidato_actual;
+                        float diff_energy_candidato_actual;
+                        diff_makespan_candidato_actual = floor(get_makespan(&(instance->population[candidato_reemplazo])) - get_makespan(&(instance->population[new_solution_pos])));
+                        diff_energy_candidato_actual = floor(get_energy(&(instance->population[candidato_reemplazo])) - get_energy(&(instance->population[new_solution_pos])));
 
+                        float diff_makespan_individuo_actual;
+                        float diff_energy_individuo_actual;
+                        diff_makespan_individuo_actual = floor(get_makespan(&(instance->population[s_pos])) - get_makespan(&(instance->population[new_solution_pos])));
+                        diff_energy_individuo_actual = floor(get_energy(&(instance->population[s_pos])) - get_energy(&(instance->population[new_solution_pos])));
+                        
+                        /*fprintf(stdout, "[ND] Evaluo candidato contra:\n");
+                        fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f (%f , %f)\n", get_makespan(&(instance->population[candidato_reemplazo])),
+                            get_makespan(&(instance->population[s_pos])),diff_makespan_candidato_actual, diff_makespan_individuo_actual);
+                        fprintf(stdout, "[DEBUG] Energy vs: %f vs %f (%f , %f)\n", get_energy(&(instance->population[candidato_reemplazo])), 
+                            get_energy(&(instance->population[s_pos])),diff_energy_candidato_actual, diff_energy_individuo_actual);*/
+                        
+                        if (diff_makespan_individuo_actual > diff_makespan_candidato_actual) {
+                            candidato_reemplazo = s_pos;
+                            
+                        } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
+                            (diff_energy_individuo_actual > diff_energy_candidato_actual)) {
+
+                            candidato_reemplazo = s_pos;
+                            
+                        } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
+                            (diff_energy_individuo_actual == diff_energy_candidato_actual)) {
+                            //fprintf(stdout, "[ND] Sorteo un candidato.\n");
+                            
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(instance->thread_random_state));
+                            #endif
+                            
+                            if (random > 0.5) {
+                                candidato_reemplazo = s_pos;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     if (new_solution_is_dominated == 0)
     {
-        if ((instance->population_count[0] + instance->count_threads - 1) < instance->population_max_size)
+        if ((instance->population_count[0] + instance->count_threads) < instance->population_max_size)
         {
             instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
             instance->population_count[0] = instance->population_count[0] + 1;
@@ -452,12 +499,23 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
         }
         else
         {
-            instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
+            /*fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
+            fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f\n", get_makespan(&(instance->population[candidato_reemplazo])),
+                get_makespan(&(instance->population[new_solution_pos])));
+            fprintf(stdout, "[DEBUG] Energy vs: %f vs %f\n", get_energy(&(instance->population[candidato_reemplazo])), 
+                get_energy(&(instance->population[new_solution_pos])));*/
+            
+            instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
+            instance->population[candidato_reemplazo].status = SOLUTION__STATUS_EMPTY;
+            
+            return 1;
+            
+            /*instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
             instance->total_population_full++;
 
             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
                     new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);
-            return -1;
+            return -1;*/
         }
     }
     else
@@ -478,17 +536,18 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     thread_instance = (pals_cpu_1pop_thread_arg*)thread_arg;
 
     thread_instance->total_iterations = 0;
-
     thread_instance->total_makespan_greedy_searches = 0;
     thread_instance->total_energy_greedy_searches = 0;
     thread_instance->total_random_greedy_searches = 0;
     thread_instance->total_swaps = 0;
     thread_instance->total_moves = 0;
     thread_instance->total_population_full = 0;
-
     thread_instance->total_success_makespan_greedy_searches = 0;
     thread_instance->total_success_energy_greedy_searches = 0;
     thread_instance->total_success_random_greedy_searches = 0;
+
+    int total_soluciones_evolucionadas_mal = 0;
+    int total_soluciones_evolucionadas_dominadas = 0;
 
     int terminate = 0;
     int work_type = -1;
@@ -522,6 +581,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             if (thread_instance->thread_idx < thread_instance->population_max_size)
             {
+                pthread_mutex_lock(thread_instance->population_mutex);
+                
+                    thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
+                
+                pthread_mutex_unlock(thread_instance->population_mutex);
+
                 // Inicializo el individuo que me toc.
                 init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
 
@@ -536,10 +601,23 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 //compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
 
-                thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NEW;
-
                 pthread_mutex_lock(thread_instance->population_mutex);
-                thread_instance->population_count[0] = thread_instance->population_count[0] + 1;
+                
+                    pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
+                
+                    if (DEBUG_DEV)
+                    {
+                        fprintf(stdout, "[DEBUG] Population\n");
+                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                        for (int i = 0; i < thread_instance->population_max_size; i++)
+                        {
+                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                                thread_instance->population[i].initialized,
+                                thread_instance->population[i].status);
+                        }
+                    }
+                
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
                 if (DEBUG)
@@ -566,7 +644,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             // Comienza la bsqueda.
             pthread_mutex_lock(thread_instance->population_mutex);
-            thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
+            
+                thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
+                
             pthread_mutex_unlock(thread_instance->population_mutex);
 
         }
@@ -653,7 +733,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     }
                 }
 
-                // Clono la solucin elegida =====================================================
+                // Clono la solucion elegida =====================================================
                 if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
                 clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
 
@@ -752,12 +832,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     float machine_a_ct_new, machine_b_ct_new;
 
                     float current_makespan = get_makespan(selected_solution);
-		    float current_energy = get_energy(selected_solution);
+                    float current_energy = get_energy(selected_solution);
 
                     int task_x_pos;
                     int task_x_current;
                     int machine_b_current;
-                    
+
                     #ifdef CPU_MERSENNE_TWISTER
                     random = cpu_mt_generate(*(thread_instance->thread_random_state));
                     #else
@@ -765,7 +845,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     #endif
                     int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
                     if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                    
+
                     #ifdef CPU_MERSENNE_TWISTER
                     random = cpu_mt_generate(*(thread_instance->thread_random_state));
                     #else
@@ -773,7 +853,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     #endif
                     int top_task_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
                     if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
-                    
+
                     #ifdef CPU_MERSENNE_TWISTER
                     random = cpu_mt_generate(*(thread_instance->thread_random_state));
                     #else
@@ -864,11 +944,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     swap_diff_energy =
                                         ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
                                         ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));
-                                    
-                                    if (machine_b_ct_new <= machine_a_ct_new) 
+
+                                    if (machine_b_ct_new <= machine_a_ct_new)
                                     {
                                         if (machine_a_ct_new < best_delta_makespan) {
-					  //  printf("1\n");
+                                            //  printf("1\n");
                                             best_delta_makespan = machine_a_ct_new;
                                             best_delta_energy = swap_diff_energy;
                                             task_x_best_swap_pos = task_x_pos;
@@ -878,7 +958,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         } else if (floor(machine_a_ct_new) == floor(best_delta_makespan)) {
                                             if (swap_diff_energy > best_delta_energy)
                                             {
-					//	printf("2\n");
+                                                //  printf("2\n");
                                                 best_delta_energy = swap_diff_energy;
                                                 best_delta_makespan = machine_a_ct_new;
                                                 task_x_best_swap_pos = task_x_pos;
@@ -891,7 +971,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     else if (machine_a_ct_new <= machine_b_ct_new)
                                     {
                                         if (machine_b_ct_new < best_delta_makespan) {
-					    //printf("3\n");
+                                            //printf("3\n");
                                             best_delta_makespan = machine_b_ct_new;
                                             best_delta_energy = swap_diff_energy;
                                             task_x_best_swap_pos = task_x_pos;
@@ -901,21 +981,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
                                             if (swap_diff_energy > best_delta_energy)
                                             {
-						//printf("4\n");
+                                                //printf("4\n");
                                                 best_delta_energy = swap_diff_energy;
                                                 best_delta_makespan = machine_b_ct_new;
                                                 task_x_best_swap_pos = task_x_pos;
                                                 task_y_best_swap_pos = task_y_pos;
                                                 task_x_best_move_pos = -1;
                                                 machine_b_best_move_id = -1;
-                                            }  
+                                            }
                                         }
                                     }
-                                    
+
                                     /*if ((task_x_best_swap_pos == -1) && (task_y_best_swap_pos == -1)) {
                                         if (swap_diff_energy > best_delta_energy)
                                         {
-					    printf("5\n");
+                                            printf("5\n");
                                             best_delta_energy = swap_diff_energy;
                                             best_delta_makespan = current_makespan;
                                             task_x_best_swap_pos = task_x_pos;
@@ -924,8 +1004,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             machine_b_best_move_id = -1;
                                         }
                                     }*/
-                                } 
-                                
+                                }
+
                                 if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
                                     ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
                                 {
@@ -938,12 +1018,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         (machine_a_ct_new <= current_makespan) &&
                                         (machine_b_ct_new <= current_makespan))
                                     {
-					//printf("6\n");
+                                        //printf("6\n");
                                         best_delta_energy = swap_diff_energy;
-                                        
+
                                         if (machine_a_ct_new <= machine_b_ct_new) best_delta_makespan = machine_b_ct_new;
                                         else best_delta_makespan = machine_a_ct_new;
-                                        
+
                                         task_x_best_swap_pos = task_x_pos;
                                         task_y_best_swap_pos = task_y_pos;
                                         task_x_best_move_pos = -1;
@@ -951,7 +1031,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     } else if (floor(swap_diff_energy) == floor(best_delta_energy)) {
                                         if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan))
                                         {
-					    //printf("7\n");
+                                            //printf("7\n");
                                             best_delta_makespan = machine_a_ct_new;
                                             best_delta_energy = swap_diff_energy;
                                             task_x_best_swap_pos = task_x_pos;
@@ -961,7 +1041,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         }
                                         else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan))
                                         {
-					    //printf("8\n");
+                                            //printf("8\n");
                                             best_delta_makespan = machine_b_ct_new;
                                             best_delta_energy = swap_diff_energy;
                                             task_x_best_swap_pos = task_x_pos;
@@ -980,14 +1060,14 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             {
                                 if (machine_b + machine_b_offset != machine_a)
                                 { machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count; }
-                                else 
+                                else
                                 { machine_b_current = (machine_b + machine_b_offset + 1) % thread_instance->etc->machines_count; }
 
                                 if (machine_b_current != machine_a)
                                 {
                                     float machine_b_current_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b_current);
                                     float machine_b_current_energy_max = get_energy_max_value(thread_instance->energy, machine_b_current);
-                                    
+
                                     // Mquina 1.
                                     machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
                                     machine_a_ct_new = machine_a_ct_old - get_etc_value(thread_instance->etc, machine_a, task_x_current);
@@ -1009,11 +1089,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         swap_diff_energy =
                                             ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
                                             ((machine_b_ct_old - machine_b_ct_new) * (machine_b_current_energy_max - machine_b_current_energy_idle));
-                                        
+
                                         if (machine_b_ct_new <= machine_a_ct_new)
-                                        {                                            
+                                        {
                                             if (machine_a_ct_new < best_delta_makespan) {
-						//printf("9\n");
+                                                //printf("9\n");
                                                 best_delta_makespan = machine_a_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = -1;
@@ -1023,7 +1103,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             } else if (floor(machine_a_ct_new) == floor(best_delta_makespan)) {
                                                 if (swap_diff_energy > best_delta_energy)
                                                 {
-						    //printf("10\n");
+                                                    //printf("10\n");
                                                     best_delta_energy = swap_diff_energy;
                                                     best_delta_makespan = machine_a_ct_new;
                                                     task_x_best_swap_pos = -1;
@@ -1036,8 +1116,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         else if (machine_a_ct_new <= machine_b_ct_new)
                                         {
                                             if (machine_b_ct_new < best_delta_makespan) {
-						//printf("11 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new, machine_b_ct_new, 
-						//	best_delta_energy, swap_diff_energy);
+                                                //printf("11 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new, machine_b_ct_new,
+                                                //  best_delta_energy, swap_diff_energy);
                                                 best_delta_makespan = machine_b_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = -1;
@@ -1047,19 +1127,19 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
                                                 if (swap_diff_energy > best_delta_energy)
                                                 {
-						    //printf("12 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new, 
-							//machine_b_ct_new, best_delta_energy, swap_diff_energy);
+                                                    //printf("12 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new,
+                                                    //machine_b_ct_new, best_delta_energy, swap_diff_energy);
                                                     best_delta_energy = swap_diff_energy;
                                                     best_delta_makespan = machine_b_ct_new;
                                                     task_x_best_swap_pos = -1;
                                                     task_y_best_swap_pos = -1;
                                                     task_x_best_move_pos = task_x_pos;
                                                     machine_b_best_move_id = machine_b_current;
-                                                }  
+                                                }
                                             }
                                         }
-                                    } 
-                                    
+                                    }
+
                                     if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
                                         ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
                                     {
@@ -1072,12 +1152,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             (machine_a_ct_new <= current_makespan) &&
                                             (machine_b_ct_new <= current_makespan))
                                         {
-					    //printf("13\n");
+                                            //printf("13\n");
                                             best_delta_energy = swap_diff_energy;
-                                            
+
                                             if (machine_a_ct_new <= machine_b_ct_new) best_delta_makespan = machine_b_ct_new;
                                             else best_delta_makespan = machine_a_ct_new;
-                                            
+
                                             task_x_best_swap_pos = -1;
                                             task_y_best_swap_pos = -1;
                                             task_x_best_move_pos = task_x_pos;
@@ -1085,7 +1165,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         } else if (floor(swap_diff_energy) == floor(best_delta_energy)) {
                                             if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan))
                                             {
-						//printf("14\n");
+                                                //printf("14\n");
                                                 best_delta_makespan = machine_a_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = -1;
@@ -1095,7 +1175,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             }
                                             else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan))
                                             {
-						//printf("15\n");
+                                                //printf("15\n");
                                                 best_delta_makespan = machine_b_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = -1;
@@ -1114,42 +1194,40 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                     {
                         // Intercambio las tareas!
-                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n", 
+                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
                             best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
                         swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                         thread_instance->total_swaps++;
-       
-			//printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
-
-	             }
+                        //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
+                 }
                     else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                     {
                         // Muevo la tarea!
-                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n", 
+                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
                             best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                         move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                         thread_instance->total_moves++;
-			//printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
+                        //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
                     }
 
                     if (DEBUG_DEV) validate_solution(selected_solution);
                     if (DEBUG_DEV) {
-                        if ((current_makespan < get_makespan(selected_solution)) 
-				&& (current_energy < get_energy(selected_solution))) { 
-			    refresh_energy(selected_solution);
-			    refresh_makespan(selected_solution);
-				
-                            fprintf(stdout, "[ERROR] EMPEORA!\n"); 
-                            fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution)); 
+                        if ((current_makespan < get_makespan(selected_solution))
+                            && (current_energy < get_energy(selected_solution))) {
+                            refresh_energy(selected_solution);
+                            refresh_makespan(selected_solution);
+
+                            fprintf(stdout, "[ERROR] EMPEORA!\n");
+                            fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
                             fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
                             exit(-1);
                         }
                     }
                 }                // Termino el loop con la iteracin del thread
 
-		refresh_energy(selected_solution);
+                refresh_energy(selected_solution);
 
                 if ((original_makespan > get_makespan(selected_solution)) || (original_energy > get_energy(selected_solution)))
                 {
@@ -1159,7 +1237,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) == 1)
                     {
                         thread_instance->ts_last_found = ts_current;
-                        
+
                         if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
                         {
                             thread_instance->total_success_makespan_greedy_searches++;
@@ -1172,23 +1250,26 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         {
                             thread_instance->total_success_random_greedy_searches++;
                         }
+                    } else {
+                        total_soluciones_evolucionadas_dominadas++;
                     }
 
                     pthread_mutex_unlock(thread_instance->population_mutex);
 
                     if (DEBUG_DEV)
                     {
-                        fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblaci\303\263n: %d\n", *(thread_instance->population_count));
+                        fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
                         validate_thread_instance(thread_instance);
                     }
                 }
                 else
                 {
-		  /* fprintf(stdout,"Errorrrrrrrrrrrrrrrrr!!!\n");
-
-                            fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
-                            fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
-		//	exit(-1);
+                    total_soluciones_evolucionadas_mal++;
+                    /* fprintf(stdout,"Errorrrrrrrrrrrrrrrrr!!!\n");
+                    fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
+                    fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
+                    //  exit(-1);
+                    
                     // No lo pude mejorar.
                     selected_solution->status = SOLUTION__STATUS_EMPTY;
                 }
@@ -1198,7 +1279,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
         clock_gettime(CLOCK_REALTIME, &ts_current);
     }
 
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acab\303\263 el tiempo! Tengo algo para hacer?\n");
-
+    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
+    pthread_mutex_lock(thread_instance->population_mutex);
+    fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal);
+    fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_dominadas = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_dominadas);
+    pthread_mutex_unlock(thread_instance->population_mutex);
     return NULL;
-	}
+}
