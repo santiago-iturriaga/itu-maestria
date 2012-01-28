@@ -252,7 +252,6 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    : %d (size=%d)\n",
             PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_CONVERGENCE : %d\n", PALS_CPU_1POP_WORK__THREAD_CONVERGENCE);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS  : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD     : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD     : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
