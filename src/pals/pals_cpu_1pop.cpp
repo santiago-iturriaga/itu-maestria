@@ -394,16 +394,41 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
 
 int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
-    //fprintf(stdout, "===========================\n");
+    fprintf(stdout, "===========================\n");
+    
+    float makespan_new, energy_new;
+    makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
+    energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
+    
+    /*if (DEBUG_DEV)
+    {*/
+        fprintf(stdout, "[DEBUG] Population\n");
+        fprintf(stdout, "        Population_count: %d\n", *(instance->population_count));
+        fprintf(stdout, "        Solution to eval: %d\n", new_solution_pos);
+        fprintf(stdout, "        Makespan        : %f\n", makespan_new);
+        fprintf(stdout, "        Energy          : %f\n", energy_new);
+
+        for (int i = 0; i < instance->population_max_size; i++)
+        {
+            float makespan, energy;
+            makespan = 0;
+            energy = 0;
+            if (instance->population[i].status == 2) {
+                makespan = floor(get_makespan(&(instance->population[i])));
+                energy = floor(get_energy(&(instance->population[i])));
+            }
+            
+            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d makespan=%f energy=%f\n", i,
+                instance->population[i].initialized, instance->population[i].status,
+                makespan, energy);
+        }
+    //}
+    
     double random = 0.0;
     
     int candidato_reemplazo = -1;
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
-
-    float makespan_new, energy_new;
-    makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
-    energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
 
     int s_idx = -1;
     for (int s_pos = 0; (s_pos < instance->population_max_size) && (new_solution_is_dominated == 0); s_pos++)
@@ -420,24 +445,28 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             makespan = floor(get_makespan(&(instance->population[s_pos])));
             energy = floor(get_energy(&(instance->population[s_pos])));
 
-            if ((makespan <= makespan_new) && (energy == energy_new))
+            fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+
+            if ((makespan <= makespan_new) && (energy <= energy_new))
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
+                /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
             }
-            else if ((makespan_new < makespan) && (energy_new < energy))
+            else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
                 // La nueva solucin domina a una ya existente.
                 solutions_deleted++;
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
                 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
+                /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
             }
             else
             {
+                fprintf(stdout, "[DEBUG] No definido\n");
+                
                 if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size) {
                     // Ninguna de las dos soluciones es dominada por la otra.
                     if (candidato_reemplazo == -1) {
@@ -494,7 +523,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
             instance->population_count[0] = instance->population_count[0] + 1;
 
-            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
             return 1;
         }
         else
@@ -522,7 +551,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
     {
         instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
 
-        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
+        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
         return 0;
     }
 }
