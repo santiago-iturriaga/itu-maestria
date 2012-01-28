@@ -38,7 +38,7 @@
 #define PALS_CPU_1POP_SEARCH__RANDOM_GREEDY     2
 
 #define PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN  0.70
-#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY    0.10 
+#define PALS_CPU_1POP_SEARCH_BALANCE__ENERGY    0.10
 
 #define PALS_CPU_1POP_WORK__INIT                0
 #define PALS_CPU_1POP_WORK__SEARCH              1
@@ -56,29 +56,29 @@ struct pals_cpu_1pop_instance {
     struct solution *population;
     int population_count;
     int population_max_size;
-	
-	int work_type;
-	
-	pthread_mutex_t     work_type_mutex;
-	pthread_mutex_t     population_mutex;
-	sem_t               new_solutions_sem;
-	pthread_barrier_t   sync_barrier;
 
-	// Estado de los generadores aleatorios.
-	#ifdef CPU_MERSENNE_TWISTER
+    int work_type;
+
+    pthread_mutex_t     work_type_mutex;
+    pthread_mutex_t     population_mutex;
+    sem_t               new_solutions_sem;
+    pthread_barrier_t   sync_barrier;
+
+    // Estado de los generadores aleatorios.
+    #ifdef CPU_MERSENNE_TWISTER
     struct cpu_mt_state *random_states;
     #else
     struct cpu_rand_state *random_states;
     #endif
-	
-	// Parámetros de ejecución.
-	int count_threads;	
+
+    // Parámetros de ejecución.
+    int count_threads;
 };
 
 struct pals_cpu_1pop_thread_arg {
     // Id del thread actual.
     int thread_idx;
-    
+
     // Estado del problema.
     struct etc_matrix *etc;
     struct energy_matrix *energy;
@@ -87,27 +87,27 @@ struct pals_cpu_1pop_thread_arg {
     struct solution *population;
     int *population_count;
     int population_max_size;
-	
-	int count_threads;
-	int *work_type;
-	
-	pthread_mutex_t     *population_mutex;
-	pthread_barrier_t   *sync_barrier;
-	
-	// Estado del generador aleatorio para el thread actual.
+
+    int count_threads;
+    int *work_type;
+
+    pthread_mutex_t     *population_mutex;
+    pthread_barrier_t   *sync_barrier;
+
+    // Estado del generador aleatorio para el thread actual.
     #ifdef CPU_MERSENNE_TWISTER
     struct cpu_mt_state *thread_random_state;
     #else
     struct cpu_rand_state *thread_random_state;
     #endif
-	
-	// Statics
-	int total_iterations;
-    
+
+    // Statics
+    int total_iterations;
+
     int total_makespan_greedy_searches;
     int total_energy_greedy_searches;
     int total_random_greedy_searches;
-	int total_swaps;
+    int total_swaps;
     int total_moves;
 
     int total_success_makespan_greedy_searches;
@@ -115,8 +115,8 @@ struct pals_cpu_1pop_thread_arg {
     int total_success_random_greedy_searches;
 
     int total_population_full;
-    
-	timespec ts_start;
+
+    timespec ts_start;
     timespec ts_last_found;
 };
 
