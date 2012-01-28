@@ -394,14 +394,14 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
 
 int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
-    fprintf(stdout, "===========================\n");
+    //fprintf(stdout, "===========================\n");
     
     float makespan_new, energy_new;
     makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
     energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
     
-    /*if (DEBUG_DEV)
-    {*/
+    if (DEBUG_DEV)
+    {
         fprintf(stdout, "[DEBUG] Population\n");
         fprintf(stdout, "        Population_count: %d\n", *(instance->population_count));
         fprintf(stdout, "        Solution to eval: %d\n", new_solution_pos);
@@ -422,7 +422,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
                 instance->population[i].initialized, instance->population[i].status,
                 makespan, energy);
         }
-    //}
+    }
     
     double random = 0.0;
     
@@ -445,14 +445,14 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             makespan = floor(get_makespan(&(instance->population[s_pos])));
             energy = floor(get_energy(&(instance->population[s_pos])));
 
-            fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+            //fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
 
             if ((makespan <= makespan_new) && (energy <= energy_new))
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
             }
             else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
@@ -461,11 +461,11 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
                 
-                /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
             }
             else
             {
-                fprintf(stdout, "[DEBUG] No definido\n");
+                //fprintf(stdout, "[DEBUG] No definido\n");
                 
                 if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size) {
                     // Ninguna de las dos soluciones es dominada por la otra.
@@ -523,7 +523,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
             instance->population_count[0] = instance->population_count[0] + 1;
 
-            /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
             return 1;
         }
         else
@@ -551,7 +551,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
     {
         instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
 
-        /*if (DEBUG_DEV)*/ fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
+        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
         return 0;
     }
 }
@@ -1145,6 +1145,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         else if (machine_a_ct_new <= machine_b_ct_new)
                                         {
                                             if (machine_b_ct_new < best_delta_makespan) {
+                                                //printf("11\n");
                                                 //printf("11 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new, machine_b_ct_new,
                                                 //  best_delta_energy, swap_diff_energy);
                                                 best_delta_makespan = machine_b_ct_new;
@@ -1156,6 +1157,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
                                                 if (swap_diff_energy > best_delta_energy)
                                                 {
+                                                    //printf("12\n");
                                                     //printf("12 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new,
                                                     //machine_b_ct_new, best_delta_energy, swap_diff_energy);
                                                     best_delta_energy = swap_diff_energy;
@@ -1243,14 +1245,17 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                     if (DEBUG_DEV) validate_solution(selected_solution);
                     if (DEBUG_DEV) {
-                        if ((current_makespan < get_makespan(selected_solution))
-                            && (current_energy < get_energy(selected_solution))) {
+                        if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
+                        /*if ((floor(original_makespan) < floor(get_makespan(selected_solution))) && 
+                            (floor(original_energy) < floor(get_energy(selected_solution)))) {*/
+                            
                             refresh_energy(selected_solution);
                             refresh_makespan(selected_solution);
 
                             fprintf(stdout, "[ERROR] EMPEORA!\n");
                             fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
                             fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
+                            
                             exit(-1);
                         }
                     }
@@ -1258,10 +1263,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 refresh_energy(selected_solution);
 
-                if ((original_makespan > get_makespan(selected_solution)) || (original_energy > get_energy(selected_solution)))
+                pthread_mutex_lock(thread_instance->population_mutex);
+
+                if ((original_makespan > get_makespan(selected_solution)) || 
+                    (original_energy > get_energy(selected_solution)))
                 {
                     // Lo mejor. Chequeo si es ND.
-                    pthread_mutex_lock(thread_instance->population_mutex);
+                    //pthread_mutex_lock(thread_instance->population_mutex);
 
                     if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) == 1)
                     {
@@ -1283,7 +1291,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         total_soluciones_evolucionadas_dominadas++;
                     }
 
-                    pthread_mutex_unlock(thread_instance->population_mutex);
+                    //pthread_mutex_unlock(thread_instance->population_mutex);
 
                     if (DEBUG_DEV)
                     {
@@ -1294,14 +1302,18 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 else
                 {
                     total_soluciones_evolucionadas_mal++;
-                    /* fprintf(stdout,"Errorrrrrrrrrrrrrrrrr!!!\n");
+                    
+                    /*fprintf(stdout, "[MAL EVOLUCIONADA] search_type = %d\n", search_type);
                     fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
                     fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
-                    //  exit(-1);
                     
+                    // exit(-1);
+                                       
                     // No lo pude mejorar.
                     selected_solution->status = SOLUTION__STATUS_EMPTY;
                 }
+                
+                pthread_mutex_unlock(thread_instance->population_mutex);
             }
         }
 
@@ -1309,9 +1321,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     }
 
     if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
+    
     pthread_mutex_lock(thread_instance->population_mutex);
-    fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal);
-    fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_dominadas = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_dominadas);
+    
+        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal);
+        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_dominadas = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_dominadas);
+        
     pthread_mutex_unlock(thread_instance->population_mutex);
+    
     return NULL;
 }
