@@ -16,9 +16,10 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-#define PALS_CPU_1POP_WORK__TIMEOUT             20
-#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS   200
-#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR     4
+#define PALS_CPU_1POP_WORK__TIMEOUT                 20
+#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       200
+#define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   10
+#define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR         4
 
 #define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      8
 #define PALS_CPU_1POP_WORK__DST_TASK_NHOOD      8
@@ -109,17 +110,17 @@ struct pals_cpu_1pop_thread_arg {
 
     // Statics
     int total_iterations;
-
     int total_makespan_greedy_searches;
     int total_energy_greedy_searches;
     int total_random_greedy_searches;
     int total_swaps;
     int total_moves;
-
     int total_success_makespan_greedy_searches;
     int total_success_energy_greedy_searches;
     int total_success_random_greedy_searches;
-
+    int total_soluciones_no_evolucionadas;
+    int total_soluciones_evolucionadas_dominadas;
+    int total_re_iterations;
     int total_population_full;
 
     timespec ts_start;
