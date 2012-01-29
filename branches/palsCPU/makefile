@@ -2,7 +2,10 @@ CC=gcc -Wall -std=c99
 CX=g++ -Wall
 LIBS=-lpthread -lrt
 
-all: pals-opt verificador
+all: pals-opt verificador fp
+
+fp: fp_2obj.cpp
+	$(CXX) fp_2obj.cpp -o bin/fp_2obj
 
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
