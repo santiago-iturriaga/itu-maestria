@@ -2,7 +2,7 @@ CC=gcc -Wall -std=c99
 CX=g++ -Wall
 LIBS=-lpthread -lrt
 
-all: pals-gdb verificador
+all: pals-opt verificador
 
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
