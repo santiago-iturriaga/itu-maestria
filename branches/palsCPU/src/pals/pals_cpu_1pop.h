@@ -58,6 +58,8 @@ struct pals_cpu_1pop_instance {
     struct solution *population;
     int population_count;
     int population_max_size;
+    int best_makespan_solution;
+    int best_energy_solution;
 
     int work_type;
 
@@ -89,6 +91,8 @@ struct pals_cpu_1pop_thread_arg {
     struct solution *population;
     int *population_count;
     int population_max_size;
+    int *best_makespan_solution;
+    int *best_energy_solution;
 
     int count_threads;
     int *work_type;
