@@ -16,7 +16,7 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-#define PALS_CPU_1POP_WORK__TIMEOUT                 20
+#define PALS_CPU_1POP_WORK__TIMEOUT                 10
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       200
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   10
 #define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR         4
