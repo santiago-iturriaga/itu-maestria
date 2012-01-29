@@ -12,8 +12,8 @@
 #define NO_ASIG -1
 #define SIZE_NOM_ARCH 180
 
-#define NT 4096
-#define NM 128
+#define NT 2048
+#define NM 64
 
 #define DEBUG 0
 #define DEBUG_T 0
@@ -111,7 +111,7 @@ for (j = NM-1; j > 0; j--) {
 pthread_t threads[numberOfThreads];
 int rc;
 
-printf("Inicio: TOP_T1: %d, TOP_T2: %d, TOP_T3: %d, MAX_STEPS: %d, numberOfThreads: %d, sinchronizationPoints: %d\n",TOP_T1,TOP_T2,TOP_T3,MAX_STEPS,numberOfThreads,sinchronizationPoints);
+//printf("Inicio: TOP_T1: %d, TOP_T2: %d, TOP_T3: %d, MAX_STEPS: %d, numberOfThreads: %d, sinchronizationPoints: %d\n",TOP_T1,TOP_T2,TOP_T3,MAX_STEPS,numberOfThreads,sinchronizationPoints);
 
 // Create the thread pool
 for (i = 0; i < numberOfThreads; i ++) {
@@ -172,7 +172,7 @@ for (j=0; j<NM;j++) {
 	//}
 }
 
-fprintf(stdout,"(END)->Makespan: %f best_found: %d Time: %f, tot_t: %d\n",global_makespan,best_found,dif2,tot_t);
+//fprintf(stdout,"(END)->Makespan: %f best_found: %d Time: %f, tot_t: %d\n",global_makespan,best_found,dif2,tot_t);
 
 end = 1;
 for (k=0;k<numberOfThreads;k++) {
@@ -181,6 +181,20 @@ printf("Continuation signal (%d) ....\n",k);
 #endif
 	sem_post(&S1);
 }	
+
+    int task_assignment[NT];
+    for (i = 0; i < NM; i++)
+    {
+        for (j = 0; j < global_ntasks[i]; j++)
+        {
+            task_assignment[global_sol[i][j]] = i;
+        }
+    }
+    
+    fprintf(stdout, "1\n");
+    for (i = 0; i < NT; i++) {
+        fprintf(stdout, "%d\n", task_assignment[i]);
+    }
 
 pthread_exit(NULL);
 
@@ -678,4 +692,3 @@ printf("thread %d, sigue\n",(int) id_thread);
 pthread_exit(NULL);
 
 }
-
