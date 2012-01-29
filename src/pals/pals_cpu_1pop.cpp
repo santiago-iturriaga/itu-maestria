@@ -271,6 +271,8 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
     empty_instance.population_max_size = PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads;
     empty_instance.population_count = 0;
+    empty_instance.best_makespan_solution = -1;
+    empty_instance.best_energy_solution = -1;
 
     // Population.
     empty_instance.population = (struct solution*)malloc(sizeof(struct solution) * empty_instance.population_max_size);
@@ -355,6 +357,8 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         empty_instance.threads_args[i].population = empty_instance.population;
         empty_instance.threads_args[i].population_count = &(empty_instance.population_count);
         empty_instance.threads_args[i].population_max_size = empty_instance.population_max_size;
+        empty_instance.threads_args[i].best_makespan_solution = &(empty_instance.best_makespan_solution);
+        empty_instance.threads_args[i].best_energy_solution = &(empty_instance.best_energy_solution);
 
         empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
 
@@ -397,11 +401,18 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
 
 int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
-    //fprintf(stdout, "===========================\n");
+    if (DEBUG_DEV) fprintf(stdout, "========================================================\n");
+    double random = 0.0;
     
     float makespan_new, energy_new;
     makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
     energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
+    
+    if (*(instance->best_energy_solution) == -1) *(instance->best_energy_solution) = new_solution_pos;
+    if (*(instance->best_makespan_solution) == -1) *(instance->best_makespan_solution) = new_solution_pos;
+    
+    float best_energy_value = get_energy(&(instance->population[*(instance->best_energy_solution)]));
+    float best_makespan_value = get_makespan(&(instance->population[*(instance->best_makespan_solution)]));
     
     if (DEBUG_DEV)
     {
@@ -410,6 +421,8 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
         fprintf(stdout, "        Solution to eval: %d\n", new_solution_pos);
         fprintf(stdout, "        Makespan        : %f\n", makespan_new);
         fprintf(stdout, "        Energy          : %f\n", energy_new);
+        fprintf(stdout, "        Best makespan   : %f (%d)\n", best_makespan_value, *(instance->best_makespan_solution));
+        fprintf(stdout, "        Best energy     : %f (%d)\n", best_energy_value, *(instance->best_energy_solution));
 
         for (int i = 0; i < instance->population_max_size; i++)
         {
@@ -426,8 +439,6 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
                 makespan, energy);
         }
     }
-    
-    double random = 0.0;
     
     int candidato_reemplazo = -1;
     int solutions_deleted = 0;
@@ -448,7 +459,7 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             makespan = floor(get_makespan(&(instance->population[s_pos])));
             energy = floor(get_energy(&(instance->population[s_pos])));
 
-            //fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+            if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
 
             if ((makespan <= makespan_new) && (energy <= energy_new))
             {
@@ -468,49 +479,61 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             }
             else
             {
-                //fprintf(stdout, "[DEBUG] No definido\n");
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] No definido\n");
                 
                 if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size) {
                     // Ninguna de las dos soluciones es dominada por la otra.
-                    if (candidato_reemplazo == -1) {
-                        candidato_reemplazo = s_pos;
+                    
+                    if ((*(instance->best_energy_solution) == s_pos) && (best_energy_value < energy_new)) {
+                        // No lo puedo reemplazar porque es el mejor energy.
+                        
+                    } else if ((*(instance->best_makespan_solution) == s_pos) && (best_makespan_value < makespan_new)) {
+                        // No lo puedo reemplazar porque es el mejor makespan.
+                        
                     } else {
-                        float diff_makespan_candidato_actual;
-                        float diff_energy_candidato_actual;
-                        diff_makespan_candidato_actual = floor(get_makespan(&(instance->population[candidato_reemplazo])) - get_makespan(&(instance->population[new_solution_pos])));
-                        diff_energy_candidato_actual = floor(get_energy(&(instance->population[candidato_reemplazo])) - get_energy(&(instance->population[new_solution_pos])));
-
-                        float diff_makespan_individuo_actual;
-                        float diff_energy_individuo_actual;
-                        diff_makespan_individuo_actual = floor(get_makespan(&(instance->population[s_pos])) - get_makespan(&(instance->population[new_solution_pos])));
-                        diff_energy_individuo_actual = floor(get_energy(&(instance->population[s_pos])) - get_energy(&(instance->population[new_solution_pos])));
-                        
-                        /*fprintf(stdout, "[ND] Evaluo candidato contra:\n");
-                        fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f (%f , %f)\n", get_makespan(&(instance->population[candidato_reemplazo])),
-                            get_makespan(&(instance->population[s_pos])),diff_makespan_candidato_actual, diff_makespan_individuo_actual);
-                        fprintf(stdout, "[DEBUG] Energy vs: %f vs %f (%f , %f)\n", get_energy(&(instance->population[candidato_reemplazo])), 
-                            get_energy(&(instance->population[s_pos])),diff_energy_candidato_actual, diff_energy_individuo_actual);*/
-                        
-                        if (diff_makespan_individuo_actual > diff_makespan_candidato_actual) {
+                        if (candidato_reemplazo == -1) {
                             candidato_reemplazo = s_pos;
-                            
-                        } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
-                            (diff_energy_individuo_actual > diff_energy_candidato_actual)) {
+                        } else {
+                            float diff_makespan_candidato_actual;
+                            float diff_energy_candidato_actual;
+                            diff_makespan_candidato_actual = floor(get_makespan(&(instance->population[candidato_reemplazo])) - makespan_new);
+                            diff_energy_candidato_actual = floor(get_energy(&(instance->population[candidato_reemplazo])) - energy_new);
 
-                            candidato_reemplazo = s_pos;
+                            float diff_makespan_individuo_actual;
+                            float diff_energy_individuo_actual;
+                            diff_makespan_individuo_actual = floor(makespan - makespan_new);
+                            diff_energy_individuo_actual = floor(makespan - energy_new);
                             
-                        } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
-                            (diff_energy_individuo_actual == diff_energy_candidato_actual)) {
-                            //fprintf(stdout, "[ND] Sorteo un candidato.\n");
+                            if (DEBUG_DEV) {
+                                fprintf(stdout, "[ND] Evaluo candidato contra:\n");
+                                fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f (%f , %f)\n", get_makespan(&(instance->population[candidato_reemplazo])),
+                                    get_makespan(&(instance->population[s_pos])),diff_makespan_candidato_actual, diff_makespan_individuo_actual);
+                                fprintf(stdout, "[DEBUG] Energy vs: %f vs %f (%f , %f)\n", get_energy(&(instance->population[candidato_reemplazo])), 
+                                    get_energy(&(instance->population[s_pos])),diff_energy_candidato_actual, diff_energy_individuo_actual);
+                            }
                             
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(instance->thread_random_state));
-                            #else
-                            random = cpu_rand_generate(*(instance->thread_random_state));
-                            #endif
-                            
-                            if (random > 0.5) {
+                            if (diff_makespan_individuo_actual > diff_makespan_candidato_actual) {
                                 candidato_reemplazo = s_pos;
+                                
+                            } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
+                                (diff_energy_individuo_actual > diff_energy_candidato_actual)) {
+
+                                candidato_reemplazo = s_pos;
+                                
+                            } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) && 
+                                (diff_energy_individuo_actual == diff_energy_candidato_actual)) {
+                                
+                                if (DEBUG_DEV) fprintf(stdout, "[ND] Sorteo un candidato.\n");
+                                
+                                #ifdef CPU_MERSENNE_TWISTER
+                                random = cpu_mt_generate(*(instance->thread_random_state));
+                                #else
+                                random = cpu_rand_generate(*(instance->thread_random_state));
+                                #endif
+                                
+                                if (random > 0.5) {
+                                    candidato_reemplazo = s_pos;
+                                }
                             }
                         }
                     }
@@ -526,28 +549,58 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
             instance->population_count[0] = instance->population_count[0] + 1;
 
+            if (energy_new < best_energy_value) {
+                *(instance->best_energy_solution) = new_solution_pos;
+                
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
+            }
+            if (makespan_new < best_makespan_value) {
+                *(instance->best_makespan_solution) = new_solution_pos;
+                
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
+            }
+
             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
             return 1;
         }
         else
         {
-            /*fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
-            fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f\n", get_makespan(&(instance->population[candidato_reemplazo])),
-                get_makespan(&(instance->population[new_solution_pos])));
-            fprintf(stdout, "[DEBUG] Energy vs: %f vs %f\n", get_energy(&(instance->population[candidato_reemplazo])), 
-                get_energy(&(instance->population[new_solution_pos])));*/
-            
-            instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
-            instance->population[candidato_reemplazo].status = SOLUTION__STATUS_EMPTY;
-            
-            return 1;
-            
-            /*instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
-            instance->total_population_full++;
+            if (candidato_reemplazo != -1) {
+                if (DEBUG_DEV) {
+                    fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
+                    fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f\n", get_makespan(&(instance->population[candidato_reemplazo])),
+                        get_makespan(&(instance->population[new_solution_pos])));
+                    fprintf(stdout, "[DEBUG] Energy vs: %f vs %f\n", get_energy(&(instance->population[candidato_reemplazo])), 
+                        get_energy(&(instance->population[new_solution_pos])));
+                }
 
-            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
-                    new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);
-            return -1;*/
+                instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
+                instance->population[candidato_reemplazo].status = SOLUTION__STATUS_EMPTY;
+                
+                if (energy_new < best_energy_value) {
+                    *(instance->best_energy_solution) = new_solution_pos;
+                    
+                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
+                } /*else {
+                    assert(candidato_reemplazo != *(instance->best_energy_solution));
+                }*/
+                if (makespan_new < best_makespan_value) {
+                    *(instance->best_makespan_solution) = new_solution_pos;
+                    
+                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
+                } /*else {
+                    assert(candidato_reemplazo != *(instance->best_makespan_solution));
+                }*/
+                
+                return 1;
+            } else {
+                instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
+                instance->total_population_full++;
+
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
+                        new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);
+                return -1;
+            }
         }
     }
     else
