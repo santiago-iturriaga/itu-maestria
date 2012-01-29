@@ -239,24 +239,28 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
     if (!OUTPUT_SOLUTION)
     {
-        fprintf(stdout, "[INFO] == Input arguments ==================================\n");
+        fprintf(stdout, "[INFO] == Input arguments =====================================\n");
         fprintf(stdout, "       Seed                                    : %d\n", seed);
         fprintf(stdout, "       Number of tasks                         : %d\n", etc->tasks_count);
         fprintf(stdout, "       Number of machines                      : %d\n", etc->machines_count);
         fprintf(stdout, "       Number of threads                       : %d\n", empty_instance.count_threads);
-        fprintf(stdout, "[INFO] == Configuration constants ==========================\n");
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT            : %d\n", PALS_CPU_1POP_WORK__TIMEOUT);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE  : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY   : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR    : %d (size=%d)\n",
+        fprintf(stdout, "[INFO] == Configuration constants =============================\n");
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT                      : %d\n", PALS_CPU_1POP_WORK__TIMEOUT);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN           : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY             : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST  : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST    : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST   : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR              : %d (size=%d)\n",
             PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS  : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD     : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD     : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_MACH_NHOOD     : %d\n", PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
-        fprintf(stdout, "[INFO] =====================================================\n");
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS            : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_MACH_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
+        fprintf(stdout, "[INFO] ========================================================\n");
     }
 
     // =========================================================================
@@ -574,6 +578,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     thread_instance->total_success_energy_greedy_searches = 0;
     thread_instance->total_success_random_greedy_searches = 0;
 
+    int total_soluciones_evolucionadas_mal_makespan = 0;
+    int total_soluciones_evolucionadas_mal_energy = 0;
+    int total_soluciones_evolucionadas_mal_random = 0;
     int total_soluciones_evolucionadas_mal = 0;
     int total_soluciones_evolucionadas_dominadas = 0;
 
@@ -615,7 +622,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
-                // Inicializo el individuo que me toc.
+                // Inicializo el individuo que me toca.
                 init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
 
                 #ifdef CPU_MERSENNE_TWISTER
@@ -683,21 +690,23 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             // PALS_CPU_1POP_WORK__SEARCH ====================================================================
             double random = 0.0; // Variable random multi-proposito :)
 
-            // Bsco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
+            // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
             int selected_solution_pos;
             selected_solution_pos = -1;
 
             pthread_mutex_lock(thread_instance->population_mutex);
-            for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
-            {
-                if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+            
+                for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
                 {
-                    thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-                    selected_solution_pos = i;
+                    if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+                    {
+                        thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
+                        selected_solution_pos = i;
 
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                    }
                 }
-            }
+            
             pthread_mutex_unlock(thread_instance->population_mutex);
 
             // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
@@ -720,7 +729,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
                 }
 
-                // Sorteo la solucin con la que me toca trabajar  =====================================================
+                // Sorteo la solucion con la que me toca trabajar  =====================================================
                 #ifdef CPU_MERSENNE_TWISTER
                 random = cpu_mt_generate(*(thread_instance->thread_random_state));
                 #else
@@ -820,24 +829,126 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     // Determino las mquinas de inicio para la bsqueda.
                     int machine_a, machine_b;
 
-                    #ifdef CPU_MERSENNE_TWISTER
-                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                    #else
-                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                    #endif
+                    if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+                    {
+                        //fprintf(stdout, "[DEBUG] Makespan greedy\n");
+                        
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
 
-                    // La estrategia es aleatoria.
-                    machine_a = (int)floor(random * thread_instance->etc->machines_count);
+                        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST) {
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+                            
+                            machine_a = (int)floor(random * thread_instance->etc->machines_count);
+                            
+                           // fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
+                        } else {
+                            machine_a = get_worst_ct_machine_id(selected_solution);
+                            
+                            //fprintf(stdout, "[DEBUG] Worst CT machine_a = %d\n", machine_a);
+                        }
 
-                    #ifdef CPU_MERSENNE_TWISTER
-                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                    #else
-                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                    #endif
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
 
-                    // Siempre selecciono la segunda mquina aleatoriamente.
-                    machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-                    if (machine_a == machine_b) machine_b++;
+                        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST) {
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+
+                            // Siempre selecciono la segunda mquina aleatoriamente.
+                            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+                            
+                            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
+                        } else {
+                            machine_b = get_best_ct_machine_id(selected_solution);
+                            
+                            //fprintf(stdout, "[DEBUG] Best CT machine_b = %d\n", machine_b);
+                        }
+                    }
+                    else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
+                    {
+                        //fprintf(stdout, "[DEBUG] Energy greedy\n");
+                        
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
+
+                        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST) {
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+                            
+                            machine_a = (int)floor(random * thread_instance->etc->machines_count);
+                            
+                            //fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
+                        } else {
+                            machine_a = get_worst_energy_machine_id(selected_solution);
+                            
+                            //fprintf(stdout, "[DEBUG] Worst energy machine_a = %d\n", machine_a);
+                        }
+
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
+
+                        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST) {
+                            #ifdef CPU_MERSENNE_TWISTER
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+
+                            // Siempre selecciono la segunda mquina aleatoriamente.
+                            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+                            
+                            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
+                        } else {
+                            machine_b = get_best_energy_machine_id(selected_solution);
+                            
+                            //fprintf(stdout, "[DEBUG] Worst energy machine_b = %d\n", machine_b);
+                        }
+                    }
+                    else
+                    {                        
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
+
+                        // La estrategia es aleatoria.
+                        machine_a = (int)floor(random * thread_instance->etc->machines_count);
+                        
+                        #ifdef CPU_MERSENNE_TWISTER
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        #else
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        #endif
+
+                        // Siempre selecciono la segunda mquina aleatoriamente.
+                        machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+                    }
+
+                    if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
 
                     // Determino las tareas de inicio para la bsqueda.
                     int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
@@ -1261,16 +1372,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }                // Termino el loop con la iteracin del thread
 
                 refresh_energy(selected_solution);
-
-                pthread_mutex_lock(thread_instance->population_mutex);
+                refresh_makespan(selected_solution);
 
                 if ((original_makespan > get_makespan(selected_solution)) || 
                     (original_energy > get_energy(selected_solution)))
                 {
-                    // Lo mejor. Chequeo si es ND.
-                    //pthread_mutex_lock(thread_instance->population_mutex);
+                    int new_solution_eval = 0;
+                    
+                    // Lo mejore. Chequeo si es ND.
+                    pthread_mutex_lock(thread_instance->population_mutex);
 
-                    if (pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos) == 1)
+                        new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
+
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+
+                    if (new_solution_eval == 1)
                     {
                         thread_instance->ts_last_found = ts_current;
 
@@ -1290,8 +1406,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         total_soluciones_evolucionadas_dominadas++;
                     }
 
-                    //pthread_mutex_unlock(thread_instance->population_mutex);
-
                     if (DEBUG_DEV)
                     {
                         fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
@@ -1300,19 +1414,34 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
                 else
                 {
+                    // No lo pude mejorar.
                     total_soluciones_evolucionadas_mal++;
                     
                     /*fprintf(stdout, "[MAL EVOLUCIONADA] search_type = %d\n", search_type);
                     fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
                     fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
                     
+                    if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+                    {
+                        total_soluciones_evolucionadas_mal_makespan++;
+                    }
+                    else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
+                    {
+                        total_soluciones_evolucionadas_mal_energy++;
+                    }
+                    else
+                    {
+                        total_soluciones_evolucionadas_mal_random++;
+                    }
+                    
                     // exit(-1);
-                                       
-                    // No lo pude mejorar.
-                    selected_solution->status = SOLUTION__STATUS_EMPTY;
+                    
+                    pthread_mutex_lock(thread_instance->population_mutex);                   
+                    
+                        selected_solution->status = SOLUTION__STATUS_EMPTY;
+                    
+                    pthread_mutex_unlock(thread_instance->population_mutex);
                 }
-                
-                pthread_mutex_unlock(thread_instance->population_mutex);
             }
         }
 
@@ -1324,6 +1453,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     pthread_mutex_lock(thread_instance->population_mutex);
     
         fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal);
+        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal makespan = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_makespan);
+        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal energy   = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_energy);
+        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal random   = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_random);
         fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_dominadas = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_dominadas);
         
     pthread_mutex_unlock(thread_instance->population_mutex);
