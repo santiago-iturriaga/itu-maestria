@@ -8,6 +8,8 @@
 #include "load_params.h"
 #include "etc_matrix.h"
 
+#define LOAD_INSTANCE__FORMAT_DIMENSION_FIRST   0
+
 #ifndef LOAD_INSTANCE_H_
 #define LOAD_INSTANCE_H_
 
