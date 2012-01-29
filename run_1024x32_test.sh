@@ -28,9 +28,9 @@ WORKLOADS[3]=30
 
 for a in {1..1}
 do
-    for s in {0..0}
+    for s in {0..2}
     do
-        for w in {0..0}
+        for w in {0..3}
         do
             SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/s${SCENARIOS[s]}.w${WORKLOADS[w]}"
             mkdir -p ${SOLUTIONS_DIR}
