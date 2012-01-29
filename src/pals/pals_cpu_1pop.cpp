@@ -103,6 +103,9 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
     int total_swaps = 0;
     int total_moves = 0;
     int total_population_full = 0;
+    int total_soluciones_no_evolucionadas = 0;
+    int total_soluciones_evolucionadas_dominadas = 0;
+    int total_re_iterations = 0;
     double elapsed_total_time = 0.0;
     double elapsed_last_found = 0.0;
 
@@ -120,6 +123,9 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
         total_swaps += instance.threads_args[i].total_swaps;
         total_moves += instance.threads_args[i].total_moves;
         total_population_full += instance.threads_args[i].total_population_full;
+        total_soluciones_no_evolucionadas += instance.threads_args[i].total_soluciones_no_evolucionadas;
+        total_soluciones_evolucionadas_dominadas += instance.threads_args[i].total_soluciones_evolucionadas_dominadas;
+        total_re_iterations += instance.threads_args[i].total_re_iterations;
 
         if ((instance.threads_args[i].ts_last_found.tv_sec > ts_last_found.tv_sec) ||
             ((instance.threads_args[i].ts_last_found.tv_sec == ts_last_found.tv_sec) &&
@@ -138,22 +144,25 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 
     if (!OUTPUT_SOLUTION)
     {
-        fprintf(stdout, "[INFO] Cantidad de iteraciones        : %d\n", total_iterations);
-        fprintf(stdout, "[INFO] Total de makespan searches     : %d (%d = %.1f)\n",
+        fprintf(stdout, "[INFO] Cantidad de iteraciones             : %d\n", total_iterations);
+        fprintf(stdout, "[INFO] Total de makespan searches          : %d (%d = %.1f)\n",
             total_makespan_greedy_searches, total_success_makespan_greedy_searches,
             (total_success_makespan_greedy_searches * 100.0 / total_makespan_greedy_searches));
-        fprintf(stdout, "[INFO] Total de energy searches       : %d (%d = %.1f)\n",
+        fprintf(stdout, "[INFO] Total de energy searches            : %d (%d = %.1f)\n",
             total_energy_greedy_searches, total_success_energy_greedy_searches,
             (total_success_energy_greedy_searches * 100.0 / total_energy_greedy_searches));
-        fprintf(stdout, "[INFO] Total de random searches       : %d (%d = %.1f)\n",
+        fprintf(stdout, "[INFO] Total de random searches            : %d (%d = %.1f)\n",
             total_random_greedy_searches, total_success_random_greedy_searches,
             (total_success_random_greedy_searches * 100.0 / total_random_greedy_searches));
-        fprintf(stdout, "[INFO] Total de swaps                 : %d\n", total_swaps);
-        fprintf(stdout, "[INFO] Total de moves                 : %d\n", total_moves);
-        fprintf(stdout, "[INFO] Total poblacion llena          : %d\n", total_population_full);
-        fprintf(stdout, "[INFO] Cantidad de soluciones         : %d\n", instance.population_count);
-        fprintf(stdout, "[INFO] Total execution time           : %.0f\n", elapsed_total_time);
-        fprintf(stdout, "[INFO] Last solution found            : %.0f\n", elapsed_last_found);
+        fprintf(stdout, "[INFO] Total de swaps                      : %d\n", total_swaps);
+        fprintf(stdout, "[INFO] Total de moves                      : %d\n", total_moves);
+        fprintf(stdout, "[INFO] Total poblacion llena               : %d\n", total_population_full);
+        fprintf(stdout, "[INFO] Cantidad de soluciones              : %d\n", instance.population_count);
+        fprintf(stdout, "[INFO] Cantidad de soluciones no mejoradas : %d\n", total_soluciones_no_evolucionadas);
+        fprintf(stdout, "[INFO] Cantidad de soluciones dominadas    : %d\n", total_soluciones_evolucionadas_dominadas);
+        fprintf(stdout, "[INFO] Cantidad de re-trabajos             : %d\n", total_re_iterations);
+        fprintf(stdout, "[INFO] Total execution time                : %.0f\n", elapsed_total_time);
+        fprintf(stdout, "[INFO] Last solution found                 : %.0f\n", elapsed_last_found);
 
         if (DEBUG_DEV)
         {
@@ -208,7 +217,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 
             fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
             fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
-            fprintf(stderr, "BEST_FOUND_TIME|%.0f\n", elapsed_last_found);
+            fprintf(stderr, "LAST_FOUND_TIME|%.0f\n", elapsed_last_found);
             fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
             fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
             fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
@@ -218,6 +227,9 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
             fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
             fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
+            fprintf(stderr, "TOTAL_SOLS_NO_EVOLUCIONADAS|%d\n", total_soluciones_no_evolucionadas);
+            fprintf(stderr, "TOTAL_SOLS_DOMINADAS|%d\n", total_soluciones_evolucionadas_dominadas);
+            fprintf(stderr, "TOTAL_RE_TRABAJO|%d\n", total_re_iterations);
         }
     }
 
@@ -257,6 +269,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR              : %d (size=%d)\n",
             PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS            : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR        : %d\n", PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_MACH_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
@@ -630,13 +643,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     thread_instance->total_success_makespan_greedy_searches = 0;
     thread_instance->total_success_energy_greedy_searches = 0;
     thread_instance->total_success_random_greedy_searches = 0;
-
-    int total_soluciones_evolucionadas_mal_makespan = 0;
-    int total_soluciones_evolucionadas_mal_energy = 0;
-    int total_soluciones_evolucionadas_mal_random = 0;
-    int total_soluciones_evolucionadas_mal = 0;
-    int total_soluciones_evolucionadas_dominadas = 0;
-    int total_re_iterations = 0;
+    thread_instance->total_soluciones_no_evolucionadas = 0;
+    thread_instance->total_soluciones_evolucionadas_dominadas = 0;
+    thread_instance->total_re_iterations = 0;
 
     int terminate = 0;
     int work_type = -1;
@@ -1466,7 +1475,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     thread_instance->total_success_random_greedy_searches++;
                                 }
                             } else {
-                                total_soluciones_evolucionadas_dominadas++;
+                                thread_instance->total_soluciones_evolucionadas_dominadas++;
                             }
 
                             if (DEBUG_DEV)
@@ -1480,34 +1489,20 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
                             
                             work_do_iteration = 1;
-                            work_iteration_size = (int)floor(PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 10);
-                            total_re_iterations++;
+                            work_iteration_size = (int)floor(PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
+                            
+                            thread_instance->total_re_iterations++;
                         }
                     }
                     else
                     {
                         // No lo pude mejorar.
-                        total_soluciones_evolucionadas_mal++;
+                        thread_instance->total_soluciones_no_evolucionadas++;
                         
                         /*fprintf(stdout, "[MAL EVOLUCIONADA] search_type = %d\n", search_type);
                         fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
                         fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
-                        
-                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
-                        {
-                            total_soluciones_evolucionadas_mal_makespan++;
-                        }
-                        else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-                        {
-                            total_soluciones_evolucionadas_mal_energy++;
-                        }
-                        else
-                        {
-                            total_soluciones_evolucionadas_mal_random++;
-                        }
-                        
-                        // exit(-1);
-                        
+                                                
                         pthread_mutex_lock(thread_instance->population_mutex);                   
                         
                             selected_solution->status = SOLUTION__STATUS_EMPTY;
@@ -1522,17 +1517,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     }
 
     if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
-    
-    /*pthread_mutex_lock(thread_instance->population_mutex);
-    
-        fprintf(stdout, "[THREAD=%d] Total_re_iterations = %d\n", thread_instance->thread_idx, total_re_iterations);
-        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal);
-        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal makespan = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_makespan);
-        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal energy   = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_energy);
-        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_mal random   = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_mal_random);
-        fprintf(stdout, "[THREAD=%d] Total_soluciones_evolucionadas_dominadas = %d\n", thread_instance->thread_idx, total_soluciones_evolucionadas_dominadas);
-        
-    pthread_mutex_unlock(thread_instance->population_mutex);*/
     
     return NULL;
 }
