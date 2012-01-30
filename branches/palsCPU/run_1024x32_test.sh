@@ -30,9 +30,9 @@ WORKLOADS[5]="A.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..0}
+    for s in {0..3}
     do
-        for w in {0..0}
+        for w in {0..5}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
