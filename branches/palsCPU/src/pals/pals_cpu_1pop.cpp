@@ -418,8 +418,8 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
     double random = 0.0;
     
     float makespan_new, energy_new;
-    makespan_new = floor(get_makespan(&(instance->population[new_solution_pos])));
-    energy_new = floor(get_energy(&(instance->population[new_solution_pos])));
+    makespan_new = get_makespan(&(instance->population[new_solution_pos]));
+    energy_new = get_energy(&(instance->population[new_solution_pos]));
     
     if (*(instance->best_energy_solution) == -1) *(instance->best_energy_solution) = new_solution_pos;
     if (*(instance->best_makespan_solution) == -1) *(instance->best_makespan_solution) = new_solution_pos;
@@ -443,8 +443,8 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
             makespan = 0;
             energy = 0;
             if (instance->population[i].status == 2) {
-                makespan = floor(get_makespan(&(instance->population[i])));
-                energy = floor(get_energy(&(instance->population[i])));
+                makespan = get_makespan(&(instance->population[i]));
+                energy = get_energy(&(instance->population[i]));
             }
             
             fprintf(stdout, " >> sol.pos[%d] init=%d status=%d makespan=%f energy=%f\n", i,
@@ -469,8 +469,8 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
 
             // Calculo no dominancia del elemento nuevo con el actual.
             float makespan, energy;
-            makespan = floor(get_makespan(&(instance->population[s_pos])));
-            energy = floor(get_energy(&(instance->population[s_pos])));
+            makespan = get_makespan(&(instance->population[s_pos]));
+            energy = get_energy(&(instance->population[s_pos]));
 
             if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
 
@@ -509,13 +509,13 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
                         } else {
                             float diff_makespan_candidato_actual;
                             float diff_energy_candidato_actual;
-                            diff_makespan_candidato_actual = floor(get_makespan(&(instance->population[candidato_reemplazo])) - makespan_new);
-                            diff_energy_candidato_actual = floor(get_energy(&(instance->population[candidato_reemplazo])) - energy_new);
+                            diff_makespan_candidato_actual = get_makespan(&(instance->population[candidato_reemplazo])) - makespan_new;
+                            diff_energy_candidato_actual = get_energy(&(instance->population[candidato_reemplazo])) - energy_new;
 
                             float diff_makespan_individuo_actual;
                             float diff_energy_individuo_actual;
-                            diff_makespan_individuo_actual = floor(makespan - makespan_new);
-                            diff_energy_individuo_actual = floor(makespan - energy_new);
+                            diff_makespan_individuo_actual = makespan - makespan_new;
+                            diff_energy_individuo_actual = makespan - energy_new;
                             
                             if (DEBUG_DEV) {
                                 fprintf(stdout, "[ND] Evaluo candidato contra:\n");
