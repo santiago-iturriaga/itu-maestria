@@ -2,7 +2,7 @@ DIMENSIONS="2048 64"
 INSTANCES_PATH="instancias/2048x64.ME"
 SOLUTIONS_BASE_DIR="2048x64.test"
 THREADS=8
-ITERATIONS=5
+ITERATIONS=10
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/2048x64/MinMin"
@@ -30,9 +30,9 @@ WORKLOADS[5]="A.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..3}
+    for s in {0..0}
     do
-        for w in {0..5}
+        for w in {0..1}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       

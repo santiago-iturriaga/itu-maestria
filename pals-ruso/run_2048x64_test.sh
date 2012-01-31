@@ -28,7 +28,7 @@ do
         INSTANCE="scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
         OUT="${SOLUTIONS_DIR}/pals-ruso.${INSTANCE}"
         
-        EXEC="./palsRuso.1024 ${INSTANCES_PATH}/${INSTANCE} ${ARGS}"
+        EXEC="./palsRuso.2048 ${INSTANCES_PATH}/${INSTANCE} ${ARGS}"
         echo ${EXEC}
         ${EXEC} > ${OUT}.sol
             

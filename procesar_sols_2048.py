@@ -3,7 +3,7 @@
 import os
 import math
 
-cant_iters=5
+cant_iters=10
 minmin_dir = 'list-heuristics/2048x64'
 pals_ruso_dir = 'pals-ruso/2048x64'
 pals_dir = '2048x64.test'
