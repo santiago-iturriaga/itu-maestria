@@ -1263,13 +1263,26 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             }
                             else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE)
                             {
-
                                 for (int machine_b_offset = 0; (machine_b_offset < top_machine_b); machine_b_offset++)
                                 {
-                                    if (machine_b + machine_b_offset != machine_a)
-                                    { machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count; }
-                                    else
-                                    { machine_b_current = (machine_b + machine_b_offset + 1) % thread_instance->etc->machines_count; }
+                                    if (machine_b_offset == 1) {
+                                        #ifdef CPU_MERSENNE_TWISTER
+                                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                        #else
+                                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                        #endif
+
+                                        // Siempre selecciono la segunda mquina aleatoriamente.
+                                        machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+                                        
+                                        if (machine_b == machine_a) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
+                                    } else if (machine_b_offset > 1) {
+                                        if (machine_b + machine_b_offset != machine_a) { 
+                                            machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count; 
+                                        } else { 
+                                            machine_b_current = (machine_b + machine_b_offset + 1) % thread_instance->etc->machines_count; 
+                                        }
+                                    }
 
                                     if (machine_b_current != machine_a)
                                     {
