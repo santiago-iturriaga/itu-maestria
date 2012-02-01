@@ -655,9 +655,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     thread_instance->ts_last_found = ts_current;
 
-    while ((terminate == 0) && (ts_current.tv_sec - thread_instance->ts_start.tv_sec < PALS_CPU_1POP_WORK__TIMEOUT))
+    while ((terminate == 0) && 
+	(ts_current.tv_sec - thread_instance->ts_start.tv_sec < PALS_CPU_1POP_WORK__TIMEOUT) &&
+	(thread_instance->total_iterations < PALS_CPU_1POP_WORK__ITERATIONS))
     {
-
         work_type = *(thread_instance->work_type);
         if (DEBUG_DEV) printf("[DEBUG] [THREAD=%d] Work type = %d\n", thread_instance->thread_idx, work_type);
 
@@ -1502,9 +1503,15 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             // Algun otro thread esta trabajando sobre la población.
                             // Intento hacer otro loop de trabajo y vuelvo a probar.
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
-                            
+                           
+                            #ifdef CPU_MERSENNE_TWISTER
+                            double random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #else
+        	            double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+	                    #endif
+ 
                             work_do_iteration = 1;
-                            work_iteration_size = (int)floor(PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
+                            work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
                             
                             thread_instance->total_re_iterations++;
                         }
