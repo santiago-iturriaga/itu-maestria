@@ -1,7 +1,7 @@
 DIMENSIONS="2048 64"
 INSTANCES_PATH="instancias/2048x64.ME"
-SOLUTIONS_BASE_DIR="2048x64.test"
-THREADS=8
+SOLUTIONS_BASE_DIR="2048x64.4"
+THREADS=4
 ITERATIONS=15
 
 VERIFICADOR="bin/verificador"
@@ -30,9 +30,9 @@ WORKLOADS[5]="A.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..0}
+    for s in {0..3}
     do
-        for w in {0..1}
+        for w in {0..5}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       

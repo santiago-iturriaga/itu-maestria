@@ -1,12 +1,12 @@
-DIMENSIONS="2048 64"
-INSTANCES_PATH="instancias/2048x64.ME"
-SOLUTIONS_BASE_DIR="2048x64.test"
-THREADS=8
+DIMENSIONS="1024 32"
+INSTANCES_PATH="instancias/1024x32.ME"
+SOLUTIONS_BASE_DIR="1024x32.4"
+THREADS=4
 ITERATIONS=15
 
 VERIFICADOR="bin/verificador"
-MINMIN_METRICS_PATH="list-heuristics/2048x64/MinMin"
-RUSO_METRICS_PATH="pals-ruso/2048x64/pals-ruso"
+MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
+RUSO_METRICS_PATH="pals-ruso/1024x32/pals-ruso"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
@@ -30,9 +30,9 @@ WORKLOADS[5]="A.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..0}
+    for s in {0..3}
     do
-        for w in {0..1}
+        for w in {0..5}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
