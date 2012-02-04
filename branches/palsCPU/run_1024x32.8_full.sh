@@ -1,8 +1,10 @@
 DIMENSIONS="1024 32"
 INSTANCES_PATH="instancias/1024x32.ME"
-SOLUTIONS_BASE_DIR="1024x32.4"
-THREADS=4
+SOLUTIONS_BASE_DIR="1024x32.8f"
+THREADS=8
 ITERATIONS=15
+PALS_ITERATIONS=10000000
+PALS_TIMEOUT=10
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
@@ -14,12 +16,15 @@ ALGORITHMS_OUTNAME[0]="pals-1"
 
 SCENARIOS[0]=0
 SCENARIOS[1]=3
-SCENARIOS[1]=6
-SCENARIOS[1]=9
-SCENARIOS[2]=10
-SCENARIOS[4]=13
-SCENARIOS[6]=16
-SCENARIOS[9]=19
+SCENARIOS[2]=6
+SCENARIOS[3]=9
+SCENARIOS[4]=10
+SCENARIOS[5]=11
+SCENARIOS[6]=13
+SCENARIOS[7]=14
+SCENARIOS[8]=16
+SCENARIOS[9]=17
+SCENARIOS[10]=19
 
 WORKLOADS[0]="A.u_c_hihi"
 WORKLOADS[1]="A.u_c_hilo"
@@ -52,9 +57,9 @@ WORKLOADS[23]="B.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..3}
+    for s in {0..10}
     do
-        for w in {0..5}
+        for w in {0..23}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
@@ -67,7 +72,7 @@ do
                 rm ${OUT}.*
             
                 RAND=$RANDOM
-                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND}"
+                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS}"
                 echo ${EXEC}
                 time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
             

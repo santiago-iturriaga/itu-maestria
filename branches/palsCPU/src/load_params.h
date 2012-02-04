@@ -14,15 +14,18 @@
 #define       MCT 3
 
 struct params {
-	char *scenario_path;
-	char *workload_path;
-	
-	int machines_count;
-	int tasks_count;
-	
-	int seed;
-	int thread_count;
-	int algorithm;
+    char *scenario_path;
+    char *workload_path;
+    
+    int machines_count;
+    int tasks_count;
+       
+    int seed;
+    int thread_count;
+    int algorithm;
+    
+    int max_time_secs;
+    int max_iterations;
 };
 
 int load_params(int argc, char **argv, struct params *input);
