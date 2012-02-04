@@ -16,9 +16,13 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-#define PALS_CPU_1POP_WORK__TIMEOUT                 10
-#define PALS_CPU_1POP_WORK__ITERATIONS              10000000
+//#define PALS_CPU_1POP_WORK__TIMEOUT                 10
+//#define PALS_CPU_1POP_WORK__ITERATIONS              10000000
+
 //Aprox 2500000 para < 10s
+//#define PALS_CPU_1POP_WORK__TIMEOUT                 100
+//#define PALS_CPU_1POP_WORK__ITERATIONS              2500000
+
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       1000
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   5
 #define PALS_CPU_1POP_WORK__POP_SIZE_FACTOR         3
@@ -89,6 +93,9 @@ struct pals_cpu_1pop_thread_arg {
     // Estado del problema.
     struct etc_matrix *etc;
     struct energy_matrix *energy;
+    
+    int max_time_secs;
+    int max_iterations;
 
     // Comunicación con el thread actual.
     struct solution *population;

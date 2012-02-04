@@ -311,8 +311,8 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     assert(s->__task_assignment[task_a_id] != SOLUTION__TASK_NOT_ASSIGNED);
     assert(s->__task_assignment[task_b_id] != SOLUTION__TASK_NOT_ASSIGNED);
 
-    float machine_a_ct = s->__machine_compute_time[machine_a_id];
-    float machine_b_ct = s->__machine_compute_time[machine_b_id];
+    //float machine_a_ct = s->__machine_compute_time[machine_a_id];
+    //float machine_b_ct = s->__machine_compute_time[machine_b_id];
 
     s->__machine_compute_time[machine_a_id] += get_etc_value(s->etc, machine_a_id, task_b_id);
     s->__machine_compute_time[machine_a_id] -= get_etc_value(s->etc, machine_a_id, task_a_id);

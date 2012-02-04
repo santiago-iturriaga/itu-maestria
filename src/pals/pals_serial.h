@@ -11,6 +11,8 @@
 #ifndef PALS_SERIAL_H_
 #define PALS_SERIAL_H_
 
+#define PALS_SERIAL__COUNT 1000000
+
 void pals_serial_wrapper(struct solution *s, int &best_swap_task_a, int &best_swap_task_b, float &best_swap_delta);
 
 /*
