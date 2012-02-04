@@ -12,39 +12,17 @@ ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
 ALGORITHMS_OUTNAME[0]="pals-1"
 
-SCENARIOS[0]=0
-SCENARIOS[1]=3
-SCENARIOS[1]=6
-SCENARIOS[1]=9
-SCENARIOS[2]=10
-SCENARIOS[4]=13
-SCENARIOS[6]=16
-SCENARIOS[9]=19
+SCENARIOS[0]=10
+SCENARIOS[1]=13
+SCENARIOS[2]=16
+SCENARIOS[3]=19
 
 WORKLOADS[0]="A.u_c_hihi"
-WORKLOADS[1]="A.u_c_hilo"
-WORKLOADS[2]="A.u_c_lohi"
-WORKLOADS[3]="A.u_c_lolo"
-WORKLOADS[4]="A.u_i_hihi"
-WORKLOADS[5]="A.u_i_hilo"
-WORKLOADS[6]="A.u_i_lohi"
-WORKLOADS[7]="A.u_i_lolo"
-WORKLOADS[8]="A.u_s_hihi"
-WORKLOADS[9]="A.u_s_hilo"
-WORKLOADS[10]="A.u_s_lohi"
-WORKLOADS[11]="A.u_s_lolo"
-WORKLOADS[12]="B.u_c_hihi"
-WORKLOADS[13]="B.u_c_hilo"
-WORKLOADS[14]="B.u_c_lohi"
-WORKLOADS[15]="B.u_c_lolo"
-WORKLOADS[16]="B.u_i_hihi"
-WORKLOADS[17]="B.u_i_hilo"
-WORKLOADS[18]="B.u_i_lohi"
-WORKLOADS[19]="B.u_i_lolo"
-WORKLOADS[20]="B.u_s_hihi"
-WORKLOADS[21]="B.u_s_hilo"
-WORKLOADS[22]="B.u_s_lohi"
-WORKLOADS[23]="B.u_s_lolo"
+WORKLOADS[1]="A.u_c_lolo"
+WORKLOADS[2]="A.u_i_hihi"
+WORKLOADS[3]="A.u_i_lolo"
+WORKLOADS[4]="A.u_s_hihi"
+WORKLOADS[5]="A.u_s_lolo"
 
 #mkdir -p ${SOLUTIONS_DIR}
 #rm ${SOLUTIONS_DIR}/*.metrics
