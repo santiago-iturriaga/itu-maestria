@@ -17,6 +17,11 @@
 
 #include "pals_cpu_1pop.h"
 
+//#define ALLOC_RGEN_MEM (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
+//#define INIT_RGEN(ptr)
+//#define GENERATE_RGEN(ptr)
+//#define FREE_RGEN(ptr)
+
 void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
 {
     pthread_mutex_lock(instance->population_mutex);
