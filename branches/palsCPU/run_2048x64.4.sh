@@ -57,9 +57,9 @@ WORKLOADS[23]="B.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..3}
+    for s in {0..10}
     do
-        for w in {0..5}
+        for w in {0..23}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
