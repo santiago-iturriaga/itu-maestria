@@ -896,8 +896,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
 
                 int work_do_iteration = 1;
-                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2) + 
-                    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2)));
+                /*int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2) + 
+                    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2)));*/
+
+                int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
 
                 while (work_do_iteration == 1) {
                     work_do_iteration = 0;
