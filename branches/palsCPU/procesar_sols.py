@@ -117,7 +117,7 @@ if __name__ == '__main__':
                 total_sols = total_sols + sols
             else:
                 print "[ERROR] cargando heuristica pals"
-                exit(-1)
+                #exit(-1)
  
         avg_makespan = total_makespan/cant_iters
         avg_energy = total_energy/cant_iters
