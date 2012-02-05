@@ -4,38 +4,61 @@ INSTANCES_PATH="../instancias/2048x64.ME.old"
 INSTANCES_NEW_PATH="../instancias/2048x64.ME"
 SOLUTIONS_DIR="2048x64"
 VERIFICADOR="../bin/verificador"
-BASE_PATH=$(pwd)
 
-cd ${INSTANCES_PATH}
-INSTANCES=$(ls scenario.*.workload.*)
-cd ${BASE_PATH}
+SCENARIOS[0]=0
+SCENARIOS[1]=3
+SCENARIOS[2]=6
+SCENARIOS[3]=9
+SCENARIOS[4]=10
+SCENARIOS[5]=11
+SCENARIOS[6]=13
+SCENARIOS[7]=14
+SCENARIOS[8]=16
+SCENARIOS[9]=17
+SCENARIOS[10]=19
 
-mkdir -p ${SOLUTIONS_DIR}
+WORKLOADS[0]="A.u_c_hihi"
+WORKLOADS[1]="A.u_c_hilo"
+WORKLOADS[2]="A.u_c_lohi"
+WORKLOADS[3]="A.u_c_lolo"
+WORKLOADS[4]="A.u_i_hihi"
+WORKLOADS[5]="A.u_i_hilo"
+WORKLOADS[6]="A.u_i_lohi"
+WORKLOADS[7]="A.u_i_lolo"
+WORKLOADS[8]="A.u_s_hihi"
+WORKLOADS[9]="A.u_s_hilo"
+WORKLOADS[10]="A.u_s_lohi"
+WORKLOADS[11]="A.u_s_lolo"
+WORKLOADS[12]="B.u_c_hihi"
+WORKLOADS[13]="B.u_c_hilo"
+WORKLOADS[14]="B.u_c_lohi"
+WORKLOADS[15]="B.u_c_lolo"
+WORKLOADS[16]="B.u_i_hihi"
+WORKLOADS[17]="B.u_i_hilo"
+WORKLOADS[18]="B.u_i_lohi"
+WORKLOADS[19]="B.u_i_lolo"
+WORKLOADS[20]="B.u_s_hihi"
+WORKLOADS[21]="B.u_s_hilo"
+WORKLOADS[22]="B.u_s_lohi"
+WORKLOADS[23]="B.u_s_lolo"
+
+mkdir ${SOLUTIONS_DIR}
 rm ${SOLUTIONS_DIR}/*.metrics
 rm ${SOLUTIONS_DIR}/*.sols
 
-for instance in ${INSTANCES}
+for s in {0..10}
 do
-    OUT="${SOLUTIONS_DIR}/pals-ruso.${instance}"
-
-    EXEC="./palsRuso.2048 ${INSTANCES_PATH}/${instance} ${ARGS}"
-    echo ${EXEC}
-    
-    ${EXEC} > ${OUT}.sol
-    
-    NAME_SPLITTED=$(echo ${instance} | tr "." "\n")
-    POS=0
-    for part in ${NAME_SPLITTED}
+    for w in {0..23}
     do
-        NAME_ARRAY[POS]=${part}
-        POS=$((POS+1))       
+        INSTANCE="scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
+        OUT="${SOLUTIONS_DIR}/pals-ruso.${INSTANCE}"
+        
+        EXEC="./palsRuso.2048 ${INSTANCES_PATH}/${INSTANCE} ${ARGS}"
+        echo ${EXEC}
+        ${EXEC} > ${OUT}.sol
+            
+        EXEC_VERIF="${VERIFICADOR} ${INSTANCES_NEW_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_NEW_PATH}/workload.${WORKLOADS[w]} ${OUT}.sol ${DIMENSIONS}"
+        echo ${EXEC_VERIF}
+        ${EXEC_VERIF} > ${OUT}.metrics
     done
-
-    scenario_num=${NAME_ARRAY[1]}
-    workload_prefix=${NAME_ARRAY[3]}
-    workload=${NAME_ARRAY[4]}
-    
-    EXEC_VERIF="${VERIFICADOR} ${INSTANCES_NEW_PATH}/scenario.${scenario_num} ${INSTANCES_NEW_PATH}/workload.${workload_prefix}.${workload} ${OUT}.sol ${DIMENSIONS}"
-    echo ${EXEC_VERIF}
-    ${EXEC_VERIF} > ${OUT}.metrics
 done

@@ -4,7 +4,7 @@
 #PBS -N pals-ruso
 
 # Requerimientos
-#PBS -l nodes=1:ppn=8:class0,walltime=02:00:00
+#PBS -l nodes=1:ppn=8:class0,walltime=05:00:00
 
 # Cola
 #PBS -q publica
@@ -59,8 +59,8 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-#./run_1024x32_full.sh
-#./run_2048x64_full.sh
+./run_1024x32_full.sh
+./run_2048x64_full.sh
 
-./run_1024x32_test.sh
-./run_2048x64_test.sh
+#./run_1024x32_test.sh
+#./run_2048x64_test.sh
