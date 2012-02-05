@@ -216,9 +216,7 @@ int main(int argc, char *argv[])
         #endif
 
         mach[best_machine] = new_et;
-
         asig[best_task] = best_machine;
-        //energy_mach[best_machine] += energy(best_task,best_machine,mach[best_machine],cores[best_machine],E_IDLE[best_machine],E_MAX[best_machine],et,napp[best_machine]);
         napp[best_machine]++;
         nro_asig++;
 
