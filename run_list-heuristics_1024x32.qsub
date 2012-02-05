@@ -60,7 +60,7 @@ echo $NPROCS
 echo
 
 ./run_1024x32_full.sh
-./run_2048x64_full.sh
+#./run_2048x64_full.sh
 
 #./run_1024x32_test.sh
 #./run_2048x64_test.sh
