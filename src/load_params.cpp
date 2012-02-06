@@ -5,7 +5,7 @@
 #include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
-    if (argc >= 10) {
+    if (argc >= 11) {
         input->scenario_path = argv[1];
         if (DEBUG) fprintf(stdout, "[PARAMS] scenario path: %s\n", input->scenario_path);
 
@@ -46,6 +46,9 @@ int load_params(int argc, char **argv, struct params *input) {
         input->max_iterations = atoi(argv[9]);
         if (DEBUG) fprintf(stdout, "[PARAMS] Max. iterations: %d\n", input->max_iterations);
 
+        input->population_size = atoi(argv[10]);
+        if (DEBUG) fprintf(stdout, "[PARAMS] Population size: %d\n", input->population_size);
+
         if ((input->algorithm < 0)||(input->algorithm > 3)) {
             fprintf(stderr, "[ERROR] Invalid algorithm.\n");
             return EXIT_FAILURE;
@@ -54,7 +57,7 @@ int load_params(int argc, char **argv, struct params *input) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");    
-        fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations>\n\n", argv[0]);
+        fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>\n\n", argv[0]);
         fprintf(stdout, "       Algorithms\n");
         fprintf(stdout, "           0 PALS 2-populations\n");
         fprintf(stdout, "           1 PALS 1-population\n");

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N pals-2048-8
+#PBS -N pals-1024-speed
 
 # Requerimientos
-#PBS -l nodes=1:ppn=8:class0,walltime=60:00:00
+#PBS -l nodes=1:ppn=24:class2,walltime=60:00:00
 
 # Cola
-#PBS -q publica
+#PBS -q medium_jobs
 
 # Working dir
 #PBS -d /home/siturria/maestria/branches/palsCPU/
@@ -59,4 +59,5 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_2048x64.8.sh
+
+./speed_1024x32.1-24.sh
