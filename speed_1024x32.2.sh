@@ -1,6 +1,6 @@
 DIMENSIONS="1024 32"
 INSTANCES_PATH="instancias/1024x32.ME"
-SOLUTIONS_BASE_DIR="1024x32.2"
+SOLUTIONS_BASE_DIR="1024x32.2.speed"
 THREADS=2
 ITERATIONS=15
 PALS_ITERATIONS=6000000
@@ -59,7 +59,7 @@ for a in {0..0}
 do
     for s in {0..0}
     do
-        for w in {0..3}
+        for w in {0..0}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
