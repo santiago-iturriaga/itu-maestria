@@ -206,7 +206,7 @@ if __name__ == '__main__':
                 print "[ERROR] cargando info de la heuristica pals"
                 #exit(-1)
 
-        resultados_pals_info[instancia] = (total_time/cant_iters)
+        resultados_pals_info[instancia] = (total_time/cant_iters,)
 
     print "[====== Tabla de makespan ======]"
     print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS Ruso,PALS Ruso vs MinMin,PALS 2obj,PALS 2obj vs MinMin, Avg PALS 2obj, Stdev PALS 2obj, Avg ND"
@@ -253,5 +253,4 @@ if __name__ == '__main__':
     print "[====== Tabla de info ======]"
     print "Instancia,Avg time"
     for instancia in instancias:
-        print "%s,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], \
-            resultados_pals_info[instancia][0])
+        print "%s,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0])
