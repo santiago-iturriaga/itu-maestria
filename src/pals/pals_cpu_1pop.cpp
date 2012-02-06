@@ -272,8 +272,8 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST);
         fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST    : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST);
         fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST   : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR              : %d (size=%d)\n",
-            PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__POP_SIZE_FACTOR              : %f (size=%d)\n",
+            PALS_CPU_1POP_WORK__POP_SIZE_FACTOR, (int)floor(PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads));
         fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS            : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR        : %d\n", PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
         fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
@@ -288,7 +288,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
     empty_instance.etc = etc;
     empty_instance.energy = energy;
 
-    empty_instance.population_max_size = PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads;
+    empty_instance.population_max_size = (int)floor(PALS_CPU_1POP_WORK__POP_SIZE_FACTOR * empty_instance.count_threads);
     empty_instance.population_count = 0;
     empty_instance.best_makespan_solution = -1;
     empty_instance.best_energy_solution = -1;
