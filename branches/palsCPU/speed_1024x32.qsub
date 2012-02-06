@@ -4,7 +4,7 @@
 #PBS -N pals-1024-speed
 
 # Requerimientos
-#PBS -l nodes=1:ppn=16:class2,walltime=60:00:00
+#PBS -l nodes=1:ppn=8:class0,walltime=60:00:00
 
 # Cola
 #PBS -q publica
@@ -59,7 +59,7 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-for i in {0..16}
+for i in {11..12}
 do
     ./speed_1024x32.${i}.sh
 done
