@@ -1,6 +1,7 @@
 CC=gcc -Wall -std=c99
 CX=g++ -Wall
 LIBS=-lpthread -lrt
+OUTPUT_BIN=pals_cpu_speed
 
 all: pals-opt verificador fp
 
@@ -38,7 +39,7 @@ pals-gdb: src/main.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
-			-o bin/pals_cpu $(LIBS)
+			-o bin/$(OUTPUT_BIN) $(LIBS)
 
 pals-opt: src/main.cpp \
 		src/load_params.cpp \
@@ -68,7 +69,8 @@ pals-opt: src/main.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
-			-o bin/pals_cpu $(LIBS)
+			-o bin/$(OUTPUT_BIN) $(LIBS)
 
 clean:
-	rm bin/*
+	rm bin/$(OUTPUT_BIN)
+
