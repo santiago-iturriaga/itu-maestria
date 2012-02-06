@@ -292,6 +292,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
     empty_instance.population_count = 0;
     empty_instance.best_makespan_solution = -1;
     empty_instance.best_energy_solution = -1;
+    empty_instance.global_total_iterations = 0;
 
     // Population.
     empty_instance.population = (struct solution*)malloc(sizeof(struct solution) * empty_instance.population_max_size);
@@ -383,6 +384,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         empty_instance.threads_args[i].best_energy_solution = &(empty_instance.best_energy_solution);
 
         empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
+        empty_instance.threads_args[i].global_total_iterations = &(empty_instance.global_total_iterations);
 
         empty_instance.threads_args[i].population_mutex = &(empty_instance.population_mutex);
         empty_instance.threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
@@ -664,9 +666,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     thread_instance->ts_last_found = ts_current;
 
+    int selected_solution_pos = -1;
+    int local_iteration_count = 0;
+                
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
-        (thread_instance->total_iterations < thread_instance->max_iterations))
+        (thread_instance->total_iterations < thread_instance->max_iterations) &&
+        (thread_instance->global_total_iterations[0] < thread_instance->max_iterations))
     {
         work_type = *(thread_instance->work_type);
         if (DEBUG_DEV) printf("[DEBUG] [THREAD=%d] Work type = %d\n", thread_instance->thread_idx, work_type);
@@ -759,28 +765,27 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
-        {
+        {            
             // PALS_CPU_1POP_WORK__SEARCH ====================================================================
             double random = 0.0; // Variable random multi-proposito :)
 
             // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
-            int selected_solution_pos;
-            selected_solution_pos = -1;
+            if (selected_solution_pos == -1) {
+                pthread_mutex_lock(thread_instance->population_mutex);
 
-            pthread_mutex_lock(thread_instance->population_mutex);
-
-                for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
-                {
-                    if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+                    for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
                     {
-                        thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-                        selected_solution_pos = i;
+                        if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+                        {
+                            thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
+                            selected_solution_pos = i;
 
-                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                        }
                     }
-                }
 
-            pthread_mutex_unlock(thread_instance->population_mutex);
+                pthread_mutex_unlock(thread_instance->population_mutex);
+            }
 
             // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
             if (selected_solution_pos == -1)
@@ -810,42 +815,45 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 #endif
 
                 pthread_mutex_lock(thread_instance->population_mutex);
-                int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
+                    thread_instance->global_total_iterations[0] += local_iteration_count;
+                    local_iteration_count = 0;
+                
+                    int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
 
-                if (DEBUG_DEV)
-                {
-                    fprintf(stdout, "[DEBUG] Random selection\n");
-                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-                    fprintf(stdout, "        Random          : %f\n", random);
-                    fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
-
-                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    if (DEBUG_DEV)
                     {
-                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                            thread_instance->population[i].initialized,
-                            thread_instance->population[i].status);
-                    }
-                }
+                        fprintf(stdout, "[DEBUG] Random selection\n");
+                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                        fprintf(stdout, "        Random          : %f\n", random);
+                        fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
 
-                int current_sol_pos = -1;
-                int current_sol_index = -1;
-
-                for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
-                {
-                    if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
-                    {
-                        current_sol_index++;
-
-                        if (current_sol_index == random_sol_index)
+                        for (int i = 0; i < thread_instance->population_max_size; i++)
                         {
-                            current_sol_pos = i;
+                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                                thread_instance->population[i].initialized,
+                                thread_instance->population[i].status);
                         }
                     }
-                }
 
-                // Clono la solucion elegida =====================================================
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
-                clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
+                    int current_sol_pos = -1;
+                    int current_sol_index = -1;
+
+                    for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
+                    {
+                        if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
+                        {
+                            current_sol_index++;
+
+                            if (current_sol_index == random_sol_index)
+                            {
+                                current_sol_pos = i;
+                            }
+                        }
+                    }
+
+                    // Clono la solucion elegida =====================================================
+                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                    clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
@@ -896,8 +904,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
 
                 int work_do_iteration = 1;
-                /*int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2) + 
-                    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / 2)));*/
 
                 int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) + 
                     (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
@@ -910,6 +916,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     for (int search_iteration = 0; search_iteration < work_iteration_size; search_iteration++)
                     {
                         thread_instance->total_iterations++;
+                        local_iteration_count++;
 
                         // Determino las maquinas de inicio para la busqueda.
                         int machine_a, machine_b;
@@ -1441,7 +1448,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                             thread_instance->total_swaps++;
                             //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
-                     }
+                        }
                         else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                         {
                             // Muevo la tarea!
@@ -1483,7 +1490,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         // Lo mejore. Intento obtener lock de la poblacion.
                         mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
-                        if (mutex_locked == 0) {
+                        if (mutex_locked == 0) {                           
                             // Chequeo si la nueva solucion es no-dominada.
                             new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
 
@@ -1514,6 +1521,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
                                 validate_thread_instance(thread_instance);
                             }
+                            
+                            // Libero la posicion seleccionada.
+                            selected_solution_pos = -1;
                         } else {
                             // Algun otro thread esta trabajando sobre la población.
                             // Intento hacer otro loop de trabajo y vuelvo a probar.
@@ -1522,8 +1532,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             #ifdef CPU_MERSENNE_TWISTER
                             double random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #else
-                        double random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                        #endif
+                            double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
 
                             work_do_iteration = 1;
                             work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
@@ -1535,16 +1545,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     {
                         // No lo pude mejorar.
                         thread_instance->total_soluciones_no_evolucionadas++;
-
-                        /*fprintf(stdout, "[MAL EVOLUCIONADA] search_type = %d\n", search_type);
-                        fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", original_makespan, get_makespan(selected_solution));
-                        fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", original_energy, get_energy(selected_solution));*/
-
-                        pthread_mutex_lock(thread_instance->population_mutex);
-
-                            selected_solution->status = SOLUTION__STATUS_EMPTY;
-
-                        pthread_mutex_unlock(thread_instance->population_mutex);
                     }
                 }
             }

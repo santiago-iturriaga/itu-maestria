@@ -62,6 +62,7 @@ struct pals_cpu_1pop_instance {
     int best_energy_solution;
 
     int work_type;
+    int global_total_iterations;
 
     pthread_mutex_t     work_type_mutex;
     pthread_mutex_t     population_mutex;
@@ -98,7 +99,9 @@ struct pals_cpu_1pop_thread_arg {
     int *best_energy_solution;
 
     int count_threads;
+    
     int *work_type;
+    int *global_total_iterations;
 
     pthread_mutex_t     *population_mutex;
     pthread_barrier_t   *sync_barrier;
