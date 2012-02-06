@@ -1,7 +1,7 @@
 CC=gcc -Wall -std=c99
 CX=g++ -Wall
 LIBS=-lpthread -lrt
-OUTPUT_BIN=pals_cpu_speed
+OUTPUT_BIN=pals_cpu_rp
 
 all: pals-opt verificador fp
 

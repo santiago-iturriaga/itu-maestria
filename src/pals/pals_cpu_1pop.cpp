@@ -693,7 +693,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             timming_start(ts_mct);
             // Timming -----------------------------------------------------
 
-            if (thread_instance->thread_idx < thread_instance->population_max_size)
+            if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
             {
                 pthread_mutex_lock(thread_instance->population_mutex);
 
@@ -791,6 +791,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             if (selected_solution_pos == -1)
             {
                 // No se que hacer... panico! termino!
+                fprintf(stdout, "[ERROR] Hilo finalizado.");
+                fprintf(stderr, "[ERROR] Hilo finalizado.");
+
                 terminate = 1;
                 thread_instance->total_population_full++;
 
