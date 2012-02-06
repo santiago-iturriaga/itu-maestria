@@ -63,6 +63,7 @@ if __name__ == '__main__':
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
+            #print values
             makespan = float(values[0])
             energy = float(values[1])
 
@@ -190,7 +191,7 @@ if __name__ == '__main__':
         if resultados_MINMin[instancia][0] < min_minmin: min_minmin = resultados_MINMin[instancia][0]
         if resultados_MINMIN[instancia][0] < min_minmin: min_minmin = resultados_MINMIN[instancia][0]
         
-        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%s" % ('s' + instancia[0] + ' ' + instancia[1], \
+        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%s" % ('s' + instancia[0] + ' ' + instancia[1], \
             resultados_MinMin[instancia][0], \
             resultados_MinMIN[instancia][0], \
             resultados_MINMin[instancia][0], \
@@ -211,7 +212,7 @@ if __name__ == '__main__':
         if resultados_MINMin[instancia][1] < min_minmin: min_minmin = resultados_MINMin[instancia][1]
         if resultados_MINMIN[instancia][1] < min_minmin: min_minmin = resultados_MINMIN[instancia][1]
 
-        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%s" % ('s' + instancia[0] + ' ' + instancia[1], \
+        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%s" % ('s' + instancia[0] + ' ' + instancia[1], \
             resultados_MinMin[instancia][1], \
             resultados_MinMIN[instancia][1], \
             resultados_MINMin[instancia][1], \
