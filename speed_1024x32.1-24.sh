@@ -55,64 +55,65 @@ WORKLOADS[23]="B.u_s_lolo"
 #rm ${SOLUTIONS_DIR}/*.metrics
 #rm ${SOLUTIONS_DIR}/*.sols
 
-for t in {1..24}
+for THREADS in {1..24}
 do
-	for a in {0..0}
-	do
-	    for s in {0..0}
-	    do
-	        for w in {0..0}
-	        do
-	            for (( i=0; i<ITERATIONS; i++ ))
-	            do       
-	                SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.${i}"
-	                mkdir -p ${SOLUTIONS_DIR}
-	            
-	                echo ${SOLUTIONS_DIR}
-	            
-	                OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
-	                rm ${OUT}.*
-	            
-	                RAND=$RANDOM
-	                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${POPULATION_SIZE}"
-	                echo ${EXEC}
-	                time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
-	            
-	                cat ${OUT}.time
-	            
-	                EXEC_VERIF="${VERIFICADOR} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${OUT}.sols ${DIMENSIONS}"
-	                echo ${EXEC_VERIF}
-	                ${EXEC_VERIF} > ${OUT}.metrics
-	            
-	                echo "set term postscript" > ${OUT}.plot
-	                echo "set output '${OUT}.ps'" >> ${OUT}.plot
-	                echo "plot '${OUT}.metrics' using 1:2 title 'PALS2obj', '${MINMIN_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
-	                echo "set term png" >> ${OUT}.plot
-	                echo "set output '${OUT}.png'" >> ${OUT}.plot
-	                echo "replot" >> ${OUT}.plot
-        	        gnuplot ${OUT}.plot
+    for a in {0..0}
+    do
+        for s in {0..0}
+        do
+            for w in {0..0}
+            do
+                for (( i=0; i<ITERATIONS; i++ ))
+                do       
+                    SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}.${THREADS}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.${i}"
+                    mkdir -p ${SOLUTIONS_DIR}
+                
+                    echo ${SOLUTIONS_DIR}
+                
+                    OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
+                    rm ${OUT}.*
+                
+                    RAND=$RANDOM
+                    EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${POPULATION_SIZE}"
+                    echo ${EXEC}
+                    time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
+                
+                    cat ${OUT}.time
+                
+                    EXEC_VERIF="${VERIFICADOR} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${OUT}.sols ${DIMENSIONS}"
+                    echo ${EXEC_VERIF}
+                    ${EXEC_VERIF} > ${OUT}.metrics
+                
+                    echo "set term postscript" > ${OUT}.plot
+                    echo "set output '${OUT}.ps'" >> ${OUT}.plot
+                    echo "plot '${OUT}.metrics' using 1:2 title 'PALS2obj', '${MINMIN_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${OUT}.plot
+                    echo "set term png" >> ${OUT}.plot
+                    echo "set output '${OUT}.png'" >> ${OUT}.plot
+                    echo "replot" >> ${OUT}.plot
+                    gnuplot ${OUT}.plot
 
-                	echo "set term postscript" > ${OUT}.2.plot
-                echo "set output '${OUT}.2.ps'" >> ${OUT}.2.plot
-                echo "plot '${OUT}.metrics' using 1:2 title 'PALS2obj'" >> ${OUT}.2.plot
-                echo "set term png" >> ${OUT}.2.plot
-                echo "set output '${OUT}.2.png'" >> ${OUT}.2.plot
-                echo "replot" >> ${OUT}.2.plot
-                gnuplot ${OUT}.2.plot
+                    echo "set term postscript" > ${OUT}.2.plot
+                    echo "set output '${OUT}.2.ps'" >> ${OUT}.2.plot
+                    echo "plot '${OUT}.metrics' using 1:2 title 'PALS2obj'" >> ${OUT}.2.plot
+                    echo "set term png" >> ${OUT}.2.plot
+                    echo "set output '${OUT}.2.png'" >> ${OUT}.2.plot
+                    echo "replot" >> ${OUT}.2.plot
+                    gnuplot ${OUT}.2.plot
+                done
+                
+                TODAS_LAS_SOLUCIONES="${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
+                cat ${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.*/*.metrics > ${TODAS_LAS_SOLUCIONES}.sols
+                bin/fp_2obj ${TODAS_LAS_SOLUCIONES}.sols
+                mv FP.out ${TODAS_LAS_SOLUCIONES}.fp
+                
+                echo "set term postscript" > ${TODAS_LAS_SOLUCIONES}.plot
+                echo "set output '${TODAS_LAS_SOLUCIONES}.ps'" >> ${TODAS_LAS_SOLUCIONES}.plot
+                echo "plot '${TODAS_LAS_SOLUCIONES}.fp' using 1:2 title 'PALS2obj', '${MINMIN_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${TODAS_LAS_SOLUCIONES}.plot
+                echo "set term png" >> ${TODAS_LAS_SOLUCIONES}.plot
+                echo "set output '${TODAS_LAS_SOLUCIONES}.png'" >> ${TODAS_LAS_SOLUCIONES}.plot
+                echo "replot" >> ${TODAS_LAS_SOLUCIONES}.plot
+                gnuplot ${TODAS_LAS_SOLUCIONES}.plot
             done
-            
-            TODAS_LAS_SOLUCIONES="${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
-            cat ${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.*/*.metrics > ${TODAS_LAS_SOLUCIONES}.sols
-            bin/fp_2obj ${TODAS_LAS_SOLUCIONES}.sols
-            mv FP.out ${TODAS_LAS_SOLUCIONES}.fp
-            
-            echo "set term postscript" > ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set output '${TODAS_LAS_SOLUCIONES}.ps'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "plot '${TODAS_LAS_SOLUCIONES}.fp' using 1:2 title 'PALS2obj', '${MINMIN_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'MinMin', '${RUSO_METRICS_PATH}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.metrics' using 1:2 title 'Ruso'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set term png" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set output '${TODAS_LAS_SOLUCIONES}.png'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "replot" >> ${TODAS_LAS_SOLUCIONES}.plot
-            gnuplot ${TODAS_LAS_SOLUCIONES}.plot
         done
     done
 done
