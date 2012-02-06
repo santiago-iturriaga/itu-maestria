@@ -39,12 +39,13 @@ if __name__ == '__main__':
     resultados_MinMIN = {}
     resultados_MINMIN = {}
     resultados_pals = {}
+    resultados_pals_info = {}
     resultados_pals_ruso = {}
 
     for instancia in instancias:
         path = list_heur_dir + '/MinMin.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
         #print path
-        
+
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
@@ -59,7 +60,7 @@ if __name__ == '__main__':
     for instancia in instancias:
         path = list_heur_dir + '/MinMIN.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
         #print path
-        
+
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     for instancia in instancias:
         path = list_heur_dir + '/MINMin.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
         #print path
-        
+
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     for instancia in instancias:
         path = list_heur_dir + '/MINMIN.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
         #print path
-        
+
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
@@ -102,10 +103,10 @@ if __name__ == '__main__':
             print "[ERROR] cargando heuristica MINMIN"
             exit(-1)
 
-    for instancia in instancias:           
+    for instancia in instancias:
         path = pals_ruso_dir + '/pals-ruso.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
         #print path
-        
+
         if os.path.isfile(path):
             metrics_file = open(path)
             values = metrics_file.readline().split(' ')
@@ -117,30 +118,32 @@ if __name__ == '__main__':
             print "[ERROR] cargando heuristica PALS del Ruso"
             exit(-1)
 
-    for instancia in instancias: 
+    for instancia in instancias:
         abs_min_makespan = 0.0
         abs_min_energy = 0.0
-    
+
         total_makespan = 0.0
         total_energy = 0.0
         total_sols = 0
-    
+
         aux_iter_metrics = []
-    
-        for iter in range(cant_iters):                      
+
+        total_time = 0.0
+
+        for iter in range(cant_iters):
             dir_path = pals_dir + '/scenario.' + instancia[0] + '.workload.' + instancia[1] + '.' + str(iter) + '/'
             file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
-            
-            path = dir_path + file_name 
+
+            path = dir_path + file_name
             #print path
 
             if os.path.isfile(path):
                 metrics_file = open(path)
-               
-                sols = 0 
+
+                sols = 0
                 min_makespan = 0.0
                 min_energy = 0.0
-                
+
                 for line in metrics_file:
                     values = line.split(' ')
                     makespan = float(values[0])
@@ -149,13 +152,13 @@ if __name__ == '__main__':
 
                     if min_makespan == 0.0: min_makespan = makespan
                     elif min_makespan > makespan: min_makespan = makespan
-                    
+
                     if min_energy == 0.0: min_energy = energy
                     elif min_energy > energy: min_energy = energy
 
                 if abs_min_makespan == 0.0: abs_min_makespan = min_makespan
                 elif abs_min_makespan > min_makespan: abs_min_makespan = min_makespan
-                
+
                 if abs_min_energy == 0.0: abs_min_energy = min_energy
                 elif abs_min_energy > min_energy: abs_min_energy = min_energy
 
@@ -167,30 +170,35 @@ if __name__ == '__main__':
             else:
                 print "[ERROR] cargando heuristica pals"
                 #exit(-1)
- 
-        avg_makespan = total_makespan/cant_iters
-        avg_energy = total_energy/cant_iters
 
-        aux_stdev_makespan = 0.0
-        aux_stdev_energy = 0.0
+            file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
 
-        for (cant_s, min_m, min_e) in aux_iter_metrics:
-            aux_stdev_makespan = aux_stdev_makespan + math.pow(min_m - avg_makespan, 2)
-            aux_stdev_energy = aux_stdev_energy + math.pow(min_e - avg_energy, 2)
+            path = dir_path + file_name
+            #print path
 
-        stdev_makespan = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_makespan)
-        stdev_energy = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_energy)
+            if os.path.isfile(path):
+                info_file = open(path)
 
-        resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)        
- 
-    print "====== Tabla de makespan ======"
+                for line in info_file:
+                    values = line.strip().split('|')
+
+                    if values[0] == 'TOTAL_TIME':
+                        total_time = total_time + (float(values[1]) / 1000000.0)
+
+            else:
+                print "[ERROR] cargando info de la heuristica pals"
+                #exit(-1)
+
+        resultados_pals_info[instancia] = (total_time/cant_iters)
+
+    print "[====== Tabla de makespan ======]"
     print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS Ruso,PALS Ruso vs MinMin,PALS 2obj,PALS 2obj vs MinMin, Avg PALS 2obj, Stdev PALS 2obj, Avg ND"
     for instancia in instancias:
         min_minmin = resultados_MinMin[instancia][0]
         if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
         if resultados_MINMin[instancia][0] < min_minmin: min_minmin = resultados_MINMin[instancia][0]
         if resultados_MINMIN[instancia][0] < min_minmin: min_minmin = resultados_MINMIN[instancia][0]
-        
+
         print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%s" % ('s' + instancia[0] + ' ' + instancia[1], \
             resultados_MinMin[instancia][0], \
             resultados_MinMIN[instancia][0], \
@@ -204,7 +212,7 @@ if __name__ == '__main__':
             resultados_pals[instancia][4] * 100.0 / resultados_pals[instancia][3], \
             resultados_pals[instancia][2])
 
-    print "====== Tabla de energía ======"
+    print "[====== Tabla de energía ======]"
     print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS Ruso,PALS Ruso vs MinMin,PALS 2obj,PALS 2obj vs MinMin"
     for instancia in instancias:
         min_minmin = resultados_MinMin[instancia][1]
@@ -224,3 +232,9 @@ if __name__ == '__main__':
             resultados_pals[instancia][5], \
             resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5], \
             resultados_pals[instancia][2])
+
+    print "[====== Tabla de info ======]"
+    print "Instancia,Avg time"
+    for instancia in instancias:
+        print "%s,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], \
+            resultados_pals_info[instancia][0])
