@@ -171,6 +171,23 @@ if __name__ == '__main__':
                 print "[ERROR] cargando heuristica pals"
                 #exit(-1)
 
+            avg_makespan = total_makespan/cant_iters
+            avg_energy = total_energy/cant_iters
+     
+            aux_stdev_makespan = 0.0
+            aux_stdev_energy = 0.0
+     
+            for (cant_s, min_m, min_e) in aux_iter_metrics:
+                aux_stdev_makespan = aux_stdev_makespan + math.pow(min_m - avg_makespan, 2)
+                aux_stdev_energy = aux_stdev_energy + math.pow(min_e - avg_energy, 2)
+     
+            stdev_makespan = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_makespan)
+            stdev_energy = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_energy)
+     
+            resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)   
+
+            # INFO ===========================
+
             file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
 
             path = dir_path + file_name
