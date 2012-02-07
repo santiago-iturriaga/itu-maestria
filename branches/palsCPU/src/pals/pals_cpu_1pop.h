@@ -71,8 +71,12 @@ struct pals_cpu_1pop_instance {
     // Estado de los generadores aleatorios.
     #ifdef CPU_MERSENNE_TWISTER
     struct cpu_mt_state *random_states;
-    #else
+    #endif
+    #ifdef CPU_RAND
     struct cpu_rand_state *random_states;
+    #endif
+    #ifdef CPU_DRAND48
+    struct cpu_drand48_state *random_states;
     #endif
 
     // Parámetros de ejecución.
@@ -108,8 +112,12 @@ struct pals_cpu_1pop_thread_arg {
     // Estado del generador aleatorio para el thread actual.
     #ifdef CPU_MERSENNE_TWISTER
     struct cpu_mt_state *thread_random_state;
-    #else
+    #endif
+    #ifdef CPU_RAND
     struct cpu_rand_state *thread_random_state;
+    #endif
+    #ifdef CPU_DRAND48
+    struct cpu_drand48_state *thread_random_state;
     #endif
 
     // Statics

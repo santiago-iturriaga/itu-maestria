@@ -5,6 +5,7 @@ THREADS=8
 ITERATIONS=15
 PALS_ITERATIONS=10000000
 PALS_TIMEOUT=10
+PALS_POP_SIZE=16
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/2048x64/MinMin"
@@ -72,7 +73,7 @@ do
                 rm ${OUT}.*
             
                 RAND=$RANDOM
-                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS}"
+                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POP_SIZE}" 
                 echo ${EXEC}
                 time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
             

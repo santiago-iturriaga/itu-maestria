@@ -1,17 +1,17 @@
 DIMENSIONS="1024 32"
 INSTANCES_PATH="instancias/1024x32.ME"
-SOLUTIONS_BASE_DIR="1024x32.8f"
+SOLUTIONS_BASE_DIR="1024x32.mt"
 THREADS=8
 ITERATIONS=15
-PALS_ITERATIONS=10000000
-PALS_TIMEOUT=10
-PALS_POP_SIZE=16
+PALS_ITERATIONS=6000000
+PALS_TIMEOUT=60
+PALS_POPULATION=16
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
 RUSO_METRICS_PATH="pals-ruso/1024x32/pals-ruso"
 
-ALGORITHMS[0]="bin/pals_cpu"
+ALGORITHMS[0]="bin/pals_cpu_mt"
 ALGORITHMS_ID[0]=1
 ALGORITHMS_OUTNAME[0]="pals-1"
 
@@ -56,15 +56,17 @@ WORKLOADS[23]="B.u_s_lolo"
 #rm ${SOLUTIONS_DIR}/*.metrics
 #rm ${SOLUTIONS_DIR}/*.sols
 
-for a in {0..0}
+a=0
+
+for THREADS in {1..8}
 do
-    for s in {0..10}
+    for s in {0..0}
     do
-        for w in {0..23}
+        for w in {0..0}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
-                SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.${i}"
+                SOLUTIONS_DIR="${SOLUTIONS_BASE_DIR}.${THREADS}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.${i}"
                 mkdir -p ${SOLUTIONS_DIR}
             
                 echo ${SOLUTIONS_DIR}
@@ -73,7 +75,7 @@ do
                 rm ${OUT}.*
             
                 RAND=$RANDOM
-                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POP_SIZE}"
+                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POPULATION}"
                 echo ${EXEC}
                 time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
             
