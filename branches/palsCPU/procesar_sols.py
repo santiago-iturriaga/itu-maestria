@@ -280,27 +280,45 @@ if __name__ == '__main__':
     for item_grupo in sorted(instancias_grupo_1.keys()):
         items = float(len(instancias_grupo_1[item_grupo]))
         
-        total_improvement_best = 0.0
-        total_improvement_avg = 0.0
-        total_std_dev = 0.0
-        total_nd = 0
-        
+        mk_total_improvement_best = 0.0
+        mk_total_improvement_avg = 0.0
+        mk_total_std_dev = 0.0
+        mk_total_nd = 0
+   
+        nrg_total_improvement_best = 0.0
+        nrg_total_improvement_avg = 0.0
+        nrg_total_std_dev = 0.0
+        nrg_total_nd = 0
+     
         for instancia in instancias_grupo_1[item_grupo]:
+            min_minmin = resultados_MinMin[instancia][0]
+            if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
+            if resultados_MINMin[instancia][0] < min_minmin: min_minmin = resultados_MINMin[instancia][0]
+            if resultados_MINMIN[instancia][0] < min_minmin: min_minmin = resultados_MINMIN[instancia][0]
+
+            mk_total_improvement_best = mk_total_improvement_best + (100.0 - (resultados_pals[instancia][0] * 100.0 / min_minmin))
+            mk_total_improvement_avg = mk_total_improvement_avg + (100.0 - (resultados_pals[instancia][3] * 100.0 / min_minmin))
+            mk_total_std_dev = mk_total_std_dev + (resultados_pals[instancia][4] * 100.0 / resultados_pals[instancia][3])
+            mk_total_nd = mk_total_nd + resultados_pals[instancia][2]
+
             min_minmin = resultados_MinMin[instancia][1]
             if resultados_MinMIN[instancia][1] < min_minmin: min_minmin = resultados_MinMIN[instancia][1]
             if resultados_MINMin[instancia][1] < min_minmin: min_minmin = resultados_MINMin[instancia][1]
             if resultados_MINMIN[instancia][1] < min_minmin: min_minmin = resultados_MINMIN[instancia][1]
 
-            total_improvement_best = total_improvement_best + (100.0 - (resultados_pals[instancia][1] * 100.0 / min_minmin))
-            total_improvement_avg = total_improvement_avg + (100.0 - (resultados_pals[instancia][5] * 100.0 / min_minmin))
-            total_std_dev = total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
-            total_nd = total_nd + resultados_pals[instancia][2]
+            nrg_total_improvement_best = nrg_total_improvement_best + (100.0 - (resultados_pals[instancia][1] * 100.0 / min_minmin))
+            nrg_total_improvement_avg = nrg_total_improvement_avg + (100.0 - (resultados_pals[instancia][5] * 100.0 / min_minmin))
+            nrg_total_std_dev = nrg_total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
+            nrg_total_nd = nrg_total_nd + resultados_pals[instancia][2]
 
-        print "%s,%s,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
-            total_improvement_best / items, \
-            total_improvement_avg / items, \
-            total_std_dev / items, \
-            total_nd / items)
+        print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
+            mk_total_improvement_best / items, \
+            nrg_total_improvement_best / items, \
+            mk_total_improvement_avg / items, \
+            nrg_total_improvement_avg / items, \
+            mk_total_std_dev / items, \
+            nrg_total_std_dev / items, \
+            mk_total_nd / items)
 
     print "[====== Tabla GRUPO 2 ======]"
     for item_grupo in sorted(instancias_grupo_2.keys()):
