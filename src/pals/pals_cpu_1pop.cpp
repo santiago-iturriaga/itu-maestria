@@ -1076,24 +1076,27 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         #else
                         random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
-                        int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
+                        int top_task_a = (int)ceil(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
                         if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-
+                        if (top_task_a == 0) top_task_a = 1;
+                        
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #else
                         random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
-                        int top_task_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
+                        int top_task_b = (int)ceil(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
                         if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
+                        if (top_task_b == 0) top_task_b = 1;
 
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #else
                         random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
-                        int top_machine_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
+                        int top_machine_b = (int)ceil(random * PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
                         if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
+                        if (top_machine_b == 0) top_machine_b = 1;
 
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -1480,12 +1483,14 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         }
                     }                // Termino el loop con la iteracin del thread
 
-                    refresh_energy(selected_solution);
-                    refresh_makespan(selected_solution);
+                    //refresh_energy(selected_solution);
+                    //refresh_makespan(selected_solution);
 
                     if ((original_makespan > get_makespan(selected_solution)) ||
                         (original_energy > get_energy(selected_solution)))
                     {
+                        refresh_energy(selected_solution);
+                        
                         int mutex_locked;
                         int new_solution_eval = 0;
 
