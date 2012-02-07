@@ -173,18 +173,18 @@ if __name__ == '__main__':
 
             avg_makespan = total_makespan/cant_iters
             avg_energy = total_energy/cant_iters
-     
+
             aux_stdev_makespan = 0.0
             aux_stdev_energy = 0.0
-     
+
             for (cant_s, min_m, min_e) in aux_iter_metrics:
                 aux_stdev_makespan = aux_stdev_makespan + math.pow(min_m - avg_makespan, 2)
                 aux_stdev_energy = aux_stdev_energy + math.pow(min_e - avg_energy, 2)
-     
+
             stdev_makespan = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_makespan)
             stdev_energy = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_energy)
-     
-            resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)   
+
+            resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)
 
             # INFO ===========================
 
@@ -258,7 +258,7 @@ if __name__ == '__main__':
     instancias_grupo_1 = {}
     instancias_grupo_2 = {}
     instancias_grupo_3 = {}
-    
+
     for instancia in instancias:
         workload_parts = instancia[1].split('.')
         workload_model = workload_parts[0]
@@ -271,7 +271,7 @@ if __name__ == '__main__':
         if not grupo_1 in instancias_grupo_1: instancias_grupo_1[grupo_1] = []
         if not grupo_2 in instancias_grupo_2: instancias_grupo_2[grupo_2] = []
         if not grupo_3 in instancias_grupo_3: instancias_grupo_3[grupo_3] = []
-        
+
         instancias_grupo_1[grupo_1].append(instancia)
         instancias_grupo_2[grupo_2].append(instancia)
         instancias_grupo_3[grupo_3].append(instancia)
@@ -279,17 +279,17 @@ if __name__ == '__main__':
     print "[====== Tabla GRUPO 1 ======]"
     for item_grupo in sorted(instancias_grupo_1.keys()):
         items = float(len(instancias_grupo_1[item_grupo]))
-        
+
         mk_total_improvement_best = 0.0
         mk_total_improvement_avg = 0.0
         mk_total_std_dev = 0.0
         mk_total_nd = 0
-   
+
         nrg_total_improvement_best = 0.0
         nrg_total_improvement_avg = 0.0
         nrg_total_std_dev = 0.0
         nrg_total_nd = 0
-     
+
         for instancia in instancias_grupo_1[item_grupo]:
             min_minmin = resultados_MinMin[instancia][0]
             if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
@@ -320,7 +320,7 @@ if __name__ == '__main__':
         #    nrg_total_std_dev / items, \
         #    mk_total_nd / items)
 
-	model_desc = ""
+        model_desc = ""
         type_desc = ""
         if item_grupo[0] == 'A': model_desc = 'Ali \emph{et al.}'
         if item_grupo[0] == 'B': model_desc = 'Braun \emph{et al.}'
@@ -337,7 +337,7 @@ if __name__ == '__main__':
         mk_total_improvement_avg = 0.0
         mk_total_std_dev = 0.0
         mk_total_nd = 0
-   
+
         nrg_total_improvement_best = 0.0
         nrg_total_improvement_avg = 0.0
         nrg_total_std_dev = 0.0
@@ -364,14 +364,24 @@ if __name__ == '__main__':
             nrg_total_std_dev = nrg_total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
             nrg_total_nd = nrg_total_nd + resultados_pals[instancia][2]
 
-        print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
-            mk_total_improvement_best / items, \
-            nrg_total_improvement_best / items, \
-            mk_total_improvement_avg / items, \
-            nrg_total_improvement_avg / items, \
-            mk_total_std_dev / items, \
-            nrg_total_std_dev / items, \
-            mk_total_nd / items)
+        #print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
+        #    mk_total_improvement_best / items, \
+        #    nrg_total_improvement_best / items, \
+        #    mk_total_improvement_avg / items, \
+        #    nrg_total_improvement_avg / items, \
+        #    mk_total_std_dev / items, \
+        #    nrg_total_std_dev / items, \
+        #    mk_total_nd / items)
+            
+        model_desc = ""
+        type_desc = ""
+        if item_grupo[0] == 'A': model_desc = 'Ali \emph{et al.}'
+        if item_grupo[0] == 'B': model_desc = 'Braun \emph{et al.}'
+        if item_grupo[1] == 'hihi': type_desc = 'High High'
+        if item_grupo[1] == 'hilo': type_desc = 'High Low'
+        if item_grupo[1] == 'lohi': type_desc = 'Low High'
+        if item_grupo[1] == 'lolo': type_desc = 'Low Low'
+        print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
 
     print "[====== Tabla GRUPO 3 ======]"
     for item_grupo in sorted(instancias_grupo_3.keys()):
@@ -381,7 +391,7 @@ if __name__ == '__main__':
         mk_total_improvement_avg = 0.0
         mk_total_std_dev = 0.0
         mk_total_nd = 0
-   
+
         nrg_total_improvement_best = 0.0
         nrg_total_improvement_avg = 0.0
         nrg_total_std_dev = 0.0
@@ -408,11 +418,22 @@ if __name__ == '__main__':
             nrg_total_std_dev = nrg_total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
             nrg_total_nd = nrg_total_nd + resultados_pals[instancia][2]
 
-        print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
-            mk_total_improvement_best / items, \
-            nrg_total_improvement_best / items, \
-            mk_total_improvement_avg / items, \
-            nrg_total_improvement_avg / items, \
-            mk_total_std_dev / items, \
-            nrg_total_std_dev / items, \
-            mk_total_nd / items)
+        #print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
+        #    mk_total_improvement_best / items, \
+        #    nrg_total_improvement_best / items, \
+        #    mk_total_improvement_avg / items, \
+        #    nrg_total_improvement_avg / items, \
+        #    mk_total_std_dev / items, \
+        #    nrg_total_std_dev / items, \
+        #    mk_total_nd / items)
+            
+        model_desc = ""
+        type_desc = ""
+        if item_grupo[0] == 'c': model_desc = 'consistent'
+        if item_grupo[0] == 's': model_desc = 'semiconsistent'
+        if item_grupo[0] == 'i': model_desc = 'inconsistent'
+        if item_grupo[1] == 'hihi': type_desc = 'High High'
+        if item_grupo[1] == 'hilo': type_desc = 'High Low'
+        if item_grupo[1] == 'lohi': type_desc = 'Low High'
+        if item_grupo[1] == 'lolo': type_desc = 'Low Low'
+        print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
