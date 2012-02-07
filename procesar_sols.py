@@ -311,14 +311,23 @@ if __name__ == '__main__':
             nrg_total_std_dev = nrg_total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
             nrg_total_nd = nrg_total_nd + resultados_pals[instancia][2]
 
-        print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
-            mk_total_improvement_best / items, \
-            nrg_total_improvement_best / items, \
-            mk_total_improvement_avg / items, \
-            nrg_total_improvement_avg / items, \
-            mk_total_std_dev / items, \
-            nrg_total_std_dev / items, \
-            mk_total_nd / items)
+        #print "%s,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (item_grupo[0], item_grupo[1], \
+        #    mk_total_improvement_best / items, \
+        #    nrg_total_improvement_best / items, \
+        #    mk_total_improvement_avg / items, \
+        #    nrg_total_improvement_avg / items, \
+        #    mk_total_std_dev / items, \
+        #    nrg_total_std_dev / items, \
+        #    mk_total_nd / items)
+
+	model_desc = ""
+        type_desc = ""
+        if item_grupo[0] == 'A': model_desc = 'Ali \emph{et al.}'
+        if item_grupo[0] == 'B': model_desc = 'Braun \emph{et al.}'
+        if item_grupo[1] == 'c': type_desc = 'consistent'
+        if item_grupo[1] == 's': type_desc = 'semiconsistent'
+        if item_grupo[1] == 'i': type_desc = 'inconsistent'
+        print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
 
     print "[====== Tabla GRUPO 2 ======]"
     for item_grupo in sorted(instancias_grupo_2.keys()):
