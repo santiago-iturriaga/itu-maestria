@@ -21,6 +21,7 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+                src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
@@ -35,6 +36,7 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+                src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
@@ -51,6 +53,7 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+                src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
@@ -65,6 +68,7 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
+                src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \

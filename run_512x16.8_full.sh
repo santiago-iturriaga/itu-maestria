@@ -1,15 +1,15 @@
-DIMENSIONS="1024 32"
-INSTANCES_PATH="instancias/1024x32.ME"
-SOLUTIONS_BASE_DIR="1024x32.8f"
+DIMENSIONS="512 16"
+INSTANCES_PATH="instancias/512x16.ME"
+SOLUTIONS_BASE_DIR="512x16.8f"
 THREADS=8
 ITERATIONS=15
-PALS_ITERATIONS=10000000
+PALS_ITERATIONS=900000000
 PALS_TIMEOUT=10
 PALS_POP_SIZE=16
 
 VERIFICADOR="bin/verificador"
-MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
-RUSO_METRICS_PATH="pals-ruso/1024x32/pals-ruso"
+MINMIN_METRICS_PATH="list-heuristics/512x16/MinMin"
+RUSO_METRICS_PATH="pals-ruso/512x16/pals-ruso"
 
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
@@ -27,18 +27,6 @@ SCENARIOS[8]=16
 SCENARIOS[9]=17
 SCENARIOS[10]=19
 
-WORKLOADS[0]="A.u_c_hihi"
-WORKLOADS[1]="A.u_c_hilo"
-WORKLOADS[2]="A.u_c_lohi"
-WORKLOADS[3]="A.u_c_lolo"
-WORKLOADS[4]="A.u_i_hihi"
-WORKLOADS[5]="A.u_i_hilo"
-WORKLOADS[6]="A.u_i_lohi"
-WORKLOADS[7]="A.u_i_lolo"
-WORKLOADS[8]="A.u_s_hihi"
-WORKLOADS[9]="A.u_s_hilo"
-WORKLOADS[10]="A.u_s_lohi"
-WORKLOADS[11]="A.u_s_lolo"
 WORKLOADS[12]="B.u_c_hihi"
 WORKLOADS[13]="B.u_c_hilo"
 WORKLOADS[14]="B.u_c_lohi"
@@ -60,7 +48,7 @@ for a in {0..0}
 do
     for s in {0..10}
     do
-        for w in {0..23}
+        for w in {12..23}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
