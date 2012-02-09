@@ -68,6 +68,30 @@ set queue privada keep_completed = 300
 set queue privada enabled = False
 set queue privada started = True
 #
+# Create and define queue long_jobs
+#
+create queue long_jobs
+set queue long_jobs queue_type = Execution
+set queue long_jobs max_user_queuable = 100
+set queue long_jobs acl_user_enable = True
+set queue long_jobs acl_users = lcanet@node01.cluster.fing
+set queue long_jobs acl_users += siturria@node01.cluster.fing
+set queue long_jobs resources_max.ncpus = 32
+set queue long_jobs resources_max.nodect = 32
+set queue long_jobs resources_max.nodes = 32
+set queue long_jobs resources_max.walltime = 800:00:00
+set queue long_jobs resources_min.ncpus = 1
+set queue long_jobs resources_min.nodect = 1
+set queue long_jobs resources_default.ncpus = 1
+set queue long_jobs acl_group_enable = True
+set queue long_jobs acl_groups = clusterusers
+set queue long_jobs acl_logic_or = False
+set queue long_jobs acl_group_sloppy = True
+set queue long_jobs kill_delay = 30
+set queue long_jobs keep_completed = 300
+set queue long_jobs enabled = True
+set queue long_jobs started = True
+#
 # Create and define queue small_jobs
 #
 create queue small_jobs
@@ -109,30 +133,6 @@ set queue especial kill_delay = 30
 set queue especial keep_completed = 300
 set queue especial enabled = False
 set queue especial started = True
-#
-# Create and define queue long_jobs
-#
-create queue long_jobs
-set queue long_jobs queue_type = Execution
-set queue long_jobs max_user_queuable = 100
-set queue long_jobs acl_user_enable = True
-set queue long_jobs acl_users = lcanet@node01.cluster.fing
-set queue long_jobs acl_users += siturria@node01.cluster.fing
-set queue long_jobs resources_max.ncpus = 32
-set queue long_jobs resources_max.nodect = 32
-set queue long_jobs resources_max.nodes = 32
-set queue long_jobs resources_max.walltime = 800:00:00
-set queue long_jobs resources_min.ncpus = 1
-set queue long_jobs resources_min.nodect = 1
-set queue long_jobs resources_default.ncpus = 1
-set queue long_jobs acl_group_enable = True
-set queue long_jobs acl_groups = clusterusers
-set queue long_jobs acl_logic_or = False
-set queue long_jobs acl_group_sloppy = True
-set queue long_jobs kill_delay = 30
-set queue long_jobs keep_completed = 300
-set queue long_jobs enabled = True
-set queue long_jobs started = True
 #
 # Set server attributes.
 #
