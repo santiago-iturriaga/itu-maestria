@@ -1,10 +1,11 @@
 DIMENSIONS="2048 64"
 INSTANCES_PATH="instancias/2048x64.ME"
-SOLUTIONS_BASE_DIR="2048x64.16"
-THREADS=16
+SOLUTIONS_BASE_DIR="2048x64.24"
+THREADS=24
 ITERATIONS=15
-PALS_ITERATIONS=25000000
+PALS_ITERATIONS=250000000
 PALS_TIMEOUT=10
+PALS_POP_SIZE=30
 
 VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/2048x64/MinMin"
@@ -57,9 +58,9 @@ WORKLOADS[23]="B.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..10}
+    for s in {0..0}
     do
-        for w in {0..23}
+        for w in {3..3}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
@@ -72,7 +73,7 @@ do
                 rm ${OUT}.*
             
                 RAND=$RANDOM
-                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS}"
+                EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POP_SIZE}"
                 echo ${EXEC}
                 time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
             
