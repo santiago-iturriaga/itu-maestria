@@ -1106,41 +1106,14 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
                         }
 
-                        if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
-
-                        // Determino las tareas de inicio para la busqueda.
                         int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
-                        while (machine_a_task_count == 0) {
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
+ 			while (machine_a_task_count == 0) {
+ 				machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
+ 				machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
+ 			}
 
-                            // La estrategia es aleatoria.
-                            machine_a = (int)floor(random * thread_instance->etc->machines_count);
-                            machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
-                        }
-                        int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
-                        while ((machine_b_task_count == 0)||(machine_b == machine_a)) {
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            // La estrategia es aleatoria.
-                            machine_b = (int)floor(random * thread_instance->etc->machines_count);
-                            machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
-                        }
+                        if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
+			int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
 
                         int task_x;
                         #ifdef CPU_MERSENNE_TWISTER
@@ -1180,9 +1153,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
-                        int top_task_a = (int)ceil(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
+                        int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD) + 1;
                         if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                        if (top_task_a == 0) top_task_a = 1;
                         
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -1194,9 +1166,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
-                        int top_task_b = (int)ceil(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
+                        int top_task_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD) + 1;
                         if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
-                        if (top_task_b == 0) top_task_b = 1;
 
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -1208,9 +1179,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
-                        int top_machine_b = (int)ceil(random * PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
+                        int top_machine_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_MACH_NHOOD) + 1;
                         if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
-                        if (top_machine_b == 0) top_machine_b = 1;
 
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -1259,11 +1229,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             #endif
 
                             int mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
-                            if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP)
+                            if ((random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP) && (machine_b_task_count > 0))
                             {
                                 mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
                             }
-                            else if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE)
+                            else //if (random < PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP + PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE)
                             {
                                 mov_type = PALS_CPU_1POP_SEARCH_OP__MOVE;
                             }

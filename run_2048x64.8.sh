@@ -3,7 +3,7 @@ INSTANCES_PATH="instancias/2048x64.ME"
 SOLUTIONS_BASE_DIR="2048x64.8"
 THREADS=8
 ITERATIONS=15
-PALS_ITERATIONS=25000000
+PALS_ITERATIONS=250000000
 PALS_TIMEOUT=10
 PALS_POPULATION=16
 
@@ -11,7 +11,7 @@ VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/2048x64/MinMin"
 RUSO_METRICS_PATH="pals-ruso/2048x64/pals-ruso"
 
-ALGORITHMS[0]="bin/pals_cpu_rp"
+ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
 ALGORITHMS_OUTNAME[0]="pals-1"
 
@@ -61,7 +61,7 @@ for a in {0..0}
 do
     for s in {0..0}
     do
-        for w in {0..3}
+        for w in {3..3}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
