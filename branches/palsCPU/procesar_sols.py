@@ -4,7 +4,7 @@ import sys
 import os
 import math
 
-cant_iters=5
+cant_iters=30
 list_heur_dir = 'list-heuristics/'
 pals_ruso_dir = 'pals-ruso/'
 
@@ -438,6 +438,6 @@ if __name__ == '__main__':
         if item_grupo[1] == 'hilo': type_desc = 'High Low'
         if item_grupo[1] == 'lohi': type_desc = 'Low High'
         if item_grupo[1] == 'lolo': type_desc = 'Low Low'
-        print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
+        print "%s & %s & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
 
     print csv
