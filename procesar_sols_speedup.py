@@ -17,9 +17,9 @@ if __name__ == '__main__':
     start = int(sys.argv[3])
     end = int(sys.argv[4])
 
-    for threads in range(start,end):
-        pals_dir = dimension + '.' + sufijo + '.' + threads
-        print 'PALS path            : %s' % pals_dir
+    for threads in range(start,end+1):
+        pals_dir = dimension + '.' + sufijo + '.' + str(threads)
+        #print 'PALS path            : %s' % pals_dir
 
         instancias_raw = []
 
