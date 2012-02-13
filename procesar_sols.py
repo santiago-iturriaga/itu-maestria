@@ -440,4 +440,28 @@ if __name__ == '__main__':
         if item_grupo[1] == 'lolo': type_desc = 'Low Low'
         print "%s & %s & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
 
+    print "[====== Tabla improvements makespan ======]"
+    print "Instancia,MinMin,MinMIN,MINMin,MINMIN"
+    avg_makespan = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_makespan[0] = avg_makespan[0] + (100 - (resultados_pals[instancia][3] * 100 / resultados_MinMin[instancia][0]))
+        avg_makespan[1] = avg_makespan[1] + (100 - (resultados_pals[instancia][3] * 100 / resultados_MinMIN[instancia][0]))
+        avg_makespan[2] = avg_makespan[2] + (100 - (resultados_pals[instancia][3] * 100 / resultados_MINMin[instancia][0]))
+        avg_makespan[3] = avg_makespan[3] + (100 - (resultados_pals[instancia][3] * 100 / resultados_MINMIN[instancia][0]))
+        
+        print "%s,%.1f,%.1f,%.1f,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], \
+            avg_makespan[0], avg_makespan[1], avg_makespan[2], avg_makespan[3])
+
+    print "[====== Tabla de energía ======]"
+    print "Instancia,MinMin,MinMIN,MINMin,MINMIN"
+    avg_energy = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_energy[0] = avg_energy[0] + (100 - (resultados_pals[instancia][5] * 100 / resultados_MinMin[instancia][1]))
+        avg_energy[1] = avg_energy[1] + (100 - (resultados_pals[instancia][5] * 100 / resultados_MinMIN[instancia][1]))
+        avg_energy[2] = avg_energy[2] + (100 - (resultados_pals[instancia][5] * 100 / resultados_MINMin[instancia][1]))
+        avg_energy[3] = avg_energy[3] + (100 - (resultados_pals[instancia][5] * 100 / resultados_MINMIN[instancia][1]))
+        
+        print "%s,%.1f,%.1f,%.1f,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], \
+            avg_energy[0], avg_energy[1], avg_energy[2], avg_energy[3])
+
     print csv
