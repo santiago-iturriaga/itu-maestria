@@ -1,5 +1,5 @@
 BASE_PATH=".."
-INSTANCE_PATH="/home/sergion/LUX/instancias/512x16"
+INSTANCE_PATH="/home/siturria/maestria/branches/palsCPU/instancias/512x16.old"
 SOL_PATH="solutions"
 DIM_SIZE="512 16"
 GPU_DEVICE="3"
