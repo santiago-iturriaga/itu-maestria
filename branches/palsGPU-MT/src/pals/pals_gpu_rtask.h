@@ -15,39 +15,39 @@
 #define PALS_GPU_RTASK_H_
 
 struct pals_gpu_rtask_instance {
-	// Datos del estado actual del problema a resolver.
-	float *gpu_etc_matrix;
-	ushort *gpu_task_assignment;
-	float *gpu_machine_compute_time;
-	
-	// Espacio de memoria en el dispositivo para almacenar los
-	// mejores movimientos encontrados en cada iteración.
-	int *gpu_best_movements;
-	float *gpu_best_deltas;
-	
-	// Parámetros de ejecución del kernel.
-	ushort blocks;
-	ushort threads;
-	ushort loops;
-	
-	// Cantidad de movimientos probados por iteración.
-	ulong total_tasks;
-	
-	// Cantidad de resultados obtenidos por iteración.
-	// (¿siempre es igual a cantidad de bloques del kernel?)
-	ushort result_count;
+    // Datos del estado actual del problema a resolver.
+    float *gpu_etc_matrix;
+    ushort *gpu_task_assignment;
+    float *gpu_machine_compute_time;
+
+    // Espacio de memoria en el dispositivo para almacenar los
+    // mejores movimientos encontrados en cada iteración.
+    int *gpu_best_movements;
+    float *gpu_best_deltas;
+
+    // Parámetros de ejecución del kernel.
+    ushort blocks;
+    ushort threads;
+    ushort loops;
+
+    // Cantidad de movimientos probados por iteración.
+    ulong total_tasks;
+
+    // Cantidad de resultados obtenidos por iteración.
+    // (¿siempre es igual a cantidad de bloques del kernel?)
+    ushort result_count;
 };
 
 struct pals_gpu_rtask_result {
-	short *move_type;
-	ushort *origin;
-	ushort *destination;
-	float *delta;
+    short *move_type;
+    ushort *origin;
+    ushort *destination;
+    float *delta;
 };
 
 /*
  * Ejecuta el algoritmo.
- * Búsqueda masivamente paralela sobre un subdominio del problema. 
+ * Búsqueda masivamente paralela sobre un subdominio del problema.
  * Se sortea el subdominio por tarea.
  */
 void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solution *current_solution);
@@ -55,8 +55,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 /*
  * Reserva e inicializa la memoria del dispositivo con los datos del problema.
  */
-void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result);
+void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
+    struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result);
 
 /*
  * Libera la memoria del dispositivo.
@@ -71,9 +71,9 @@ void pals_gpu_rtask_clean_result(struct pals_gpu_rtask_result &result);
 /*
  * Ejecuta PALS en el dispositivo.
  */
-void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-	struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers, 
-	struct pals_gpu_rtask_result &result);
+void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
+    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers,
+    struct pals_gpu_rtask_result &result);
 
 /*
  * Mueve una tarea en la memoria del dispositivo.
