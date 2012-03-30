@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 		// =============================================================
 		pals_serial(input, etc_matrix, current_solution);
 		
-	} else if (input.algorithm == PALS_GPU) {
+	/*} else if (input.algorithm == PALS_GPU) {
 		// =============================================================
 		// Candidate solution
 		// =============================================================
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
 		// =============================================================		
 		
 		gpu_set_device(input.gpu_device);
-		pals_gpu(input, etc_matrix, current_solution);
+		pals_gpu(input, etc_matrix, current_solution);*/
 		
 	} else if (input.algorithm == PALS_GPU_randTask) {
 		// =============================================================
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 		gpu_set_device(input.gpu_device);
 		pals_gpu_rtask(input, etc_matrix, current_solution);
 			
-	} else if (input.algorithm == PALS_GPU_randMachine) {
+	/*} else if (input.algorithm == PALS_GPU_randMachine) {*/
 		
 	} else if (input.algorithm == MinMin) {
 		
@@ -162,7 +162,7 @@ int main(int argc, char** argv)
 		
 		compute_mct(etc_matrix, current_solution);
 		
-	} else if (input.algorithm == PALS_GPU_randParallelTask) {
+	/*} else if (input.algorithm == PALS_GPU_randParallelTask) {
 		// =============================================================
 		// Candidate solution
 		// =============================================================
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 		// =============================================================
 			
 		gpu_set_device(input.gpu_device);
-		pals_gpu_prtask(input, etc_matrix, current_solution);	
+		pals_gpu_prtask(input, etc_matrix, current_solution);	*/
 	}
 
 	if (OUTPUT_SOLUTION) {
