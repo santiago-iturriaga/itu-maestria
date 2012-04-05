@@ -99,6 +99,17 @@ SRCFG[eolica] RESOURCES=PROCS:8
 SRCFG[eolica] NODEFEATURES=class0
 SRCFG[eolica] USERLIST=aguti
 
+SRCFG[galnares] PERIOD=INFINITY
+SRCFG[galnares] STARTTIME=00:00:00
+SRCFG[galnares] ENDTIME=23:59:59
+SRCFG[galnares] TPN=1
+SRCFG[galnares] TASKCOUNT=1
+SRCFG[galnares] RESOURCES=PROCS:24
+SRCFG[galnares] NODEFEATURES=class2
+SRCFG[galnares] USERLIST=mgalnares,sergion
+
+
+
 #SRCFG[jamal] PERIOD=INFINITY
 #SRCFG[jamal] TPN=1
 #SRCFG[jamal] TASKCOUNT=1
