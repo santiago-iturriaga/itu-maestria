@@ -106,7 +106,7 @@ SRCFG[galnares] TPN=1
 SRCFG[galnares] TASKCOUNT=1
 SRCFG[galnares] RESOURCES=PROCS:24
 SRCFG[galnares] NODEFEATURES=class2
-SRCFG[galnares] USERLIST=mgalnares,sergion
+SRCFG[galnares] USERLIST=matiasg,sergion
 
 
 
