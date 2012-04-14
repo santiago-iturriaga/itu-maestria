@@ -3,7 +3,7 @@ CX=g++ -Wall
 LIBS=-lpthread -lrt -mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
 
-all: pals-opt verificador fp
+all: pals-gdb verificador fp
 
 fp: fp_2obj.cpp
 	$(CXX) fp_2obj.cpp -o bin/fp_2obj
@@ -21,8 +21,9 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
-                src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
+		src/archivers/adhoc.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp 
@@ -36,8 +37,9 @@ pals-gdb: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
-                src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
+		src/archivers/adhoc.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
@@ -53,7 +55,7 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
-                src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
@@ -68,7 +70,7 @@ pals-opt: src/main.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
 		src/random/cpu_rand.cpp \
-                src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
@@ -77,4 +79,3 @@ pals-opt: src/main.cpp \
 
 clean:
 	rm bin/$(OUTPUT_BIN)
-
