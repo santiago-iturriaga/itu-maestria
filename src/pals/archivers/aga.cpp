@@ -1,13 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../random/cpu_rand.h"
-#include "../random/cpu_drand48.h"
-#include "../random/cpu_mt.h"
+#include "../../random/cpu_rand.h"
+#include "../../random/cpu_drand48.h"
+#include "../../random/cpu_mt.h"
 
 #include "adhoc.h"
 
-int archivers_adhoc(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
+int archivers_aga(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
     if (DEBUG_DEV) fprintf(stdout, "========================================================\n");
     double random = 0.0;

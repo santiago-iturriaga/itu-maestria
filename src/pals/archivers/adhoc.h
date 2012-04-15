@@ -1,4 +1,4 @@
-#include "../pals/pals_cpu_1pop.h"
+#include "../pals_cpu_1pop.h"
 
 #ifndef ADHOC__H_
 #define ADHOC__H_

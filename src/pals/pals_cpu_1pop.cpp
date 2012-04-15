@@ -15,9 +15,26 @@
 #include "../random/cpu_rand.h"
 #include "../random/cpu_drand48.h"
 #include "../random/cpu_mt.h"
-#include "../archivers/adhoc.h"
+
+#include "archivers/adhoc.h"
+#include "archivers/aga.h"
+#include "ls_selection/evol_guide_complex.h"
 
 #include "pals_cpu_1pop.h"
+
+inline void* rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &random) {
+    #ifdef CPU_MERSENNE_TWISTER
+    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+    #endif
+    #ifdef CPU_RAND
+    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+    #endif
+    #ifdef CPU_DRAND48
+    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+    #endif
+    
+    return NULL;
+}
 
 void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
 {
@@ -212,6 +229,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
     // Timming -----------------------------------------------------
 }
 
+
 void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
 int seed, struct pals_cpu_1pop_instance &empty_instance)
 {
@@ -345,7 +363,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
         empty_instance.threads_args[i].etc = empty_instance.etc;
         empty_instance.threads_args[i].energy = empty_instance.energy;
-        
+
         empty_instance.threads_args[i].max_iterations = input.max_iterations;
         empty_instance.threads_args[i].max_time_secs = input.max_time_secs;
 
@@ -374,6 +392,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
     timming_end(".. thread creation", ts_threads);
 }
 
+
 void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
 {
     for (int i = 0; i < instance.population_max_size; i++)
@@ -392,6 +411,7 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
     pthread_mutex_destroy(&(instance.population_mutex));
     pthread_barrier_destroy(&(instance.sync_barrier));
 }
+
 
 void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
 {
@@ -421,6 +441,189 @@ void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
     pthread_mutex_unlock(instance->population_mutex);
 
     assert(cantidad == *(instance->population_count));
+}
+
+
+void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
+int search_type, int &machine_a, int &machine_b)
+{
+
+    double random;
+
+    if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+    {
+        //fprintf(stdout, "[DEBUG] Makespan greedy\n");
+
+        rand_generate(thread_instance, random);
+
+        /*
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+        * */
+
+        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST)
+        {
+            #ifdef CPU_MERSENNE_TWISTER
+            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_RAND
+            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_DRAND48
+            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+            #endif
+
+            machine_a = (int)floor(random * thread_instance->etc->machines_count);
+
+            // fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
+        }
+        else
+        {
+            machine_a = get_worst_ct_machine_id(selected_solution);
+
+            //fprintf(stdout, "[DEBUG] Worst CT machine_a = %d\n", machine_a);
+        }
+
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+
+        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST)
+        {
+            #ifdef CPU_MERSENNE_TWISTER
+            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_RAND
+            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_DRAND48
+            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+            #endif
+
+            // Siempre selecciono la segunda mquina aleatoriamente.
+            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+
+            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
+        }
+        else
+        {
+            machine_b = get_best_ct_machine_id(selected_solution);
+
+            //fprintf(stdout, "[DEBUG] Best CT machine_b = %d\n", machine_b);
+        }
+    }
+    else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
+    {
+        //fprintf(stdout, "[DEBUG] Energy greedy\n");
+
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+
+        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST)
+        {
+            #ifdef CPU_MERSENNE_TWISTER
+            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_RAND
+            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_DRAND48
+            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+            #endif
+
+            machine_a = (int)floor(random * thread_instance->etc->machines_count);
+
+            //fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
+        }
+        else
+        {
+            machine_a = get_worst_energy_machine_id(selected_solution);
+
+            //fprintf(stdout, "[DEBUG] Worst energy machine_a = %d\n", machine_a);
+        }
+
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+
+        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST)
+        {
+            #ifdef CPU_MERSENNE_TWISTER
+            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_RAND
+            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+            #endif
+            #ifdef CPU_DRAND48
+            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+            #endif
+
+            // Siempre selecciono la segunda mquina aleatoriamente.
+            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+
+            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
+        }
+        else
+        {
+            machine_b = get_best_energy_machine_id(selected_solution);
+
+            //fprintf(stdout, "[DEBUG] Worst energy machine_b = %d\n", machine_b);
+        }
+    }
+    else
+    {
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+
+        // La estrategia es aleatoria.
+        machine_a = (int)floor(random * thread_instance->etc->machines_count);
+
+        #ifdef CPU_MERSENNE_TWISTER
+        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_RAND
+        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+        #endif
+        #ifdef CPU_DRAND48
+        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+        #endif
+
+        // Siempre selecciono la segunda mquina aleatoriamente.
+        machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
+    }
 }
 
 void* pals_cpu_1pop_thread(void *thread_arg)
@@ -454,7 +657,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
-                
+
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
         (thread_instance->total_iterations < thread_instance->max_iterations) &&
@@ -483,7 +686,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             {
                 pthread_mutex_lock(thread_instance->population_mutex);
 
-                    thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
+                thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
@@ -507,7 +710,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 pthread_mutex_lock(thread_instance->population_mutex);
 
+                #ifndef ARCHVIER_ADHOC
                 archivers_adhoc(thread_instance, thread_instance->thread_idx);
+                #endif
+                #ifndef ARCHIVER_AGA
+                archivers_aga(thread_instance, thread_instance->thread_idx);
+                #endif
 
                 if (DEBUG_DEV)
                 {
@@ -549,30 +757,31 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             // Comienza la bsqueda.
             pthread_mutex_lock(thread_instance->population_mutex);
 
-                thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
+            thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
 
             pthread_mutex_unlock(thread_instance->population_mutex);
 
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
-        {            
+        {
             // PALS_CPU_1POP_WORK__SEARCH ====================================================================
             double random = 0.0; // Variable random multi-proposito :)
 
             // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
-            if (selected_solution_pos == -1) {
+            if (selected_solution_pos == -1)
+            {
                 pthread_mutex_lock(thread_instance->population_mutex);
 
-                    for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
+                for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
+                {
+                    if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
                     {
-                        if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
-                        {
-                            thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-                            selected_solution_pos = i;
+                        thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
+                        selected_solution_pos = i;
 
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
-                        }
+                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
                     }
+                }
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
             }
@@ -612,45 +821,45 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 #endif
 
                 pthread_mutex_lock(thread_instance->population_mutex);
-                    thread_instance->global_total_iterations[0] += local_iteration_count;
-                    local_iteration_count = 0;
-                
-                    int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
+                thread_instance->global_total_iterations[0] += local_iteration_count;
+                local_iteration_count = 0;
 
-                    if (DEBUG_DEV)
+                int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
+
+                if (DEBUG_DEV)
+                {
+                    fprintf(stdout, "[DEBUG] Random selection\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                    fprintf(stdout, "        Random          : %f\n", random);
+                    fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
                     {
-                        fprintf(stdout, "[DEBUG] Random selection\n");
-                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-                        fprintf(stdout, "        Random          : %f\n", random);
-                        fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
+                    }
+                }
 
-                        for (int i = 0; i < thread_instance->population_max_size; i++)
+                int current_sol_pos = -1;
+                int current_sol_index = -1;
+
+                for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
+                {
+                    if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
+                    {
+                        current_sol_index++;
+
+                        if (current_sol_index == random_sol_index)
                         {
-                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                                thread_instance->population[i].initialized,
-                                thread_instance->population[i].status);
+                            current_sol_pos = i;
                         }
                     }
+                }
 
-                    int current_sol_pos = -1;
-                    int current_sol_index = -1;
-
-                    for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
-                    {
-                        if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
-                        {
-                            current_sol_index++;
-
-                            if (current_sol_index == random_sol_index)
-                            {
-                                current_sol_pos = i;
-                            }
-                        }
-                    }
-
-                    // Clono la solucion elegida =====================================================
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
-                    clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
+                // Clono la solucion elegida =====================================================
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
@@ -710,12 +919,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 int work_do_iteration = 1;
 
-                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) + 
+                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
                     (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
 
                 //int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
 
-                while (work_do_iteration == 1) {
+                while (work_do_iteration == 1)
+                {
                     work_do_iteration = 0;
 
                     for (int search_iteration = 0; search_iteration < work_iteration_size; search_iteration++)
@@ -725,168 +935,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         // Determino las maquinas de inicio para la busqueda.
                         int machine_a, machine_b;
-
-                        if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
-                        {
-                            //fprintf(stdout, "[DEBUG] Makespan greedy\n");
-
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST) {
-                                #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                #endif
-
-                                machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-                               // fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
-                            } else {
-                                machine_a = get_worst_ct_machine_id(selected_solution);
-
-                                //fprintf(stdout, "[DEBUG] Worst CT machine_a = %d\n", machine_a);
-                            }
-
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST) {
-                                #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                #endif
-
-                                // Siempre selecciono la segunda mquina aleatoriamente.
-                                machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-
-                                //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
-                            } else {
-                                machine_b = get_best_ct_machine_id(selected_solution);
-
-                                //fprintf(stdout, "[DEBUG] Best CT machine_b = %d\n", machine_b);
-                            }
-                        }
-                        else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-                        {
-                            //fprintf(stdout, "[DEBUG] Energy greedy\n");
-
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST) {
-                                #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                #endif
-
-                                machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-                                //fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
-                            } else {
-                                machine_a = get_worst_energy_machine_id(selected_solution);
-
-                                //fprintf(stdout, "[DEBUG] Worst energy machine_a = %d\n", machine_a);
-                            }
-
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST) {
-                                #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                #endif
-
-                                // Siempre selecciono la segunda mquina aleatoriamente.
-                                machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-
-                                //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
-                            } else {
-                                machine_b = get_best_energy_machine_id(selected_solution);
-
-                                //fprintf(stdout, "[DEBUG] Worst energy machine_b = %d\n", machine_b);
-                            }
-                        }
-                        else
-                        {
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            // La estrategia es aleatoria.
-                            machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-                            #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                            #endif
-                            #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                            #endif
-
-                            // Siempre selecciono la segunda mquina aleatoriamente.
-                            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-                        }
+                        machines_selection(thread_instance, selected_solution, search_type, machine_a, machine_b);
 
                         int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
-                        while (machine_a_task_count == 0) {
+                        while (machine_a_task_count == 0)
+                        {
                             machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
                             machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
                         }
@@ -907,20 +960,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         task_x = (int)floor(random * machine_a_task_count);
 
-                        float machine_a_energy_idle = get_energy_idle_value(thread_instance->energy, machine_a);
-                        float machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
-                        float machine_b_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b);
-                        float machine_b_energy_max = get_energy_max_value(thread_instance->energy, machine_b);
-
-                        float machine_a_ct_old, machine_b_ct_old;
-                        float machine_a_ct_new, machine_b_ct_new;
-
-                        float current_makespan = get_makespan(selected_solution);
-                        float current_energy = get_energy(selected_solution);
-
                         int task_x_pos;
                         int task_x_current;
-                        int machine_b_current;
 
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -934,7 +975,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD) + 1;
                         if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                        
+
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
@@ -972,6 +1013,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         #endif
 
                         int task_y = (int)floor(random * machine_b_task_count);
+
+                        float current_makespan = get_makespan(selected_solution);
+                        float current_energy = get_energy(selected_solution);
 
                         float best_delta_makespan;
                         best_delta_makespan = current_makespan;
@@ -1025,153 +1069,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     task_y_pos = (task_y + task_y_offset) % machine_b_task_count;
                                     task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
 
-                                    // Mquina 1.
-                                    machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
-
-                                    machine_a_ct_new = machine_a_ct_old -
-                                        get_etc_value(thread_instance->etc, machine_a, task_x_current) +
-                                        get_etc_value(thread_instance->etc, machine_a, task_y_current);
-
-                                    // Mquina 2.
-                                    machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b);
-
-                                    machine_b_ct_new = machine_b_ct_old -
-                                        get_etc_value(thread_instance->etc, machine_b, task_y_current) +
-                                        get_etc_value(thread_instance->etc, machine_b, task_x_current);
-
-                                    #ifdef CPU_MERSENNE_TWISTER
-                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                    #endif
-                                    #ifdef CPU_RAND
-                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                    #endif
-                                    #ifdef CPU_DRAND48
-                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                    #endif
-
-                                    if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
-                                        ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
-                                    {
-                                        float swap_diff_energy;
-                                        swap_diff_energy =
-                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));
-
-                                        if (machine_b_ct_new <= machine_a_ct_new)
-                                        {
-                                            if (machine_a_ct_new < best_delta_makespan) {
-                                                //  printf("1\n");
-                                                best_delta_makespan = machine_a_ct_new;
-                                                best_delta_energy = swap_diff_energy;
-                                                task_x_best_swap_pos = task_x_pos;
-                                                task_y_best_swap_pos = task_y_pos;
-                                                task_x_best_move_pos = -1;
-                                                machine_b_best_move_id = -1;
-                                            } else if (floor(machine_a_ct_new) == floor(best_delta_makespan)) {
-                                                if (swap_diff_energy > best_delta_energy)
-                                                {
-                                                    //  printf("2\n");
-                                                    best_delta_energy = swap_diff_energy;
-                                                    best_delta_makespan = machine_a_ct_new;
-                                                    task_x_best_swap_pos = task_x_pos;
-                                                    task_y_best_swap_pos = task_y_pos;
-                                                    task_x_best_move_pos = -1;
-                                                    machine_b_best_move_id = -1;
-                                                }
-                                            }
-                                        }
-                                        else if (machine_a_ct_new <= machine_b_ct_new)
-                                        {
-                                            if (machine_b_ct_new < best_delta_makespan) {
-                                                //printf("3\n");
-                                                best_delta_makespan = machine_b_ct_new;
-                                                best_delta_energy = swap_diff_energy;
-                                                task_x_best_swap_pos = task_x_pos;
-                                                task_y_best_swap_pos = task_y_pos;
-                                                task_x_best_move_pos = -1;
-                                                machine_b_best_move_id = -1;
-                                            } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
-                                                if (swap_diff_energy > best_delta_energy)
-                                                {
-                                                    //printf("4\n");
-                                                    best_delta_energy = swap_diff_energy;
-                                                    best_delta_makespan = machine_b_ct_new;
-                                                    task_x_best_swap_pos = task_x_pos;
-                                                    task_y_best_swap_pos = task_y_pos;
-                                                    task_x_best_move_pos = -1;
-                                                    machine_b_best_move_id = -1;
-                                                }
-                                            }
-                                        }
-
-                                        /*if ((task_x_best_swap_pos == -1) && (task_y_best_swap_pos == -1)) {
-                                            if (swap_diff_energy > best_delta_energy)
-                                            {
-                                                printf("5\n");
-                                                best_delta_energy = swap_diff_energy;
-                                                best_delta_makespan = current_makespan;
-                                                task_x_best_swap_pos = task_x_pos;
-                                                task_y_best_swap_pos = task_y_pos;
-                                                task_x_best_move_pos = -1;
-                                                machine_b_best_move_id = -1;
-                                            }
-                                        }*/
-                                    }
-
-                                    if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
-                                        ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
-                                    {
-                                        float swap_diff_energy;
-                                        swap_diff_energy =
-                                            ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                            ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));
-
-                                        if ((swap_diff_energy > best_delta_energy) &&
-                                            (machine_a_ct_new <= current_makespan) &&
-                                            (machine_b_ct_new <= current_makespan))
-                                        {
-                                            //printf("6\n");
-                                            best_delta_energy = swap_diff_energy;
-
-                                            if (machine_a_ct_new <= machine_b_ct_new) best_delta_makespan = machine_b_ct_new;
-                                            else best_delta_makespan = machine_a_ct_new;
-
-                                            task_x_best_swap_pos = task_x_pos;
-                                            task_y_best_swap_pos = task_y_pos;
-                                            task_x_best_move_pos = -1;
-                                            machine_b_best_move_id = -1;
-                                        } else if (floor(swap_diff_energy) == floor(best_delta_energy)) {
-                                            if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan))
-                                            {
-                                                //printf("7\n");
-                                                best_delta_makespan = machine_a_ct_new;
-                                                best_delta_energy = swap_diff_energy;
-                                                task_x_best_swap_pos = task_x_pos;
-                                                task_y_best_swap_pos = task_y_pos;
-                                                task_x_best_move_pos = -1;
-                                                machine_b_best_move_id = -1;
-                                            }
-                                            else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan))
-                                            {
-                                                //printf("8\n");
-                                                best_delta_makespan = machine_b_ct_new;
-                                                best_delta_energy = swap_diff_energy;
-                                                task_x_best_swap_pos = task_x_pos;
-                                                task_y_best_swap_pos = task_y_pos;
-                                                task_x_best_move_pos = -1;
-                                                machine_b_best_move_id = -1;
-                                            }
-                                        }
-                                    }
-                                }    // Termino el loop de TASK_B
+                                    ls_best_swap_selection(thread_instance, selected_solution,
+                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                        task_y_best_swap_pos);
+                                }
                             }
                             else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE)
                             {
-                                machine_b_current = machine_b;
+                                int machine_b_current = machine_b;
 
                                 for (int machine_b_offset = 0; (machine_b_offset < top_machine_b); machine_b_offset++)
                                 {
-                                    if (machine_b_offset == 1) {
+                                    if (machine_b_offset == 1)
+                                    {
                                         #ifdef CPU_MERSENNE_TWISTER
                                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                         #endif
@@ -1186,153 +1098,36 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         machine_b_current = (int)floor(random * (thread_instance->etc->machines_count - 1));
 
                                         if (machine_b_current == machine_a) machine_b_current = (machine_b_current + 1) % thread_instance->etc->machines_count;
-                                    } else if (machine_b_offset > 1) {
-                                        if (machine_b + machine_b_offset != machine_a) {
+                                    }
+                                    else if (machine_b_offset > 1)
+                                    {
+                                        if (machine_b + machine_b_offset != machine_a)
+                                        {
                                             machine_b_current = (machine_b + machine_b_offset) % thread_instance->etc->machines_count;
-                                        } else {
+                                        }
+                                        else
+                                        {
                                             machine_b_current = (machine_b + machine_b_offset + 1) % thread_instance->etc->machines_count;
                                         }
                                     }
 
                                     if (machine_b_current != machine_a)
                                     {
-                                        float machine_b_current_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b_current);
-                                        float machine_b_current_energy_max = get_energy_max_value(thread_instance->energy, machine_b_current);
-
-                                        // Mquina 1.
-                                        machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
-                                        machine_a_ct_new = machine_a_ct_old - get_etc_value(thread_instance->etc, machine_a, task_x_current);
-
-                                        // Mquina 2.
-                                        machine_b_ct_old = get_machine_compute_time(selected_solution, machine_b_current);
-                                        machine_b_ct_new = machine_b_ct_old + get_etc_value(thread_instance->etc, machine_b_current, task_x_current);
-
-                                        #ifdef CPU_MERSENNE_TWISTER
-                                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                                        #endif
-                                        #ifdef CPU_RAND
-                                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                                        #endif
-                                        #ifdef CPU_DRAND48
-                                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                                        #endif
-
-                                        if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
-                                            ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
-                                        {
-                                            float swap_diff_energy;
-                                            swap_diff_energy =
-                                                ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                                ((machine_b_ct_old - machine_b_ct_new) * (machine_b_current_energy_max - machine_b_current_energy_idle));
-
-                                            if (machine_b_ct_new <= machine_a_ct_new)
-                                            {
-                                                if (machine_a_ct_new < best_delta_makespan) {
-                                                    //printf("9\n");
-                                                    best_delta_makespan = machine_a_ct_new;
-                                                    best_delta_energy = swap_diff_energy;
-                                                    task_x_best_swap_pos = -1;
-                                                    task_y_best_swap_pos = -1;
-                                                    task_x_best_move_pos = task_x_pos;
-                                                    machine_b_best_move_id = machine_b_current;
-                                                } else if (floor(machine_a_ct_new) == floor(best_delta_makespan)) {
-                                                    if (swap_diff_energy > best_delta_energy)
-                                                    {
-                                                        //printf("10\n");
-                                                        best_delta_energy = swap_diff_energy;
-                                                        best_delta_makespan = machine_a_ct_new;
-                                                        task_x_best_swap_pos = -1;
-                                                        task_y_best_swap_pos = -1;
-                                                        task_x_best_move_pos = task_x_pos;
-                                                        machine_b_best_move_id = machine_b_current;
-                                                    }
-                                                }
-                                            }
-                                            else if (machine_a_ct_new <= machine_b_ct_new)
-                                            {
-                                                if (machine_b_ct_new < best_delta_makespan) {
-                                                    //printf("11\n");
-                                                    //printf("11 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new, machine_b_ct_new,
-                                                    //  best_delta_energy, swap_diff_energy);
-                                                    best_delta_makespan = machine_b_ct_new;
-                                                    best_delta_energy = swap_diff_energy;
-                                                    task_x_best_swap_pos = -1;
-                                                    task_y_best_swap_pos = -1;
-                                                    task_x_best_move_pos = task_x_pos;
-                                                    machine_b_best_move_id = machine_b_current;
-                                                } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
-                                                    if (swap_diff_energy > best_delta_energy)
-                                                    {
-                                                        //printf("12\n");
-                                                        //printf("12 a=%f b=%f delta=%f new_delta=%f\n", machine_a_ct_new,
-                                                        //machine_b_ct_new, best_delta_energy, swap_diff_energy);
-                                                        best_delta_energy = swap_diff_energy;
-                                                        best_delta_makespan = machine_b_ct_new;
-                                                        task_x_best_swap_pos = -1;
-                                                        task_y_best_swap_pos = -1;
-                                                        task_x_best_move_pos = task_x_pos;
-                                                        machine_b_best_move_id = machine_b_current;
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
-                                            ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
-                                        {
-                                            float swap_diff_energy;
-                                            swap_diff_energy =
-                                                ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-                                                ((machine_b_ct_old - machine_b_ct_new) * (machine_b_current_energy_max - machine_b_current_energy_idle));
-
-                                            if ((swap_diff_energy > best_delta_energy) &&
-                                                (machine_a_ct_new <= current_makespan) &&
-                                                (machine_b_ct_new <= current_makespan))
-                                            {
-                                                //printf("13\n");
-                                                best_delta_energy = swap_diff_energy;
-
-                                                if (machine_a_ct_new <= machine_b_ct_new) best_delta_makespan = machine_b_ct_new;
-                                                else best_delta_makespan = machine_a_ct_new;
-
-                                                task_x_best_swap_pos = -1;
-                                                task_y_best_swap_pos = -1;
-                                                task_x_best_move_pos = task_x_pos;
-                                                machine_b_best_move_id = machine_b_current;
-                                            } else if (floor(swap_diff_energy) == floor(best_delta_energy)) {
-                                                if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan))
-                                                {
-                                                    //printf("14\n");
-                                                    best_delta_makespan = machine_a_ct_new;
-                                                    best_delta_energy = swap_diff_energy;
-                                                    task_x_best_swap_pos = -1;
-                                                    task_y_best_swap_pos = -1;
-                                                    task_x_best_move_pos = task_x_pos;
-                                                    machine_b_best_move_id = machine_b_current;
-                                                }
-                                                else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan))
-                                                {
-                                                    //printf("15\n");
-                                                    best_delta_makespan = machine_b_ct_new;
-                                                    best_delta_energy = swap_diff_energy;
-                                                    task_x_best_swap_pos = -1;
-                                                    task_y_best_swap_pos = -1;
-                                                    task_x_best_move_pos = task_x_pos;
-                                                    machine_b_best_move_id = machine_b_current;
-                                                }
-                                            }
-                                        }
+                                        ls_best_move_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
                                     }
-                                }    // Termino el loop de MACHINE_B
-                            }        // Termino el IF de SWAP/MOVE
-                        }            // Termino el loop de TASK_A
+                                }
+                            }    // Termino el IF de SWAP/MOVE
+                        }        // Termino el loop de TASK_A
 
                         // Hago los cambios ======================================================================================
                         if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                         {
                             // Intercambio las tareas!
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
-                                best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                                    best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
                             swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                             thread_instance->total_swaps++;
@@ -1342,7 +1137,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         {
                             // Muevo la tarea!
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
-                                best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                                    best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                             move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                             thread_instance->total_moves++;
@@ -1350,10 +1145,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         }
 
                         if (DEBUG_DEV) validate_solution(selected_solution);
-                        if (DEBUG_DEV) {
-                            if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
-                            /*if ((floor(original_makespan) < floor(get_makespan(selected_solution))) &&
-                                (floor(original_energy) < floor(get_energy(selected_solution)))) {*/
+                        if (DEBUG_DEV)
+                        {
+                            if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution)))
+                            {
+                                /*if ((floor(original_makespan) < floor(get_makespan(selected_solution))) &&
+                                    (floor(original_energy) < floor(get_energy(selected_solution)))) {*/
 
                                 refresh_energy(selected_solution);
                                 refresh_makespan(selected_solution);
@@ -1365,7 +1162,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 exit(-1);
                             }
                         }
-                    }                // Termino el loop con la iteracin del thread
+                    }            // Termino el loop con la iteracin del thread
 
                     //refresh_energy(selected_solution);
                     //refresh_makespan(selected_solution);
@@ -1374,16 +1171,22 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         (original_energy > get_energy(selected_solution)))
                     {
                         refresh_energy(selected_solution);
-                        
+
                         int mutex_locked;
                         int new_solution_eval = 0;
 
                         // Lo mejore. Intento obtener lock de la poblacion.
                         mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
-                        if (mutex_locked == 0) {                           
+                        if (mutex_locked == 0)
+                        {
                             // Chequeo si la nueva solucion es no-dominada.
-                            new_solution_eval = archivers_adhoc(thread_instance, selected_solution_pos);
+                            #ifndef ARCHVIER_ADHOC
+                            archivers_adhoc(thread_instance, selected_solution_pos);
+                            #endif
+                            #ifndef ARCHIVER_AGA
+                            archivers_aga(thread_instance, selected_solution_pos);
+                            #endif
 
                             pthread_mutex_unlock(thread_instance->population_mutex);
 
@@ -1403,7 +1206,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 {
                                     thread_instance->total_success_random_greedy_searches++;
                                 }
-                            } else {
+                            }
+                            else
+                            {
                                 thread_instance->total_soluciones_evolucionadas_dominadas++;
                             }
 
@@ -1412,11 +1217,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
                                 validate_thread_instance(thread_instance);
                             }
-                            
+
                             // Libero la posicion seleccionada.
                             selected_solution_pos = -1;
-                        } else {
-                            // Algun otro thread esta trabajando sobre la población.
+                        }
+                        else
+                        {
+                            // Algun otro thread esta trabajando sobre la poblacin.
                             // Intento hacer otro loop de trabajo y vuelvo a probar.
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
 
