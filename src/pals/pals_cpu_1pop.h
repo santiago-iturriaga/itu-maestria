@@ -137,7 +137,8 @@ struct pals_cpu_1pop_thread_arg {
     int total_soluciones_evolucionadas_dominadas;
     int total_re_iterations;
     int total_population_full;
-
+    int iter_last_found;
+    
     timespec ts_start;
     timespec ts_last_found;
 };

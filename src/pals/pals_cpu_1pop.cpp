@@ -151,6 +151,13 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
         fprintf(stdout, "[INFO] Total execution time                : %.0f\n", elapsed_total_time);
         fprintf(stdout, "[INFO] Last solution found                 : %.0f\n", elapsed_last_found);
 
+        fprintf(stdout, "== Threads ====================================================\n");
+        for (int i = 0; i < instance.count_threads; i++)
+        {
+            fprintf(stdout, "Thread[%d] >> Iterations = %d >> Last found %d\n", i, instance.threads_args[i].total_iterations,
+                instance.threads_args[i].iter_last_found);
+        }
+
         if (DEBUG_DEV)
         {
             for (int i = 0; i < instance.population_max_size; i++)
@@ -462,6 +469,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     thread_instance->total_soluciones_no_evolucionadas = 0;
     thread_instance->total_soluciones_evolucionadas_dominadas = 0;
     thread_instance->total_re_iterations = 0;
+    thread_instance->iter_last_found = 0;
 
     int terminate = 0;
     int work_type = -1;
@@ -727,13 +735,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         machines_selection(thread_instance, selected_solution, search_type, machine_a, machine_b);
 
                         int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
-                        while (machine_a_task_count == 0)
-                        {
-                            machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
-                            machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
-                        }
-
-                        if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
                         int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
 
                         rand_generate(thread_instance, random);
@@ -926,6 +927,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             if (new_solution_eval == 1)
                             {
                                 thread_instance->ts_last_found = ts_current;
+                                thread_instance->iter_last_found = thread_instance->total_iterations;
 
                                 if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
                                 {
