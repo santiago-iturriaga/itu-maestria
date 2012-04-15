@@ -19,6 +19,7 @@
 #include "archivers/adhoc.h"
 #include "archivers/aga.h"
 #include "ls_selection/evol_guide_complex.h"
+#include "ls_selection/machine_sel_complex.h"
 
 #include "pals_cpu_1pop.h"
 
@@ -441,103 +442,6 @@ void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
     pthread_mutex_unlock(instance->population_mutex);
 
     assert(cantidad == *(instance->population_count));
-}
-
-
-void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
-int search_type, int &machine_a, int &machine_b)
-{
-
-    double random;
-
-    if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
-    {
-        //fprintf(stdout, "[DEBUG] Makespan greedy\n");
-
-        rand_generate(thread_instance, random);
-
-        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST)
-        {
-            rand_generate(thread_instance, random);
-            machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-            // fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
-        }
-        else
-        {
-            machine_a = get_worst_ct_machine_id(selected_solution);
-
-            //fprintf(stdout, "[DEBUG] Worst CT machine_a = %d\n", machine_a);
-        }
-
-        rand_generate(thread_instance, random);
-
-        if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST)
-        {
-            rand_generate(thread_instance, random);
-
-            // Siempre selecciono la segunda mquina aleatoriamente.
-            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-
-            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
-        }
-        else
-        {
-            machine_b = get_best_ct_machine_id(selected_solution);
-
-            //fprintf(stdout, "[DEBUG] Best CT machine_b = %d\n", machine_b);
-        }
-    }
-    else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-    {
-        //fprintf(stdout, "[DEBUG] Energy greedy\n");
-
-        rand_generate(thread_instance, random);
-
-        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST)
-        {
-            rand_generate(thread_instance, random);
-            machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-            //fprintf(stdout, "[DEBUG] Random machine_a = %d\n", machine_a);
-        }
-        else
-        {
-            machine_a = get_worst_energy_machine_id(selected_solution);
-
-            //fprintf(stdout, "[DEBUG] Worst energy machine_a = %d\n", machine_a);
-        }
-
-        rand_generate(thread_instance, random);
-
-        if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST)
-        {
-            rand_generate(thread_instance, random);
-
-            // Siempre selecciono la segunda mquina aleatoriamente.
-            machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-
-            //fprintf(stdout, "[DEBUG] Random machine_b = %d\n", machine_b);
-        }
-        else
-        {
-            machine_b = get_best_energy_machine_id(selected_solution);
-
-            //fprintf(stdout, "[DEBUG] Worst energy machine_b = %d\n", machine_b);
-        }
-    }
-    else
-    {
-        rand_generate(thread_instance, random);
-
-        // La estrategia es aleatoria.
-        machine_a = (int)floor(random * thread_instance->etc->machines_count);
-
-        rand_generate(thread_instance, random);
-
-        // Siempre selecciono la segunda mquina aleatoriamente.
-        machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-    }
 }
 
 void* pals_cpu_1pop_thread(void *thread_arg)
