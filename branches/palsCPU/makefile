@@ -23,7 +23,9 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-		src/archivers/adhoc.cpp \
+		src/pals/archivers/adhoc.cpp \
+		src/pals/archivers/aga.cpp \
+		src/pals/ls_selection/evol_guide_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp 
@@ -39,7 +41,9 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-		src/archivers/adhoc.cpp \
+		src/pals/archivers/adhoc.cpp \
+		src/pals/archivers/aga.cpp \
+		src/pals/ls_selection/evol_guide_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp \
