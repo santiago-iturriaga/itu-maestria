@@ -113,4 +113,14 @@ void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *sel
         // Siempre selecciono la segunda mquina aleatoriamente.
         machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
     }
+
+    int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
+    while (machine_a_task_count == 0)
+    {
+        machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
+        machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
+    }
+
+    if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
+    int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
 }
