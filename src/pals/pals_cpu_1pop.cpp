@@ -780,7 +780,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 int search_type;
                 double search_type_random = 0.0;
 
-                rand_generate(thread_instance, random);
+                rand_generate(thread_instance, search_type_random);
 
                 if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN)
                 {
