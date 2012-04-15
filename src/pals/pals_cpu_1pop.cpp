@@ -23,7 +23,7 @@
 
 #include "pals_cpu_1pop.h"
 
-inline void* rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &random) {
+inline void rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &random) {
     #ifdef CPU_MERSENNE_TWISTER
     random = cpu_mt_generate(*(thread_instance->thread_random_state));
     #endif
@@ -33,8 +33,6 @@ inline void* rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &ra
     #ifdef CPU_DRAND48
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
-    
-    return NULL;
 }
 
 void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
@@ -515,9 +513,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 rand_generate(thread_instance, random);
 
                 int random_task = (int)floor(random * thread_instance->etc->tasks_count);
+                
+                #ifdef INIT_MCT
                 compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
-
-                //compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
+                #endif
+                #ifdef INIT_MINMIN
+                compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
+                #endif
 
                 pthread_mutex_lock(thread_instance->population_mutex);
 
