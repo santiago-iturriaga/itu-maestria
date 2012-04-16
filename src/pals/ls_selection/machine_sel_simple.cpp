@@ -20,7 +20,7 @@ inline void rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &ran
     #endif
 }
 
-void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
+void machines_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
     int search_type, int &machine_a, int &machine_b)
 {
     double random;
@@ -34,9 +34,7 @@ void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *sel
 
     // Siempre selecciono la segunda mquina aleatoriamente.
     machine_b = (int)floor(random * (thread_instance->etc->machines_count - 1));
-    
-    int machine_a_task_count, machine_b_task_count;
-    
+       
     int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
     while (machine_a_task_count == 0)
     {
