@@ -89,6 +89,21 @@ void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, s
     }
 }
 
+float get_objective(struct solution *s, int obj_index) {
+    if (obj_index == SOLUTION__MAKESPAN_OBJ) {
+        return s->__makespan;
+    } else if (obj_index == SOLUTION__ENERGY_OBJ) {
+        return s->__total_energy_consumption;
+    } else {
+        assert(false);
+    }
+}
+
+void refresh(struct solution *s) {
+    refresh_makespan(s);
+    refresh_energy(s);
+}
+
 void free_solution(struct solution *s) {
     free(s->__task_assignment);
     free(s->__machine_assignment_count);
@@ -132,7 +147,7 @@ void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
     assert(task_id >= 0);
     assert(s->__task_assignment[task_id] == SOLUTION__TASK_NOT_ASSIGNED);
 
-    // Actualizo el makespan.
+    // Actualizo el makespan de la máquina.
     s->__machine_compute_time[machine_id] += get_etc_value(s->etc, machine_id, task_id);
 
     // Asigno la tarea.

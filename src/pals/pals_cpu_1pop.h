@@ -16,6 +16,8 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
+// DEFINICION ==============================================
+
 #define ARCHIVER_ADHOC
 //#define ARCHIVER_AGA
 
@@ -27,6 +29,8 @@
 
 #define EVOL_GUIDE_SIMPLE
 //#define EVOL_GUIDE_COMPLEX
+
+// CONFIGURACION ==============================================
 
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       650
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   14
@@ -72,6 +76,14 @@ struct pals_cpu_1pop_instance {
     int best_makespan_solution;
     int best_energy_solution;
 
+    // Estado del archiver.
+    #ifdef ARCHIVER_ADHOC
+    // No requiere estado...
+    #endif
+    #ifdef ARCHIVER_AGA
+    struct aga_state *archiver_state;
+    #endif
+
     int work_type;
     int global_total_iterations;
 
@@ -112,6 +124,14 @@ struct pals_cpu_1pop_thread_arg {
     int population_max_size;
     int *best_makespan_solution;
     int *best_energy_solution;
+
+    // Estado del archiver.
+    #ifdef ARCHIVER_ADHOC
+    // No requiere estado...
+    #endif
+    #ifdef ARCHIVER_AGA
+    struct aga_state *archiver_state;
+    #endif
 
     int count_threads;
     

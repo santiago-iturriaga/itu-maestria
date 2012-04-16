@@ -1,6 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define OBJECTIVES 2
+
 //#define CPU_RAND
 //#define CPU_DRAND48
 #define CPU_MERSENNE_TWISTER

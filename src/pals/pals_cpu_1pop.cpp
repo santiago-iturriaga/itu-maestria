@@ -59,7 +59,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
     timming_end(">> pals_cpu_1pop_init", ts_init);
     // Timming -----------------------------------------------------
 
-    // Bloqueo la ejecucin hasta que terminen todos los hilos.
+    // Bloqueo la ejecucion hasta que terminen todos los hilos.
     for(int i = 0; i < instance.count_threads; i++)
     {
         if(pthread_join(instance.threads[i], NULL))
@@ -120,7 +120,6 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             ((instance.threads_args[i].ts_last_found.tv_sec == ts_last_found.tv_sec) &&
             (instance.threads_args[i].ts_last_found.tv_nsec > ts_last_found.tv_nsec)))
         {
-
             ts_last_found = instance.threads_args[i].ts_last_found;
         }
     }
@@ -298,6 +297,14 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         empty_instance.population[i].initialized = 0;
     }
 
+    #ifdef ARCHIVER_ADHOC
+    // No es necesario...
+    #endif
+    #ifdef ARCHIVER_AGA
+    empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
+    archivers_aga_init(&empty_instance);
+    #endif
+
     // =========================================================================
     // Pedido de memoria para la generacin de numeros aleatorios.
 
@@ -381,6 +388,13 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         empty_instance.threads_args[i].best_makespan_solution = &(empty_instance.best_makespan_solution);
         empty_instance.threads_args[i].best_energy_solution = &(empty_instance.best_energy_solution);
 
+        #ifdef ARCHIVER_ADHOC
+        // No es necesario...
+        #endif
+        #ifdef ARCHIVER_AGA
+        empty_instance.threads_args[i].archiver_state = empty_instance.archiver_state;
+        #endif
+
         empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
         empty_instance.threads_args[i].global_total_iterations = &(empty_instance.global_total_iterations);
 
@@ -415,11 +429,17 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
     free(instance.random_states);
     free(instance.threads);
     free(instance.threads_args);
+    
+    #ifdef ARCHIVER_ADHOC
+    // No es necesario...
+    #endif
+    #ifdef ARCHIVER_AGA
+    archivers_aga_free(&instance);
+    #endif
 
     pthread_mutex_destroy(&(instance.population_mutex));
     pthread_barrier_destroy(&(instance.sync_barrier));
 }
-
 
 void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
 {
@@ -497,7 +517,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             // PALS_CPU_1POP_WORK__EXIT =======================================================================
             // Finalizo la ejecucin del algoritmo!
             terminate = 1;
-
         }
         else if (work_type == PALS_CPU_1POP_WORK__INIT)
         {
@@ -583,7 +602,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
 
             pthread_mutex_unlock(thread_instance->population_mutex);
-
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
         {
@@ -595,6 +613,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             {
                 pthread_mutex_lock(thread_instance->population_mutex);
 
+                int candidate_to_del_pos = -1;
+                
                 for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
                 {
                     if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
@@ -603,8 +623,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         selected_solution_pos = i;
 
                         if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                        
+                    } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
+                        candidate_to_del_pos = i;
                     }
                 }
+
+                if (selected_solution_pos == -1) selected_solution_pos = candidate_to_del_pos;
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
             }
@@ -612,7 +637,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
             if (selected_solution_pos == -1)
             {
-                // No se que hacer... panico! termino!
+                // No se que hacer... PANICO! PANICO!... listo termino...
                 fprintf(stdout, "[ERROR] Hilo finalizado! PANIC!!!\n");
 
                 terminate = 1;

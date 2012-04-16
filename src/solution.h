@@ -10,13 +10,16 @@
 #ifndef SOLUTION_H_
 #define SOLUTION_H_
 
-#define SOLUTION__TASK_NOT_ASSIGNED -1
+#define SOLUTION__MAKESPAN_OBJ  0
+#define SOLUTION__ENERGY_OBJ    1
 
+#define SOLUTION__STATUS_TO_DEL     -2
 #define SOLUTION__STATUS_NOT_READY  -1
 #define SOLUTION__STATUS_EMPTY      0
 #define SOLUTION__STATUS_NEW        1
 #define SOLUTION__STATUS_READY      2
-#define SOLUTION__STATUS_TO_DEL     3
+
+#define SOLUTION__TASK_NOT_ASSIGNED -1
 
 struct solution {
     struct etc_matrix *etc;
@@ -40,8 +43,6 @@ struct solution {
     int __worst_energy_machine_id;
     int __best_energy_machine_id;
     float __total_energy_consumption;
-    
-    //float *objectives;
 };
 
 struct solution* create_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy);
@@ -50,10 +51,16 @@ void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, s
 void clone_solution(struct solution *dst, struct solution *src, int clone_status);
 void free_solution(struct solution *s);
 
+// ATENTION! this method does not update the objectives. One must execute the refresh methods
+//           after invoking this method.
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id);
+
 void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_src_pos, int machine_dst);
 void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int machine_b, int task_b_pos);
 
+float get_objective(struct solution *s, int obj_index);
+
+void refresh(struct solution *s);
 void refresh_makespan(struct solution *s);
 void refresh_compute_time(struct solution *s);
 void refresh_energy(struct solution *s);
