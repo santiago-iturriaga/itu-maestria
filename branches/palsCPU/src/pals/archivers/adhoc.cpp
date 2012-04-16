@@ -37,7 +37,8 @@ int archivers_adhoc(struct pals_cpu_1pop_thread_arg *instance, int new_solution_
             float makespan, energy;
             makespan = 0;
             energy = 0;
-            if (instance->population[i].status == 2) {
+            
+            if (instance->population[i].status == SOLUTION__STATUS_READY) {
                 makespan = get_makespan(&(instance->population[i]));
                 energy = get_energy(&(instance->population[i]));
             }
