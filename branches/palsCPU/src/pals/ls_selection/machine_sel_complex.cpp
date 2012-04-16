@@ -20,7 +20,7 @@ inline void rand_generate(pals_cpu_1pop_thread_arg *thread_instance, double &ran
     #endif
 }
 
-void machines_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
+void machines_complex_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
     int search_type, int &machine_a, int &machine_b)
 {
     double random;

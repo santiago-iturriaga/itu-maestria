@@ -18,7 +18,9 @@
 
 #include "archivers/adhoc.h"
 #include "archivers/aga.h"
+#include "ls_selection/evol_guide_simple.h"
 #include "ls_selection/evol_guide_complex.h"
+#include "ls_selection/machine_sel_simple.h"
 #include "ls_selection/machine_sel_complex.h"
 
 #include "pals_cpu_1pop.h"
@@ -732,7 +734,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         // Determino las maquinas de inicio para la busqueda.
                         int machine_a, machine_b;
-                        machines_selection(thread_instance, selected_solution, search_type, machine_a, machine_b);
+                        
+                        #ifdef MACH_SEL_SIMPLE
+                        machines_simple_selection(thread_instance, selected_solution, search_type, machine_a, machine_b);
+                        #endif
+                        #ifdef MACH_SEL_COMPLEX
+                        machines_complex_selection(thread_instance, selected_solution, search_type, machine_a, machine_b);
+                        #endif
 
                         int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
                         int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
@@ -811,11 +819,20 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     task_y_pos = (task_y + task_y_offset) % machine_b_task_count;
                                     task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
 
-                                    ls_best_swap_selection(thread_instance, selected_solution,
+                                    #ifdef EVOL_GUIDE_SIMPLE
+                                    ls_best_swap_simple_selection(thread_instance, selected_solution,
                                         search_type, machine_a, machine_b, task_x_pos, task_x_current,
                                         task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
                                         task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
                                         task_y_best_swap_pos);
+                                    #endif
+                                    #ifdef EVOL_GUIDE_COMPLEX
+                                    ls_best_swap_complex_selection(thread_instance, selected_solution,
+                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                        task_y_best_swap_pos);
+                                    #endif
                                 }
                             }
                             else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE)
@@ -847,10 +864,18 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                                     if (machine_b_current != machine_a)
                                     {
-                                        ls_best_move_selection(thread_instance, selected_solution,
+                                        #ifdef EVOL_GUIDE_SIMPLE
+                                        ls_best_move_simple_selection(thread_instance, selected_solution,
                                             search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
                                             best_delta_makespan, best_delta_energy, task_x_best_move_pos,
                                             machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        #endif
+                                        #ifdef EVOL_GUIDE_COMPLEX
+                                        ls_best_move_complex_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        #endif
                                     }
                                 }
                             }    // Termino el IF de SWAP/MOVE
@@ -862,6 +887,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             // Intercambio las tareas!
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
                                     best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                          
                             swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                             thread_instance->total_swaps++;
@@ -872,19 +898,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             // Muevo la tarea!
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
                                     best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                            
                             move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                             thread_instance->total_moves++;
                             //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
                         }
 
+                        /*
                         if (DEBUG_DEV) validate_solution(selected_solution);
                         if (DEBUG_DEV)
                         {
                             if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution)))
                             {
-                                /*if ((floor(original_makespan) < floor(get_makespan(selected_solution))) &&
-                                    (floor(original_energy) < floor(get_energy(selected_solution)))) {*/
+                                //if ((floor(original_makespan) < floor(get_makespan(selected_solution))) &&
+                                //    (floor(original_energy) < floor(get_energy(selected_solution)))) {
 
                                 refresh_energy(selected_solution);
                                 refresh_makespan(selected_solution);
@@ -896,6 +924,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 exit(-1);
                             }
                         }
+                        */
                     }            // Termino el loop con la iteracin del thread
 
                     //refresh_energy(selected_solution);
@@ -916,10 +945,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         {
                             // Chequeo si la nueva solucion es no-dominada.
                             #ifndef ARCHVIER_ADHOC
-                            archivers_adhoc(thread_instance, selected_solution_pos);
+                            new_solution_eval = archivers_adhoc(thread_instance, selected_solution_pos);
                             #endif
                             #ifndef ARCHIVER_AGA
-                            archivers_aga(thread_instance, selected_solution_pos);
+                            new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
                             #endif
 
                             pthread_mutex_unlock(thread_instance->population_mutex);
