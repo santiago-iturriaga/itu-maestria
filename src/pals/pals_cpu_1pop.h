@@ -18,8 +18,8 @@
 
 // DEFINICION ==============================================
 
-#define ARCHIVER_ADHOC
-//#define ARCHIVER_AGA
+//#define ARCHIVER_ADHOC
+#define ARCHIVER_AGA
 
 #define INIT_MCT
 //#define INIT_MINMIN
@@ -27,8 +27,8 @@
 //#define MACH_SEL_SIMPLE
 #define MACH_SEL_COMPLEX
 
-#define EVOL_GUIDE_SIMPLE
-//#define EVOL_GUIDE_COMPLEX
+//#define EVOL_GUIDE_SIMPLE
+#define EVOL_GUIDE_COMPLEX
 
 // CONFIGURACION ==============================================
 

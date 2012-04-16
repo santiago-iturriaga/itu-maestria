@@ -8,7 +8,7 @@
  * divide the objective space into a grid for the purposes of diversity maintenance. Values of
  * between 3 and 6 are useful, depending on number of objectives.
  * */
-#define ARCHIVER__AGA_DEPTH 3
+#define ARCHIVER__AGA_DEPTH 6
 
 /* About the maximum size of an integer for your compiler. */
 #define ARCHIVER__AGA_LARGE 2000000000
