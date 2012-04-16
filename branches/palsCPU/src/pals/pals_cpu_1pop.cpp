@@ -163,7 +163,8 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
         {
             for (int i = 0; i < instance.population_max_size; i++)
             {
-                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
+                if ((instance.population[i].status == SOLUTION__STATUS_READY) ||
+                    (instance.population[i].status == SOLUTION__STATUS_TO_DEL))
                 {
                     validate_solution(&(instance.population[i]));
                 }
@@ -629,7 +630,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     }
                 }
 
-                if (selected_solution_pos == -1) selected_solution_pos = candidate_to_del_pos;
+                if ((selected_solution_pos == -1)&&(candidate_to_del_pos != -1)) {
+                    selected_solution_pos = candidate_to_del_pos;
+                    thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                }
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
             }
@@ -642,7 +646,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 terminate = 1;
                 thread_instance->total_population_full++;
-
             }
             else
             {
@@ -657,6 +660,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
 
                 // Sorteo la solucion con la que me toca trabajar  =====================================================
+                
                 rand_generate(thread_instance, random);
 
                 pthread_mutex_lock(thread_instance->population_mutex);

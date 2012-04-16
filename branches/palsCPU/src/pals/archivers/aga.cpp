@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 #include "../../random/cpu_rand.h"
 #include "../../random/cpu_drand48.h"
@@ -47,14 +48,16 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             makespan = get_makespan(&(instance->population[s_pos]));
             energy = get_energy(&(instance->population[s_pos]));
 
-            if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+            if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", 
+                s_pos, makespan, makespan_new, energy, energy_new);
 
             if ((makespan <= makespan_new) && (energy <= energy_new))
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", 
+                    new_solution_pos, s_pos);
             }
             else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
@@ -84,16 +87,22 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
     }
 
     if (new_solution_is_dominated == 0)  // Solution is non-dominated by the list.
-    {
+    {    
+        fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
+        instance->population_count[0], instance->count_threads, instance->population_max_size);
+        
         if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size)
         {
             int to_replace = new_solution_pos;
 
             int new_solution_grid_pos;
             new_solution_grid_pos = instance->archiver_state->grid_sol_loc[new_solution_pos];
-                        
+                                           
             int most_square_pop;
             most_square_pop = instance->archiver_state->grid_pop[new_solution_grid_pos];
+            
+            fprintf(stdout, "[DEBUG] aga thread(%d) new_sol_grid_pos(%d) new_sol_grid_square(%d)\n", 
+                instance->thread_idx, new_solution_grid_pos, most_square_pop);
             
             for (int i = 0; i < instance->population_max_size; i++)
             {
@@ -105,6 +114,9 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                                 
                     int i_square_pop;
                     i_square_pop = instance->archiver_state->grid_pop[i_grid_pos];
+
+                    fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
+                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);
                         
                     if (instance->archiver_state->grid_pop[i_square_pop] > most_square_pop)
                     {
@@ -114,10 +126,19 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 }
             }
             
-            instance->population[to_replace].status = SOLUTION__STATUS_TO_DEL;
-            
-            if (to_replace != new_solution_pos) return 1;
-            else return -1;
+            if (to_replace != new_solution_pos) 
+            {
+                instance->population[to_replace].status = SOLUTION__STATUS_TO_DEL;
+                instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
+                
+                return 1;
+            }
+            else 
+            {
+                instance->population[to_replace].status = SOLUTION__STATUS_TO_DEL;
+                
+                return -1;
+            }
         }
         else
         {
@@ -128,6 +149,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             return 1;
         }
     } else {
+        instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
+        
         return -1;
     }
     
@@ -305,5 +328,10 @@ int archivers_aga(struct pals_cpu_1pop_thread_arg *instance, int new_solution_po
     update_grid(instance, new_solution_pos);
     
     // Update the archive by removing all dominated individuals.
-    return archive_add_solution(instance, new_solution_pos); 
+    int result = archive_add_solution(instance, new_solution_pos); 
+
+    assert(instance->population[new_solution_pos].status != SOLUTION__STATUS_NOT_READY);
+    assert(instance->population_count[0] > 0);
+
+    return result;
 }
