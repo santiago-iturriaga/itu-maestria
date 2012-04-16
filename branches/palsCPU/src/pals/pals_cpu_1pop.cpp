@@ -613,8 +613,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             if (selected_solution_pos == -1)
             {
                 // No se que hacer... panico! termino!
-                fprintf(stdout, "[ERROR] Hilo finalizado.");
-                fprintf(stderr, "[ERROR] Hilo finalizado.");
+                fprintf(stdout, "[ERROR] Hilo finalizado! PANIC!!!\n");
 
                 terminate = 1;
                 thread_instance->total_population_full++;
@@ -944,10 +943,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         if (mutex_locked == 0)
                         {
                             // Chequeo si la nueva solucion es no-dominada.
-                            #ifndef ARCHVIER_ADHOC
+                            #ifdef ARCHIVER_ADHOC
                             new_solution_eval = archivers_adhoc(thread_instance, selected_solution_pos);
                             #endif
-                            #ifndef ARCHIVER_AGA
+                            #ifdef ARCHIVER_AGA
                             new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
                             #endif
 

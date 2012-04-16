@@ -40,6 +40,8 @@ struct solution {
     int __worst_energy_machine_id;
     int __best_energy_machine_id;
     float __total_energy_consumption;
+    
+    //float *objectives;
 };
 
 struct solution* create_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy);
