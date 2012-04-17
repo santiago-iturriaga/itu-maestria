@@ -30,6 +30,9 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
     float best_energy_value = get_energy(&(instance->population[*(instance->best_energy_solution)]));
     float best_makespan_value = get_makespan(&(instance->population[*(instance->best_makespan_solution)]));
 
+    float init_best_makespan = best_makespan_value;
+    float init_best_energy = best_energy_value;
+
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
 
@@ -56,8 +59,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", 
-                    new_solution_pos, s_pos);
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d[%f,%f] is dominated by %d[%f,%f]\n", 
+                    new_solution_pos, makespan_new, energy_new, s_pos, makespan, energy);
             }
             else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
@@ -66,7 +69,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
+                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d[%f,%f] because %d[%f,%f] is better\n", 
+                    s_pos, makespan, energy, new_solution_pos, makespan_new, energy_new);
             }
         } 
         else if (instance->population[s_pos].status == SOLUTION__STATUS_TO_DEL) 
@@ -88,8 +92,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
 
     if (new_solution_is_dominated == 0)  // Solution is non-dominated by the list.
     {    
-        fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
-        instance->population_count[0], instance->count_threads, instance->population_max_size);
+        //fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
+        //instance->population_count[0], instance->count_threads, instance->population_max_size);
         
         if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size)
         {
@@ -130,12 +134,20 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             {
                 instance->population[to_replace].status = SOLUTION__STATUS_TO_DEL;
                 instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
-                
+        
+                if (best_makespan_value > get_makespan(&(instance->population[new_solution_pos]))) {
+                    *(instance->best_makespan_solution) = new_solution_pos;
+                }
+        
+                if (best_energy_value > get_energy(&(instance->population[new_solution_pos]))) {
+                    *(instance->best_energy_solution) = new_solution_pos;        
+                }
+                        
                 return 1;
             }
             else 
             {
-                instance->population[to_replace].status = SOLUTION__STATUS_TO_DEL;
+                instance->population[new_solution_pos].status = SOLUTION__STATUS_TO_DEL;
                 
                 return -1;
             }
@@ -145,6 +157,14 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
             instance->population_count[0] = instance->population_count[0] + 1;
 
+            if (best_makespan_value > get_makespan(&(instance->population[new_solution_pos]))) {
+                *(instance->best_makespan_solution) = new_solution_pos;
+            }
+    
+            if (best_energy_value > get_energy(&(instance->population[new_solution_pos]))) {
+                *(instance->best_energy_solution) = new_solution_pos;        
+            }
+
             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
             return 1;
         }
@@ -153,6 +173,25 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
         
         return -1;
     }
+
+    double actual_best_makespan = INFINITY, actual_best_energy = INFINITY;
+    
+    for (int i = 0; i < instance->population_max_size; i++) {
+        if (instance->population[i].status == SOLUTION__STATUS_READY) {
+            if (actual_best_makespan > get_makespan(&(instance->population[i]))) {
+                actual_best_makespan = get_makespan(&(instance->population[i]));
+            }
+            
+            if (actual_best_energy > get_energy(&(instance->population[i]))) {
+                actual_best_energy = get_energy(&(instance->population[i]));
+            }
+        }
+    }
+    
+    fprintf(stdout, ">>> Min makespan(%f) Min energy(%f)\n", actual_best_makespan, actual_best_energy);
+
+    assert(actual_best_makespan < init_best_makespan);
+    assert(actual_best_energy < init_best_energy);
     
     #endif
 }

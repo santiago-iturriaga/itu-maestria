@@ -51,10 +51,17 @@ void ls_best_swap_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, so
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
 
-    float swap_diff_energy;
+    /*float swap_diff_energy;
     swap_diff_energy =
         ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));
+        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));*/
+
+    float swap_diff_energy;
+    swap_diff_energy =
+        ((machine_a_ct_old - machine_a_ct_new) * machine_a_energy_max) +
+        ((machine_a_ct_new - machine_a_ct_old) * machine_a_energy_idle) +
+        ((machine_b_ct_old - machine_b_ct_new) * machine_b_energy_max) +
+        ((machine_b_ct_new - machine_b_ct_old) * machine_b_energy_idle);
 
     if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
         ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
@@ -108,10 +115,9 @@ void ls_best_move_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, so
     float &best_delta_makespan, float &best_delta_energy, int &task_x_best_move_pos,
     int &machine_b_best_move_id, int &task_x_best_swap_pos, int &task_y_best_swap_pos)
 {
-
     float machine_a_energy_idle = get_energy_idle_value(thread_instance->energy, machine_a);
     float machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
-
+    
     double machine_a_ct_old, machine_a_ct_new;
     double machine_b_ct_old, machine_b_ct_new;
 
@@ -141,10 +147,17 @@ void ls_best_move_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, so
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
 
-    float swap_diff_energy;
+    /*float swap_diff_energy;
     swap_diff_energy =
         ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_current_energy_max - machine_b_current_energy_idle));
+        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_current_energy_max - machine_b_current_energy_idle));*/
+
+    float swap_diff_energy;
+    swap_diff_energy =
+        ((machine_a_ct_old - machine_a_ct_new) * machine_a_energy_max) +
+        ((machine_a_ct_new - machine_a_ct_old) * machine_a_energy_idle) +
+        ((machine_b_ct_old - machine_b_ct_new) * machine_b_current_energy_max) +
+        ((machine_b_ct_new - machine_b_ct_old) * machine_b_current_energy_idle);
 
     if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
         ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
