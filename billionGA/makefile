@@ -1,3 +1,4 @@
+CUDA_LD_LIBRARY_PATH=/home/santiago/cuda/cuda/lib64:/home/santiago/cuda/cuda/lib
 NVCC_Dora=/home/santiago/cuda/bin/nvcc
 NVCC=nvcc
 
