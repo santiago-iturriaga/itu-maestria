@@ -29,8 +29,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     #endif
     
     size_t samples_array_size = sizeof(float*) * state->number_of_samples;
-    error = cudaMalloc((void**)&(state->gpu_samples_fitness), samples_array_size);
-    if (error != cudaSuccess) {
+    state->gpu_samples = (float**)malloc(samples_array_size);
+    if (!state->gpu_samples) {
         fprintf(stderr, "[ERROR] Requesting samples_fitness memory\n");
         exit(EXIT_FAILURE);
     }
