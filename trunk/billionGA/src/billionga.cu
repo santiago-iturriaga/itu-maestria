@@ -24,6 +24,17 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         exit(EXIT_FAILURE);
     }
    
+    #ifdef INFO
+    fprintf(stdout, "[INFO] Requesting samples memory\n");
+    #endif
+    
+    size_t samples_array_size = sizeof(float*) * state->number_of_samples;
+    error = cudaMalloc((void**)&(state->gpu_samples_fitness), samples_array_size);
+    if (error != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Requesting samples_fitness memory\n");
+        exit(EXIT_FAILURE);
+    }
+   
     size_t sample_size = sizeof(char) * (state->number_of_bits / 8);
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
