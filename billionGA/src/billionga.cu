@@ -71,7 +71,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         #ifdef INFO
-        fprintf(stdout, "[INFO] Requesting memory for sample %d\n", sample_number);
+        fprintf(stdout, "[INFO] > Requesting memory for sample %d\n", sample_number);
         #endif
 
         error = cudaMalloc((void**)&(state->gpu_samples[sample_number]), sample_size);
