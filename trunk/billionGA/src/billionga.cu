@@ -1,9 +1,41 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <cuda.h>
 
 #include "billionga.h"
 
 // Paso 1 del algoritmo.
-void bga_initialization(struct bga_state *state) {
+void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples) {
+    state->number_of_bits = number_of_bits;
+    state->number_of_samples = number_of_samples;
+    
+    cudaError_t error;
+    
+    size_t prob_vector_size = sizeof(float) * state->number_of_bits;
+    error = cudaMalloc((void**)&(state->gpu_prob_vector), prob_vector_size);
+    
+    if (error != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Requesting memory for prob_vector\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    size_t sample_size = sizeof(char) * (state->number_of_bits / 8);
+    
+    for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
+        error = cudaMalloc((void**)&(state->gpu_samples[sample_number]), sample_size);
+        
+        if (error != cudaSuccess) {
+            fprintf(stderr, "[ERROR] Requesting memory for sample_number[%d]\n", sample_number);
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    size_t samples_fitness_size = sizeof(long) * state->number_of_samples;
+    error = cudaMalloc((void**)&(state->gpu_samples_fitness), samples_fitness_size);
+    if (error != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Requesting memory for samples_fitness\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 // Paso 2 del algoritmo.
