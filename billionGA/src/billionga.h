@@ -2,11 +2,16 @@
 #define BILLION_GA__H
 
 struct bga_state {
-    int fake;
+    long number_of_bits;
+    int number_of_samples;
+    
+    float *gpu_prob_vector;
+    float *gpu_samples;
+    long *gpu_samples_fitness;
 };
 
 // Paso 1 del algortimo.
-void bga_initialization(struct bga_state *state);
+void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples);
 
 // Paso 2 del algoritmo.
 void bga_model_sampling(struct bga_state *state);

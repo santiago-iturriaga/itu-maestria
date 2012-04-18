@@ -13,22 +13,21 @@ inline int termination_criteria_met(struct bga_state *problem_state) {
 
 int main(int argc, char **argv) {
     if (argc != 2) {
-        fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size>\n(where: 1 <= problem size <= %ld)\n\n", argv[0], LONG_MAX);
+        fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size>\n(where 1 <= problem size <= %ld and problem_size can be divided by 8)\n\n", argv[0], LONG_MAX);
         return EXIT_FAILURE;
     }
     
-    long int problem_size;
+    long problem_size;
     problem_size = atol(argv[1]);
     
     #ifdef INFO
     fprintf(stdout, "[INFO] Problem size: %ld\n", problem_size);
     #endif
     
-    struct bga_state problem_state;
-    bga_initialization(&problem_state);
+    struct bga_state problem_state;   
+    bga_initialization(&problem_state, problem_size, NUMBER_OF_SAMPLES);
     
     // ...
-    fprintf(stdout, "%ld %ld\n", sizeof(float), sizeof(double));
     
     bga_free(&problem_state);
     
