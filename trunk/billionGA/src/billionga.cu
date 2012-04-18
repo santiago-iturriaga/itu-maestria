@@ -19,21 +19,47 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     if (state->number_of_bits > MAX_PROB_VECTOR_BITS) {
         state->number_of_prob_vectors = state->number_of_bits / MAX_PROB_VECTOR_BITS;
         state->last_prob_vector_bit_count = state->number_of_bits % MAX_PROB_VECTOR_BITS;
+        
+        if (state->last_prob_vector_bit_count == 0) {
+            state->last_prob_vector_bit_count = MAX_PROB_VECTOR_BITS;
+        } else {
+            state->number_of_prob_vectors++;
+        }
     } else {
         state->number_of_prob_vectors = 1;
         state->last_prob_vector_bit_count = state->number_of_bits;
     }
     
-    /*
-    size_t prob_vector_size = sizeof(float) * state->number_of_bits;
-    error = cudaMalloc((void**)&(state->gpu_prob_vector), prob_vector_size);
+    #ifdef INFO
+    fprintf(stdout, "[INFO] Requesting prob_vector_size memory\n");
+    #endif
     
-    if (error != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Requesting memory for prob_vector\n");
+    size_t prob_vector_array_size = sizeof(float*) * state->number_of_prob_vectors;
+    state->gpu_prob_vectors = (float**)malloc(prob_vector_array_size);
+    if (!state->gpu_prob_vectors) {
+        fprintf(stderr, "[ERROR] Requesting memory for the prob_vector\n");
         exit(EXIT_FAILURE);
     }
-    * */
-   
+
+    for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        #ifdef INFO
+        fprintf(stdout, "[INFO] Requesting memory for prob_vector %d\n", prob_vector_number);
+        #endif
+
+        int current_prob_vector_number_of_bits = MAX_PROB_VECTOR_BITS;
+        if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+            current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+        }
+
+        size_t prob_vector_size = sizeof(float) * current_prob_vector_number_of_bits;
+        error = cudaMalloc((void**)&(state->gpu_prob_vectors[prob_vector_number]), prob_vector_size);
+        
+        if (error != cudaSuccess) {
+            fprintf(stderr, "[ERROR] > Requesting memory for prob_vector_number[%d]\n", prob_vector_number);
+            exit(EXIT_FAILURE);
+        }
+    }
+       
     #ifdef INFO
     fprintf(stdout, "[INFO] Requesting samples memory\n");
     #endif
@@ -55,7 +81,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         error = cudaMalloc((void**)&(state->gpu_samples[sample_number]), sample_size);
         
         if (error != cudaSuccess) {
-            fprintf(stderr, "[ERROR] Requesting memory for sample_number[%d]\n", sample_number);
+            fprintf(stderr, "[ERROR] > Requesting memory for sample_number[%d]\n", sample_number);
             exit(EXIT_FAILURE);
         }
     }
