@@ -1,9 +1,9 @@
-CUDA_LD_LIBRARY_PATH=/home/santiago/cuda/cuda/lib64:/home/santiago/cuda/cuda/lib
+#export LD_LIBRARY_PATH=/home/santiago/cuda/lib64:/home/santiago/cuda/lib
+
 NVCC_Dora=/home/santiago/cuda/bin/nvcc
 NVCC=nvcc
 
-all: dora-test-mt 
-#dora-debug
+all: dora-debug
 
 dora-debug: src/main.cu src/billionga.cu src/mt/MersenneTwister.cu
 	$(NVCC_Dora) -g --ptxas-options=-v -maxrregcount=16 \
