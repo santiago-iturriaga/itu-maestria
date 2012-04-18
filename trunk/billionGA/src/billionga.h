@@ -5,12 +5,12 @@ struct bga_state {
     long number_of_bits;
     int number_of_samples;
     
-    float **gpu_prob_vectors;
+    float **gpu_prob_vectors; // gpu_prob_vectors[VECTOR][BIT_PROBABILITY]
     int number_of_prob_vectors;
     long last_prob_vector_bit_count;
     
-    float **gpu_samples;
-    long *gpu_samples_fitness;
+    float ***gpu_samples; // gpu_samples[SAMPLE][VECTOR][8 x BIT]
+    long **gpu_samples_fitness; // gpu_samples_fitness[SAMPLE][VECTOR]
 };
 
 // Paso 1 del algortimo.
