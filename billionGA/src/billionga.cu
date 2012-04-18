@@ -16,6 +16,15 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     fprintf(stdout, "[INFO] Requesting prob_vector_size memory\n");
     #endif
     
+    if (state->number_of_bits > MAX_PROB_VECTOR_BITS) {
+        state->number_of_prob_vectors = state->number_of_bits / MAX_PROB_VECTOR_BITS;
+        state->last_prob_vector_bit_count = state->number_of_bits % MAX_PROB_VECTOR_BITS;
+    } else {
+        state->number_of_prob_vectors = 1;
+        state->last_prob_vector_bit_count = state->number_of_bits;
+    }
+    
+    
     size_t prob_vector_size = sizeof(float) * state->number_of_bits;
     error = cudaMalloc((void**)&(state->gpu_prob_vector), prob_vector_size);
     
