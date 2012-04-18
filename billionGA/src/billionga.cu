@@ -139,4 +139,30 @@ void bga_model_update(struct bga_state *state) {
 
 // Libera la memoria pedida para de estado.
 void bga_free(struct bga_state *state) {
+    #ifdef INFO
+    fprintf(stdout, "[INFO] Freeing memory\n");
+    #endif
+
+    for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
+        cudaFree(state->gpu_prob_vectors[vector_number]);
+    }
+    
+    free(state->gpu_prob_vectors);
+    
+    for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
+        cudaFree(state->gpu_prob_vectors[vector_number]);
+    }
+
+    for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
+        for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
+            cudaFree(state->gpu_samples[sample_number][vector_number]);
+        }
+        free(state->gpu_samples[sample_number]);
+    }
+    free(state->gpu_samples);
+
+    for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
+        cudaFree(state->gpu_samples_fitness[sample_number]);
+    }
+    free(state->gpu_samples_fitness);   
 }
