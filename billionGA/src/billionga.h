@@ -6,7 +6,7 @@ struct bga_state {
     int number_of_samples;
     
     float *gpu_prob_vector;
-    float *gpu_samples;
+    float **gpu_samples;
     long *gpu_samples_fitness;
 };
 
