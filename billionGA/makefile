@@ -3,7 +3,7 @@
 NVCC_Dora=/home/santiago/cuda/bin/nvcc
 NVCC=nvcc
 
-all: dora-debug
+all: cuda1-debug
 
 dora-debug: src/main.cu src/billionga.cu src/mt/MersenneTwister.cu
 	$(NVCC_Dora) -g --ptxas-options=-v -maxrregcount=16 \
