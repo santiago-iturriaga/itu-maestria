@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <cuda.h>
 
+#include "config.h"
 #include "billionga.h"
 
 // Paso 1 del algoritmo.
@@ -11,6 +12,10 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     
     cudaError_t error;
     
+    #ifdef INFO
+    fprintf(stdout, "[INFO] Requesting prob_vector_size memory\n");
+    #endif
+    
     size_t prob_vector_size = sizeof(float) * state->number_of_bits;
     error = cudaMalloc((void**)&(state->gpu_prob_vector), prob_vector_size);
     
@@ -18,10 +23,14 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stderr, "[ERROR] Requesting memory for prob_vector\n");
         exit(EXIT_FAILURE);
     }
-    
+   
     size_t sample_size = sizeof(char) * (state->number_of_bits / 8);
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
+        #ifdef INFO
+        fprintf(stdout, "[INFO] Requesting memory for sample %d\n", sample_number);
+        #endif
+
         error = cudaMalloc((void**)&(state->gpu_samples[sample_number]), sample_size);
         
         if (error != cudaSuccess) {
@@ -29,6 +38,10 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             exit(EXIT_FAILURE);
         }
     }
+    
+    #ifdef INFO
+    fprintf(stdout, "[INFO] Requesting samples_fitness memory\n");
+    #endif
     
     size_t samples_fitness_size = sizeof(long) * state->number_of_samples;
     error = cudaMalloc((void**)&(state->gpu_samples_fitness), samples_fitness_size);
