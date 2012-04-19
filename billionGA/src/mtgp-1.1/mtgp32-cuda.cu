@@ -490,10 +490,6 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d\n", status->block_num, status->num_unit, status->num_data);
     #endif
     
-    #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] num_data: %d\n", status->num_data);
-    #endif
-    
     make_constant(MTGPDC_PARAM_TABLE, status->block_num);
     make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num);
     
