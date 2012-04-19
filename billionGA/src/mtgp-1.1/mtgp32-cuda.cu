@@ -17,11 +17,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "mtgp-util.cuh"
+#include "mtgp-util.h"
 #include "mtgp32-fast.h"
+#include "mtgp32-cuda.h"
 
 #define MTGPDC_MEXP 11213
-#define MTGPDC_N 351
 #define MTGPDC_FLOOR_2P 256
 #define MTGPDC_CEIL_2P 512
 #define MTGPDC_PARAM_TABLE mtgp32dc_params_fast_11213
@@ -33,14 +33,6 @@
 #define N MTGPDC_N
 
 extern mtgp32_params_fast_t mtgp32dc_params_fast_11213[];
-
-/**
- * kernel I/O
- * This structure must be initialized before first use.
- */
-struct mtgp32_kernel_status_t {
-    uint32_t status[MTGPDC_N];
-};
 
 /*
  * Generator Parameters.
@@ -567,8 +559,7 @@ int main(int argc, char** argv)
         return 1;
     }
     num_unit = LARGE_SIZE * block_num;
-    ccudaMalloc((void**)&d_status,
-			      sizeof(mtgp32_kernel_status_t) * block_num);
+    ccudaMalloc((void**)&d_status, sizeof(mtgp32_kernel_status_t) * block_num);
     r = num_data % num_unit;
     if (r != 0) {
         num_data = num_data + num_unit - r;

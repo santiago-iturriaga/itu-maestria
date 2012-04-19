@@ -45,15 +45,15 @@ extern "C" {
  * just Mersenne Prime. This is redundant.
  */
 typedef struct MTGP32_PARAMS_FAST_T {
-    int mexp;			/**< Mersenne exponent. This is redundant. */
-    int pos;			/**< pick up position. */
-    int sh1;			/**< shift value 1. 0 < sh1 < 32. */
-    int sh2;			/**< shift value 2. 0 < sh2 < 32. */
-    uint32_t tbl[16];		/**< a small matrix. */
-    uint32_t tmp_tbl[16];	/**< a small matrix for tempering. */
-    uint32_t flt_tmp_tbl[16];	/**< a small matrix for tempering and
-				 converting to float. */
-    uint32_t mask;		/**< This is a mask for state space */
+    int mexp;           /**< Mersenne exponent. This is redundant. */
+    int pos;            /**< pick up position. */
+    int sh1;            /**< shift value 1. 0 < sh1 < 32. */
+    int sh2;            /**< shift value 2. 0 < sh2 < 32. */
+    uint32_t tbl[16];       /**< a small matrix. */
+    uint32_t tmp_tbl[16];   /**< a small matrix for tempering. */
+    uint32_t flt_tmp_tbl[16];   /**< a small matrix for tempering and
+                 converting to float. */
+    uint32_t mask;      /**< This is a mask for state space */
     unsigned char poly_sha1[21]; /**< SHA1 digest */
 } mtgp32_params_fast_t;
 
@@ -73,11 +73,11 @@ typedef struct MTGP32_PARAMS_FAST_T {
  * \b idx is updated by `logical and' \b & with large_mask.
  */
 typedef struct MTGP32_STATUS_FAST_T {
-    int idx;			/**< index */
-    int size;			/**< minimum needed size */
-    int large_size;		/**< real size of array */
-    int large_mask;		/**< bit mask to update \b idx */
-    uint32_t array[];		/**< internal state array */
+    int idx;            /**< index */
+    int size;           /**< minimum needed size */
+    int large_size;     /**< real size of array */
+    int large_mask;     /**< bit mask to update \b idx */
+    uint32_t array[];       /**< internal state array */
 } mtgp32_status_fast_t;
 
 /**
@@ -106,22 +106,22 @@ extern mtgp32_params_fast_t mtgp32_params_fast_23209[128];
 extern mtgp32_params_fast_t mtgp32_params_fast_44497[128];
 
 int mtgp32_init(mtgp32_fast_t *mtgp32,
-		const mtgp32_params_fast_t *para, uint32_t seed);
+        const mtgp32_params_fast_t *para, uint32_t seed);
 void mtgp32_init_state(uint32_t array[],
-		      const mtgp32_params_fast_t *para, uint32_t seed);
+              const mtgp32_params_fast_t *para, uint32_t seed);
 int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
-			 const mtgp32_params_fast_t *para,
-			uint32_t *array, int length);
+             const mtgp32_params_fast_t *para,
+            uint32_t *array, int length);
 int mtgp32_init_by_str(mtgp32_fast_t *mtgp32,
-		       const mtgp32_params_fast_t *para,
-		       char *str);
+               const mtgp32_params_fast_t *para,
+               char *str);
 void mtgp32_free(mtgp32_fast_t *mtgp32);
 void mtgp32_print_idstring(const mtgp32_fast_t *mtgp32, FILE *fp);
 
 inline static void mtgp32_do_recursion(uint32_t *r, uint32_t x1,
-				       uint32_t x2, uint32_t y,
-				       int sh1, int sh2,
-				       uint32_t mask, uint32_t tbl[16]);
+                       uint32_t x2, uint32_t y,
+                       int sh1, int sh2,
+                       uint32_t mask, uint32_t tbl[16]);
 inline static void mtgp32_next_state(mtgp32_fast_t *mtgp32);
 inline static uint32_t mtgp32_genrand_uint32(mtgp32_fast_t *mtgp32);
 inline static float mtgp32_genrand_close1_open2(mtgp32_fast_t *mtgp32);
@@ -147,9 +147,9 @@ inline static float mtgp32_genrand_open_open(mtgp32_fast_t *mtgp32);
  * @param[in] tbl the matrix parameter.
  */
 inline static void mtgp32_do_recursion(uint32_t *r, uint32_t x1,
-				       uint32_t x2, uint32_t y,
-				       int sh1, int sh2,
-				       uint32_t mask, uint32_t tbl[16]) {
+                       uint32_t x2, uint32_t y,
+                       int sh1, int sh2,
+                       uint32_t mask, uint32_t tbl[16]) {
     uint32_t x;
 
     x = (x1 & mask) ^ x2;
@@ -173,13 +173,13 @@ inline static void mtgp32_next_state(mtgp32_fast_t *mtgp32) {
     mtgp32->status->idx = (mtgp32->status->idx + 1) & large_mask;
     idx = mtgp32->status->idx;
     mtgp32_do_recursion(&(array[idx]),
-			array[(idx - size + large_size) & large_mask],
-			array[(idx - size + large_size + 1) & large_mask],
-			array[(idx + pos - size + large_size) & large_mask],
-			mtgp32->params.sh1,
-			mtgp32->params.sh2,
-			mtgp32->params.mask,
-			mtgp32->params.tbl);
+            array[(idx - size + large_size) & large_mask],
+            array[(idx - size + large_size + 1) & large_mask],
+            array[(idx + pos - size + large_size) & large_mask],
+            mtgp32->params.sh1,
+            mtgp32->params.sh2,
+            mtgp32->params.mask,
+            mtgp32->params.tbl);
 }
 
 /**
@@ -190,7 +190,7 @@ inline static void mtgp32_next_state(mtgp32_fast_t *mtgp32) {
  * @return the tempered value.
  */
 inline static uint32_t mtgp32_temper(const uint32_t tmp_tbl[16],
-				     uint32_t r, uint32_t t) {
+                     uint32_t r, uint32_t t) {
     t ^= t >> 16;
     t ^= t >> 8;
     r ^= tmp_tbl[t & 0x0f];
@@ -205,10 +205,10 @@ inline static uint32_t mtgp32_temper(const uint32_t tmp_tbl[16],
  * @return the tempered value.
  */
 inline static float mtgp32_temper_float(const uint32_t flt_tmp_tbl[16],
-					  uint32_t r, uint32_t t) {
+                      uint32_t r, uint32_t t) {
     union {
-	uint32_t u;
-	float f;
+    uint32_t u;
+    float f;
     } x;
     t ^= t >> 16;
     t ^= t >> 8;
@@ -226,10 +226,10 @@ inline static float mtgp32_temper_float(const uint32_t flt_tmp_tbl[16],
  * @return the tempered value.
  */
 inline static float mtgp32_temper_float_open(const uint32_t flt_tmp_tbl[16],
-					       uint32_t r, uint32_t t) {
+                           uint32_t r, uint32_t t) {
     union {
-	uint32_t u;
-	float f;
+    uint32_t u;
+    float f;
     } x;
     t ^= t >> 16;
     t ^= t >> 8;
@@ -261,9 +261,9 @@ inline static uint32_t mtgp32_genrand_uint32(mtgp32_fast_t *mtgp32) {
     mtgp32_next_state(mtgp32);
     idx = mtgp32->status->idx;
     return mtgp32_temper(tmp_tbl,
-			 array[idx],
-			 array[(idx + pos - 1 - size + large_size)
-			       & large_mask]);
+             array[idx],
+             array[(idx + pos - 1 - size + large_size)
+                   & large_mask]);
 }
 
 /**
@@ -287,9 +287,9 @@ inline static float mtgp32_genrand_close1_open2(mtgp32_fast_t *mtgp32) {
     mtgp32_next_state(mtgp32);
     idx = mtgp32->status->idx;
     return mtgp32_temper_float(flt_tmp_tbl,
-				array[idx],
-				array[(idx + pos - 1 - size + large_size)
-				      & large_mask]);
+                array[idx],
+                array[(idx + pos - 1 - size + large_size)
+                      & large_mask]);
 }
 
 /**
@@ -339,9 +339,9 @@ inline static float mtgp32_genrand_open_open(mtgp32_fast_t *mtgp32) {
     mtgp32_next_state(mtgp32);
     idx = mtgp32->status->idx;
     r = mtgp32_temper_float_open(flt_tmp_tbl,
-				  array[idx],
-				  array[(idx + pos - 1 - size + large_size)
-					& large_mask]);
+                  array[idx],
+                  array[(idx + pos - 1 - size + large_size)
+                    & large_mask]);
     return r - 1.0F;
 }
 #if defined(__cplusplus)

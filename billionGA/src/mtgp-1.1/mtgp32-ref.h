@@ -58,13 +58,13 @@ extern mtgp32_params_ref_t mtgp32_params_ref_23209[128];
 extern mtgp32_params_ref_t mtgp32_params_ref_44497[128];
 
 int mtgp32_init(mtgp32_ref_t *mtgp32,
-		const mtgp32_params_ref_t *para, uint32_t seed);
+        const mtgp32_params_ref_t *para, uint32_t seed);
 int mtgp32_init_by_array(mtgp32_ref_t *mtgp32,
-			 const mtgp32_params_ref_t *para,
-			 const uint32_t *array, int length);
+             const mtgp32_params_ref_t *para,
+             const uint32_t *array, int length);
 int mtgp32_init_by_str(mtgp32_ref_t *mtgp32,
-		       const mtgp32_params_ref_t *para,
-		       const char *str);
+               const mtgp32_params_ref_t *para,
+               const char *str);
 void mtgp32_free(mtgp32_ref_t *mtgp32);
 uint32_t mtgp32_genrand_uint32(mtgp32_ref_t *mtgp32);
 float mtgp32_genrand_close1_open2(mtgp32_ref_t *mtgp32);

@@ -34,7 +34,7 @@ static const uint32_t non_zero = 0x4d544750;
  * @return allocation status. if 0 O.K.
  */
 static int alloc_state(mtgp32_fast_t *mtgp32,
-		       const mtgp32_params_fast_t *para) {
+               const mtgp32_params_fast_t *para) {
     int size = para->mexp / 32 + 1;
     int large_size;
     mtgp32_status_fast_t *st;
@@ -45,9 +45,9 @@ static int alloc_state(mtgp32_fast_t *mtgp32,
     large_size = x;
 
     st = (mtgp32_status_fast_t *)malloc(sizeof(mtgp32_status_fast_t)
-				     + sizeof(uint32_t) * large_size);
+                     + sizeof(uint32_t) * large_size);
     if (st == NULL) {
-	return -1;
+    return -1;
     }
     mtgp32->params = *para;
     mtgp32->status = st;
@@ -92,11 +92,11 @@ static uint32_t ini_func2(uint32_t x) {
  * @return memory allocation result. if 0 O.K.
  */
 int mtgp32_init(mtgp32_fast_t *mtgp32,
-		const mtgp32_params_fast_t *para, uint32_t seed) {
+        const mtgp32_params_fast_t *para, uint32_t seed) {
     int rc;
     rc = alloc_state(mtgp32, para);
     if (rc) {
-	return rc;
+    return rc;
     }
     mtgp32->status->idx = mtgp32->status->size - 1;
     mtgp32_init_state(mtgp32->status->array, para, seed);
@@ -117,7 +117,7 @@ int mtgp32_init(mtgp32_fast_t *mtgp32,
  * @param[in] seed a 32-bit integer used as the seed.
  */
 void mtgp32_init_state(uint32_t array[],
-		      const mtgp32_params_fast_t *para, uint32_t seed) {
+              const mtgp32_params_fast_t *para, uint32_t seed) {
     int i;
     int size = para->mexp / 32 + 1;
     uint32_t hidden_seed;
@@ -130,9 +130,9 @@ void mtgp32_init_state(uint32_t array[],
     array[0] = seed;
     array[1] = hidden_seed;
     for (i = 1; i < size; i++) {
-	array[i] ^= UINT32_C(1812433253) * (array[i - 1]
-					    ^ (array[i - 1] >> 30))
-	    + i;
+    array[i] ^= UINT32_C(1812433253) * (array[i - 1]
+                        ^ (array[i - 1] >> 30))
+        + i;
     }
 }
 
@@ -149,8 +149,8 @@ void mtgp32_init_state(uint32_t array[],
  * @return memory allocation result. if 0 O.K.
  */
 int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
-			 const mtgp32_params_fast_t *para,
-			 uint32_t *array, int length) {
+             const mtgp32_params_fast_t *para,
+             uint32_t *array, int length) {
     int i, j, count;
     uint32_t r;
     int lag;
@@ -163,18 +163,18 @@ int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
 
     rc = alloc_state(mtgp32, para);
     if (rc) {
-	return rc;
+    return rc;
     }
 
     st = mtgp32->status;
     if (size >= 623) {
-	lag = 11;
+    lag = 11;
     } else if (size >= 68) {
-	lag = 7;
+    lag = 7;
     } else if (size >= 39) {
-	lag = 5;
+    lag = 5;
     } else {
-	lag = 3;
+    lag = 3;
     }
     mid = (size - lag) / 2;
 
@@ -190,9 +190,9 @@ int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
     st->array[0] = hidden_seed;
 
     if (length + 1 > size) {
-	count = length + 1;
+    count = length + 1;
     } else {
-	count = size;
+    count = size;
     }
     r = ini_func1(st->array[0] ^ st->array[mid] ^ st->array[size - 1]);
     st->array[mid] += r;
@@ -202,34 +202,34 @@ int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
     i = 1;
     count--;
     for (i = 1, j = 0; (j < count) && (j < length); j++) {
-	r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
-		      ^ st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] += r;
-	r += array[j] + i;
-	st->array[(i + mid + lag) % size] += r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
+              ^ st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] += r;
+    r += array[j] + i;
+    st->array[(i + mid + lag) % size] += r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     for (; j < count; j++) {
-	r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
-		      ^ st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] += r;
-	r += i;
-	st->array[(i + mid + lag) % size] += r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
+              ^ st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] += r;
+    r += i;
+    st->array[(i + mid + lag) % size] += r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     for (j = 0; j < size; j++) {
-	r = ini_func2(st->array[i] + st->array[(i + mid) % size]
-		      + st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] ^= r;
-	r -= i;
-	st->array[(i + mid + lag) % size] ^= r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func2(st->array[i] + st->array[(i + mid) % size]
+              + st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] ^= r;
+    r -= i;
+    st->array[(i + mid + lag) % size] ^= r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     if (st->array[size - 1] == 0) {
-	st->array[size - 1] = non_zero;
+    st->array[size - 1] = non_zero;
     }
     return 0;
 }
@@ -248,7 +248,7 @@ int mtgp32_init_by_array(mtgp32_fast_t *mtgp32,
  * @return memory allocation result. if 0 then O.K.
  */
 int mtgp32_init_by_str(mtgp32_fast_t *mtgp32,
-		       const mtgp32_params_fast_t *para, char *array) {
+               const mtgp32_params_fast_t *para, char *array) {
     int i, j, count;
     uint32_t r;
     int lag;
@@ -262,18 +262,18 @@ int mtgp32_init_by_str(mtgp32_fast_t *mtgp32,
 
     rc = alloc_state(mtgp32, para);
     if (rc) {
-	return rc;
+    return rc;
     }
 
     st = mtgp32->status;
     if (size >= 623) {
-	lag = 11;
+    lag = 11;
     } else if (size >= 68) {
-	lag = 7;
+    lag = 7;
     } else if (size >= 39) {
-	lag = 5;
+    lag = 5;
     } else {
-	lag = 3;
+    lag = 3;
     }
     mid = (size - lag) / 2;
 
@@ -289,9 +289,9 @@ int mtgp32_init_by_str(mtgp32_fast_t *mtgp32,
     st->array[0] = hidden_seed;
 
     if (length + 1 > size) {
-	count = length + 1;
+    count = length + 1;
     } else {
-	count = size;
+    count = size;
     }
     r = ini_func1(st->array[0] ^ st->array[mid] ^ st->array[size - 1]);
     st->array[mid] += r;
@@ -301,34 +301,34 @@ int mtgp32_init_by_str(mtgp32_fast_t *mtgp32,
     i = 1;
     count--;
     for (i = 1, j = 0; (j < count) && (j < length); j++) {
-	r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
-		      ^ st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] += r;
-	r += array[j] + i;
-	st->array[(i + mid + lag) % size] += r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
+              ^ st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] += r;
+    r += array[j] + i;
+    st->array[(i + mid + lag) % size] += r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     for (; j < count; j++) {
-	r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
-		      ^ st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] += r;
-	r += i;
-	st->array[(i + mid + lag) % size] += r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func1(st->array[i] ^ st->array[(i + mid) % size]
+              ^ st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] += r;
+    r += i;
+    st->array[(i + mid + lag) % size] += r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     for (j = 0; j < size; j++) {
-	r = ini_func2(st->array[i] + st->array[(i + mid) % size]
-		      + st->array[(i + size - 1) % size]);
-	st->array[(i + mid) % size] ^= r;
-	r -= i;
-	st->array[(i + mid + lag) % size] ^= r;
-	st->array[i] = r;
-	i = (i + 1) % size;
+    r = ini_func2(st->array[i] + st->array[(i + mid) % size]
+              + st->array[(i + size - 1) % size]);
+    st->array[(i + mid) % size] ^= r;
+    r -= i;
+    st->array[(i + mid + lag) % size] ^= r;
+    st->array[i] = r;
+    i = (i + 1) % size;
     }
     if (st->array[size - 1] == 0) {
-	st->array[size - 1] = non_zero;
+    st->array[size - 1] = non_zero;
     }
     return 0;
 }
@@ -354,7 +354,7 @@ void mtgp32_print_idstring(const mtgp32_fast_t *mtgp32, FILE *fp) {
     int i;
     fprintf(fp, "mtgp32:%d:", mtgp32->params.mexp);
     for (i = 0; i < 20; i++) {
-	fprintf(fp, "%02x", (unsigned int)mtgp32->params.poly_sha1[i]);
+    fprintf(fp, "%02x", (unsigned int)mtgp32->params.poly_sha1[i]);
     }
     fprintf(fp, "\n");
 }
@@ -370,26 +370,26 @@ void print_open_open(mtgp32_fast_t *mtgp32, int count);
 void print_uint32(mtgp32_fast_t *mtgp32, int count) {
     int i;
     for (i = 0; i < count; i++) {
-	printf("%10"PRIu32" ", mtgp32_genrand_uint32(mtgp32));
-	if (i % 5 == 4) {
-	    printf("\n");
-	}
+    printf("%10"PRIu32" ", mtgp32_genrand_uint32(mtgp32));
+    if (i % 5 == 4) {
+        printf("\n");
+    }
     }
     if (i % 5 != 0) {
-	printf("\n");
+    printf("\n");
     }
 }
 
 void print_close1_open2(mtgp32_fast_t *mtgp32, int count) {
     int i;
     for (i = 0; i < count; i++) {
-	printf("%.8f ", mtgp32_genrand_close1_open2(mtgp32));
-	if (i % 5 == 4) {
-	    printf("\n");
-	}
+    printf("%.8f ", mtgp32_genrand_close1_open2(mtgp32));
+    if (i % 5 == 4) {
+        printf("\n");
+    }
     }
     if (i % 5 != 0) {
-	printf("\n");
+    printf("\n");
     }
     printf("\n");
 }
@@ -397,39 +397,39 @@ void print_close1_open2(mtgp32_fast_t *mtgp32, int count) {
 void print_close_open(mtgp32_fast_t *mtgp32, int count) {
     int i;
     for (i = 0; i < count; i++) {
-	printf("%.8f ", mtgp32_genrand_close_open(mtgp32));
-	if (i % 5 == 4) {
-	    printf("\n");
-	}
+    printf("%.8f ", mtgp32_genrand_close_open(mtgp32));
+    if (i % 5 == 4) {
+        printf("\n");
+    }
     }
     if (i % 5 != 0) {
-	printf("\n");
+    printf("\n");
     }
 }
 
 void print_open_close(mtgp32_fast_t *mtgp32, int count) {
     int i;
     for (i = 0; i < count; i++) {
-	printf("%.8f ", mtgp32_genrand_open_close(mtgp32));
-	if (i % 5 == 4) {
-	    printf("\n");
-	}
+    printf("%.8f ", mtgp32_genrand_open_close(mtgp32));
+    if (i % 5 == 4) {
+        printf("\n");
+    }
     }
     if (i % 5 != 0) {
-	printf("\n");
+    printf("\n");
     }
 }
 
 void print_open_open(mtgp32_fast_t *mtgp32, int count) {
     int i;
     for (i = 0; i < count; i++) {
-	printf("%.8f ", mtgp32_genrand_open_open(mtgp32));
-	if (i % 5 == 4) {
-	    printf("\n");
-	}
+    printf("%.8f ", mtgp32_genrand_open_open(mtgp32));
+    if (i % 5 == 4) {
+        printf("\n");
+    }
     }
     if (i % 5 != 0) {
-	printf("\n");
+    printf("\n");
     }
 }
 
@@ -444,44 +444,44 @@ int main(int argc, char *argv[]) {
     int rc;
 
     if (argc <= 2) {
-	printf("%s: mexp no.\n", argv[0]);
-	return 1;
+    printf("%s: mexp no.\n", argv[0]);
+    return 1;
     }
     mexp = strtol(argv[1], NULL, 10);
     if (errno) {
-	printf("%s: mexp no.\n", argv[0]);
-	return 2;
+    printf("%s: mexp no.\n", argv[0]);
+    return 2;
     }
     no = strtol(argv[2], NULL, 10);
     if (errno) {
-	printf("%s: mexp no.\n", argv[0]);
-	return 3;
+    printf("%s: mexp no.\n", argv[0]);
+    return 3;
     }
     switch (mexp) {
     case 11213:
-	params = mtgp32_params_fast_11213;
-	break;
+    params = mtgp32_params_fast_11213;
+    break;
     case 23209:
-	params = mtgp32_params_fast_23209;
-	break;
+    params = mtgp32_params_fast_23209;
+    break;
     case 44497:
-	params = mtgp32_params_fast_44497;
-	break;
+    params = mtgp32_params_fast_44497;
+    break;
     default:
-	printf("%s: mexp no.\n", argv[0]);
-	printf("mexp shuould be 11213, 23209 or 44497\n");
-	return 4;
+    printf("%s: mexp no.\n", argv[0]);
+    printf("mexp shuould be 11213, 23209 or 44497\n");
+    return 4;
     }
     if (no >= 128 || no < 0) {
-	printf("%s: mexp no.\n", argv[0]);
-	printf("no must be between 0 and 127\n");
-	return 5;
+    printf("%s: mexp no.\n", argv[0]);
+    printf("no must be between 0 and 127\n");
+    return 5;
     }
     params += no;
     rc = mtgp32_init(&mtgp32, params, seed);
     if (rc) {
-	printf("failure in mtgp32_init\n");
-	return -1;
+    printf("failure in mtgp32_init\n");
+    return -1;
     }
     mtgp32_print_idstring(&mtgp32, stdout);
     printf("init:\n");
@@ -490,8 +490,8 @@ int main(int argc, char *argv[]) {
 
     rc = mtgp32_init_by_array(&mtgp32, params, seed_ar, 4);
     if (rc) {
-	printf("failure in mtgp32_init_by_array\n");
-	return -1;
+    printf("failure in mtgp32_init_by_array\n");
+    return -1;
     }
     printf("init_array:\n");
     print_uint32(&mtgp32, 1000);
@@ -499,8 +499,8 @@ int main(int argc, char *argv[]) {
 
     rc = mtgp32_init_by_str(&mtgp32, params, seed_str);
     if (rc) {
-	printf("failure in mtgp32_init_by_str\n");
-	return -1;
+    printf("failure in mtgp32_init_by_str\n");
+    return -1;
     }
     printf("init_str:\n");
     print_uint32(&mtgp32, 1000);
