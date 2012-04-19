@@ -25,29 +25,27 @@ int main(int argc, char **argv) {
     #endif
 
     // === Inicialización del Mersenne Twister.
-    int seed = 325498732;
+    /*int seed = 325498732;
     int prng_numbers_per_iteration = 80;
     char *data_path = "mt/data/";
     
     mersenne_twister_init_data mt_data;
-    mersenne_twister_init(data_path, prng_numbers_per_iteration, mt_data);
+    mersenne_twister_init(data_path, prng_numbers_per_iteration, mt_data);*/
     
     // === Inicialización del cGA
     struct bga_state problem_state;   
     bga_initialization(&problem_state, problem_size, NUMBER_OF_SAMPLES);
     
     while (!termination_criteria_met(&problem_state)) {
-        bga_model_sampling_mt(&problem_state, &mt, &seed);
-
-        bga_evaluation(struct bga_state *state);
-
-        bga_model_update(struct bga_state *state);
+        bga_model_sampling_mt(&problem_state);
+        bga_evaluation(&problem_state);
+        bga_model_update(&problem_state);
     }
     
     // === Libero la memoria del cGA y del Mersenne Twister.
     bga_free(&problem_state);
     
-    mersenne_twister_free(mt_data);
+    //mersenne_twister_free(mt_data);
     
     return EXIT_SUCCESS;
 }

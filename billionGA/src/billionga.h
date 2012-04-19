@@ -17,7 +17,7 @@ struct bga_state {
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples);
 
 // Paso 2 del algoritmo.
-void bga_model_sampling_mt(struct bga_state *state, mersenne_twister_init_data *mt, int *seed);
+void bga_model_sampling_mt(struct bga_state *state);
 
 // Paso 3 del algoritmo.
 void bga_evaluation(struct bga_state *state);
