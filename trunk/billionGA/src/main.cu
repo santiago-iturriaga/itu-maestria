@@ -4,6 +4,7 @@
 #include <cuda.h>
 
 #include "config.h"
+#include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
 inline int termination_criteria_met(struct bga_state *problem_state) {
