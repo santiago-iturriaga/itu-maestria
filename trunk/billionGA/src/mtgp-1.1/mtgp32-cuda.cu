@@ -463,7 +463,11 @@ void mtgp32_print_generated_floats(struct mtgp32_status *status) {
 
     ccudaMemcpy(h_data, status->d_data, sizeof(uint32_t) * status->num_data, cudaMemcpyDeviceToHost);
    
-    print_float_array(h_data, status->num_data, status->block_num);
+    //print_float_array(h_data, status->num_data, status->block_num);
+    
+    for (int i = 0; i < status->num_data; i++) {
+        fprintf(stdout, "%f\n", h_data[i]);
+    }
     fprintf(stdout, "[DEBUG] Generated numbers: %d\n", status->num_data);
         
     //free memories
