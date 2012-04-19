@@ -1,31 +1,17 @@
-#ifndef MTGP_UTIL_CUH
-#define MTGP_UTIL_CUH
-/*
- * mtgp-util.h
- *
- * Some utility functions for Sample Programs
- *
- */
+#ifndef CUDA_UTIL_H
+#define CUDA_UTIL_H
+
+#include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
-//#include "test-tool.hpp"
-
-int get_suitable_block_num(int device, int *max_block_num,
-			   int *mp_num, int word_size,
-			   int thread_num, int large_size);
-void print_max_min(uint32_t data[], int size);
-void print_float_array(const float array[], int size, int block);
-void print_uint32_array(const uint32_t array[], int size, int block);
-void print_double_array(const double array[], int size, int block);
-void print_uint64_array(const uint64_t array[], int size, int block);
 
 inline void exception_maker(cudaError rc, const char * funcname)
 {
-    using namespace std;
     if (rc != cudaSuccess) {
-	const char * message = cudaGetErrorString(rc);
-	fprintf(stderr, "In %s Error(%d):%s\n", funcname, rc, message);
-	throw message;
+        const char * message = cudaGetErrorString(rc);
+        fprintf(stderr, "[ERRPR] In %s Error(%d):%s\n", funcname, rc, message);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -58,7 +44,7 @@ inline int ccudaFree(void *devPtr)
 }
 
 inline int ccudaMemcpy(void *dest, void *src, size_t size,
-		      enum cudaMemcpyKind kind)
+              enum cudaMemcpyKind kind)
 {
     cudaError rc = cudaMemcpy(dest, src, size, kind);
     exception_maker(rc, "ccudaMemcpy");
@@ -94,7 +80,7 @@ inline int ccudaThreadSynchronize()
 }
 
 inline int ccudaEventElapsedTime(float * ms,
-				 cudaEvent_t start, cudaEvent_t end)
+                 cudaEvent_t start, cudaEvent_t end)
 {
     cudaError rc = cudaEventElapsedTime(ms, start, end);
     exception_maker(rc, "ccudaEventElapsedTime");
@@ -109,14 +95,14 @@ inline int ccudaEventDestroy(cudaEvent_t event)
 }
 
 inline int ccudaMemcpyToSymbol(const void * symbol,
-			       const void * src,
-			       size_t count,
-			       size_t offset = 0,
-			       enum cudaMemcpyKind kind
-			       = cudaMemcpyHostToDevice)
+                   const void * src,
+                   size_t count,
+                   size_t offset = 0,
+                   enum cudaMemcpyKind kind
+                   = cudaMemcpyHostToDevice)
 {
     cudaError rc = cudaMemcpyToSymbol((const char *)symbol,
-					src, count, offset, kind);
+                    src, count, offset, kind);
     exception_maker(rc, "ccudaMemcpyToSymbol");
     return cudaSuccess;
 }
@@ -125,18 +111,6 @@ inline int ccudaGetDeviceProperties(struct cudaDeviceProp * prop, int device)
 {
     cudaError rc = cudaGetDeviceProperties(prop, device);
     exception_maker(rc, "ccudaGetDeviceProperties");
-    return cudaSuccess;
-}
-
-template<class T, int dim, enum cudaTextureReadMode readMode>
-inline int ccudaBindTexture(size_t * offset,
-			    const struct texture< T, dim, readMode > & texref,
-			    const void * devPtr,
-			    size_t size = UINT_MAX)
-{
-
-    cudaError rc = cudaBindTexture(offset, texref, devPtr, size);
-    exception_maker(rc, "ccudaBIndTexture");
     return cudaSuccess;
 }
 
