@@ -10,7 +10,7 @@ inline void exception_maker(cudaError rc, const char * funcname)
 {
     if (rc != cudaSuccess) {
         const char * message = cudaGetErrorString(rc);
-        fprintf(stderr, "[ERRPR] In %s Error(%d):%s\n", funcname, rc, message);
+        fprintf(stderr, "[ERROR] In %s Error(%d):%s\n", funcname, rc, message);
         exit(EXIT_FAILURE);
     }
 }
