@@ -36,6 +36,10 @@ int main(int argc, char **argv) {
     struct bga_state problem_state;   
     bga_initialization(&problem_state, problem_size, NUMBER_OF_SAMPLES);
     
+    #if defined(DEBUG)
+    bga_show_prob_vector_state(&problem_state);
+    #endif
+    
     while (!termination_criteria_met(&problem_state)) {
         bga_model_sampling_mt(&problem_state);
         bga_evaluation(&problem_state);
