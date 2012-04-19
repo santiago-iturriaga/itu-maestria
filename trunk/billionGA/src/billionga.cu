@@ -6,11 +6,25 @@
 #include "config.h"
 #include "billionga.h"
 
+#define INIT_PROB_VECTOR_VALUE 0.5
+
+/*
+ * Inicializa el vector de probabilidad (p.ej. a 0.5).
+ */
+__global__ void kern_init_prob_vector(float *gpu_prob_vector, int max_size, int starting_position) {
+    const int current_position = starting_position + (blockIdx.x * blockDim.x + threadIdx.x);
+    
+    if (current_position < max_size) {
+        gpu_prob_vector[current_position] = INIT_PROB_VECTOR_VALUE;
+    }
+}
+
 // Paso 1 del algoritmo.
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples) {
     state->number_of_bits = number_of_bits;
     state->number_of_samples = number_of_samples;
     
+    // === Pido la memoria =============================================================
     cudaError_t error;
     
     if (state->number_of_bits > MAX_PROB_VECTOR_BITS) {
@@ -121,6 +135,40 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         if (error != cudaSuccess) {
             fprintf(stderr, "[ERROR] Requesting memory for samples_fitness_vector_size[%d]\n", sample_number);
             exit(EXIT_FAILURE);
+        }
+    }
+    
+    // === Inicializo el vector de probabilidades ============================================
+    for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        int current_prob_vector_number_of_bits = MAX_PROB_VECTOR_BITS;
+        if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+            current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+        }
+
+        #ifdef INFO
+        fprintf(stdout, "[INFO] Inicializando GPU memory of prob_vector %d\n", prob_vector_number);
+        #endif
+
+        const int max_blocks = 128;
+        const int max_threads = 768;
+        int starting_position = 0;
+        
+        int total_loops = current_prob_vector_number_of_bits / (max_blocks * max_threads);
+        if (current_prob_vector_number_of_bits % (max_blocks * max_threads) > 0) total_loops++;
+
+        #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Total de loops: %d\n", total_loops);
+        #endif
+
+        for (int loop = 0; loop < total_loops; loop++) {
+            starting_position = loop * (max_blocks * max_threads);
+            
+            #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] Loops: %d, Starting posititon: %d\n", total_loops, starting_position);
+            #endif
+            
+            kern_init_prob_vector<<< max_blocks, max_threads >>>(state->gpu_prob_vectors[prob_vector_number], 
+                current_prob_vector_number_of_bits, starting_position);
         }
     }
 }
