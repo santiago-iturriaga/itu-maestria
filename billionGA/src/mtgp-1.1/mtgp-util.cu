@@ -8,6 +8,8 @@
 #include <cuda.h>
 #include <stdint.h>
 #include <inttypes.h>
+
+#include "../cuda-util.h"
 #include "mtgp-util.h"
 
 int get_suitable_block_num(int device,
