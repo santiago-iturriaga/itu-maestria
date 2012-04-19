@@ -173,7 +173,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     ccudaEventRecord(end, 0);
     ccudaEventSynchronize(end);
     ccudaEventElapsedTime(&gputime, start, end);
-    printf("Processing time: %f (ms)\n", gputime);
+    fprintf(stdout, "TIME] Processing time: %f (ms)\n", gputime);
     #endif
     
     // === Inicializo el vector de probabilidades ============================================
@@ -217,7 +217,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     ccudaEventRecord(end, 0);
     ccudaEventSynchronize(end);
     ccudaEventElapsedTime(&gputime, start, end);
-    printf("Processing time: %f (ms)\n", gputime);
+    fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
         
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
@@ -226,7 +226,10 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 
 void bga_show_prob_vector_state(struct bga_state *state) {
     double accumulated_probability = 0.0;
-    
+
+    #if defined(INFO) || defined(DEBUG)
+    fprintf(stdout, "[INFO] === Probability vector status =======================\n");
+    #endif    
     fprintf(stdout, "[INFO] Prob. vector sample:");
     
     for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
@@ -244,7 +247,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
                 probs_to_show_count = current_prob_vector_number_of_bits;
             
             float *probs_to_show = (float*)malloc(sizeof(float) * probs_to_show_count);
-            ccudaMemcpy(probs_to_show, state->gpu_prob_vectors, sizeof(uint32_t) * probs_to_show_count, cudaMemcpyDeviceToHost);
+            ccudaMemcpy(probs_to_show, state->gpu_prob_vectors[prob_vector_number], 
+                sizeof(uint32_t) * probs_to_show_count, cudaMemcpyDeviceToHost);
             
             for (int i = 0; i < probs_to_show_count; i++) {
                 fprintf(stdout, " %.4f", probs_to_show[i]);
@@ -255,7 +259,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
                 probs_to_show_count = MAX_PROB_VECTOR_BITS;
             
             float *probs_to_show = (float*)malloc(sizeof(float) * probs_to_show_count);
-            ccudaMemcpy(probs_to_show, state->gpu_prob_vectors, sizeof(uint32_t) * probs_to_show_count, cudaMemcpyDeviceToHost);
+            ccudaMemcpy(probs_to_show, state->gpu_prob_vectors[prob_vector_number], 
+                sizeof(uint32_t) * probs_to_show_count, cudaMemcpyDeviceToHost);
             
             for (int i = 0; i < probs_to_show_count; i++) {
                 fprintf(stdout, " %.4f", probs_to_show[i]);
