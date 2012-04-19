@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include "../config.h"
 #include "../cuda-util.h"
 #include "mtgp-util.h"
 #include "mtgp32-fast.h"
@@ -302,11 +303,11 @@ void make_kernel_data32(mtgp32_kernel_status_t * d_status,
         sizeof(mtgp32_kernel_status_t) * block_num);
 
     if (h_status == NULL) {
-    printf("failure in allocating host memory for kernel I/O data.\n");
-    exit(8);
+        fprintf(stderr, "[ERROR] Failure in allocating host memory for kernel I/O data.\n");
+        exit(EXIT_FAILURE);
     }
     for (i = 0; i < block_num; i++) {
-    mtgp32_init_state(&(h_status[i].status[0]), &params[i], i + 1);
+        mtgp32_init_state(&(h_status[i].status[0]), &params[i], i + 1);
     }
 #if defined(DEBUG)
     printf("h_status[0].status[0]:%08"PRIx32"\n", h_status[0].status[0]);
@@ -350,19 +351,19 @@ void make_constant(const mtgp32_params_fast_t params[],
     || h_single_temper_tbl == NULL
     || h_mask == NULL
     ) {
-    printf("failure in allocating host memory for constant table.\n");
-    exit(1);
+        fprintf(stderr, "[ERROR] Failure in allocating host memory for constant table.\n");
+        exit(1);
     }
     h_mask[0] = params[0].mask;
     for (int i = 0; i < block_num; i++) {
-    h_pos_tbl[i] = params[i].pos;
-    h_sh1_tbl[i] = params[i].sh1;
-    h_sh2_tbl[i] = params[i].sh2;
-    for (int j = 0; j < TBL_SIZE; j++) {
-        h_param_tbl[i * TBL_SIZE + j] = params[i].tbl[j];
-        h_temper_tbl[i * TBL_SIZE + j] = params[i].tmp_tbl[j];
-        h_single_temper_tbl[i * TBL_SIZE + j] = params[i].flt_tmp_tbl[j];
-    }
+        h_pos_tbl[i] = params[i].pos;
+        h_sh1_tbl[i] = params[i].sh1;
+        h_sh2_tbl[i] = params[i].sh2;
+        for (int j = 0; j < TBL_SIZE; j++) {
+            h_param_tbl[i * TBL_SIZE + j] = params[i].tbl[j];
+            h_temper_tbl[i * TBL_SIZE + j] = params[i].tmp_tbl[j];
+            h_single_temper_tbl[i * TBL_SIZE + j] = params[i].flt_tmp_tbl[j];
+        }
     }
     ccudaMemcpyToSymbol(pos_tbl, h_pos_tbl, size1);
     ccudaMemcpyToSymbol(sh1_tbl, h_sh1_tbl, size1);
@@ -397,7 +398,9 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
     cudaEvent_t start;
     cudaEvent_t end;
 
-    printf("generating 32-bit unsigned random numbers.\n");
+    #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Generating 32-bit unsigned random numbers.\n");
+    #endif
     ccudaMalloc((void**)&d_data, sizeof(uint32_t) * num_data);
     /* cutCreateTimer(&timer); */
     ccudaEventCreate(&start);
@@ -405,14 +408,14 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
 
     h_data = (uint32_t *) malloc(sizeof(uint32_t) * num_data);
     if (h_data == NULL) {
-    printf("failure in allocating host memory for output data.\n");
-    exit(1);
+        fprintf(stderr, "[ERROR] Failure in allocating host memory for output data.\n");
+        exit(EXIT_FAILURE);
     }
     /* cutStartTimer(timer); */
     ccudaEventRecord(start, 0);
     if (cudaGetLastError() != cudaSuccess) {
-    printf("error has been occured before kernel call.\n");
-    exit(1);
+        fprintf(stderr, "[ERROR] Error has been occured before kernel call.\n");
+        exit(EXIT_FAILURE);
     }
 
     /* kernel call */
@@ -422,8 +425,8 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
 
     e = cudaGetLastError();
     if (e != cudaSuccess) {
-    printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
-    exit(1);
+        fprintf(stderr, "[ERROR] Failure in kernel call.\n%s\n", cudaGetErrorString(e));
+        exit(EXIT_FAILURE);
     }
     /* ccutStopTimer(timer); */
     ccudaEventRecord(end, 0);
@@ -433,13 +436,17 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
     /* gputime = cutGetTimerValue(timer); */
     ccudaEventElapsedTime(&gputime, start, end);
     print_uint32_array(h_data, num_data, block_num);
-    printf("generated numbers: %d\n", num_data);
-    printf("Processing time: %f (ms)\n", gputime);
-    printf("Samples per second: %E \n", num_data / (gputime * 0.001));
+    
+    #if defined(DEBUG)
+    fprintf(stdout, "[DEBUG] Generated numbers: %d\n", num_data);
+    fprintf(stdout, "[DEBUG] Processing time: %f (ms)\n", gputime);
+    fprintf(stdout, "[DEBUG] Samples per second: %E \n", num_data / (gputime * 0.001));
+    #endif
 
     /* ccutDeleteTimer(timer); */
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
+    
     //free memories
     free(h_data);
     ccudaFree(d_data);
@@ -462,21 +469,24 @@ void make_single_random(mtgp32_kernel_status_t* d_status,
     cudaEvent_t start;
     cudaEvent_t end;
 
-    printf("generating single precision floating point random numbers.\n");
+    #if defined(DEBUG)
+    fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
+    #endif
+    
     ccudaMalloc((void**)&d_data, sizeof(uint32_t) * num_data);
     /* ccutCreateTimer(&timer); */
     ccudaEventCreate(&start);
     ccudaEventCreate(&end);
     h_data = (float *) malloc(sizeof(float) * num_data);
     if (h_data == NULL) {
-    printf("failure in allocating host memory for output data.\n");
-    exit(1);
+        fprintf(stderr, "[ERROR] Failure in allocating host memory for output data.\n");
+        exit(EXIT_FAILURE);
     }
     /* ccutStartTimer(timer); */
     ccudaEventRecord(start, 0);
     if (cudaGetLastError() != cudaSuccess) {
-    printf("error has been occured before kernel call.\n");
-    exit(1);
+        fprintf(stderr, "[ERROR] Error has been occured before kernel call.\n");
+        exit(EXIT_FAILURE);
     }
 
     /* kernel call */
@@ -486,8 +496,8 @@ void make_single_random(mtgp32_kernel_status_t* d_status,
 
     e = cudaGetLastError();
     if (e != cudaSuccess) {
-    printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
-    exit(1);
+        fprintf(stderr, "[ERROR] Failure in kernel call.\n%s\n", cudaGetErrorString(e));
+        exit(EXIT_FAILURE);
     }
     /* ccutStopTimer(timer); */
     ccudaEventRecord(end, 0);
@@ -496,84 +506,24 @@ void make_single_random(mtgp32_kernel_status_t* d_status,
         cudaMemcpyDeviceToHost);
     /* gputime = cutGetTimerValue(timer); */
     ccudaEventElapsedTime(&gputime, start, end);
+    
+    #if defined(DEBUG)
     print_float_array(h_data, num_data, block_num);
-    printf("generated numbers: %d\n", num_data);
-    printf("Processing time: %f (ms)\n", gputime);
-    printf("Samples per second: %E \n", num_data / (gputime * 0.001));
+    fprintf(stdout, "[DEBUG] Generated numbers: %d\n", num_data);
+    fprintf(stdout, "[DEBUG]Processing time: %f (ms)\n", gputime);
+    fprintf(stdout, "[DEBUG] Samples per second: %E \n", num_data / (gputime * 0.001));
+    #endif
+    
     /* ccutDeleteTimer(timer); */
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
+    
     //free memories
     free(h_data);
     ccudaFree(d_data);
 }
 
-/*
-int main(int argc, char** argv)
-{
-    // LARGE_SIZE is a multiple of 16
-    int num_data = 10000000;
-    int block_num;
-    int num_unit;
-    int r;
-    int device = 0;
-    mtgp32_kernel_status_t *d_status;
-    int mb, mp;
-
-    ccudaSetDevice(device);
-
-    if (argc >= 2) {
-        errno = 0;
-        block_num = strtol(argv[1], NULL, 10);
-        if (errno) {
-            printf("%s number_of_block number_of_output\n", argv[0]);
-            return 1;
-        }
-        if (block_num < 1 || block_num > BLOCK_NUM_MAX) {
-            printf("%s block_num should be between 1 and %d\n",
-               argv[0], BLOCK_NUM_MAX);
-            return 1;
-        }
-        errno = 0;
-        num_data = strtol(argv[2], NULL, 10);
-        if (errno) {
-            printf("%s number_of_block number_of_output\n", argv[0]);
-            return 1;
-        }
-        argc -= 2;
-        argv += 2;
-    } else {
-        printf("%s number_of_block number_of_output\n", argv[0]);
-        block_num = get_suitable_block_num(device,
-                           &mb,
-                           &mp,
-                           sizeof(uint32_t),
-                           THREAD_NUM,
-                           LARGE_SIZE);
-        if (block_num <= 0) {
-            printf("can't calculate sutable number of blocks.\n");
-            return 1;
-        }
-        printf("the suitable number of blocks for device 0 "
-               "will be multiple of %d, or multiple of %d\n", block_num,
-               (mb - 1) * mp);
-        return 1;
-    }
-    num_unit = LARGE_SIZE * block_num;
-    ccudaMalloc((void**)&d_status, sizeof(mtgp32_kernel_status_t) * block_num);
-    r = num_data % num_unit;
-    if (r != 0) {
-        num_data = num_data + num_unit - r;
-    }
-    make_constant(MTGPDC_PARAM_TABLE, block_num);
-    make_kernel_data32(d_status, MTGPDC_PARAM_TABLE, block_num);
-    make_uint32_random(d_status, num_data, block_num);
-    make_single_random(d_status, num_data, block_num);
-
-    ccudaFree(d_status);
-}
-*/
-
+// Se generan (768 * block_num) números aleatorios por cada vez.
 void mtgp32_initialize(struct mtgp32_status *status) {
     // LARGE_SIZE is a multiple of 16
     status->num_data = 10000000;
