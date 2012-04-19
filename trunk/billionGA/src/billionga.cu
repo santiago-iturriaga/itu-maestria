@@ -146,7 +146,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         }
 
         #ifdef INFO
-        fprintf(stdout, "[INFO] Inicializando GPU memory of prob_vector %d\n", prob_vector_number);
+        fprintf(stdout, "[INFO] Inicializando GPU memory of prob_vector %d (%d bits)\n", prob_vector_number, current_prob_vector_number_of_bits);
         #endif
 
         const int max_blocks = 128;
@@ -164,7 +164,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             starting_position = loop * (max_blocks * max_threads);
             
             #if defined(DEBUG)
-            fprintf(stdout, "[DEBUG] Loops: %d, Starting posititon: %d\n", total_loops, starting_position);
+            fprintf(stdout, "[DEBUG] Loops: %d, Starting posititon: %d, To: %d\n", total_loops, starting_position, starting_position+(max_blocks * max_threads));
             #endif
             
             kern_init_prob_vector<<< max_blocks, max_threads >>>(state->gpu_prob_vectors[prob_vector_number], 
