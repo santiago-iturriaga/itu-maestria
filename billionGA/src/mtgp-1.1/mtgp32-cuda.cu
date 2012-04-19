@@ -503,11 +503,11 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
         exit(EXIT_FAILURE);
     }
     
-    int block_num_mult = (int)ceil(((float)numbers_per_gen / (float)768) / (float)status->block_num);
+    int block_num_mult = (int)ceil(((float)numbers_per_gen / (float)LARGE_SIZE) / (float)status->block_num);
     status->block_num = status->block_num * block_num_mult;
     
     #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] block_num: %d (%d per generation)\n", status->block_num, status->block_num * 768);
+    fprintf(stdout, "[DEBUG] block_num: %d (%d per generation)\n", status->block_num, status->block_num * LARGE_SIZE);
     #endif
 
     if (status->block_num < 1 || status->block_num > BLOCK_NUM_MAX) {
@@ -523,6 +523,10 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     if (r != 0) {
         status->num_data = status->num_data + status->num_unit - r;
     }
+    
+    #if defined(DEBUG)
+    fprintf(stdout, "[DEBUG] num_data: %d\n", status->num_data);
+    #endif
     
     make_constant(MTGPDC_PARAM_TABLE, status->block_num);
     make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num);
