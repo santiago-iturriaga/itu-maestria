@@ -4,6 +4,7 @@
 #include <cuda.h>
 
 #include "config.h"
+#include "cuda-util.h"
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
@@ -25,14 +26,15 @@ int main(int argc, char **argv) {
     fprintf(stdout, "[INFO] Problem size: %ld\n", problem_size);
     #endif
 
+    ccudaSetDevice(0);
+
     // === Inicialización del Mersenne Twister.
-    /*int seed = 325498732;
-    int prng_numbers_per_iteration = 80;
-    char *data_path = "mt/data/";
-    
-    mersenne_twister_init_data mt_data;
-    mersenne_twister_init(data_path, prng_numbers_per_iteration, mt_data);*/
-    
+    mtgp32_status mt_status;    
+    mtgp32_initialize(&mt_status, 1);
+        
+    mtgp32_generate_float(&mt_status);
+    mtgp32_print_generated_floats(&mt_status);
+        
     // === Inicialización del cGA
     struct bga_state problem_state;   
     bga_initialization(&problem_state, problem_size, NUMBER_OF_SAMPLES);
@@ -45,8 +47,7 @@ int main(int argc, char **argv) {
     
     // === Libero la memoria del cGA y del Mersenne Twister.
     bga_free(&problem_state);
-    
-    //mersenne_twister_free(mt_data);
+    mtgp32_free(&mt_status);
     
     return EXIT_SUCCESS;
 }
