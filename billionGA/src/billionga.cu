@@ -20,11 +20,15 @@
 /*
  * Inicializa el vector de probabilidad (p.ej. a 0.5).
  */
-__global__ void kern_init_prob_vector(float *gpu_prob_vector, int max_size, int starting_position) {
-    const int current_position = starting_position + (blockIdx.x * blockDim.x + threadIdx.x);
-    
-    if (current_position < max_size) {
-        gpu_prob_vector[current_position] = INIT_PROB_VECTOR_VALUE;
+__global__ void kern_init_prob_vector(float *gpu_prob_vector, int max_size, int loops, int bits_per_loop) {
+    for (int i = 0; i < loops; i++) {
+        int current_position = (i * bits_per_loop) + (blockIdx.x * blockDim.x + threadIdx.x);
+        
+        if (current_position < max_size) {
+            gpu_prob_vector[current_position] = INIT_PROB_VECTOR_VALUE;
+        }
+        
+        __syncthreads();
     }
 }
 
@@ -196,21 +200,17 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 
         const int max_blocks = INIT_PROB_VECTOR_BLOCKS;
         const int max_threads = INIT_PROB_VECTOR_THREADS;
-        int starting_position = 0;
+        const int probs_per_loops = max_blocks * max_threads;
         
-        int total_loops = current_prob_vector_number_of_bits / (max_blocks * max_threads);
-        if (current_prob_vector_number_of_bits % (max_blocks * max_threads) > 0) total_loops++;
+        int total_loops = current_prob_vector_number_of_bits / probs_per_loops;
+        if (current_prob_vector_number_of_bits % probs_per_loops > 0) total_loops++;
 
         #if defined(DEBUG)
         fprintf(stdout, "[DEBUG] Total de loops: %d\n", total_loops);
         #endif
 
-        for (int loop = 0; loop < total_loops; loop++) {
-            starting_position = loop * (max_blocks * max_threads);
-            
-            kern_init_prob_vector<<< max_blocks, max_threads >>>(state->gpu_prob_vectors[prob_vector_number], 
-                current_prob_vector_number_of_bits, starting_position);
-        }
+        kern_init_prob_vector<<< max_blocks, max_threads >>>(state->gpu_prob_vectors[prob_vector_number], 
+                current_prob_vector_number_of_bits, total_loops, probs_per_loops);
     }
     
     #if defined(DEBUG)
