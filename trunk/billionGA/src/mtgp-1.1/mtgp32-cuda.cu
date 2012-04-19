@@ -515,6 +515,7 @@ void make_single_random(mtgp32_kernel_status_t* d_status,
     ccudaFree(d_data);
 }
 
+/*
 int main(int argc, char** argv)
 {
     // LARGE_SIZE is a multiple of 16
@@ -579,3 +580,4 @@ int main(int argc, char** argv)
 
     ccudaFree(d_status);
 }
+*/
