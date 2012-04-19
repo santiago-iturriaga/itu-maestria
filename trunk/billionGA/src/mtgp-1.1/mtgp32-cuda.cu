@@ -17,6 +17,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include "../cuda-util.h"
 #include "mtgp-util.h"
 #include "mtgp32-fast.h"
 #include "mtgp32-cuda.h"
@@ -118,13 +119,13 @@ __device__ uint32_t temper_single(uint32_t V, uint32_t T, int bid) {
  * @param[in] tid thread id
  */
 __device__ void status_read(uint32_t status[LARGE_SIZE],
-			    const mtgp32_kernel_status_t *d_status,
-			    int bid,
-			    int tid) {
+                const mtgp32_kernel_status_t *d_status,
+                int bid,
+                int tid) {
     status[LARGE_SIZE - N + tid] = d_status[bid].status[tid];
     if (tid < N - THREAD_NUM) {
-	status[LARGE_SIZE - N + THREAD_NUM + tid]
-	    = d_status[bid].status[THREAD_NUM + tid];
+    status[LARGE_SIZE - N + THREAD_NUM + tid]
+        = d_status[bid].status[THREAD_NUM + tid];
     }
     __syncthreads();
 }
@@ -139,13 +140,13 @@ __device__ void status_read(uint32_t status[LARGE_SIZE],
  * @param[in] tid thread id
  */
 __device__ void status_write(mtgp32_kernel_status_t *d_status,
-			     const uint32_t status[LARGE_SIZE],
-			     int bid,
-			     int tid) {
+                 const uint32_t status[LARGE_SIZE],
+                 int bid,
+                 int tid) {
     d_status[bid].status[tid] = status[LARGE_SIZE - N + tid];
     if (tid < N - THREAD_NUM) {
-	d_status[bid].status[THREAD_NUM + tid]
-	    = status[4 * THREAD_NUM - N + tid];
+    d_status[bid].status[THREAD_NUM + tid]
+        = status[4 * THREAD_NUM - N + tid];
     }
     __syncthreads();
 }
@@ -159,7 +160,7 @@ __device__ void status_write(mtgp32_kernel_status_t *d_status,
  * @param[in] size number of output data requested.
  */
 __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
-				     uint32_t* d_data, int size) {
+                     uint32_t* d_data, int size) {
     const int bid = blockIdx.x;
     const int tid = threadIdx.x;
     int pos = pos_tbl[bid];
@@ -173,57 +174,57 @@ __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
     for (int i = 0; i < size; i += LARGE_SIZE) {
 
 #if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-	if ((i == 0) && (bid == 0) && (tid <= 1)) {
-	    printf("status[LARGE_SIZE - N + tid]:%08x\n",
-		   status[LARGE_SIZE - N + tid]);
-	    printf("status[LARGE_SIZE - N + tid + 1]:%08x\n",
-		   status[LARGE_SIZE - N + tid + 1]);
-	    printf("status[LARGE_SIZE - N + tid + pos]:%08x\n",
-		   status[LARGE_SIZE - N + tid + pos]);
-	    printf("sh1:%d\n", sh1_tbl[bid]);
-	    printf("sh2:%d\n", sh2_tbl[bid]);
-	    printf("mask:%08x\n", mask[0]);
-	    for (int j = 0; j < 16; j++) {
-		printf("tbl[%d]:%08x\n", j, param_tbl[0][j]);
-	    }
-	}
+    if ((i == 0) && (bid == 0) && (tid <= 1)) {
+        printf("status[LARGE_SIZE - N + tid]:%08x\n",
+           status[LARGE_SIZE - N + tid]);
+        printf("status[LARGE_SIZE - N + tid + 1]:%08x\n",
+           status[LARGE_SIZE - N + tid + 1]);
+        printf("status[LARGE_SIZE - N + tid + pos]:%08x\n",
+           status[LARGE_SIZE - N + tid + pos]);
+        printf("sh1:%d\n", sh1_tbl[bid]);
+        printf("sh2:%d\n", sh2_tbl[bid]);
+        printf("mask:%08x\n", mask[0]);
+        for (int j = 0; j < 16; j++) {
+        printf("tbl[%d]:%08x\n", j, param_tbl[0][j]);
+        }
+    }
 #endif
-	r = para_rec(status[LARGE_SIZE - N + tid],
-		 status[LARGE_SIZE - N + tid + 1],
-		 status[LARGE_SIZE - N + tid + pos],
-		 bid);
-	status[tid] = r;
+    r = para_rec(status[LARGE_SIZE - N + tid],
+         status[LARGE_SIZE - N + tid + 1],
+         status[LARGE_SIZE - N + tid + pos],
+         bid);
+    status[tid] = r;
 #if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-	if ((i == 0) && (bid == 0) && (tid <= 1)) {
-	    printf("status[tid]:%08x\n", status[tid]);
-	}
+    if ((i == 0) && (bid == 0) && (tid <= 1)) {
+        printf("status[tid]:%08x\n", status[tid]);
+    }
 #endif
-	o = temper(r, status[LARGE_SIZE - N + tid + pos - 1], bid);
+    o = temper(r, status[LARGE_SIZE - N + tid + pos - 1], bid);
 #if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-	if ((i == 0) && (bid == 0) && (tid <= 1)) {
-	    printf("r:%08" PRIx32 "\n", r);
-	}
+    if ((i == 0) && (bid == 0) && (tid <= 1)) {
+        printf("r:%08" PRIx32 "\n", r);
+    }
 #endif
-	d_data[size * bid + i + tid] = o;
-	__syncthreads();
-	r = para_rec(status[(4 * THREAD_NUM - N + tid) % LARGE_SIZE],
-		     status[(4 * THREAD_NUM - N + tid + 1) % LARGE_SIZE],
-		     status[(4 * THREAD_NUM - N + tid + pos) % LARGE_SIZE],
-		     bid);
-	status[tid + THREAD_NUM] = r;
-	o = temper(r,
-		   status[(4 * THREAD_NUM - N + tid + pos - 1) % LARGE_SIZE],
-		   bid);
-	d_data[size * bid + THREAD_NUM + i + tid] = o;
-	__syncthreads();
-	r = para_rec(status[2 * THREAD_NUM - N + tid],
-		     status[2 * THREAD_NUM - N + tid + 1],
-		     status[2 * THREAD_NUM - N + tid + pos],
-		     bid);
-	status[tid + 2 * THREAD_NUM] = r;
-	o = temper(r, status[tid + pos - 1 + 2 * THREAD_NUM - N], bid);
-	d_data[size * bid + 2 * THREAD_NUM + i + tid] = o;
-	__syncthreads();
+    d_data[size * bid + i + tid] = o;
+    __syncthreads();
+    r = para_rec(status[(4 * THREAD_NUM - N + tid) % LARGE_SIZE],
+             status[(4 * THREAD_NUM - N + tid + 1) % LARGE_SIZE],
+             status[(4 * THREAD_NUM - N + tid + pos) % LARGE_SIZE],
+             bid);
+    status[tid + THREAD_NUM] = r;
+    o = temper(r,
+           status[(4 * THREAD_NUM - N + tid + pos - 1) % LARGE_SIZE],
+           bid);
+    d_data[size * bid + THREAD_NUM + i + tid] = o;
+    __syncthreads();
+    r = para_rec(status[2 * THREAD_NUM - N + tid],
+             status[2 * THREAD_NUM - N + tid + 1],
+             status[2 * THREAD_NUM - N + tid + pos],
+             bid);
+    status[tid + 2 * THREAD_NUM] = r;
+    o = temper(r, status[tid + pos - 1 + 2 * THREAD_NUM - N], bid);
+    d_data[size * bid + 2 * THREAD_NUM + i + tid] = o;
+    __syncthreads();
     }
     // write back status for next call
     status_write(d_status, status, bid, tid);
@@ -238,7 +239,7 @@ __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
  * @param[in] size number of output data requested.
  */
 __global__ void mtgp32_single_kernel(mtgp32_kernel_status_t* d_status,
-				     uint32_t* d_data, int size)
+                     uint32_t* d_data, int size)
 {
 
     const int bid = blockIdx.x;
@@ -252,35 +253,35 @@ __global__ void mtgp32_single_kernel(mtgp32_kernel_status_t* d_status,
 
     // main loop
     for (int i = 0; i < size; i += LARGE_SIZE) {
-	r = para_rec(status[LARGE_SIZE - N + tid],
-		     status[LARGE_SIZE - N + tid + 1],
-		     status[LARGE_SIZE - N + tid + pos],
-		     bid);
-	status[tid] = r;
-	o = temper_single(r, status[LARGE_SIZE - N + tid + pos - 1], bid);
-	d_data[size * bid + i + tid] = o;
-	__syncthreads();
-	r = para_rec(status[(4 * THREAD_NUM - N + tid) % LARGE_SIZE],
-		     status[(4 * THREAD_NUM - N + tid + 1) % LARGE_SIZE],
-		     status[(4 * THREAD_NUM - N + tid + pos) % LARGE_SIZE],
-		     bid);
-	status[tid + THREAD_NUM] = r;
-	o = temper_single(
-	    r,
-	    status[(4 * THREAD_NUM - N + tid + pos - 1) % LARGE_SIZE],
-	    bid);
-	d_data[size * bid + THREAD_NUM + i + tid] = o;
-	__syncthreads();
-	r = para_rec(status[2 * THREAD_NUM - N + tid],
-		     status[2 * THREAD_NUM - N + tid + 1],
-		     status[2 * THREAD_NUM - N + tid + pos],
-		     bid);
-	status[tid + 2 * THREAD_NUM] = r;
-	o = temper_single(r,
-			  status[tid + pos - 1 + 2 * THREAD_NUM - N],
-			  bid);
-	d_data[size * bid + 2 * THREAD_NUM + i + tid] = o;
-	__syncthreads();
+    r = para_rec(status[LARGE_SIZE - N + tid],
+             status[LARGE_SIZE - N + tid + 1],
+             status[LARGE_SIZE - N + tid + pos],
+             bid);
+    status[tid] = r;
+    o = temper_single(r, status[LARGE_SIZE - N + tid + pos - 1], bid);
+    d_data[size * bid + i + tid] = o;
+    __syncthreads();
+    r = para_rec(status[(4 * THREAD_NUM - N + tid) % LARGE_SIZE],
+             status[(4 * THREAD_NUM - N + tid + 1) % LARGE_SIZE],
+             status[(4 * THREAD_NUM - N + tid + pos) % LARGE_SIZE],
+             bid);
+    status[tid + THREAD_NUM] = r;
+    o = temper_single(
+        r,
+        status[(4 * THREAD_NUM - N + tid + pos - 1) % LARGE_SIZE],
+        bid);
+    d_data[size * bid + THREAD_NUM + i + tid] = o;
+    __syncthreads();
+    r = para_rec(status[2 * THREAD_NUM - N + tid],
+             status[2 * THREAD_NUM - N + tid + 1],
+             status[2 * THREAD_NUM - N + tid + pos],
+             bid);
+    status[tid + 2 * THREAD_NUM] = r;
+    o = temper_single(r,
+              status[tid + pos - 1 + 2 * THREAD_NUM - N],
+              bid);
+    d_data[size * bid + 2 * THREAD_NUM + i + tid] = o;
+    __syncthreads();
     }
     // write back status for next call
     status_write(d_status, status, bid, tid);
@@ -292,20 +293,20 @@ __global__ void mtgp32_single_kernel(mtgp32_kernel_status_t* d_status,
  * @param params MTGP32 parameters. needed for the initialization.
  */
 void make_kernel_data32(mtgp32_kernel_status_t * d_status,
-			mtgp32_params_fast_t params[],
-			int block_num)
+            mtgp32_params_fast_t params[],
+            int block_num)
 {
     int i;
     mtgp32_kernel_status_t* h_status
-	= (mtgp32_kernel_status_t *) malloc(
-	    sizeof(mtgp32_kernel_status_t) * block_num);
+    = (mtgp32_kernel_status_t *) malloc(
+        sizeof(mtgp32_kernel_status_t) * block_num);
 
     if (h_status == NULL) {
-	printf("failure in allocating host memory for kernel I/O data.\n");
-	exit(8);
+    printf("failure in allocating host memory for kernel I/O data.\n");
+    exit(8);
     }
     for (i = 0; i < block_num; i++) {
-	mtgp32_init_state(&(h_status[i].status[0]), &params[i], i + 1);
+    mtgp32_init_state(&(h_status[i].status[0]), &params[i], i + 1);
     }
 #if defined(DEBUG)
     printf("h_status[0].status[0]:%08"PRIx32"\n", h_status[0].status[0]);
@@ -314,8 +315,8 @@ void make_kernel_data32(mtgp32_kernel_status_t * d_status,
     printf("h_status[0].status[3]:%08"PRIx32"\n", h_status[0].status[3]);
 #endif
     ccudaMemcpy(d_status, h_status,
-		sizeof(mtgp32_kernel_status_t) * block_num,
-		cudaMemcpyHostToDevice);
+        sizeof(mtgp32_kernel_status_t) * block_num,
+        cudaMemcpyHostToDevice);
     free(h_status);
 }
 
@@ -342,26 +343,26 @@ void make_constant(const mtgp32_params_fast_t params[],
     h_single_temper_tbl = (uint32_t *)malloc(size2);
     h_mask = (uint32_t *)malloc(sizeof(uint32_t));
     if (h_pos_tbl == NULL
-	|| h_sh1_tbl == NULL
-	|| h_sh2_tbl == NULL
-	|| h_param_tbl == NULL
-	|| h_temper_tbl == NULL
-	|| h_single_temper_tbl == NULL
-	|| h_mask == NULL
-	) {
-	printf("failure in allocating host memory for constant table.\n");
-	exit(1);
+    || h_sh1_tbl == NULL
+    || h_sh2_tbl == NULL
+    || h_param_tbl == NULL
+    || h_temper_tbl == NULL
+    || h_single_temper_tbl == NULL
+    || h_mask == NULL
+    ) {
+    printf("failure in allocating host memory for constant table.\n");
+    exit(1);
     }
     h_mask[0] = params[0].mask;
     for (int i = 0; i < block_num; i++) {
-	h_pos_tbl[i] = params[i].pos;
-	h_sh1_tbl[i] = params[i].sh1;
-	h_sh2_tbl[i] = params[i].sh2;
-	for (int j = 0; j < TBL_SIZE; j++) {
-	    h_param_tbl[i * TBL_SIZE + j] = params[i].tbl[j];
-	    h_temper_tbl[i * TBL_SIZE + j] = params[i].tmp_tbl[j];
-	    h_single_temper_tbl[i * TBL_SIZE + j] = params[i].flt_tmp_tbl[j];
-	}
+    h_pos_tbl[i] = params[i].pos;
+    h_sh1_tbl[i] = params[i].sh1;
+    h_sh2_tbl[i] = params[i].sh2;
+    for (int j = 0; j < TBL_SIZE; j++) {
+        h_param_tbl[i * TBL_SIZE + j] = params[i].tbl[j];
+        h_temper_tbl[i * TBL_SIZE + j] = params[i].tmp_tbl[j];
+        h_single_temper_tbl[i * TBL_SIZE + j] = params[i].flt_tmp_tbl[j];
+    }
     }
     ccudaMemcpyToSymbol(pos_tbl, h_pos_tbl, size1);
     ccudaMemcpyToSymbol(sh1_tbl, h_sh1_tbl, size1);
@@ -387,8 +388,8 @@ void make_constant(const mtgp32_params_fast_t params[],
  * @param[in] num_data number of data to be generated.
  */
 void make_uint32_random(mtgp32_kernel_status_t* d_status,
-			int num_data,
-			int block_num) {
+            int num_data,
+            int block_num) {
     uint32_t* d_data;
     uint32_t* h_data;
     cudaError_t e;
@@ -404,31 +405,31 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
 
     h_data = (uint32_t *) malloc(sizeof(uint32_t) * num_data);
     if (h_data == NULL) {
-	printf("failure in allocating host memory for output data.\n");
-	exit(1);
+    printf("failure in allocating host memory for output data.\n");
+    exit(1);
     }
     /* cutStartTimer(timer); */
     ccudaEventRecord(start, 0);
     if (cudaGetLastError() != cudaSuccess) {
-	printf("error has been occured before kernel call.\n");
-	exit(1);
+    printf("error has been occured before kernel call.\n");
+    exit(1);
     }
 
     /* kernel call */
     mtgp32_uint32_kernel<<< block_num, THREAD_NUM>>>(
-	d_status, d_data, num_data / block_num);
+    d_status, d_data, num_data / block_num);
     cudaThreadSynchronize();
 
     e = cudaGetLastError();
     if (e != cudaSuccess) {
-	printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
-	exit(1);
+    printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
+    exit(1);
     }
     /* ccutStopTimer(timer); */
     ccudaEventRecord(end, 0);
     ccudaEventSynchronize(end);
     ccudaMemcpy(h_data, d_data,
-		sizeof(uint32_t) * num_data, cudaMemcpyDeviceToHost);
+        sizeof(uint32_t) * num_data, cudaMemcpyDeviceToHost);
     /* gputime = cutGetTimerValue(timer); */
     ccudaEventElapsedTime(&gputime, start, end);
     print_uint32_array(h_data, num_data, block_num);
@@ -452,8 +453,8 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
  * @param[in] num_data number of data to be generated.
  */
 void make_single_random(mtgp32_kernel_status_t* d_status,
-			int num_data,
-			int block_num) {
+            int num_data,
+            int block_num) {
     uint32_t* d_data;
     float* h_data;
     cudaError_t e;
@@ -468,31 +469,31 @@ void make_single_random(mtgp32_kernel_status_t* d_status,
     ccudaEventCreate(&end);
     h_data = (float *) malloc(sizeof(float) * num_data);
     if (h_data == NULL) {
-	printf("failure in allocating host memory for output data.\n");
-	exit(1);
+    printf("failure in allocating host memory for output data.\n");
+    exit(1);
     }
     /* ccutStartTimer(timer); */
     ccudaEventRecord(start, 0);
     if (cudaGetLastError() != cudaSuccess) {
-	printf("error has been occured before kernel call.\n");
-	exit(1);
+    printf("error has been occured before kernel call.\n");
+    exit(1);
     }
 
     /* kernel call */
     mtgp32_single_kernel<<< block_num, THREAD_NUM >>>(
-	d_status, d_data, num_data / block_num);
+    d_status, d_data, num_data / block_num);
     cudaThreadSynchronize();
 
     e = cudaGetLastError();
     if (e != cudaSuccess) {
-	printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
-	exit(1);
+    printf("failure in kernel call.\n%s\n", cudaGetErrorString(e));
+    exit(1);
     }
     /* ccutStopTimer(timer); */
     ccudaEventRecord(end, 0);
     ccudaEventSynchronize(end);
     ccudaMemcpy(h_data, d_data, sizeof(uint32_t) * num_data,
-		cudaMemcpyDeviceToHost);
+        cudaMemcpyDeviceToHost);
     /* gputime = cutGetTimerValue(timer); */
     ccudaEventElapsedTime(&gputime, start, end);
     print_float_array(h_data, num_data, block_num);
@@ -572,3 +573,37 @@ int main(int argc, char** argv)
     ccudaFree(d_status);
 }
 */
+
+void mtgp32_initialize(struct mtgp32_status *status) {
+    // LARGE_SIZE is a multiple of 16
+    status->num_data = 10000000;
+
+    if (status->block_num < 1 || status->block_num > BLOCK_NUM_MAX) {
+        fprintf(stderr, "[ERROR] Block_num should be between 1 and %d\n", BLOCK_NUM_MAX);
+        exit(EXIT_FAILURE);
+    }
+
+    status->num_unit = LARGE_SIZE * status->block_num;
+    ccudaMalloc((void**)&(status->d_status), sizeof(mtgp32_kernel_status_t) * status->block_num);
+    
+    int r;
+    r = status->num_data % status->num_unit;
+    if (r != 0) {
+        status->num_data = status->num_data + status->num_unit - r;
+    }
+    
+    make_constant(MTGPDC_PARAM_TABLE, status->block_num);
+    make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num);
+}
+
+void mtgp32_free(struct mtgp32_status *status) {
+    ccudaFree(status->d_status);
+}
+
+void mtgp32_generate_float(struct mtgp32_status *status) {
+    make_single_random(status->d_status, status->num_data, status->block_num);
+}
+
+void mtgp32_generate_uint32(struct mtgp32_status *status) {
+    make_uint32_random(status->d_status, status->num_data, status->block_num);
+}
