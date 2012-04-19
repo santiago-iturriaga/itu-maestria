@@ -381,46 +381,36 @@ void make_constant(const mtgp32_params_fast_t params[],
     free(h_mask);
 }
 
-/**
- * host function.
- * This function calls corresponding kernel function.
- *
- * @param[in] d_status kernel I/O data.
- * @param[in] num_data number of data to be generated.
- */
-void make_uint32_random(mtgp32_kernel_status_t* d_status,
-            int num_data,
-            int block_num) {
-    uint32_t* d_data;
+void mtgp32_print_generated_uint32(struct mtgp32_status *status) {
     uint32_t* h_data;
-    cudaError_t e;
-    float gputime;
-    cudaEvent_t start;
-    cudaEvent_t end;
 
-    #if defined(DEBUG)
-        fprintf(stdout, "[DEBUG] Generating 32-bit unsigned random numbers.\n");
-    #endif
-    ccudaMalloc((void**)&d_data, sizeof(uint32_t) * num_data);
-    /* cutCreateTimer(&timer); */
-    ccudaEventCreate(&start);
-    ccudaEventCreate(&end);
-
-    h_data = (uint32_t *) malloc(sizeof(uint32_t) * num_data);
+    h_data = (uint32_t *) malloc(sizeof(uint32_t) * status->num_data);
     if (h_data == NULL) {
         fprintf(stderr, "[ERROR] Failure in allocating host memory for output data.\n");
         exit(EXIT_FAILURE);
     }
-    /* cutStartTimer(timer); */
-    ccudaEventRecord(start, 0);
-    if (cudaGetLastError() != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Error has been occured before kernel call.\n");
-        exit(EXIT_FAILURE);
-    }
 
+    ccudaMemcpy(h_data, status->d_data, sizeof(uint32_t) * status->num_data, cudaMemcpyDeviceToHost);
+      
+    for (int i = 0; i < status->num_data; i++) {
+        fprintf(stdout, "%d\n", h_data[i]);
+    }
+    fprintf(stdout, "[DEBUG] Generated numbers: %d\n", status->num_data);
+        
+    //free memories
+    free(h_data);
+}
+
+void mtgp32_generate_uint32(struct mtgp32_status *status) {
+    cudaError_t e;
+
+    #if defined(DEBUG)
+    fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
+    #endif
+        
     /* kernel call */
-    mtgp32_uint32_kernel<<< block_num, THREAD_NUM>>>(
-    d_status, d_data, num_data / block_num);
+    mtgp32_uint32_kernel<<< status->block_num, THREAD_NUM >>>(
+        status->d_status, status->d_data, status->num_data / status->block_num);
     cudaThreadSynchronize();
 
     e = cudaGetLastError();
@@ -428,28 +418,6 @@ void make_uint32_random(mtgp32_kernel_status_t* d_status,
         fprintf(stderr, "[ERROR] Failure in kernel call.\n%s\n", cudaGetErrorString(e));
         exit(EXIT_FAILURE);
     }
-    /* ccutStopTimer(timer); */
-    ccudaEventRecord(end, 0);
-    ccudaEventSynchronize(end);
-    ccudaMemcpy(h_data, d_data,
-        sizeof(uint32_t) * num_data, cudaMemcpyDeviceToHost);
-    /* gputime = cutGetTimerValue(timer); */
-    ccudaEventElapsedTime(&gputime, start, end);
-    print_uint32_array(h_data, num_data, block_num);
-    
-    #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] Generated numbers: %d\n", num_data);
-    fprintf(stdout, "[DEBUG] Processing time: %f (ms)\n", gputime);
-    fprintf(stdout, "[DEBUG] Samples per second: %E \n", num_data / (gputime * 0.001));
-    #endif
-
-    /* ccutDeleteTimer(timer); */
-    ccudaEventDestroy(start);
-    ccudaEventDestroy(end);
-    
-    //free memories
-    free(h_data);
-    ccudaFree(d_data);
 }
 
 void mtgp32_print_generated_floats(struct mtgp32_status *status) {
@@ -462,9 +430,7 @@ void mtgp32_print_generated_floats(struct mtgp32_status *status) {
     }
 
     ccudaMemcpy(h_data, status->d_data, sizeof(uint32_t) * status->num_data, cudaMemcpyDeviceToHost);
-   
-    //print_float_array(h_data, status->num_data, status->block_num);
-    
+      
     for (int i = 0; i < status->num_data; i++) {
         fprintf(stdout, "%f\n", h_data[i]);
     }
@@ -541,11 +507,4 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
 void mtgp32_free(struct mtgp32_status *status) {
     ccudaFree(status->d_status);
     ccudaFree(status->d_data);
-}
-
-void mtgp32_generate_uint32(struct mtgp32_status *status) {
-    make_uint32_random(status->d_status, status->num_data, status->block_num);
-}
-
-void mtgp32_print_generated_uint32(struct mtgp32_status *status) {
 }
