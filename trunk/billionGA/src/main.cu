@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 
     // === Inicialización del Mersenne Twister.
     mtgp32_status mt_status;    
-    mtgp32_initialize(&mt_status, 1);
+    mtgp32_initialize(&mt_status, 10000000);
         
     mtgp32_generate_float(&mt_status);
     mtgp32_print_generated_floats(&mt_status);
