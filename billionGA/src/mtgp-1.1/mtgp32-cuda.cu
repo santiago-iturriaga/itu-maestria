@@ -461,8 +461,7 @@ void mtgp32_generate_float(struct mtgp32_status *status) {
 
 // Se generan (768 * block_num) números aleatorios por cada vez.
 void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
-    // LARGE_SIZE is a multiple of 16
-    status->num_data = 10000000;
+    status->num_data = numbers_per_gen;
 
     int mb, mp;
     status->block_num = get_suitable_block_num(0,
@@ -472,14 +471,7 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
         fprintf(stderr, "[ERROR] Can't calculate sutable number of blocks.\n");
         exit(EXIT_FAILURE);
     }
-    
-    int block_num_mult = (int)ceil(((float)numbers_per_gen / (float)LARGE_SIZE) / (float)status->block_num);
-    status->block_num = status->block_num * block_num_mult;
-    
-    #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] block_num: %d (%d per generation)\n", status->block_num, status->block_num * LARGE_SIZE);
-    #endif
-
+       
     if (status->block_num < 1 || status->block_num > BLOCK_NUM_MAX) {
         fprintf(stderr, "[ERROR] Block_num should be between 1 and %d\n", BLOCK_NUM_MAX);
         exit(EXIT_FAILURE);
@@ -493,6 +485,10 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     if (r != 0) {
         status->num_data = status->num_data + status->num_unit - r;
     }
+    
+    #if defined(DEBUG)
+    fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d\n", status->block_num, status->num_unit, status->num_data);
+    #endif
     
     #if defined(DEBUG)
     fprintf(stdout, "[DEBUG] num_data: %d\n", status->num_data);
