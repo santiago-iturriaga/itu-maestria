@@ -34,6 +34,9 @@ int main(int argc, char **argv) {
         
     mtgp32_generate_float(&mt_status);
     mtgp32_print_generated_floats(&mt_status);
+
+    mtgp32_generate_uint32(&mt_status);
+    mtgp32_print_generated_uint32(&mt_status);
         
     // === Inicialización del cGA
     struct bga_state problem_state;   
