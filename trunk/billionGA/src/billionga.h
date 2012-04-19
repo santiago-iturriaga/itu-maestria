@@ -16,6 +16,8 @@ struct bga_state {
 // Paso 1 del algortimo.
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples);
 
+void bga_show_prob_vector_state(struct bga_state *state);
+
 // Paso 2 del algoritmo.
 void bga_model_sampling_mt(struct bga_state *state);
 
