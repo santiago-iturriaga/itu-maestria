@@ -8,19 +8,22 @@
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
+#define TEST_PROBLEM_SIZE 899999744
+// Debe ser divisible entre 512, 128, y 8.
+
 inline int termination_criteria_met(struct bga_state *problem_state) {
     // ...
     return true;
 }
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
+    /*if (argc != 2) {
         fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size>\n(where 1 <= problem size <= %ld and problem_size can be divided by 8)\n\n", argv[0], LONG_MAX);
         return EXIT_FAILURE;
-    }
+    }*/
     
     long problem_size;
-    problem_size = atol(argv[1]);
+    problem_size = TEST_PROBLEM_SIZE; //atol(argv[1]);
     
     #ifdef INFO
     fprintf(stdout, "[INFO] Problem size: %ld\n", problem_size);
