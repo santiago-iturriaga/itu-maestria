@@ -290,8 +290,6 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 }
 
 void bga_show_prob_vector_state(struct bga_state *state) {
-    double accumulated_probability = 0.0;
-
     #if defined(DEBUG)
     float gputime;
     cudaEvent_t start;
@@ -349,30 +347,23 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             }
         }
         
-        #if defined(DEBUG)
-        fprintf(stdout, "[DEBUG] Prob. vector size: %d, partial sum size: %d\n", 
-            current_prob_vector_number_of_bits, max_partial_mem);
-        #endif
-        
         kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
             state->gpu_prob_vectors[prob_vector_number], partial_sum,
             current_prob_vector_number_of_bits);
     }
-       
+
+    double accumulated_probability = 0.0;
+
     float *cpu_partial_sum;
     cpu_partial_sum = (float*)malloc(sizeof(float) * max_partial_mem);
     
     ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * max_partial_mem, cudaMemcpyDeviceToHost);
     for (int i = 0; i < max_partial_mem; i++) {
         fprintf(stdout, "%f ", cpu_partial_sum[i]);
+        accumulated_probability += cpu_partial_sum[i];
     }
-    fprintf(stdout, "\n");
-    
-    kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
-        partial_sum, partial_sum, max_partial_mem);
-        
-    ccudaMemcpy(&accumulated_probability, partial_sum, sizeof(float), cudaMemcpyDeviceToHost);
-    fprintf(stdout, "\n[INFO] Prob. vector accumulated probability: %.4f\n", accumulated_probability);
+       
+    fprintf(stdout, "\n[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);
     
     #if defined(DEBUG)
     ccudaEventRecord(end, 0);
