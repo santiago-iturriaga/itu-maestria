@@ -39,26 +39,6 @@ __global__ void kern_vector_set(float *gpu_prob_vector, int max_size, float valu
     }
 }
 
-/*__global__ void kern_sum_prob_vector(float *gpu_partial_sum, float *gpu_prob_vectors, 
-    int max_size, int starting_position) {
-    
-    __shared__ float local_memory[SUM_PROB_VECTOR_SHARED_MEM];
-    
-    int current_position = starting_position + (blockIdx.x * blockDim.x + threadIdx.x);
-    local_memory[threadIdx.x] = gpu_prob_vectors[current_position];
-    local_memory[threadIdx.x] += gpu_prob_vectors[current_position + blockDim.x];
-    
-    unsigned int t = threadIdx.x;
-    for (unsigned int stride = blockDim.x; stride > 1; stride >> 1)
-    {
-        __syncthreads();
-        if (t < stride) gpu_partial_sum[t] += gpu_partial_sum[t+stride];
-    }
-    
-    __syncthreads();
-    if (t == 0) gpu_prob_vectors[starting_position] = gpu_partial_sum[0];
-}*/
-
 __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned int max_size)
 {
     __shared__ float sdata[SUM_PROB_VECTOR_SHARED_MEM];
@@ -69,20 +49,11 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
     unsigned int loops_count = max_size / adds_per_loop;
     if (max_size % adds_per_loop > 0) loops_count++;
 
-    /*#if defined(DEBUG)
-    if (tid == 0) {
-        printf("[GPU DEBUG] gridDim.x    : %d\n", gridDim.x);
-        printf("[GPU DEBUG] blockDim.x   : %d\n", blockDim.x);
-        printf("[GPU DEBUG] adds_per_loop: %d\n", adds_per_loop);
-        printf("[GPU DEBUG] loop_count   : %d\n", loops_count);
-    }
-    #endif*/
-
     unsigned int starting_position;
     
-    for (unsigned int loop = 0; loop < loops_count; loop++) {
+    //for (unsigned int loop = 0; loop < loops_count; loop++) {
         // Perform first level of reduction, reading from global memory, writing to shared memory
-        starting_position = adds_per_loop * loop;
+        starting_position = 0; //adds_per_loop * loop;
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
@@ -107,7 +78,7 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
         if (tid == 0) g_odata[blockIdx.x] += sdata[0];
     
         __syncthreads();
-    }
+    //}
 }
 
 // Paso 1 del algoritmo.
@@ -352,6 +323,7 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             state->gpu_prob_vectors[prob_vector_number], partial_sum,
             current_prob_vector_number_of_bits);
     }
+    fprintf(stdout, "\n");
 
     double accumulated_probability = 0.0;
 
@@ -364,7 +336,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
         accumulated_probability += cpu_partial_sum[i];
     }
        
-    fprintf(stdout, "\n[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);
+    fprintf(stdout, "\n");
+    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);
     
     #if defined(DEBUG)
     ccudaEventRecord(end, 0);
