@@ -79,9 +79,9 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
 
     unsigned int starting_position;
     
-    //for (unsigned int loop = 0; loop < loops_count; loop++) {
+    for (unsigned int loop = 0; loop < loops_count; loop++) {
         // Perform first level of reduction, reading from global memory, writing to shared memory
-        starting_position = 0; //adds_per_loop * loop;
+        starting_position = adds_per_loop * loop;
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
@@ -103,10 +103,10 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
         }
 
         // write result for this block to global mem 
-        if (tid == 0) g_odata[blockIdx.x] = sdata[0];
+        if (tid == 0) g_odata[blockIdx.x] += sdata[0];
     
         __syncthreads();
-    //}
+    }
 }
 
 // Paso 1 del algoritmo.
