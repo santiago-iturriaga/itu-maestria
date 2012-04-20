@@ -5,6 +5,7 @@
 
 #include "config.h"
 #include "cuda-util.h"
+#include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
 #define VECTOR_SET_BLOCKS       128
@@ -370,7 +371,7 @@ void bga_show_prob_vector_state(struct bga_state *state) {
 }
 
 // Paso 2 del algoritmo.
-void bga_model_sampling_mt(struct bga_state *state) {
+void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
     //mtgp32_generate_float(&mt_status);
     //mtgp32_print_generated_floats(&mt_status);
 

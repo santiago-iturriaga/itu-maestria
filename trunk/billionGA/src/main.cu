@@ -9,11 +9,10 @@
 #include "billionga.h"
 
 #define TEST_PROBLEM_SIZE 899999744
-// Debe ser divisible entre 512, 128, y 8.
+// Debe ser divisible entre 512, 128, y 8???
 
-inline int termination_criteria_met(struct bga_state *problem_state) {
-    // ...
-    return true;
+inline int termination_criteria_met(struct bga_state *problem_state, int iteration_count) {
+    return (iteration_count == 1);
 }
 
 int main(int argc, char **argv) {
@@ -43,8 +42,12 @@ int main(int argc, char **argv) {
     bga_show_prob_vector_state(&problem_state);
     #endif
     
-    while (!termination_criteria_met(&problem_state)) {
-        bga_model_sampling_mt(&problem_state);
+    int current_iteration = 0;
+    
+    while (!termination_criteria_met(&problem_state, current_iteration)) {
+        current_iteration++;
+        
+        bga_model_sampling_mt(&problem_state, &mt_status);
         bga_evaluation(&problem_state);
         bga_model_update(&problem_state);
     }
