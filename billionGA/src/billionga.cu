@@ -7,8 +7,7 @@
 #include "cuda-util.h"
 #include "billionga.h"
 
-#define INIT_PROB_VECTOR_VALUE      1
-//0.5
+#define INIT_PROB_VECTOR_VALUE      0.5
 #define INIT_PROB_VECTOR_BLOCKS     128
 #define INIT_PROB_VECTOR_THREADS    256
 
@@ -332,7 +331,7 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     
     ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * max_partial_mem, cudaMemcpyDeviceToHost);
     for (int i = 0; i < max_partial_mem; i++) {
-        fprintf(stdout, "%f ", cpu_partial_sum[i]);
+        //fprintf(stdout, "%f ", cpu_partial_sum[i]);
         accumulated_probability += cpu_partial_sum[i];
     }
        
