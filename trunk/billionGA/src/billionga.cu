@@ -70,9 +70,9 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
 
     unsigned int starting_position;
     
-    for (unsigned int loop = 0; loop < loops_count; loop++) {
+    //for (unsigned int loop = 0; loop < loops_count; loop++) {
         // Perform first level of reduction, reading from global memory, writing to shared memory
-        starting_position = adds_per_loop * loop;
+        starting_position = 0; //adds_per_loop * loop;
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
@@ -94,10 +94,10 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
         }
 
         // write result for this block to global mem 
-        if (tid == 0) g_odata[blockIdx.x] += sdata[0];
+        if (tid == 0) g_odata[blockIdx.x] = sdata[0];
     
         __syncthreads();
-    }
+    //}
 }
 
 // Paso 1 del algoritmo.
@@ -295,12 +295,12 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     #endif
 
     fprintf(stdout, "[INFO] === Probability vector status =======================\n");
-    const int max_partial_mem = SUM_PROB_VECTOR_BLOCKS * SUM_PROB_VECTOR_THREADS;
+    const int max_partial_mem = SUM_PROB_VECTOR_BLOCKS;
        
     float *partial_sum;
     ccudaMalloc((void**)&(partial_sum), sizeof(float) * max_partial_mem);
 
-    kern_vector_set<<< INIT_PROB_VECTOR_BLOCKS, INIT_PROB_VECTOR_THREADS >>>(
+    kern_vector_set<<< 1, SUM_PROB_VECTOR_BLOCKS >>>(
         partial_sum, max_partial_mem, 0.0);
 
     fprintf(stdout, "[INFO] Prob. vector sample:");
@@ -345,8 +345,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             current_prob_vector_number_of_bits);
     }
     
-    kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
-        partial_sum, partial_sum, max_partial_mem);
+    //kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
+    //    partial_sum, partial_sum, max_partial_mem);
     
     ccudaMemcpy(&accumulated_probability, partial_sum, sizeof(float), cudaMemcpyDeviceToHost);
     
