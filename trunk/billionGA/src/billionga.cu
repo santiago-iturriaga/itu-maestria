@@ -7,49 +7,73 @@
 #include "cuda-util.h"
 #include "billionga.h"
 
-#define INIT_PROB_VECTOR_VALUE      0.5
-#define INIT_PROB_VECTOR_BLOCKS     128
-#define INIT_PROB_VECTOR_THREADS    256
+#define VECTOR_SET_BLOCKS       128
+#define VECTOR_SET_THREADS      256
 
+#define VECTOR_SUM_BLOCKS       128
+#define VECTOR_SUM_THREADS      512
+#define VECTOR_SUM_SHARED_MEM   512
+
+#define INIT_PROB_VECTOR_VALUE              0.5
 #define SHOW_PROB_VECTOR_STARTING_BITS      10
 #define SHOW_PROB_VECTOR_ENDING_BITS        10
-
-#define SUM_PROB_VECTOR_BLOCKS      128
-#define SUM_PROB_VECTOR_THREADS     512
-#define SUM_PROB_VECTOR_SHARED_MEM  512
 
 /*
  * Establece el valor de todos los elementos de un vector a "value".
  */
-__global__ void kern_vector_set(float *gpu_prob_vector, int max_size, float value) {
+__global__ void kern_vector_set(float *gpu_vector, int size, float value) {
     int bits_per_loop = gridDim.x * blockDim.x;
     
-    int loop_count = max_size / bits_per_loop;
-    if (max_size % bits_per_loop > 0) loop_count++;
+    int loop_count = size / bits_per_loop;
+    if (size % bits_per_loop > 0) loop_count++;
         
     for (int i = 0; i < loop_count; i++) {
         int current_position = (i * bits_per_loop) + (blockIdx.x * blockDim.x + threadIdx.x);
         
-        if (current_position < max_size) {
-            gpu_prob_vector[current_position] = value;
+        if (current_position < size) {
+            gpu_vector[current_position] = value;
         }
         
         __syncthreads();
     }
 }
 
+void vector_sum_init(float **partial_sum) {      
+    ccudaMalloc((void**)partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS);
+
+    kern_vector_set<<< 1, VECTOR_SUM_BLOCKS >>>(
+        *partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+}
+
+float vector_sum_free(float *partial_sum) {
+    float accumulated_probability = 0.0;
+    
+    float *cpu_partial_sum;
+    cpu_partial_sum = (float*)malloc(sizeof(float) * VECTOR_SUM_BLOCKS);
+    
+    ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        //fprintf(stdout, "%f ", cpu_partial_sum[i]);
+        accumulated_probability += cpu_partial_sum[i];
+    }
+
+    ccudaFree(partial_sum);
+    return accumulated_probability;
+}
+
 /*
  * Reduce un array sumando cada uno de sus elementos.
+ * gpu_output_data debe tener un elemento por bloque del kernel.
  */
-__global__ void kern_vector_sum(float *g_idata, float *g_odata, unsigned int max_size)
+__global__ void kern_vector_sum(float *gpu_input_data, float *gpu_output_data, unsigned int size)
 {
-    __shared__ float sdata[SUM_PROB_VECTOR_SHARED_MEM];
+    __shared__ float sdata[VECTOR_SUM_SHARED_MEM];
 
     unsigned int tid = threadIdx.x;
     
     unsigned int adds_per_loop = gridDim.x * blockDim.x * 2;
-    unsigned int loops_count = max_size / adds_per_loop;
-    if (max_size % adds_per_loop > 0) loops_count++;
+    unsigned int loops_count = size / adds_per_loop;
+    if (size % adds_per_loop > 0) loops_count++;
 
     unsigned int starting_position;
     
@@ -59,9 +83,16 @@ __global__ void kern_vector_sum(float *g_idata, float *g_odata, unsigned int max
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
-        float mySum = (i < max_size) ? g_idata[i] : 0;
-        if (i + blockDim.x < max_size) 
-            mySum += g_idata[i + blockDim.x];  
+        float mySum;
+        if (i < size) {
+            mySum = gpu_input_data[i];
+            
+            if (i + blockDim.x < size) {
+                mySum += gpu_input_data[i + blockDim.x];  
+            }
+        } else {
+            mySum = 0;
+        }
 
         sdata[tid] = mySum;
         __syncthreads();
@@ -77,7 +108,7 @@ __global__ void kern_vector_sum(float *g_idata, float *g_odata, unsigned int max
         }
 
         // write result for this block to global mem 
-        if (tid == 0) g_odata[blockIdx.x] += sdata[0];
+        if (tid == 0) gpu_output_data[blockIdx.x] += sdata[0];
     
         __syncthreads();
     }
@@ -138,7 +169,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         }
 
         #ifdef INFO
-        fprintf(stdout, "[INFO] > Requesting %d bits GPU memory for prob_vector %d\n", current_prob_vector_number_of_bits, prob_vector_number);
+        fprintf(stdout, "[INFO] > Requesting %d bits GPU memory for prob_vector %d\n", 
+            current_prob_vector_number_of_bits, prob_vector_number);
         #endif
 
         size_t prob_vector_size = sizeof(float) * current_prob_vector_number_of_bits;
@@ -247,7 +279,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             prob_vector_number, current_prob_vector_number_of_bits);
         #endif
 
-        kern_vector_set<<< INIT_PROB_VECTOR_BLOCKS, INIT_PROB_VECTOR_THREADS >>>(
+        kern_vector_set<<< VECTOR_SET_BLOCKS, VECTOR_SET_THREADS >>>(
             state->gpu_prob_vectors[prob_vector_number], 
             current_prob_vector_number_of_bits, INIT_PROB_VECTOR_VALUE);
     }
@@ -276,13 +308,9 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     #endif
 
     fprintf(stdout, "[INFO] === Probability vector status =======================\n");
-    const int max_partial_mem = SUM_PROB_VECTOR_BLOCKS;
-       
-    float *partial_sum;
-    ccudaMalloc((void**)&(partial_sum), sizeof(float) * max_partial_mem);
 
-    kern_vector_set<<< 1, SUM_PROB_VECTOR_BLOCKS >>>(
-        partial_sum, max_partial_mem, 0.0);
+    float *partial_sum;
+    vector_sum_init(&partial_sum);
 
     fprintf(stdout, "[INFO] Prob. vector sample:");
     
@@ -321,24 +349,14 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             }
         }
         
-        kern_vector_sum<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
+        kern_vector_sum<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>( 
             state->gpu_prob_vectors[prob_vector_number], partial_sum,
             current_prob_vector_number_of_bits);
     }
     fprintf(stdout, "\n");
 
     double accumulated_probability = 0.0;
-
-    float *cpu_partial_sum;
-    cpu_partial_sum = (float*)malloc(sizeof(float) * max_partial_mem);
-    
-    ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * max_partial_mem, cudaMemcpyDeviceToHost);
-    for (int i = 0; i < max_partial_mem; i++) {
-        //fprintf(stdout, "%f ", cpu_partial_sum[i]);
-        accumulated_probability += cpu_partial_sum[i];
-    }
-       
-    fprintf(stdout, "\n");
+    accumulated_probability = vector_sum_free(partial_sum);
     fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);
     
     #if defined(DEBUG)
