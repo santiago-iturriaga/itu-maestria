@@ -19,7 +19,7 @@
 #define SUM_PROB_VECTOR_SHARED_MEM  512
 
 /*
- * Establece el valor de todos los elementos de un vector a "value"
+ * Establece el valor de todos los elementos de un vector a "value".
  */
 __global__ void kern_vector_set(float *gpu_prob_vector, int max_size, float value) {
     int bits_per_loop = gridDim.x * blockDim.x;
@@ -38,7 +38,10 @@ __global__ void kern_vector_set(float *gpu_prob_vector, int max_size, float valu
     }
 }
 
-__global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned int max_size)
+/*
+ * Reduce un array sumando cada uno de sus elementos.
+ */
+__global__ void kern_vector_sum(float *g_idata, float *g_odata, unsigned int max_size)
 {
     __shared__ float sdata[SUM_PROB_VECTOR_SHARED_MEM];
 
@@ -318,7 +321,7 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             }
         }
         
-        kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
+        kern_vector_sum<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
             state->gpu_prob_vectors[prob_vector_number], partial_sum,
             current_prob_vector_number_of_bits);
     }
