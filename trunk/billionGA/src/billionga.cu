@@ -68,6 +68,15 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
     unsigned int loops_count = max_size / adds_per_loop;
     if (max_size % adds_per_loop > 0) loops_count++;
 
+    /*#if defined(DEBUG)
+    if (tid == 0) {
+        printf("[GPU DEBUG] gridDim.x    : %d\n", gridDim.x);
+        printf("[GPU DEBUG] blockDim.x   : %d\n", blockDim.x);
+        printf("[GPU DEBUG] adds_per_loop: %d\n", adds_per_loop);
+        printf("[GPU DEBUG] loop_count   : %d\n", loops_count);
+    }
+    #endif*/
+
     unsigned int starting_position;
     
     //for (unsigned int loop = 0; loop < loops_count; loop++) {
@@ -339,17 +348,30 @@ void bga_show_prob_vector_state(struct bga_state *state) {
                 fprintf(stdout, " %.4f", probs_to_show[i]);
             }
         }
-                   
+        
+        #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Prob. vector size: %d, partial sum size: %d\n", 
+            current_prob_vector_number_of_bits, max_partial_mem);
+        #endif
+        
         kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
             state->gpu_prob_vectors[prob_vector_number], partial_sum,
             current_prob_vector_number_of_bits);
     }
+       
+    float *cpu_partial_sum;
+    cpu_partial_sum = (float*)malloc(sizeof(float) * max_partial_mem);
     
-    //kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
-    //    partial_sum, partial_sum, max_partial_mem);
+    ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * max_partial_mem, cudaMemcpyDeviceToHost);
+    for (int i = 0; i < max_partial_mem; i++) {
+        fprintf(stdout, "%f ", cpu_partial_sum[i]);
+    }
+    fprintf(stdout, "\n");
     
+    kern_sum_prob_vector<<< SUM_PROB_VECTOR_BLOCKS, SUM_PROB_VECTOR_THREADS >>>( 
+        partial_sum, partial_sum, max_partial_mem);
+        
     ccudaMemcpy(&accumulated_probability, partial_sum, sizeof(float), cudaMemcpyDeviceToHost);
-    
     fprintf(stdout, "\n[INFO] Prob. vector accumulated probability: %.4f\n", accumulated_probability);
     
     #if defined(DEBUG)
