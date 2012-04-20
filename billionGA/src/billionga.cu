@@ -7,7 +7,8 @@
 #include "cuda-util.h"
 #include "billionga.h"
 
-#define INIT_PROB_VECTOR_VALUE      0.5
+#define INIT_PROB_VECTOR_VALUE      1
+//0.5
 #define INIT_PROB_VECTOR_BLOCKS     128
 #define INIT_PROB_VECTOR_THREADS    256
 
