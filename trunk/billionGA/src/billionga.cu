@@ -32,7 +32,7 @@ __global__ void kern_vector_set(float *gpu_prob_vector, int max_size, float valu
         int current_position = (i * bits_per_loop) + (blockIdx.x * blockDim.x + threadIdx.x);
         
         if (current_position < max_size) {
-            gpu_prob_vector[current_position] = INIT_PROB_VECTOR_VALUE;
+            gpu_prob_vector[current_position] = value;
         }
         
         __syncthreads();
@@ -51,9 +51,9 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
 
     unsigned int starting_position;
     
-    //for (unsigned int loop = 0; loop < loops_count; loop++) {
+    for (unsigned int loop = 0; loop < loops_count; loop++) {
         // Perform first level of reduction, reading from global memory, writing to shared memory
-        starting_position = 0; //adds_per_loop * loop;
+        starting_position = adds_per_loop * loop;
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
@@ -78,7 +78,7 @@ __global__ void kern_sum_prob_vector(float *g_idata, float *g_odata, unsigned in
         if (tid == 0) g_odata[blockIdx.x] += sdata[0];
     
         __syncthreads();
-    //}
+    }
 }
 
 // Paso 1 del algoritmo.
