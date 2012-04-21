@@ -9,7 +9,7 @@
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
-#define SHOW_PROB_VECTOR_BITS   10
+#define SHOW_PROB_VECTOR_BITS   32
 #define SHOW_SAMPLE_BITS        32
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
@@ -263,7 +263,7 @@ void bga_compute_sample_fitness(struct bga_state *state) {
         vector_sum_bit_init(&partial_sum);
         
         #if defined(DEBUG)
-        fprintf(stdout, "[INFO] Computing sample vector %d fitness:", sample_number);
+        fprintf(stdout, "[INFO] Computing sample vector %d fitness: ", sample_number);
         #endif
         
         for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
@@ -279,8 +279,7 @@ void bga_compute_sample_fitness(struct bga_state *state) {
         state->samples_fitness[sample_number] = vector_sum_bit_free(partial_sum);       
         
         #if defined(DEBUG)
-        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %d\n", 
-            state->samples_fitness[sample_number]);
+        fprintf(stdout, "%d\n", state->samples_fitness[sample_number]);
         #endif
     }
     
