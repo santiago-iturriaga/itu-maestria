@@ -384,14 +384,14 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         prob_vector_position = prob_vector_starting_pos + sample_position;
         
         if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
-            if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
+            if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[sample_position]) {
                 // 1
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
                 //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
             } else {
                 // 0
                 //atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
-                //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
+                atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
                 
                 //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             }            
