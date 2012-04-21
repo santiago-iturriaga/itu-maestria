@@ -390,8 +390,9 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
             } else {
                 // 0
-                atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
-                //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
+                atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
+                //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
+                
                 //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             }            
         }
