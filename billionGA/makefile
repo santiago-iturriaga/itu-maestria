@@ -5,7 +5,7 @@
 VERB = -Xptxas=-v 
 #--ptxas-options=-v
 
-MTGP32_INC = src/mtgp-1.1/mtgp32-fast.h src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.h src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu src/mtgp-1.1/mtgp32-cuda.h src/mtgp-1.1/mtgp32dc-param-11213.c src/cuda-util.h
+MTGP32_INC = src/mtgp-1.1/mtgp32-fast.h src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.h src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu src/mtgp-1.1/mtgp32-cuda.h src/mtgp-1.1/mtgp32dc-param-11213.c src/cuda-util.h src/util.h
 MTGP32_SRC = src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu src/mtgp-1.1/mtgp32dc-param-11213.c
 CUDALINK = -lcuda
 
