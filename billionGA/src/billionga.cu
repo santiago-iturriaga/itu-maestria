@@ -18,6 +18,10 @@
 #define SHOW_PROB_VECTOR_STARTING_BITS      10
 #define SHOW_PROB_VECTOR_ENDING_BITS        10
 
+#define SAMPLE_PROB_VECTOR_BLOCKS    128
+#define SAMPLE_PROB_VECTOR_THREADS   256
+#define SAMPLE_PROB_VECTOR_SHMEM     SAMPLE_PROB_VECTOR_THREADS / 8
+
 /*
  * Establece el valor de todos los elementos de un vector a "value".
  */
@@ -186,8 +190,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     fprintf(stdout, "[INFO] Requesting a size %d samples CPU memory\n", state->number_of_samples);
     #endif
     
-    size_t samples_array_size = sizeof(float*) * state->number_of_samples;
-    state->gpu_samples = (float***)malloc(samples_array_size);
+    size_t samples_array_size = sizeof(char*) * state->number_of_samples;
+    state->gpu_samples = (char***)malloc(samples_array_size);
     if (!state->gpu_samples) {
         fprintf(stderr, "[ERROR] Requesting samples_fitness CPU memory\n");
         exit(EXIT_FAILURE);
@@ -198,8 +202,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stdout, "[INFO] > Requesting CPU memory for sample %d vectors array\n", sample_number);
         #endif
 
-        size_t samples_vector_array_size = sizeof(float*) * state->number_of_prob_vectors;
-        state->gpu_samples[sample_number] = (float**)malloc(samples_vector_array_size);
+        size_t samples_vector_array_size = sizeof(char*) * state->number_of_prob_vectors;
+        state->gpu_samples[sample_number] = (char**)malloc(samples_vector_array_size);
         if (!state->gpu_samples) {
             fprintf(stderr, "[ERROR] > Requesting CPU memory for sample_vector_array[%d]\n", sample_number);
             exit(EXIT_FAILURE);
@@ -370,13 +374,72 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     #endif
 }
 
-// Paso 2 del algoritmo.
-void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
-    //mtgp32_generate_float(&mt_status);
-    //mtgp32_print_generated_floats(&mt_status);
+__global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_size, 
+    int prob_vector_starting_pos, float *prng_vector, int prng_vector_size, char *gpu_sample) {
+        
+    const int tid = threadIdx.x;
+    const int bid = blockIdx.x;
+    const int samples_per_loop = gridDim.x * blockDim.x;
+    
+    __shared__ char current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
+    const int bytes_samples_per_loop = gridDim.x * SAMPLE_PROB_VECTOR_SHMEM;
+    
+    int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
+    if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
+    
+    int loops_count = max_samples_doable / samples_per_loop;
+    if (max_samples_doable % samples_per_loop > 0) loops_count++;
 
-    //mtgp32_generate_uint32(&mt_status);
-    //mtgp32_print_generated_uint32(&mt_status);
+    int prob_vector_position;
+    int sample_position;
+    
+    const int block = tid >> 3;
+    const int offset = tid & ((1 << 3)-1);
+    
+    for (int loop = 0; loop < loops_count; loop++) {
+        // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
+        sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
+        prob_vector_position = prob_vector_starting_pos + sample_position;
+        
+        if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
+            if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
+                // 1
+                current_block_sample[block] = current_block_sample[block] | (1 << offset);
+            } else {
+                // 0
+                current_block_sample[block] = current_block_sample[block] & ~(1 << offset);
+            }            
+        }
+
+        __syncthreads();
+        
+        // Una vez generados los bits, copio los bytes de shared memory a la global memory.
+        if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
+            gpu_sample[(bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid] = current_block_sample[tid];
+        }
+        
+        __syncthreads();
+    }
+}
+
+// Paso 2 del algoritmo.
+void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {   
+    for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        int current_prob_vector_number_of_bits = MAX_PROB_VECTOR_BITS;
+        if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+            current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+        }
+        
+        int total_loops;
+        total_loops = current_prob_vector_number_of_bits / RNUMBERS_PER_GEN;
+        if (current_prob_vector_number_of_bits % RNUMBERS_PER_GEN > 0) total_loops++;
+        
+        for (int loop = 0; loop < total_loops; loop++) {
+            mtgp32_generate_float(mt_status);
+            
+            // kern_sample_prob_vector
+        }
+    }
 }
 
 // Paso 3 del algoritmo.
