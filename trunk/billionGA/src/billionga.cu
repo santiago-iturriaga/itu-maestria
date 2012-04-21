@@ -309,7 +309,7 @@ void bga_show_samples(struct bga_state *state) {
     fprintf(stdout, "[INFO] === Sample vectors =====================================\n");
 
     // Calculo el fitness de los samples actuales.
-    bga_compute_sample_fitness(state);
+    //bga_compute_sample_fitness(state);
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         fprintf(stdout, "[INFO] Sample vector sample (%d):", sample_number);
@@ -332,14 +332,14 @@ void bga_show_samples(struct bga_state *state) {
                     sizeof(uint32_t) * bytes_to_show_count, cudaMemcpyDeviceToHost);
                 
                 for (int i = 0; i < bytes_to_show_count; i++) {
-                    fprintf(stdout, " %s", int_to_binary(bytes_to_show[i]));
+                    fprintf(stdout, " %s (%d) ", int_to_binary(bytes_to_show[i]), i);
                 }
                 
                 fprintf(stdout, "...\n");
             }
         }
 
-        fprintf(stdout, "[INFO] Sample %d fitness: %d\n", sample_number, state->samples_fitness[sample_number]);
+        fprintf(stdout, "[INFO] Sample %d fitness: %d\n", sample_number, 0); //state->samples_fitness[sample_number]);
     }
     
     #if defined(DEBUG)
@@ -416,7 +416,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         #if defined(DEBUG)
-        fprintf(stdout, "[INFO] > Sample %d\n", sample_number);
+        fprintf(stdout, "[INFO] > Sample %d ", sample_number);
         
         ccudaEventCreate(&start);
         ccudaEventCreate(&end);
