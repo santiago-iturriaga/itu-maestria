@@ -374,6 +374,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
     const int bytes_samples_per_loop = gridDim.x * SAMPLE_PROB_VECTOR_SHMEM;
+    
     const int tid_int = tid >> 5;
     const int tid_bit = tid & ((1 << 5)-1);
     
@@ -390,10 +391,12 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         //if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
             //if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
                 // 1
-                current_block_sample[tid_int]++; // = current_block_sample[tid_int] | (1 << tid_bit);
+                atomicOr(current_block_sample, (1 << tid_bit));
+                //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
             //} else {
                 // 0
-                current_block_sample[tid_int]++; // = current_block_sample[tid_int] | (1 << tid_bit);
+                atomicOr(current_block_sample, (1 << tid_bit));
+                //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
                 //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             //}            
         //}
