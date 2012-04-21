@@ -332,7 +332,7 @@ void bga_show_samples(struct bga_state *state) {
                     sizeof(uint32_t) * bytes_to_show_count, cudaMemcpyDeviceToHost);
                 
                 for (int i = 0; i < bytes_to_show_count; i++) {
-                    fprintf(stdout, " %s (%d) ", int_to_binary(bytes_to_show[i]), i);
+                    fprintf(stdout, " %s (%d) ", int_to_binary(bytes_to_show[i]), bytes_to_show[i]);
                 }
                 
                 fprintf(stdout, "...\n");
