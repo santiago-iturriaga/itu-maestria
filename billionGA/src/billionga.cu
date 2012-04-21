@@ -374,33 +374,42 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     const int tid_int = tid >> 5;
     const int tid_bit = tid & ((1 << 5)-1);
     
-    for (int loop = 0; loop < loops_count; loop++) {
+    //for (int loop = 0; loop < loops_count; loop++) {
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
-        sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
-        prob_vector_position = prob_vector_starting_pos + sample_position;
+        //sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
+        //prob_vector_position = prob_vector_starting_pos + sample_position;
         
-        if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
-            if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
+        if ((tid < 32)&&(bid == 0)) {
+        
+        //if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
+            //if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
                 // 1
                 current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
-            } else {
+            //} else {
                 // 0
                 current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
                 //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
-            }            
+            //}            
+        //}
+
         }
 
         __syncthreads();
         
+        if ((tid < 4)&&(bid == 0)) {
+        
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
         // Convierto los char a int.
-        int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
-        if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
-            gpu_sample[sample_idx] = current_block_sample[tid];
+        //int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
+        //if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
+            //gpu_sample[sample_idx] = current_block_sample[tid];
+            gpu_sample[tid] = current_block_sample[tid];
+        //}
+        
         }
         
         __syncthreads();
-    }
+    //}
 }
 
 // Paso 2 del algoritmo.
