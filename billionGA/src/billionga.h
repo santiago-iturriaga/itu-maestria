@@ -12,7 +12,7 @@ struct bga_state {
     long last_prob_vector_bit_count;
     
     int ***gpu_samples; // gpu_samples[SAMPLE][VECTOR][32 BIT]
-    int *gpu_samples_fitness; // gpu_samples_fitness[SAMPLE]
+    int *samples_fitness; // gpu_samples_fitness[SAMPLE]
 };
 
 // Paso 1 del algortimo.

@@ -134,8 +134,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     #endif
     
     size_t samples_fitness_size = sizeof(int*) * state->number_of_samples;
-    state->gpu_samples_fitness = (int*)malloc(samples_fitness_size);
-    if (!state->gpu_samples_fitness) {
+    state->samples_fitness = (int*)malloc(samples_fitness_size);
+    if (!state->samples_fitness) {
         fprintf(stderr, "[ERROR] > Requesting CPU memory for samples_fitness_size\n");
         exit(EXIT_FAILURE);
     }
@@ -276,11 +276,11 @@ void bga_compute_sample_fitness(struct bga_state *state) {
                 partial_sum, current_prob_vector_number_of_bits);
         }
 
-        int fitness = 0;
-        fitness = vector_sum_bit_free(partial_sum);
+        state->samples_fitness[sample_number] = vector_sum_bit_free(partial_sum);       
         
         #if defined(DEBUG)
-        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %d\n", fitness);
+        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %d\n", 
+            state->samples_fitness[sample_number]);
         #endif
     }
     
@@ -309,8 +309,8 @@ void bga_show_samples(struct bga_state *state) {
 
     fprintf(stdout, "[INFO] === Sample vectors =====================================\n");
 
-    /*float *partial_sum;
-    vector_sum_float_init(&partial_sum);*/
+    // Calculo el fitness de los samples actuales.
+    bga_compute_sample_fitness(state);
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         fprintf(stdout, "[INFO] Sample vector sample (%d):", sample_number);
@@ -338,15 +338,9 @@ void bga_show_samples(struct bga_state *state) {
                 
                 fprintf(stdout, "...\n");
             }
-            
-            /*kern_vector_sum<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>( 
-                state->gpu_prob_vectors[prob_vector_number], partial_sum,
-                current_prob_vector_number_of_bits);*/
         }
 
-        /*double accumulated_probability = 0.0;
-        accumulated_probability = vector_sum_free(partial_sum);
-        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);*/
+        fprintf(stdout, "[INFO] Sample %d fitness: %d\n", sample_number, state->samples_fitness[sample_number]);
     }
     
     #if defined(DEBUG)
@@ -509,5 +503,5 @@ void bga_free(struct bga_state *state) {
     }
     free(state->gpu_samples);
 
-    free(state->gpu_samples_fitness);   
+    free(state->samples_fitness);   
 }
