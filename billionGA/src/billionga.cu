@@ -72,8 +72,9 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 
         size_t prob_vector_size = sizeof(float) * current_prob_vector_number_of_bits;
         #ifdef INFO
-        fprintf(stdout, "[INFO] > Requesting %d bits GPU memory for prob_vector %d (size: %lu Mb)\n", 
-            current_prob_vector_number_of_bits, prob_vector_number, prob_vector_size >> 20);
+        fprintf(stdout, "[INFO] > Requesting %d bits GPU memory for prob_vector %d (size: %i / %lu Mb)\n", 
+            current_prob_vector_number_of_bits, prob_vector_number, current_prob_vector_number_of_bits, 
+            prob_vector_size >> 20);
         #endif        
         error = cudaMalloc((void**)&(state->gpu_prob_vectors[prob_vector_number]), prob_vector_size);
         
@@ -117,8 +118,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             assert(right_size == 0);
 
             #ifdef INFO
-            fprintf(stdout, "[INFO] > Requesting sample %d GPU memory for vector %d (size: %lu Mb)\n", 
-                sample_number, prob_vector_number, sample_vector_size >> 20);
+            fprintf(stdout, "[INFO] > Requesting sample %d GPU memory for vector %d (size: %i / %lu Mb)\n", 
+                sample_number, prob_vector_number, current_prob_vector_number_of_bits >> 5, sample_vector_size >> 20);
             #endif
 
             error = cudaMalloc((void**)&(state->gpu_samples[sample_number][prob_vector_number]), sample_vector_size);
@@ -129,11 +130,13 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         }
     }
     
+    size_t samples_fitness_size = sizeof(int*) * state->number_of_samples;
+    
     #ifdef INFO
-    fprintf(stdout, "[INFO] Requesting samples_fitness CPU memory\n");
+    fprintf(stdout, "[INFO] Requesting samples_fitness CPU memory (size: %i)\n",
+        state->number_of_samples);
     #endif
     
-    size_t samples_fitness_size = sizeof(int*) * state->number_of_samples;
     state->samples_fitness = (int*)malloc(samples_fitness_size);
     if (!state->samples_fitness) {
         fprintf(stderr, "[ERROR] > Requesting CPU memory for samples_fitness_size\n");
@@ -399,7 +402,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
 
         __syncthreads();
         
-        if ((tid < 4)&&(bid == 0)) {
+        if ((tid < 1)&&(bid == 0)) {
         
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
         // Convierto los char a int.
@@ -451,7 +454,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                 
                 // Genero RNUMBERS_PER_GEN números aleatorios.
                 mtgp32_generate_float(mt_status);
-                fprintf(stdout, ".");
+                fprintf(stdout, ".(%d b)", SAMPLE_PROB_VECTOR_SHMEM);
                 
                 // Sampleo el vector de prob. con los números aleatorios generados.               
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
