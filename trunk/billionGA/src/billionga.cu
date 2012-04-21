@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 #include <assert.h>
 #include <cuda.h>
 
@@ -385,10 +385,10 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
             if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
                 // 1
-                current_block_sample[block] = 1; //current_block_sample[block] | (1 << offset);
+                current_block_sample[block] = 255; //current_block_sample[block] | (1 << offset);
             } else {
                 // 0
-                current_block_sample[block] = 1; //current_block_sample[block] & ~(1 << offset);
+                current_block_sample[block] = 255; //current_block_sample[block] & ~(1 << offset);
             }            
         }
 

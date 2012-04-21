@@ -2,6 +2,7 @@
 
 #ARCH = -arch=compute_11
 #ARCH = -arch=compute_13
+ARCH = -arch=compute_20
 VERB = -Xptxas=-v 
 #--ptxas-options=-v
 
