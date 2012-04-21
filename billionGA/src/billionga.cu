@@ -217,8 +217,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             }
             size_t sample_vector_size = sizeof(int) * (current_prob_vector_number_of_bits >> 5);
             int right_size = current_prob_vector_number_of_bits & ((1<<5)-1);
-            fprintf(stdout, "current_prob_vector_number_of_bits = %d\ncurrent_prob_vector_number_of_bits >> 5 = %d\nright size = %d\n",
-                current_prob_vector_number_of_bits, current_prob_vector_number_of_bits >> 5, right_size);
+            /*fprintf(stdout, "current_prob_vector_number_of_bits = %d\ncurrent_prob_vector_number_of_bits >> 5 = %d\nright size = %d\n",
+                current_prob_vector_number_of_bits, current_prob_vector_number_of_bits >> 5, right_size);*/
             assert(right_size == 0);
 
             #ifdef INFO
@@ -519,6 +519,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                 
                 // Genero RNUMBERS_PER_GEN números aleatorios.
                 mtgp32_generate_float(mt_status);
+                fprintf(stdout, ".");
                 
                 // Sampleo el vector de prob. con los números aleatorios generados.               
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
@@ -527,6 +528,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                     state->gpu_samples[sample_number][prob_vector_number]);
             }
         }
+        fprintf(stdout, "\n");
 
         #if defined(DEBUG)
         ccudaEventRecord(end, 0);

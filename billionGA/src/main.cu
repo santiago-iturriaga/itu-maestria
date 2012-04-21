@@ -47,6 +47,10 @@ int main(int argc, char **argv) {
     while (!termination_criteria_met(&problem_state, current_iteration)) {
         current_iteration++;
         
+        #if defined(DEBUG)
+        fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+        #endif
+        
         bga_model_sampling_mt(&problem_state, &mt_status);
         bga_evaluation(&problem_state);
         bga_model_update(&problem_state);

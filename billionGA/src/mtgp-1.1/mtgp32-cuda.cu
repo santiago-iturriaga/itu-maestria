@@ -407,7 +407,7 @@ void mtgp32_generate_uint32(struct mtgp32_status *status) {
     cudaError_t e;
 
     #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
+    //fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
     #endif
         
     /* kernel call */
@@ -446,7 +446,7 @@ void mtgp32_generate_float(struct mtgp32_status *status) {
     cudaError_t e;
 
     #if defined(DEBUG)
-    fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
+    //fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
     #endif
         
     /* kernel call */
