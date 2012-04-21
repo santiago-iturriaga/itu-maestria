@@ -134,6 +134,20 @@ void vector_sum_float(float *gpu_input_data, float *gpu_output_data, unsigned in
 
 // ------------------------------------------------------------------
 
+__device__ int sum_bits_from_int(int data) {
+    unsigned int sum = 0;
+    unsigned int starting = 1 << ((sizeof(int) * 8)-1);
+    int shifts = 32;
+    
+    for (unsigned int z = starting; z > 0; z >>= 1)
+    {
+        shifts--;
+        sum += (data & z) >> shifts;
+    }
+    
+    return sum;   
+}
+
 /*
  * Reduce un array sumando cada uno de los bits de cada int por separado.
  * gpu_output_data debe tener un elemento por bloque del kernel.
@@ -145,7 +159,7 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
     unsigned int tid = threadIdx.x;
     unsigned int int_size = bit_size >> 5;
     
-    unsigned int adds_per_loop = gridDim.x * blockDim.x * 2;
+    unsigned int adds_per_loop = gridDim.x * blockDim.x;
     unsigned int loops_count = int_size / adds_per_loop;
     if (int_size % adds_per_loop > 0) loops_count++;
 
@@ -155,22 +169,12 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         // Perform first level of reduction, reading from global memory, writing to shared memory
         starting_position = adds_per_loop * loop;
         
-        unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
+        unsigned int i = starting_position + (blockIdx.x * blockDim.x) + threadIdx.x;
 
-        int mySum = 0;
-        /*
-        if (i < size) {
-            mySum = gpu_input_data[i];
-            
-            if (i + blockDim.x < size) {
-                mySum += gpu_input_data[i + blockDim.x];  
-            }
-        } else {
-            mySum = 0;
-        }
-        */
-
-        sdata[tid] = mySum;
+        int int_data = gpu_input_data[i];
+        int sum = sum_bits_from_int(int_data);
+        sdata[tid] = sum;
+        
         __syncthreads();
 
         // do reduction in shared mem
@@ -178,7 +182,7 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         {
             if (tid < s) 
             {
-                sdata[tid] = mySum = mySum + sdata[tid + s];
+                sdata[tid] = sum = sum + sdata[tid + s];
             }
             __syncthreads();
         }
