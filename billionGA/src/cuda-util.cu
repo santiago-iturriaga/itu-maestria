@@ -138,16 +138,16 @@ void vector_sum_float(float *gpu_input_data, float *gpu_output_data, unsigned in
  * Reduce un array sumando cada uno de los bits de cada int por separado.
  * gpu_output_data debe tener un elemento por bloque del kernel.
  */
-__global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, unsigned int size)
+__global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, unsigned int bit_size)
 {
-    /*
-    __shared__ float sdata[VECTOR_SUM_SHARED_MEM];
+    __shared__ int sdata[VECTOR_SUM_SHARED_MEM];
 
     unsigned int tid = threadIdx.x;
+    unsigned int int_size = bit_size >> 5;
     
     unsigned int adds_per_loop = gridDim.x * blockDim.x * 2;
-    unsigned int loops_count = size / adds_per_loop;
-    if (size % adds_per_loop > 0) loops_count++;
+    unsigned int loops_count = int_size / adds_per_loop;
+    if (int_size % adds_per_loop > 0) loops_count++;
 
     unsigned int starting_position;
     
@@ -157,7 +157,8 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
-        float mySum;
+        int mySum = 0;
+        /*
         if (i < size) {
             mySum = gpu_input_data[i];
             
@@ -167,6 +168,7 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         } else {
             mySum = 0;
         }
+        */
 
         sdata[tid] = mySum;
         __syncthreads();
@@ -185,7 +187,7 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         if (tid == 0) gpu_output_data[blockIdx.x] += sdata[0];
     
         __syncthreads();
-    }*/
+    }
 }
 void vector_sum_bit(int *gpu_input_data, int *gpu_output_data, unsigned int size) {
     kern_vector_sum_bit<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>(gpu_input_data, gpu_output_data, size);
