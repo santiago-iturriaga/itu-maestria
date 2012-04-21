@@ -6,6 +6,37 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#define VECTOR_SET_BLOCKS       128
+#define VECTOR_SET_THREADS      256
+
+#define VECTOR_SUM_BLOCKS       128
+#define VECTOR_SUM_THREADS      512
+#define VECTOR_SUM_SHARED_MEM   512
+
+/*
+ * Establece el valor de todos los elementos de un vector a "value".
+ */
+void vector_set_float(float *gpu_vector, int size, float value);
+void vector_set_int(int *gpu_vector, int size, int value);
+
+/*
+ * Reduce un array sumando cada uno de sus elementos.
+ * gpu_output_data debe tener un elemento por bloque del kernel.
+ */
+void  vector_sum_float(float *gpu_input_data, float *gpu_output_data, unsigned int size);
+void  vector_sum_float_init(float **partial_sum);
+float vector_sum_float_free(float *partial_sum);
+
+/*
+ * Reduce un array sumando cada uno de los bits de cada int por separado.
+ * gpu_output_data debe tener un elemento por bloque del kernel.
+ */
+void vector_sum_bit(int *gpu_input_data, int *gpu_output_data, unsigned int size);
+void vector_sum_bit_init(int **partial_sum);
+int  vector_sum_bit_free(int *partial_sum);
+
+// -----------------------------------------------------------------
+
 inline void exception_maker(cudaError rc, const char * funcname)
 {
     if (rc != cudaSuccess) {
