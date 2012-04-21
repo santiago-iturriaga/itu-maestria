@@ -360,6 +360,10 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     #endif
 }
 
+void bga_compute_sample_fitness(struct bga_state *state) {
+    
+}
+
 void bga_show_samples(struct bga_state *state) {
     #if defined(DEBUG)
     float gputime;
@@ -404,14 +408,14 @@ void bga_show_samples(struct bga_state *state) {
                 fprintf(stdout, "...\n");
             }
             
-            kern_vector_sum<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>( 
+            /*kern_vector_sum<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>( 
                 state->gpu_prob_vectors[prob_vector_number], partial_sum,
-                current_prob_vector_number_of_bits);
+                current_prob_vector_number_of_bits);*/
         }
 
-        double accumulated_probability = 0.0;
+        /*double accumulated_probability = 0.0;
         accumulated_probability = vector_sum_free(partial_sum);
-        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);
+        fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability);*/
     }
     
     #if defined(DEBUG)
