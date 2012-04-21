@@ -17,6 +17,8 @@ struct mtgp32_status {
     int block_num;
     int num_unit;
     struct mtgp32_kernel_status_t *d_status;
+    
+    // Números generados.
     uint32_t *d_data;
     int num_data;
 };

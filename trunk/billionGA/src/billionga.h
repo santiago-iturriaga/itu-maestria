@@ -11,7 +11,7 @@ struct bga_state {
     int number_of_prob_vectors;
     long last_prob_vector_bit_count;
     
-    char ***gpu_samples; // gpu_samples[SAMPLE][VECTOR][8 x BIT]
+    int ***gpu_samples; // gpu_samples[SAMPLE][VECTOR][8 x BIT]
     long **gpu_samples_fitness; // gpu_samples_fitness[SAMPLE][VECTOR]
 };
 
