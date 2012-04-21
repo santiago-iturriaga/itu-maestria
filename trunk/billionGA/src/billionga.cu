@@ -260,10 +260,10 @@ void bga_compute_sample_fitness(struct bga_state *state) {
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         int *partial_sum;
-        vector_sum_bit_init(&partial_sum);
+        //vector_sum_bit_init(&partial_sum);
         
         #if defined(DEBUG)
-        fprintf(stdout, "[INFO] Computing sample vector %d fitness: ", sample_number);
+        //fprintf(stdout, "[INFO] Computing sample vector %d fitness: ", sample_number);
         #endif
         
         for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
@@ -272,14 +272,14 @@ void bga_compute_sample_fitness(struct bga_state *state) {
                 current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
             }
            
-            vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number], 
-                partial_sum, current_prob_vector_number_of_bits);
+            /*vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number], 
+                partial_sum, current_prob_vector_number_of_bits);*/
         }
 
-        state->samples_fitness[sample_number] = vector_sum_bit_free(partial_sum);       
+        //state->samples_fitness[sample_number] = vector_sum_bit_free(partial_sum);       
         
         #if defined(DEBUG)
-        fprintf(stdout, "%d\n", state->samples_fitness[sample_number]);
+        //fprintf(stdout, "%d\n", state->samples_fitness[sample_number]);
         #endif
     }
     
