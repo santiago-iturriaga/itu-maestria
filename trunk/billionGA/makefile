@@ -20,3 +20,6 @@ dora: src/main.cu src/billionga.cu ${MTGP32_INC}
 
 clu: src/main.cu src/billionga.cu ${MTGP32_INC} 
 	$(NVCC_CLu) -o bin/billionga src/main.cu src/billionga.cu ${MTGP32_SRC} ${CUDALINK}
+
+test: src/test.c
+	$(CC) -o bin/test src/test.c -std=c99 -g
