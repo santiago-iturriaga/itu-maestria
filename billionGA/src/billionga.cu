@@ -14,7 +14,7 @@
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
 #define SAMPLE_PROB_VECTOR_THREADS   256
-#define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 3)
+#define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 5)
 
 // Paso 1 del algoritmo.
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples) {
@@ -359,12 +359,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     const int tid = threadIdx.x;
     const int bid = blockIdx.x;
     const int samples_per_loop = gridDim.x * blockDim.x;
-    
-    __shared__ char current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
-
-    const int shmem_int_size = SAMPLE_PROB_VECTOR_SHMEM >> 2;
-    const int bytes_samples_per_loop = gridDim.x * shmem_int_size;
-        
+           
     int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
     if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
     
@@ -374,8 +369,10 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     int prob_vector_position;
     int sample_position;
     
-    const int block = tid >> 3;
-    const int offset = tid & ((1 << 3)-1);
+    __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
+    const int bytes_samples_per_loop = gridDim.x * SAMPLE_PROB_VECTOR_SHMEM;
+    const int tid_int = tid >> 5;
+    const int tid_bit = tid & ((1 << 5)-1);
     
     for (int loop = 0; loop < loops_count; loop++) {
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
@@ -385,11 +382,11 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
             if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
                 // 1
-                current_block_sample[block] = current_block_sample[block] | (1 << offset);
+                current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
             } else {
                 // 0
-                current_block_sample[block] = current_block_sample[block] | (1 << offset);
-                //current_block_sample[block] = current_block_sample[block] & ~(1 << offset);
+                current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
+                //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             }            
         }
 
@@ -397,8 +394,9 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
         // Convierto los char a int.
-        if (tid < shmem_int_size) {
-            gpu_sample[(bytes_samples_per_loop * loop) + (shmem_int_size * bid) + tid] = ((int*)current_block_sample)[tid];
+        int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
+        if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
+            gpu_sample[sample_idx] = current_block_sample[tid];
         }
         
         __syncthreads();
