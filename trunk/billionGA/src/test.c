@@ -3,20 +3,24 @@
 #include <limits.h>
 #include <string.h>
 
-const char* byte_to_binary(int x)
+const char* int_to_binary(int x)
 {
-    char *b;
-    b = (char*)malloc(sizeof(char) * 9);
-    b[8] = '\0';
+    int b_size = sizeof(char) * ((sizeof(int) * 8) + 1);
+    char *b = (char*)malloc(b_size);
+    
+    b[b_size-1] = '\0';
 
     int pos = 0;
-    for (int z = (1<<7); z > 0; z >>= 1)
+    unsigned int starting = 1 << ((sizeof(int) * 8)-1);
+    fprintf(stdout, "z(-1) = %d\n", starting);
+    
+    for (unsigned  int z = starting; z > 0; z >>= 1)
     {        
+        fprintf(stdout, "z = %d\n", z);
+        
         if ((x & z) == z) {
-            fprintf(stdout, "z = %d (1)\n", z);
             b[pos] =  '1';
         } else {
-            fprintf(stdout, "z = %d (0)\n", z);
             b[pos] =  '0';
         }
         
@@ -48,7 +52,7 @@ int main(int argc, char **argv) {
         fprintf(stdout, "\n");
     }
     
-    for (int i = 0; i < 4; i++) {
-        printf("%s (%d)\n", byte_to_binary(current_block_sample[0]), current_block_sample[i]);
+    for (int i = 0; i < 1; i++) {
+        printf("%s (%d)\n", int_to_binary(((int*)current_block_sample)[0]), ((int*)current_block_sample)[0]);
     }
 }

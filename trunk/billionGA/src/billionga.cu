@@ -4,6 +4,7 @@
 #include <cuda.h>
 
 #include "config.h"
+#include "util.h"
 #include "cuda-util.h"
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
@@ -357,28 +358,6 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
     #endif
-}
-
-const char* int_to_binary(int x)
-{
-    int b_size = sizeof(char) * ((sizeof(int) * 8) + 1);
-    char *b = (char*)malloc(b_size);
-    
-    b[b_size-1] = '\0';
-
-    int pos = 0;
-    for (int z = 1<<((sizeof(int) * 8)-1); z > 0; z >>= 1)
-    {        
-        if ((x & z) == z) {
-            b[pos] =  '1';
-        } else {
-            b[pos] =  '0';
-        }
-        
-        pos++;
-    }
-
-    return b;
 }
 
 void bga_show_samples(struct bga_state *state) {
