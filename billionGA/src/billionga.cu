@@ -218,7 +218,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             size_t sample_vector_size = sizeof(int) * (current_prob_vector_number_of_bits >> 5);
             fprintf(stdout, "current_prob_vector_number_of_bits = %d\ncurrent_prob_vector_number_of_bits >> 5 = %d\ncurrent_prob_vector_number_of_bits >> 5 = %d\n",
                 current_prob_vector_number_of_bits, current_prob_vector_number_of_bits >> 5, current_prob_vector_number_of_bits & ((1<<5)-1));
-            assert(current_prob_vector_number_of_bits & ((1<<5)-1) != 0);
+            assert(current_prob_vector_number_of_bits & ((1<<5)-1) == 0);
 
             #ifdef INFO
             fprintf(stdout, "[INFO] > Requesting sample %d GPU memory for vector %d\n", sample_number, prob_vector_number);
