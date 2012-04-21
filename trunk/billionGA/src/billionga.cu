@@ -379,15 +379,18 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         //sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
         //prob_vector_position = prob_vector_starting_pos + sample_position;
         
+        current_block_sample[tid_int] = 0;
+        __syncthreads();
+        
         if ((tid < 32)&&(bid == 0)) {
         
         //if ((sample_position < max_samples_doable) && (prob_vector_position < prob_vector_size)) {
             //if (gpu_prob_vector[prob_vector_position] >= prng_vector[sample_position]) {
                 // 1
-                current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
+                current_block_sample[tid_int]++; // = current_block_sample[tid_int] | (1 << tid_bit);
             //} else {
                 // 0
-                current_block_sample[tid_int] = current_block_sample[tid_int] | (1 << tid_bit);
+                current_block_sample[tid_int]++; // = current_block_sample[tid_int] | (1 << tid_bit);
                 //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             //}            
         //}
