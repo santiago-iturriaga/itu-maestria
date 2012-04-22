@@ -476,6 +476,7 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     fprintf(stdout, "[INFO] === Initializing Mersenne Twister =======================\n");
     #endif
     
+    status->numbers_per_gen = numbers_per_gen;
     status->num_data = numbers_per_gen;
 
     int mb, mp;
