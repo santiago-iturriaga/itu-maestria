@@ -387,21 +387,17 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
             if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[sample_position]) {
                 // 1
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
-                //current_block_sample[tid]++; // = current_block_sample[tid_int] | (1 << tid_bit);
             } else {
                 // 0
-                //atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
                 atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
-                
-                //current_block_sample[block] = current_block_sample[block] & ~(1 << tid_bit);
             }            
         }
 
         __syncthreads();
         
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
-        // Convierto los char a int.
         int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
+
         if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
             //gpu_sample[sample_idx] = current_block_sample[tid];
             gpu_sample[tid] = current_block_sample[tid];
