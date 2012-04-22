@@ -410,12 +410,12 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         * */
         
         if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
-            int sample_pos = (prob_vector_starting_pos >> 5) + 
-                (((gridDim.x * blockDim.x) >> 5) * loop) +
-                ((bid * SAMPLE_PROB_VECTOR_SHMEM) >> 5);
+            int sample_pos = prob_vector_starting_pos + 
+                (gridDim.x * blockDim.x * loop) +
+                (bid * blockDim.x);
             
-            if (sample_pos + tid < (prob_vector_size >> 5)) {
-                gpu_sample[sample_pos] = current_block_sample[tid];
+            if ((sample_pos + (tid << 5)) < prob_vector_size) {
+                gpu_sample[sample_pos + tid] = current_block_sample[tid];
             }
         }
         
