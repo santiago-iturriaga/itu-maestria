@@ -9,4 +9,5 @@
 #define INIT_PROB_VECTOR_VALUE  0.5
 
 //#define RNUMBERS_PER_GEN        84
-#define RNUMBERS_PER_GEN        10000020
+//#define RNUMBERS_PER_GEN        10000020
+#define RNUMBERS_PER_GEN        1000020
