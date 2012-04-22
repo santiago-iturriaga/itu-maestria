@@ -53,6 +53,11 @@ int main(int argc, char **argv) {
         #endif
         
         bga_model_sampling_mt(&problem_state, &mt_status);
+        
+        #if defined(DEBUG)
+        bga_show_samples(&problem_state);
+        #endif
+        
         bga_evaluation(&problem_state);
         bga_model_update(&problem_state);
     }
