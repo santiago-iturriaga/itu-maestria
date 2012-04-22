@@ -32,9 +32,6 @@ int main(int argc, char **argv) {
     ccudaSetDevice(0);
 
     // === Inicialización del Mersenne Twister.
-    #ifdef INFO
-    fprintf(stdout, "[INFO] === Initializing Mersenne Twister ==============\n");
-    #endif
     mtgp32_status mt_status;    
     mtgp32_initialize(&mt_status, RNUMBERS_PER_GEN);
 
