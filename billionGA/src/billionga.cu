@@ -310,9 +310,6 @@ void bga_show_samples(struct bga_state *state) {
     #endif
 
     fprintf(stdout, "[INFO] === Sample vectors =====================================\n");
-
-    // Calculo el fitness de los samples actuales.
-    bga_compute_sample_fitness(state);
     
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         fprintf(stdout, "[INFO] Sample vector sample (%d):", sample_number);
@@ -452,6 +449,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                     prob_vector_starting_pos, (float*)mt_status->d_data, RNUMBERS_PER_GEN, 
                     state->gpu_samples[sample_number][prob_vector_number]);
             }
+            fprintf(stdout, "(%d)", total_loops);
         }
         fprintf(stdout, "\n");
 
@@ -471,6 +469,12 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
 
 // Paso 3 del algoritmo.
 void bga_evaluation(struct bga_state *state) {
+    // Calculo el fitness de los samples generados.
+    bga_compute_sample_fitness(state);
+
+    #if defined(DEBUG)
+    bga_show_samples(state);
+    #endif
 }
 
 // Paso 4 y 5 del algoritmo.
