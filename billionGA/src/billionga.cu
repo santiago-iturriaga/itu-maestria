@@ -368,22 +368,24 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     
     int loops_count = max_samples_doable / samples_per_loop;
     if (max_samples_doable % samples_per_loop > 0) loops_count++;
-
-    int prob_vector_position;
-    int sample_position;
     
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
        
     const int tid_int = tid >> 5;
     const int tid_bit = tid & ((1 << 5)-1);
     
+    int prob_vector_position;
+    int prng_position;
+    int block_starting_pos;
+    
     for (int loop = 0; loop < loops_count; loop++) {
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
-        sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
-        prob_vector_position = prob_vector_starting_pos + sample_position;
+        block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
+        prng_position = block_starting_pos + tid;
+        prob_vector_position = prob_vector_starting_pos + prng_position;
         
-        if (sample_position < max_samples_doable) {
-            if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[sample_position]) {
+        if (prng_position < max_samples_doable) {
+            if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[prng_position]) {
                 // 1
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
             } else {
@@ -394,6 +396,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
 
         __syncthreads();
         
+        /*
         if ((bid == 0) && (tid == 0)) {
             if (prob_vector_starting_pos == 0) {
                 gpu_sample[0] = current_block_sample[0];
@@ -401,6 +404,15 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
             } else {
                 gpu_sample[2] = current_block_sample[0];
                 gpu_sample[3] = current_block_sample[1];
+            }
+        }
+        * */
+        
+        if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
+            int sample_pos = (prob_vector_starting_pos + block_starting_pos) >> 5;
+            
+            if (sample_pos + tid < (prob_vector_size >> 5)) {
+                gpu_sample[sample_pos] = current_block_sample[tid];
             }
         }
         
