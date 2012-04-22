@@ -401,8 +401,13 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         __syncthreads();
         
         if ((bid == 0) && (tid == 0)) {
-            gpu_sample[0] = current_block_sample[0];
-            gpu_sample[1] = current_block_sample[1];
+            if (prob_vector_starting_pos == 0) {
+                gpu_sample[0] = current_block_sample[0];
+                gpu_sample[1] = current_block_sample[1];
+            } else {
+                gpu_sample[2] = current_block_sample[0];
+                gpu_sample[3] = current_block_sample[1];
+            }
         }
         
         /*
