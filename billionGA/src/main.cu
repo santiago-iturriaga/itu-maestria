@@ -9,8 +9,8 @@
 #include "billionga.h"
 
 //#define TEST_PROBLEM_SIZE 32
-#define TEST_PROBLEM_SIZE 1024
-//#define TEST_PROBLEM_SIZE 899999744
+//#define TEST_PROBLEM_SIZE 1024
+#define TEST_PROBLEM_SIZE 899999744
 // Debe ser divisible entre 32 (8 y 4)... y 512, 128???
 
 inline int termination_criteria_met(struct bga_state *problem_state, int iteration_count) {
