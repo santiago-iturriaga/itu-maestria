@@ -471,7 +471,10 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                 
                 // Genero números aleatorios.
                 mtgp32_generate_float(mt_status);
+                
+                #if defined(DEBUG)
                 fprintf(stdout, ".");
+                #endif
                                
                 // Sampleo el vector de prob. con los números aleatorios generados.               
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
@@ -479,11 +482,14 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                     prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen, 
                     state->gpu_samples[sample_number][prob_vector_number]);
             }
+            
+            #if defined(DEBUG)
             fprintf(stdout, "(%d)", total_loops);
+            #endif
         }
+        #if defined(DEBUG)
         fprintf(stdout, "\n");
 
-        #if defined(DEBUG)
         ccudaEventRecord(end, 0);
         ccudaEventSynchronize(end);
         ccudaEventElapsedTime(&gputime, start, end);
