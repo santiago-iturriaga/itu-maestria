@@ -79,7 +79,16 @@ int main(int argc, char **argv) {
         #if defined(DEBUG)
         bga_show_prob_vector_state(&problem_state);
         #endif
+        
+        #if !defined(DEBUG) && defined(INFO)
+        if ((current_iteration % 100 == 0) && !(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
+            fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
+            fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_accumulated_prob(&problem_state));
+        }
+        #endif
     }
+    
+    fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", bga_get_accumulated_prob(&problem_state));
     
     // === Libero la memoria del cGA y del Mersenne Twister.
     bga_free(&problem_state);
