@@ -36,5 +36,6 @@ void bga_free(struct bga_state *state);
 // DEBUG
 void bga_show_prob_vector_state(struct bga_state *state);
 void bga_show_samples(struct bga_state *state);
+float bga_get_accumulated_prob(struct bga_state *state);
 
 #endif

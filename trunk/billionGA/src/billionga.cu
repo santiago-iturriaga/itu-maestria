@@ -201,6 +201,23 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     #endif
 }
 
+float bga_get_accumulated_prob(struct bga_state *state) {
+    float *partial_sum;
+    vector_sum_float_init(&partial_sum);
+    
+    for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        int current_prob_vector_number_of_bits = MAX_PROB_VECTOR_BITS;
+        if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+            current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+        }        
+        
+        vector_sum_float(state->gpu_prob_vectors[prob_vector_number], 
+            partial_sum, current_prob_vector_number_of_bits);
+    }
+
+    return vector_sum_float_free(partial_sum);
+}
+
 void bga_show_prob_vector_state(struct bga_state *state) {
     #if defined(DEBUG)
     float gputime;
