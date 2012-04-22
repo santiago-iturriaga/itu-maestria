@@ -390,25 +390,12 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
             } else {
                 // 0
-                atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
-                //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
+                atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
             }            
         }
 
         __syncthreads();
-        
-        /*
-        if ((bid == 0) && (tid == 0)) {
-            if (prob_vector_starting_pos == 0) {
-                gpu_sample[0] = current_block_sample[0];
-                gpu_sample[1] = current_block_sample[1];
-            } else {
-                gpu_sample[2] = current_block_sample[0];
-                gpu_sample[3] = current_block_sample[1];
-            }
-        }
-        * */
-        
+               
         if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
             int sample_pos = prob_vector_starting_pos + 
                 (gridDim.x * blockDim.x * loop) +
@@ -418,15 +405,6 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 gpu_sample[(sample_pos >> 5) + tid] = current_block_sample[tid];
             }
         }
-        
-        /*
-        // Una vez generados los bits, copio los bytes de shared memory a la global memory.
-        int sample_idx = ((samples_per_loop >> 5) * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
-
-        if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
-            gpu_sample[sample_idx] = current_block_sample[tid];
-        }
-        * */
         
         __syncthreads();
     }
