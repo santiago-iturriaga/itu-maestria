@@ -18,8 +18,6 @@ struct bga_state {
 // Paso 1 del algortimo.
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples);
 
-void bga_show_prob_vector_state(struct bga_state *state);
-
 // Paso 2 del algoritmo.
 void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status);
 
@@ -31,5 +29,9 @@ void bga_model_update(struct bga_state *state);
 
 // Libera la memoria pedida para de estado.
 void bga_free(struct bga_state *state);
+
+// DEBUG
+void bga_show_prob_vector_state(struct bga_state *state);
+void bga_show_samples(struct bga_state *state);
 
 #endif

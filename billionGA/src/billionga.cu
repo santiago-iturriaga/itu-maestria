@@ -466,11 +466,6 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
     #endif
-    
-    #if defined(DEBUG)
-    // Muestro los samples recien generados.
-    bga_show_samples(state);
-    #endif
 }
 
 // Paso 3 del algoritmo.
