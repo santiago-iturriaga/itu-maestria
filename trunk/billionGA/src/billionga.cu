@@ -415,7 +415,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 (bid * blockDim.x);
             
             if ((sample_pos + (tid << 5)) < prob_vector_size) {
-                gpu_sample[sample_pos + tid] = current_block_sample[tid];
+                gpu_sample[(sample_pos >> 5) + tid] = current_block_sample[tid];
             }
         }
         
