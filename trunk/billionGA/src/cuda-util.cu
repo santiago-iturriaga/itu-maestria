@@ -73,6 +73,7 @@ float vector_sum_float_free(float *partial_sum) {
     }
 
     ccudaFree(partial_sum);
+    free(cpu_partial_sum);
     return accumulated_sum;
 }
 
@@ -221,9 +222,12 @@ int  vector_sum_bit_free(int *partial_sum) {
     
     ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(int) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
     for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        fprintf(stdout, "[vector_sum_bit_free] %d\n", cpu_partial_sum[i]);
         accumulated_sum += cpu_partial_sum[i];
     }
 
     ccudaFree(partial_sum);
+    free(cpu_partial_sum);
+    
     return accumulated_sum;
 }

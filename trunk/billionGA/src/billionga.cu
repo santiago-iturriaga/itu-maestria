@@ -274,9 +274,7 @@ void bga_compute_sample_fitness(struct bga_state *state) {
             if (prob_vector_number + 1 == state->number_of_prob_vectors) {
                 current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
             }
-           
-            fprintf(stdout, "[curr_v %d, curr_v_size %d]\n", prob_vector_number, current_prob_vector_number_of_bits);
-           
+                      
             /*vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number], 
                 partial_sum, current_prob_vector_number_of_bits);*/
         }
