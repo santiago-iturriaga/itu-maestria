@@ -397,7 +397,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
 
         __syncthreads();
         
-    
+        /*
         if ((bid == 0) && (tid == 0)) {
             if (prob_vector_starting_pos == 0) {
                 gpu_sample[0] = current_block_sample[0];
@@ -407,17 +407,16 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 gpu_sample[3] = current_block_sample[1];
             }
         }
+        * */
         
-        
-        /*
         if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
-            int sample_pos = (prob_vector_starting_pos + block_starting_pos) >> 5;
+            int sample_pos = (prob_vector_starting_pos >> 5) + ((bid * SAMPLE_PROB_VECTOR_SHMEM * loop) >> 5);
             
             if (sample_pos + tid < (prob_vector_size >> 5)) {
                 gpu_sample[sample_pos] = current_block_sample[tid];
             }
         }
-        */
+        
         /*
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
         int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
