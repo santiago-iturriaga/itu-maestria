@@ -375,6 +375,11 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
     const int bytes_samples_per_loop = gridDim.x * SAMPLE_PROB_VECTOR_SHMEM;
     
+    if  (tid < SAMPLE_PROB_VECTOR_SHMEM) {
+        current_block_sample[SAMPLE_PROB_VECTOR_SHMEM] = 0;
+    }
+    __syncthreads();
+    
     const int tid_int = tid >> 5;
     const int tid_bit = tid & ((1 << 5)-1);
     
@@ -383,15 +388,15 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
         sample_position = (samples_per_loop * loop) + (bid * blockDim.x) + tid;
         prob_vector_position = prob_vector_starting_pos + sample_position;
         
-        //if (sample_position < max_samples_doable) {
-            if (gpu_prob_vector[prob_vector_position]+1 >= 0) { //prng_vector[sample_position]) {
+        if (sample_position < max_samples_doable) {
+            if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[sample_position]) {
                 // 1
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
             } else {
                 // 0
                 atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
             }            
-        //}
+        }
 
         __syncthreads();
                
@@ -436,6 +441,9 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
             if (current_prob_vector_number_of_bits % RNUMBERS_PER_GEN > 0) total_loops++;
             
             int prob_vector_starting_pos;
+            
+            vector_set_int(state->gpu_samples[sample_number][prob_vector_number], 
+                current_prob_vector_number_of_bits >> 5, 0);
             
             for (int loop = 0; loop < total_loops; loop++) {
                 prob_vector_starting_pos = RNUMBERS_PER_GEN * loop;
