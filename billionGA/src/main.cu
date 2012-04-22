@@ -9,7 +9,7 @@
 #include "billionga.h"
 
 //#define TEST_PROBLEM_SIZE 32
-#define TEST_PROBLEM_SIZE 1024
+#define TEST_PROBLEM_SIZE 2048
 //#define TEST_PROBLEM_SIZE 899999744
 // Debe ser divisible entre 32 (8 y 4)... y 512, 128???
 
