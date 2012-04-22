@@ -373,13 +373,7 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     int sample_position;
     
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
-    const int bytes_samples_per_loop = gridDim.x * SAMPLE_PROB_VECTOR_SHMEM;
-    
-    if  (tid < SAMPLE_PROB_VECTOR_SHMEM) {
-        current_block_sample[SAMPLE_PROB_VECTOR_SHMEM] = 0;
-    }
-    __syncthreads();
-    
+       
     const int tid_int = tid >> 5;
     const int tid_bit = tid & ((1 << 5)-1);
     
@@ -454,23 +448,13 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
             
             int prob_vector_starting_pos;
             
-            vector_set_int(state->gpu_samples[sample_number][prob_vector_number], 
-                current_prob_vector_number_of_bits >> 5, 0);
-            
             for (int loop = 0; loop < total_loops; loop++) {
                 prob_vector_starting_pos = RNUMBERS_PER_GEN * loop;
                 
                 // Genero RNUMBERS_PER_GEN números aleatorios.
                 mtgp32_generate_float(mt_status);
                 fprintf(stdout, ".");
-                
-                fprintf(stdout, "\n >> kern_sample_prob_vector<< >>\n");
-                fprintf(stdout, "\n SAMPLE_PROB_VECTOR_BLOCKS: %d\n", SAMPLE_PROB_VECTOR_BLOCKS);
-                fprintf(stdout, "\n SAMPLE_PROB_VECTOR_THREADS: %d\n", SAMPLE_PROB_VECTOR_THREADS);
-                fprintf(stdout, "\n current_prob_vector_number_of_bits: %d\n", current_prob_vector_number_of_bits);
-                fprintf(stdout, "\n prob_vector_starting_pos: %d\n", prob_vector_starting_pos);
-                fprintf(stdout, "\n RNUMBERS_PER_GEN: %d\n", RNUMBERS_PER_GEN);
-                
+                               
                 // Sampleo el vector de prob. con los números aleatorios generados.               
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                     state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits, 
