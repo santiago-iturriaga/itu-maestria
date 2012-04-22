@@ -493,7 +493,47 @@ void bga_evaluation(struct bga_state *state) {
 __global__ void kern_model_update(float *gpu_prob_vector, int prob_vector_size,
     int *best_sample, int *worst_sample, float update_value) {
 
+    const int tid = threadIdx.x;
+    const int bid = blockIdx.x;
     
+    __shared__ int best_sample_part[UPDATE_PROB_VECTOR_SHMEM];
+    __shared__ int worst_sample_part[UPDATE_PROB_VECTOR_SHMEM];
+
+    int loop_size = gridDim.x * blockDim.x;
+    int loop_count = prob_vector_size / loop_size;
+    if (loop_count % loop_size > 0) loop_count++;
+    
+    int prob_vector_position;
+    int block_starting_pos;
+
+    const int tid_int = tid >> 5;
+    const int tid_bit = tid & ((1 << 5)-1);
+    
+    int best_sample_current_bit_value;
+    int worst_sample_current_bit_value;
+    int delta;
+    
+    for (int loop = 0; loop < loop_count; loop++) {
+        block_starting_pos = (loop_size * loop) + (bid * blockDim.x);
+        
+        if (tid < UPDATE_PROB_VECTOR_SHMEM) {
+            if ((block_starting_pos + (tid << 5)) < prob_vector_size) {
+                best_sample_part[tid] = best_sample[(block_starting_pos >> 5) + tid];
+                worst_sample_part[tid] = worst_sample[(block_starting_pos >> 5) + tid];
+            }
+        }
+        __syncthreads();
+        
+        prob_vector_position = block_starting_pos + tid;
+        
+        if (prob_vector_position < prob_vector_size) {
+            best_sample_current_bit_value = (best_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
+            worst_sample_current_bit_value = (worst_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
+            
+            delta = best_sample_current_bit_value - worst_sample_current_bit_value;
+            atomicAdd(&(gpu_prob_vector[prob_vector_position]), delta * update_value);
+        }
+    }
 }
 
 // Paso 4 y 5 del algoritmo.
