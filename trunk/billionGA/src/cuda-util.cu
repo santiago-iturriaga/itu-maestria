@@ -135,7 +135,7 @@ void vector_sum_float(float *gpu_input_data, float *gpu_output_data, unsigned in
 // ------------------------------------------------------------------
 
 __device__ int sum_bits_from_int(int data) {
-    unsigned int sum = 0;
+    /*unsigned int sum = 0;
     unsigned int starting = 1 << ((sizeof(int) * 8)-1);
     int shifts = 32;
     
@@ -145,7 +145,8 @@ __device__ int sum_bits_from_int(int data) {
         sum += (data & z) >> shifts;
     }
     
-    return sum;   
+    return sum;*/
+    return 1;
 }
 
 /*
@@ -157,6 +158,7 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
     __shared__ int sdata[VECTOR_SUM_SHARED_MEM];
 
     unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
     unsigned int int_size = bit_size >> 5;
     
     unsigned int adds_per_loop = gridDim.x * blockDim.x;
@@ -169,11 +171,18 @@ __global__ void kern_vector_sum_bit(int *gpu_input_data, int *gpu_output_data, u
         // Perform first level of reduction, reading from global memory, writing to shared memory
         starting_position = adds_per_loop * loop;
         
-        unsigned int i = starting_position + (blockIdx.x * blockDim.x) + threadIdx.x;
+        unsigned int i = starting_position + (bid * blockDim.x) + tid;
 
-        int int_data = gpu_input_data[i];
-        int sum = sum_bits_from_int(int_data);
-        sdata[tid] = sum;
+        int sum = 0;
+        
+        if (i < int_size) {
+            int int_data = gpu_input_data[i];        
+            sum = sum_bits_from_int(int_data);
+            
+            sdata[tid] = sum;
+        } else {
+            sdata[tid] = 0;
+        }
         
         __syncthreads();
 
