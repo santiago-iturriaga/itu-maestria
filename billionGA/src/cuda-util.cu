@@ -136,7 +136,7 @@ void vector_sum_float(float *gpu_input_data, float *gpu_output_data, unsigned in
 // ------------------------------------------------------------------
 
 __device__ int sum_bits_from_int(int data) {
-    /*unsigned int sum = 0;
+    unsigned int sum = 0;
     unsigned int starting = 1 << ((sizeof(int) * 8)-1);
     int shifts = 32;
     
@@ -146,8 +146,7 @@ __device__ int sum_bits_from_int(int data) {
         sum += (data & z) >> shifts;
     }
     
-    return sum;*/
-    return 1;
+    return sum;
 }
 
 /*
