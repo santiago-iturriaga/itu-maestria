@@ -29,13 +29,12 @@ int main(int argc, char **argv) {
     long problem_size;
     problem_size = TEST_PROBLEM_SIZE; //atol(argv[1]);
     
-    #ifdef INFO
-    fprintf(stdout, "[INFO] Problem size: %ld\n", problem_size);
-    #endif
-
     ccudaSetDevice(0);
 
     // === Inicialización del Mersenne Twister.
+    #ifdef INFO
+    fprintf(stdout, "[INFO] === Initializing Mersenne Twister ==============\n");
+    #endif
     mtgp32_status mt_status;    
     mtgp32_initialize(&mt_status, RNUMBERS_PER_GEN);
 

@@ -1,7 +1,6 @@
-//#include <stdio.h>
-//#include <stdlib.h>
 #include <assert.h>
 #include <cuda.h>
+#include <math.h>
 
 #include "config.h"
 #include "util.h"
@@ -20,6 +19,16 @@
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples) {
     state->number_of_bits = number_of_bits;
     state->number_of_samples = number_of_samples;
+
+    state->population_size = sqrt(3.1416) * sqrt(number_of_bits) * log10(number_of_bits) / 2;
+    state->update_value = 1 / state->population_size;
+    
+    #ifdef INFO
+    fprintf(stdout, "[INFO] === Initializing Billion GA ====================\n");
+    fprintf(stdout, "[INFO] Problem size   : %ld\n", number_of_bits);
+    fprintf(stdout, "[INFO] Population size: %f\n", state->population_size);
+    fprintf(stdout, "[INFO] Update value   : %f\n", state->update_value);
+    #endif
     
     // === Pido la memoria =============================================================
     #if defined(INFO) || defined(DEBUG)
@@ -479,6 +488,12 @@ void bga_evaluation(struct bga_state *state) {
 
 // Paso 4 y 5 del algoritmo.
 void bga_model_update(struct bga_state *state) {
+    int best_sample;
+    
+    if (state->samples_fitness[0] >= state->samples_fitness[1]) best_sample = 0;
+    else best_sample = 1;
+    
+    
 }
 
 // Libera la memoria pedida para de estado.
