@@ -275,8 +275,8 @@ void bga_compute_sample_fitness(struct bga_state *state) {
                 current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
             }
                       
-            /*vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number], 
-                partial_sum, current_prob_vector_number_of_bits);*/
+            vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number], 
+                partial_sum, current_prob_vector_number_of_bits);
         }
 
         state->samples_fitness[sample_number] = vector_sum_bit_free(partial_sum);       
@@ -335,7 +335,7 @@ void bga_show_samples(struct bga_state *state) {
                     sizeof(uint32_t) * bytes_to_show_count, cudaMemcpyDeviceToHost);
                 
                 for (int i = 0; i < bytes_to_show_count; i++) {
-                    fprintf(stdout, " %s (%d) ", int_to_binary(bytes_to_show[i]), bytes_to_show[i]);
+                    fprintf(stdout, " %s", int_to_binary(bytes_to_show[i]));
                 }
                 
                 fprintf(stdout, "...\n");
