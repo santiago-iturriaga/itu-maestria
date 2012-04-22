@@ -389,19 +389,23 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
                 atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
             //} else {
                 // 0
-                atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
+                //atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
                 //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
             //}            
         //}
 
         __syncthreads();
         
+        /*if (tid == 0) {
+            gpu_sample[0] = current_block_sample[0];
+        }*/
+        
         // Una vez generados los bits, copio los bytes de shared memory a la global memory.
         int sample_idx = (bytes_samples_per_loop * loop) + (SAMPLE_PROB_VECTOR_SHMEM * bid) + tid;
 
         if  ((sample_idx < (prob_vector_size >> 5)) && (tid < SAMPLE_PROB_VECTOR_SHMEM)) {
             //gpu_sample[sample_idx] = current_block_sample[tid];
-            gpu_sample[tid] = current_block_sample[tid];
+            gpu_sample[sample_idx] = current_block_sample[tid];
         }
         
         __syncthreads();
@@ -444,7 +448,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status) {
                 
                 // Genero RNUMBERS_PER_GEN números aleatorios.
                 mtgp32_generate_float(mt_status);
-                //fprintf(stdout, ".");
+                fprintf(stdout, ".");
                 
                 // Sampleo el vector de prob. con los números aleatorios generados.               
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
