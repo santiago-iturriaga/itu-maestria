@@ -14,6 +14,8 @@ struct mtgp32_kernel_status_t {
 };
 
 struct mtgp32_status {
+    int numbers_per_gen;
+    
     int block_num;
     int num_unit;
     struct mtgp32_kernel_status_t *d_status;
