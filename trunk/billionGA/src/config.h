@@ -1,5 +1,5 @@
-#define INFO    1
-#define DEBUG   0
+#define INFO
+//#define DEBUG
 
 #define NUMBER_OF_SAMPLES       2
 
