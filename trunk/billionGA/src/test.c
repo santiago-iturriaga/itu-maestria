@@ -49,6 +49,12 @@ const char* int_to_binary(int x)
 }
 
 int main(int argc, char **argv) {
+    
+    int p;
+    p = 1 << 3;
+    printf("%d => %d\n", p, p >> 3);
+    
+    /*
     char current_block_sample[4];
     
     char aux, offset, block;
@@ -74,4 +80,5 @@ int main(int argc, char **argv) {
         printf("%s (%d)\n", int_to_binary(((int*)current_block_sample)[0]), ((int*)current_block_sample)[0]);
         printf("sum %d\n", sum_bits_from_int(((int*)current_block_sample)[0]));
     }
+    * */
 }
