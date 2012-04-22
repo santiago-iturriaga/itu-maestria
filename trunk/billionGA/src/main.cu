@@ -55,6 +55,10 @@ int main(int argc, char **argv) {
         bga_model_sampling_mt(&problem_state, &mt_status);
         bga_evaluation(&problem_state);
         bga_model_update(&problem_state);
+        
+        #if defined(DEBUG)
+        bga_show_prob_vector_state(&problem_state);
+        #endif
     }
     
     // === Libero la memoria del cGA y del Mersenne Twister.

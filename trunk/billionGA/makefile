@@ -12,7 +12,7 @@ MTGP32_SRC = src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/m
 	src/mtgp-1.1/mtgp32dc-param-11213.c src/cuda-util.cu
 CUDALINK = -lcuda
 
-NVCC_Dora = /home/santiago/cuda/bin/nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS \
+NVCC_Marga = /home/santiago/cuda/bin/nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS \
 	-L/home/santiago/cuda/fake-libs/ -D__STDC_CONSTANT_MACROS ${VERB}
 NVCC_CLu = /home/clusterusers/siturriaga/cuda/bin/nvcc ${DEBUG} ${ARCH} \
 	-D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS ${VERB}
@@ -20,8 +20,8 @@ NVCC = nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS ${V
 
 all: clu
 
-dora: src/main.cu src/billionga.cu ${MTGP32_INC} 
-	$(NVCC_Dora) -o bin/billionga src/main.cu src/billionga.cu ${MTGP32_SRC} ${CUDALINK}
+marga: src/main.cu src/billionga.cu ${MTGP32_INC} 
+	$(NVCC_Marga) -o bin/billionga src/main.cu src/billionga.cu ${MTGP32_SRC} ${CUDALINK}
 
 clu: src/main.cu src/billionga.cu ${MTGP32_INC} 
 	$(NVCC_CLu) -o bin/billionga src/main.cu src/billionga.cu ${MTGP32_SRC} ${CUDALINK}
