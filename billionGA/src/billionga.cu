@@ -15,6 +15,10 @@
 #define SAMPLE_PROB_VECTOR_THREADS   256
 #define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 5)
 
+#define UPDATE_PROB_VECTOR_BLOCKS    128
+#define UPDATE_PROB_VECTOR_THREADS   256
+#define UPDATE_PROB_VECTOR_SHMEM     (UPDATE_PROB_VECTOR_THREADS >> 5)
+
 // Paso 1 del algoritmo.
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_samples) {
     state->number_of_bits = number_of_bits;
@@ -486,14 +490,63 @@ void bga_evaluation(struct bga_state *state) {
     #endif
 }
 
+__global__ void kern_model_update(float *gpu_prob_vector, int prob_vector_size,
+    int *best_sample, int *worst_sample, float update_value) {
+
+    
+}
+
 // Paso 4 y 5 del algoritmo.
 void bga_model_update(struct bga_state *state) {
-    int best_sample;
+    #if defined(DEBUG)
+    fprintf(stdout, "[INFO] === Updating the model =======================\n");
+
+    float gputime;
+    cudaEvent_t start;
+    cudaEvent_t end;
     
-    if (state->samples_fitness[0] >= state->samples_fitness[1]) best_sample = 0;
-    else best_sample = 1;
+    ccudaEventCreate(&start);
+    ccudaEventCreate(&end);
+    ccudaEventRecord(start, 0);
+    #endif
     
+    int best_sample_index, worst_sample_index;
     
+    if (state->samples_fitness[0] >= state->samples_fitness[1]) {
+        best_sample_index = 0;
+        worst_sample_index = 1;
+    }
+    else {
+        best_sample_index = 1;
+        worst_sample_index = 0;
+    }
+
+    int *best_sample;
+    int *worst_sample;
+
+    for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        int current_prob_vector_number_of_bits = MAX_PROB_VECTOR_BITS;
+        if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+            current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+        }
+
+        best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
+        worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
+
+        kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
+            state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+            best_sample, worst_sample, state->update_value);
+    }
+
+    #if defined(DEBUG)
+    ccudaEventRecord(end, 0);
+    ccudaEventSynchronize(end);
+    ccudaEventElapsedTime(&gputime, start, end);
+    fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
+    
+    ccudaEventDestroy(start);
+    ccudaEventDestroy(end);
+    #endif    
 }
 
 // Libera la memoria pedida para de estado.
