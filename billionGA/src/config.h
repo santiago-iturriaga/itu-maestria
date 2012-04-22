@@ -13,5 +13,6 @@
 //#define RNUMBERS_PER_GEN        168
 //#define RNUMBERS_PER_GEN        1000020
 //#define RNUMBERS_PER_GEN        1048576
+#define RNUMBERS_PER_GEN        67108864
 //#define RNUMBERS_PER_GEN        10000032
-#define RNUMBERS_PER_GEN        134217728
+//#define RNUMBERS_PER_GEN        134217728
