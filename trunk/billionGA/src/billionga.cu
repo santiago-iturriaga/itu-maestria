@@ -431,10 +431,10 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
             
             if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[prng_position]) {
                 // 1
-                atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
+                //atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
             } else {
                 // 0
-                atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
+                //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
             }
         }
 
