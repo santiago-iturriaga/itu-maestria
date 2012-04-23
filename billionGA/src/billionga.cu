@@ -396,57 +396,54 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
     int loops_count = max_samples_doable / samples_per_loop;
     if (max_samples_doable % samples_per_loop > 0) loops_count++;
     
-    __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_SHMEM];
-       
-    const int tid_int = tid >> 5;
-    const int tid_bit = tid & ((1 << 5)-1);
+    __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_THREADS];
     
     int prob_vector_position;
     int prng_position;
     int block_starting_pos;
     
     for (int loop = 0; loop < loops_count; loop++) {
+        // 0 por defecto.
+        current_block_sample[tid] = 0;
+        
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
         block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
         prng_position = block_starting_pos + tid;
         prob_vector_position = prob_vector_starting_pos + prng_position;
         
-        if (prng_position < max_samples_doable) {
-            /*
-            float vector_value = gpu_prob_vector[prob_vector_position];
-            float random_value = prng_vector[prng_position];
-            int bit = 0;
-            
-            if (vector_value + 1 >= random_value) {
-                // 1
-                bit = 0;
-            } else {
-                // 0
-                bit = 1;
-            }
-            
-            atomicOr(&(current_block_sample[tid_int]), ((1-bit) << tid_bit));
-            atomicAnd(&(current_block_sample[tid_int]), ~(bit << tid_bit));
-            */
-            
+        if (prng_position < max_samples_doable) {           
             if (gpu_prob_vector[prob_vector_position]+1 >= prng_vector[prng_position]) {
                 // 1
-                //atomicOr(&(current_block_sample[tid_int]), (1 << tid_bit));
-            } else {
-                // 0
-                //atomicAnd(&(current_block_sample[tid_int]), ~(1 << tid_bit));
+                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
             }
         }
 
         __syncthreads();
-               
-        if (tid < SAMPLE_PROB_VECTOR_SHMEM) {
+        
+        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
+            int aux = current_block_sample[tid << 5];
+
+            #pragma unroll
+            for (int i = 1; i < 32; i++) {
+                aux = aux | current_block_sample[(tid << 5)+i];
+            }
+            
             int sample_pos = prob_vector_starting_pos + block_starting_pos;
             
             if ((sample_pos + (tid << 5)) < prob_vector_size) {
-                gpu_sample[(sample_pos >> 5) + tid] = current_block_sample[tid];
+                gpu_sample[(sample_pos >> 5) + tid] = aux;
             }
         }
+        
+        /*__syncthreads();
+               
+        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
+            int sample_pos = prob_vector_starting_pos + block_starting_pos;
+            
+            if ((sample_pos + (tid << 5)) < prob_vector_size) {
+                gpu_sample[(sample_pos >> 5) + tid] = aux;
+            }
+        }*/
         
         __syncthreads();
     }
