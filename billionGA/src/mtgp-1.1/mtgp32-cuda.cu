@@ -472,7 +472,9 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     ccudaEventCreate(&end);
 
     ccudaEventRecord(start, 0);
+    #endif
     
+    #if defined(INFO) || defined(DEBUG)
     fprintf(stdout, "[INFO] === Initializing Mersenne Twister =======================\n");
     #endif
     
@@ -502,7 +504,7 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
         status->num_data = status->num_data + status->num_unit - r;
     }
     
-    #if defined(DEBUG)
+    #if defined(INFO) || defined(DEBUG)
     fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d (size %lu Mb)\n", 
         status->block_num, status->num_unit, status->num_data, (status->num_data * sizeof(uint32_t)) / (1024*1024));
     #endif
