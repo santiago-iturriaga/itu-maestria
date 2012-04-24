@@ -54,27 +54,30 @@ void vector_set_int(int *gpu_vector, int size, int value) {
 
 // ------------------------------------------------------------------
 
-void vector_sum_float_init(float **partial_sum) {      
-    ccudaMalloc((void**)partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS);
-
-    kern_vector_set_float<<< 1, VECTOR_SUM_BLOCKS >>>(
-        *partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+void vector_sum_float_alloc(float **gpu_partial_sum, float **cpu_partial_sum) {      
+    ccudaMalloc((void**)gpu_partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS);
+    *cpu_partial_sum = (float*)malloc(sizeof(float) * VECTOR_SUM_BLOCKS);
 }
 
-float vector_sum_float_free(float *partial_sum) {
+void vector_sum_float_init(float *gpu_partial_sum) {      
+    kern_vector_set_float<<< 1, VECTOR_SUM_BLOCKS >>>(
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+}
+
+float vector_sum_float_get(float *gpu_partial_sum, float *cpu_partial_sum) {
     float accumulated_sum = 0.0;
     
-    float *cpu_partial_sum;
-    cpu_partial_sum = (float*)malloc(sizeof(float) * VECTOR_SUM_BLOCKS);
-    
-    ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(float) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
     for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
         accumulated_sum += cpu_partial_sum[i];
     }
-
-    ccudaFree(partial_sum);
-    free(cpu_partial_sum);
+    
     return accumulated_sum;
+}
+
+void vector_sum_float_free(float *gpu_partial_sum, float *cpu_partial_sum) {
+    ccudaFree(gpu_partial_sum);
+    free(cpu_partial_sum);
 }
 
 /*
@@ -206,26 +209,28 @@ void vector_sum_bit(int *gpu_input_data, int *gpu_output_data, unsigned int size
     kern_vector_sum_bit<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>(gpu_input_data, gpu_output_data, size);
 }
 
-void vector_sum_bit_init(int **partial_sum) {
-    ccudaMalloc((void**)partial_sum, sizeof(int) * VECTOR_SUM_BLOCKS);
-
-    kern_vector_set_int<<< 1, VECTOR_SUM_BLOCKS >>>(
-        *partial_sum, VECTOR_SUM_BLOCKS, 0);
+void vector_sum_bit_alloc(int **gpu_partial_sum, int **cpu_partial_sum) {      
+    ccudaMalloc((void**)gpu_partial_sum, sizeof(int) * VECTOR_SUM_BLOCKS);
+    *cpu_partial_sum = (int*)malloc(sizeof(int) * VECTOR_SUM_BLOCKS);
 }
 
-int  vector_sum_bit_free(int *partial_sum) {
+void vector_sum_bit_init(int *gpu_partial_sum) {      
+    kern_vector_set_int<<< 1, VECTOR_SUM_BLOCKS >>>(
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+}
+
+int vector_sum_bit_get(int *gpu_partial_sum, int *cpu_partial_sum) {   
     int accumulated_sum = 0;
     
-    int *cpu_partial_sum;
-    cpu_partial_sum = (int*)malloc(sizeof(int) * VECTOR_SUM_BLOCKS);
-    
-    ccudaMemcpy(cpu_partial_sum, partial_sum, sizeof(int) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(int) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
     for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
         accumulated_sum += cpu_partial_sum[i];
     }
-
-    ccudaFree(partial_sum);
-    free(cpu_partial_sum);
     
     return accumulated_sum;
+}
+
+void vector_sum_bit_free(int *gpu_partial_sum, int *cpu_partial_sum) {
+    ccudaFree(gpu_partial_sum);
+    free(cpu_partial_sum);
 }

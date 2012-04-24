@@ -294,8 +294,7 @@ __global__ void mtgp32_single_kernel(mtgp32_kernel_status_t* d_status,
  * @param params MTGP32 parameters. needed for the initialization.
  */
 void make_kernel_data32(mtgp32_kernel_status_t * d_status,
-            mtgp32_params_fast_t params[],
-            int block_num)
+    mtgp32_params_fast_t params[], int block_num, unsigned int seed)
 {
     int i;
     mtgp32_kernel_status_t* h_status
@@ -307,7 +306,7 @@ void make_kernel_data32(mtgp32_kernel_status_t * d_status,
         exit(EXIT_FAILURE);
     }
     for (i = 0; i < block_num; i++) {
-        mtgp32_init_state(&(h_status[i].status[0]), &params[i], i + 1);
+        mtgp32_init_state(&(h_status[i].status[0]), &params[i], seed + i + 1);
     }
     /*
 #if defined(DEBUG)
@@ -461,8 +460,14 @@ void mtgp32_generate_float(struct mtgp32_status *status) {
     }
 }
 
+int mtgp32_get_suitable_block_num() {
+    int mb, mp;
+    return get_suitable_block_num(0,
+       &mb, &mp, sizeof(uint32_t), THREAD_NUM, LARGE_SIZE);
+}
+
 // Se generan (768 * block_num) números aleatorios por cada vez.
-void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
+void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsigned int seed) {
     #if defined(DEBUG)
     float gputime;
     cudaEvent_t start;
@@ -510,7 +515,7 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen) {
     #endif
     
     make_constant(MTGPDC_PARAM_TABLE, status->block_num);
-    make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num);
+    make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num, seed);
     
     ccudaMalloc((void**)&(status->d_data), sizeof(uint32_t) * status->num_data);
     
