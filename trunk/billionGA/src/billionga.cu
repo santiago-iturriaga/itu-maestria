@@ -435,16 +435,6 @@ __global__ void kern_sample_prob_vector(float *gpu_prob_vector, int prob_vector_
             }
         }
         
-        /*__syncthreads();
-               
-        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
-            int sample_pos = prob_vector_starting_pos + block_starting_pos;
-            
-            if ((sample_pos + (tid << 5)) < prob_vector_size) {
-                gpu_sample[(sample_pos >> 5) + tid] = aux;
-            }
-        }*/
-        
         __syncthreads();
     }
 }
