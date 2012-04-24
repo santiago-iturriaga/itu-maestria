@@ -25,8 +25,9 @@ struct mtgp32_status {
     int num_data;
 };
     
-void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen);
+void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsigned int seed);
 void mtgp32_free(struct mtgp32_status *status);
+int mtgp32_get_suitable_block_num();
 
 void mtgp32_generate_float(struct mtgp32_status *status);
 void mtgp32_generate_uint32(struct mtgp32_status *status);
