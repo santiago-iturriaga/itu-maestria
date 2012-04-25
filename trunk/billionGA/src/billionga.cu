@@ -149,6 +149,10 @@ void bga_initialize_thread(struct bga_state *state, int prob_vector_number) {
         ccudaEventRecord(start, 0);
     #endif
 
+    #if defined(INFO) || defined(DEBUG)
+        fprintf(stdout, "[INFO] === Solicitando memoria para el thread %d =====\n", prob_vector_number);
+    #endif
+
     // === Pido la memoria para el vector de probabilidades ==================================
     {
         int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
@@ -536,11 +540,8 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
     cudaEvent_t start;
     cudaEvent_t end;
 
-    cudaEvent_t start_mt;
-    cudaEvent_t end_mt;
-
-    cudaEvent_t start_kern;
-    cudaEvent_t end_kern;
+    cudaEvent_t start_inner;
+    cudaEvent_t end_inner;
     #endif
 
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
@@ -551,8 +552,8 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
         ccudaEventCreate(&end);
         ccudaEventRecord(start, 0);
 
-        ccudaEventCreate(&start_mt);
-        ccudaEventCreate(&start_kern);
+        ccudaEventCreate(&start_inner);
+        ccudaEventCreate(&end_inner);
         #endif
 
         int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
@@ -572,15 +573,15 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             // Genero números aleatorios.
             #if defined(DEBUG)
             fprintf(stdout, "[TIME] Generate mtgp32_generate_float\n", gputime);
-            ccudaEventRecord(start_mt, 0);
+            ccudaEventRecord(start_inner, 0);
             #endif
 
             mtgp32_generate_float(mt_status);
 
             #if defined(DEBUG)
-            ccudaEventRecord(end_mt, 0);
-            ccudaEventSynchronize(end_mt);
-            ccudaEventElapsedTime(&gputime, start_mt, end_mt);
+            ccudaEventRecord(end_inner, 0);
+            ccudaEventSynchronize(end_inner);
+            ccudaEventElapsedTime(&gputime, start_inner, end_inner);
             fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
             #endif
 
@@ -590,7 +591,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
 
             #if defined(DEBUG)
             fprintf(stdout, "[TIME] Generate kern_sample_prob_vector\n", gputime);
-            ccudaEventRecord(start_kern, 0);
+            ccudaEventRecord(start_inner, 0);
             #endif
 
             // Sampleo el vector de prob. con los números aleatorios generados.
@@ -600,9 +601,9 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 state->gpu_samples[sample_number][prob_vector_number]);
 
             #if defined(DEBUG)
-            ccudaEventRecord(end_kern, 0);
-            ccudaEventSynchronize(end_kern);
-            ccudaEventElapsedTime(&gputime, start_kern, end_kern);
+            ccudaEventRecord(end_inner, 0);
+            ccudaEventSynchronize(end_inner);
+            ccudaEventElapsedTime(&gputime, start_inner, end_inner);
             fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
             #endif
         }
@@ -613,11 +614,14 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
         ccudaEventRecord(end, 0);
         ccudaEventSynchronize(end);
         ccudaEventElapsedTime(&gputime, start, end);
-        fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
+        fprintf(stdout, "[TIME] Total processing time: %f (ms)\n", gputime);
         #endif
     }
 
     #if defined(DEBUG)
+    ccudaEventDestroy(start_inner);
+    ccudaEventDestroy(end_inner);
+
     ccudaEventDestroy(start);
     ccudaEventDestroy(end);
     #endif
