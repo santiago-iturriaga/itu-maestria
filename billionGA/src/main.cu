@@ -110,6 +110,9 @@ int main(int argc, char **argv) {
             #pragma omp barrier
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
+            #if defined(DEBUG)
+                #pragma omp barrier
+            #endif
             bga_compute_sample_part_fitness(&problem_state, th_id);
 
             #pragma omp barrier
