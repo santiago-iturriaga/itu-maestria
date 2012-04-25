@@ -97,16 +97,16 @@ int main(int argc, char **argv) {
 
         // === Inicialización del BillionGA.
         bga_initialize_thread(&problem_state, th_id);
-        fprintf(stdout, "Ready %d\n", th_id);
 
+        /*
         #if defined(DEBUG)
             #pragma omp barrier
             if (th_id == 0) bga_show_prob_vector_state(&problem_state);
             #pragma omp barrier
         #endif
+        */
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
-            fprintf(stdout, "New loop %d\n", th_id);
             #pragma omp barrier
             if (th_id == 0) {
                 current_iteration++;
@@ -117,11 +117,10 @@ int main(int argc, char **argv) {
             }
             #pragma omp barrier
 
-            fprintf(stdout, "Sampling %d\n", th_id);
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
-            #if defined(DEBUG)
+            /*#if defined(DEBUG)
                 #pragma omp barrier
-            #endif
+            #endif*/
             bga_compute_sample_part_fitness(&problem_state, th_id);
 
             #pragma omp barrier
