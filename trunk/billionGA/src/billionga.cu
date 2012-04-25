@@ -40,17 +40,6 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stdout, "[INFO] === Solicitando memoria =======================\n");
     #endif
 
-    #if defined(DEBUG)
-        float gputime;
-        cudaEvent_t start;
-        cudaEvent_t end;
-
-        ccudaEventCreate(&start);
-        ccudaEventCreate(&end);
-
-        ccudaEventRecord(start, 0);
-    #endif
-
     // === Pido la memoria para el vector de probabilidades ==================================
 
     state->prob_vector_bit_count = state->number_of_bits / number_of_prob_vectors;
@@ -131,13 +120,6 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stderr, "[ERROR] > Requesting CPU memory for samples_fitness_size\n");
         exit(EXIT_FAILURE);
     }
-
-    #if defined(DEBUG)
-        ccudaEventRecord(end, 0);
-        ccudaEventSynchronize(end);
-        ccudaEventElapsedTime(&gputime, start, end);
-        fprintf(stdout, "TIME] Processing time: %f (ms)\n", gputime);
-    #endif
 
     // === Memoria auxiliar ==================================================================
     size_t gpu_float_vector_sum_size = sizeof(float*) * state->number_of_prob_vectors;
