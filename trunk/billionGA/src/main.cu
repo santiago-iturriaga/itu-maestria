@@ -66,6 +66,8 @@ int main(int argc, char **argv) {
     unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
 
     // === OpenMP
+    omp_set_num_threads(2); 
+    
     int nthreads = omp_get_num_threads();
     #if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
