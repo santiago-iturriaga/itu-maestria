@@ -98,13 +98,11 @@ int main(int argc, char **argv) {
         // === Inicialización del BillionGA.
         bga_initialize_thread(&problem_state, th_id);
 
-        /*
         #if defined(DEBUG)
             #pragma omp barrier
             if (th_id == 0) bga_show_prob_vector_state(&problem_state);
             #pragma omp barrier
         #endif
-        */
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
             #pragma omp barrier
@@ -118,9 +116,9 @@ int main(int argc, char **argv) {
             #pragma omp barrier
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
-            /*#if defined(DEBUG)
+            #if defined(DEBUG)
                 #pragma omp barrier
-            #endif*/
+            #endif
             bga_compute_sample_part_fitness(&problem_state, th_id);
 
             #pragma omp barrier
@@ -145,7 +143,7 @@ int main(int argc, char **argv) {
 
                     #pragma omp barrier
                     if (th_id == 0) {
-                        if (current_iteration % 1000 == 0) {
+                        if (current_iteration % 100 == 0) {
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
                             fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
                         }
