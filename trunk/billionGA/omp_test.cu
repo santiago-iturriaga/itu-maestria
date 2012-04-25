@@ -85,6 +85,10 @@ int main(int argc, char *argv[])
                 cudaSetDevice(cpu_thread_id % num_gpus);        // "% num_gpus" allows more CPU threads than GPU devices
                 cudaGetDevice(&gpu_id);
 
+                #if defined(DEBUG)
+                #pragma omp barrier
+                #endif
+
                 printf("CPU thread %d (of %d) uses CUDA device %d\n", cpu_thread_id, num_cpu_threads, gpu_id);
 
                 int *d_a = 0;   // pointer to memory on the device associated with this CPU thread
