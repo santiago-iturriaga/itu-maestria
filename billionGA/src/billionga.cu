@@ -59,9 +59,9 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     
     int bits_left = state->number_of_bits % number_of_prob_vectors;
     if (bits_left == 0) {
-        state->last_prob_vector_bit_count = state->number_of_prob_vectors;
+        state->last_prob_vector_bit_count = state->prob_vector_bit_count;
     } else {
-        state->last_prob_vector_bit_count = state->number_of_bits % number_of_prob_vectors;
+        state->last_prob_vector_bit_count = current_prob_vector_number_of_bits;
     }
       
     #ifdef INFO
