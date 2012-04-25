@@ -39,6 +39,10 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
+    #if defined(INFO) || defined(DEBUG)
+        fprintf(stdout, "[INFO] === Starting... ===============================\n");
+    #endif
+
     long problem_size;
     problem_size = atol(argv[1]);
 
