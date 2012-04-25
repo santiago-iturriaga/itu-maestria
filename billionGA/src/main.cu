@@ -64,17 +64,13 @@ int main(int argc, char **argv) {
     // === OpenMP
     int nthreads = omp_get_num_threads();
     #if defined(INFO) || defined(DEBUG)
-    fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
+        fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
     #endif
     assert(nthreads < 4);
 
     // === Inicialización del cGA
     struct bga_state problem_state;
     bga_initialization(&problem_state, problem_size, nthreads, NUMBER_OF_SAMPLES);
-
-    #if defined(DEBUG)
-    bga_show_prob_vector_state(&problem_state);
-    #endif
 
     int current_iteration = 0;
 
@@ -86,12 +82,21 @@ int main(int argc, char **argv) {
         ccudaSetDevice(th_device);
 
         #if defined(INFO) || defined(DEBUG)
-        fprintf(stdout, "[INFO] Thread %d using device %d.\n", th_id, th_device);
+            fprintf(stdout, "[INFO] Thread %d using device %d.\n", th_id, th_device);
         #endif
 
         // === Inicialización del Mersenne Twister.
         mtgp32_status mt_status;
         mtgp32_initialize(&mt_status, prng_vector_size, prng_seeds[th_id]);
+
+        // === Inicialización del BillionGA.
+        bga_initialize_thread(&problem_state, th_id);
+
+        #if defined(DEBUG)
+            #pragma omp barrier
+            if (th_id == 0) bga_show_prob_vector_state(&problem_state);
+            #pragma omp barrier
+        #endif
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
             #pragma omp barrier
@@ -99,7 +104,7 @@ int main(int argc, char **argv) {
                 current_iteration++;
 
                 #if defined(DEBUG)
-                fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+                    fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                 #endif
             }
             #pragma omp barrier
@@ -124,17 +129,18 @@ int main(int argc, char **argv) {
             }
 
             #if !defined(DEBUG) && defined(INFO)
-            if (!(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
-                bga_get_part_accumulated_prob(&problem_state, th_id);
+                if (!(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
+                    bga_get_part_accumulated_prob(&problem_state, th_id);
 
-                #pragma omp barrier
-                if (th_id == 0) {
-                    if (current_iteration % 1 == 0) {
-                        fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
-                        fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+                    #pragma omp barrier
+                    if (th_id == 0) {
+                        if (current_iteration % 1 == 0) {
+                            fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
+                            fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+                        }
                     }
+                    #pragma omp barrier
                 }
-            }
             #endif
         }
 

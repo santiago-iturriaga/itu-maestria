@@ -23,15 +23,16 @@ struct bga_state {
     int *samples_fitness;           // [SAMPLE]
     
     // Auxiliares =========
-    float *gpu_float_vector_sum;
-    float *cpu_float_vector_sum;
-    int *gpu_int_vector_sum;
-    int *cpu_int_vector_sum;
+    float **gpu_float_vector_sum;   // [VECTOR][INTERNAL]
+    float **cpu_float_vector_sum;   // [VECTOR][INTERNAL]
+    int **gpu_int_vector_sum;       // [VECTOR][INTERNAL]
+    int **cpu_int_vector_sum;       // [VECTOR][INTERNAL]
 };
 
 // Paso 1 del algortimo.
 // number_of_prob_vectors debe ser potencia de 2 (1, 2, 4, 8,...)
 void bga_initialization(struct bga_state *state, long number_of_bits, int number_of_prob_vectors, int number_of_samples);
+void bga_initialize_thread(struct bga_state *state, int prob_vector_number);
 
 // Paso 2 del algoritmo.
 void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, int prob_vector_number);
