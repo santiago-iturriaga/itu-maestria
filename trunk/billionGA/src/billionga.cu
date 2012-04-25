@@ -142,6 +142,10 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
             size_t sample_vector_size = sizeof(int) * (current_prob_vector_number_of_bits >> 5);
 
             int right_size = current_prob_vector_number_of_bits & ((1<<5)-1);
+            #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] current_prob_vector_number_of_bits (%d), right_size %d\n", 
+                current_prob_vector_number_of_bits, right_size);
+            #endif
             assert(right_size == 0);
 
             #ifdef INFO
