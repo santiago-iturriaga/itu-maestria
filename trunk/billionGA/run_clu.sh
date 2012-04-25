@@ -3,8 +3,9 @@ export OMP_NUM_THREADS=1
 
 cd /home/clusterusers/siturriaga/itu-maestria/trunk/billionGA/
 
-rm out-*.txt
+#rm out-*.txt
 make clu
 
-time (bin/billionga 1048576 2000000 1048576 0 0 > out-1m.txt)
+bin/billionga 1048576 2000000 1048576 0 0
+#time (bin/billionga 1048576 2000000 1048576 0 0 > out-1m.txt)
 #time (bin/billionga 899999744 2000000 67108864 0 0 > out-899m.txt)
