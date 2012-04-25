@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
 
         // === Inicialización del BillionGA.
         bga_initialize_thread(&problem_state, th_id);
+        fprintf(stdout, "Ready %d\n", th_id);
 
         #if defined(DEBUG)
             #pragma omp barrier
