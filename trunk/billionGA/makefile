@@ -29,7 +29,7 @@ clu: src/main.cu src/billionga.cu ${MTGP32_INC}
 	${MTGP32_SRC} ${CUDALINK} ${OMP}
 
 omp: src/main.cu src/billionga.cu ${MTGP32_INC} 
-	$(NVCC_CLu) -o bin/omp_test src/omp_test.cu src/billionga.cu \
+	$(NVCC_CLu) -o bin/omp_test omp_test.cu src/billionga.cu \
 	${MTGP32_SRC} ${CUDALINK} ${OMP}
 
 test: src/test.c
