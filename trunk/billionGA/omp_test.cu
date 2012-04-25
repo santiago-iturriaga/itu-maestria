@@ -75,6 +75,10 @@ int main(int argc, char *argv[])
         //
         omp_set_num_threads(num_gpus);  // create as many CPU threads as there are CUDA devices
     //omp_set_num_threads(2*num_gpus);// create twice as many CPU threads as there are CUDA devices
+    
+    int nthreads = omp_get_num_threads();
+    fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
+    
 #pragma omp parallel
     {
         unsigned int cpu_thread_id = omp_get_thread_num();
