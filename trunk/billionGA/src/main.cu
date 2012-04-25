@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
-#include <cuda.h>
+//#include <cuda.h>
 #include <omp.h>
 
 #include "config.h"
