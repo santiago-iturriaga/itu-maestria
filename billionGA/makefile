@@ -3,7 +3,7 @@ DEBUG = -DDEBUG -g -O0
 #ARCH = -arch=compute_13
 #ARCH = -arch=compute_20
 VERB = -Xptxas=-v --ptxas-options=-v
-OMP = -Xcompiler -fopenmp -Xlinker -lgomp
+OMP = -Xcompiler \-fopenmp -Xlinker \-lgomp
 
 MTGP32_INC = src/mtgp-1.1/mtgp32-fast.h src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.h \
 	src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu src/mtgp-1.1/mtgp32-cuda.h \
