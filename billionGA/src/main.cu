@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
 
                     #pragma omp barrier
                     if (th_id == 0) {
-                        if (current_iteration % 1 == 0) {
+                        if (current_iteration % 1000 == 0) {
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
                             fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
                         }
