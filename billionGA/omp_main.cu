@@ -65,8 +65,10 @@ int main(int argc, char **argv) {
     int prng_vector_size = atoi(argv[3]);
     unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
 
-    // === OpenMP   
-    int nthreads = omp_get_max_threads(); //omp_get_num_threads();
+    // === OpenMP
+    omp_set_num_threads(2); 
+    
+    int nthreads = omp_get_num_threads();
     #if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
     #endif
@@ -88,8 +90,6 @@ int main(int argc, char **argv) {
         #if defined(INFO) || defined(DEBUG)
             fprintf(stdout, "[INFO] Thread %d using device %d.\n", th_id, th_device);
         #endif
-
-        assert(omp_get_num_threads() == nthreads);
 
         // === Inicialización del Mersenne Twister.
         mtgp32_status mt_status;
