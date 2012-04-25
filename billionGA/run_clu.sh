@@ -4,7 +4,7 @@ export OMP_NUM_THREADS=2
 cd /home/clusterusers/siturriaga/itu-maestria/trunk/billionGA/
 
 #rm out-*.txt
-make clu
+#make clu
 
 bin/billionga 1048576 2000000 524288 0
 #bin/billionga 1048576 2000000 1048576 0
