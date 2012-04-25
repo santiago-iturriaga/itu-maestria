@@ -10,7 +10,7 @@ MTGP32_INC = src/mtgp-1.1/mtgp32-fast.h src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/
 	src/mtgp-1.1/mtgp32dc-param-11213.c src/cuda-util.h src/cuda-util.cu src/util.h
 MTGP32_SRC = src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu \
 	src/mtgp-1.1/mtgp32dc-param-11213.c src/cuda-util.cu
-#CUDALINK = -lcuda
+CUDALINK = -lcuda
 
 NVCC_Marga = /home/santiago/cuda/bin/nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS \
 	-L/home/santiago/cuda/fake-libs/ -D__STDC_CONSTANT_MACROS ${VERB}
