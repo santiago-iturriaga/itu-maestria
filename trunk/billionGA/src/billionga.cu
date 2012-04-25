@@ -33,7 +33,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stdout, "[INFO] Problem size   : %ld\n", number_of_bits);
         fprintf(stdout, "[INFO] Population size: %f\n", state->population_size);
         fprintf(stdout, "[INFO] Update value   : %f\n", state->update_value);
-        fprintf(stdout, "[INFO] Num. of vectors: %f\n", state->number_of_prob_vectors);
+        fprintf(stdout, "[INFO] Num. of vectors: %d\n", state->number_of_prob_vectors);
         
     #endif
 
