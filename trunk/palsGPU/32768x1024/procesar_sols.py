@@ -3,7 +3,7 @@
 import os
 import math
 
-ITER_GPU=1
+ITER_GPU=15
 
 deterministas = ['.mct.', '.minmin.']
 
@@ -23,10 +23,7 @@ def calcular_medidas(valores):
     for valor in valores:
         aux_valor += math.pow(valor-avg,2)
 
-    if (len(valores)>1):
-        stddev = math.sqrt(aux_valor / (len(valores)-1))
-    else:
-        stddev = 0.0
+    stddev = math.sqrt(aux_valor / (len(valores)-1))
 
     return (min, max, avg, stddev)
 
