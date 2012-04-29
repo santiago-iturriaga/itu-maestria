@@ -129,29 +129,27 @@ if __name__ == '__main__':
                 medidas_deterministas[instancia][r_d] = (r_make, r_time)
 
     print "====== Tabla de makespan ======"
-    print "Instancia,MCT,Min-Min,Best PGPU,Avg PGPU,Stddev PGPU,Worst PGPU,Avg PGPU vs Min-Min"
+    print "Instancia,Min-Min,Best PGPU,Avg PGPU,Stddev PGPU,Worst PGPU,Avg PGPU vs Min-Min"
     for instancia in instancias:
         (minmin_make, minmin_time) = medidas_deterministas[instancia]['minmin']
-        (mct_make, mct_time) = medidas_deterministas[instancia]['mct']
         
         [(make_min, make_max, make_avg, make_stddev), \
         (time_min, time_max, time_avg, time_stddev), \
         (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
         (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
-        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, mct_make, minmin_make, make_min, make_avg, (make_stddev * 100 / make_avg), make_max, 100-(make_avg * 100 / minmin_make))
+        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, minmin_make, make_min, make_avg, (make_stddev * 100 / make_avg), make_max, 100-(make_avg * 100 / minmin_make))
 
     print "====== Tabla de tiempos (segundos) ======"
-    print "Instancia,MCT,Min-Min,Min time PGPU,Avg time PGPU,Stddev time PGPU,Worst time PGPU,Avg time PGPU vs Min-Min"
+    print "Instancia,Min-Min,Min time PGPU,Avg time PGPU,Stddev time PGPU,Worst time PGPU,Avg time PGPU vs Min-Min"
     total_avg_time = 0.0
     for instancia in instancias:
         (minmin_make, minmin_time) = medidas_deterministas[instancia]['minmin']
-        (mct_make, mct_time) = medidas_deterministas[instancia]['mct']
         
         [(make_min, make_max, make_avg, make_stddev), \
         (time_min, time_max, time_avg, time_stddev), \
         (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
         (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
-        print "%s,%.4f,%.4f,%.4f,%.4f,%.1f,%.4f,%.1f" % (instancia, mct_time, minmin_time, time_min, time_avg, (time_stddev * 100 / time_avg), time_max, 100-(time_avg * 100 / minmin_time))
+        print "%s,%.4f,%.4f,%.4f,%.1f,%.4f,%.1f" % (instancia, minmin_time, time_min, time_avg, (time_stddev * 100 / time_avg), time_max, 100-(time_avg * 100 / minmin_time))
 
         total_avg_time = total_avg_time + time_avg
 
