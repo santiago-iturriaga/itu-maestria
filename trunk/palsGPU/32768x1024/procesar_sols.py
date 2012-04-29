@@ -3,9 +3,9 @@
 import os
 import math
 
-ITER_GPU=15
+ITER_GPU=1
 
-deterministas = ['.mct.', '.minmin.']
+deterministas = ['.minmin.']
 
 def calcular_medidas(valores):
     min = valores[0]

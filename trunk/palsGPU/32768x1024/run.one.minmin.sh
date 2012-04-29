@@ -6,4 +6,13 @@ time (${PATH}/bin/minmin ${PATH}/32768x1024/instances/${INSTANCE} ${DIMENSION} \
     1> ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.sol) \
         2> ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.time
 
+echo "${PATH}/bin/verificador ${PATH}/32768x1024/instances/${INSTANCE} ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.sol ${DIMENSION} > ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.makespan"
+
 ${PATH}/bin/verificador ${PATH}/32768x1024/instances/${INSTANCE} ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.sol ${DIMENSION} > ${PATH}/32768x1024/solutions/${INSTANCE}.minmin.makespan
+
+
+#time (${PATH}/bin/mct ${PATH}/32768x1024/instances/${INSTANCE} ${DIMENSION} \
+    1> ${PATH}/32768x1024/solutions/${INSTANCE}.mct.sol) \
+        2> ${PATH}/32768x1024/solutions/${INSTANCE}.mct.time
+
+#${PATH}/bin/verificador ${PATH}/32768x1024/instances/${INSTANCE} ${PATH}/32768x1024/solutions/${INSTANCE}.mct.sol ${DIMENSION} > ${PATH}/32768x1024/solutions/${INSTANCE}.mct.makespan

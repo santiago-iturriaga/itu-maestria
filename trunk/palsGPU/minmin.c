@@ -27,7 +27,7 @@ char *arch_inst;
 arch_inst = (char *)malloc(sizeof(char)*120);
 
 strcpy(arch_inst,argv[1]);
-fprintf(stdout,"Archivo: %s\n",arch_inst);
+//fprintf(stdout,"Archivo: %s\n",arch_inst);
 
 if((fi=fopen(arch_inst, "r"))==NULL){
     fprintf(stderr,"No se puede leer archivo de instancia %s\n",arch_inst);
