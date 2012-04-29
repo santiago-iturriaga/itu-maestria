@@ -668,8 +668,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
 
     int iter;
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0)
-        && (ts_stop_condition_current.tv_sec - ts_stop_condition_start.tv_sec) <= 5; iter++) {
+    /*for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0)
+        && (ts_stop_condition_current.tv_sec - ts_stop_condition_start.tv_sec) <= 5; iter++) {*/
+    for (iter = 0; (iter < PALS_COUNT); iter++) {
+        
         if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
         // ==============================================================================
