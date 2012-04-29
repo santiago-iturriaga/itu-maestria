@@ -7,7 +7,7 @@ NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
 all: pals-opt verificador minmin
 
 verificador: verificador.c
-	$(CC) verificador.c -o bin/verificador
+	$(CC) -g verificador.c -o bin/verificador
 	
 minmin: minmin.c
 	$(CC) -O3 minmin.c -o bin/minmin

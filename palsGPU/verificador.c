@@ -24,27 +24,6 @@ int NT, NM;
 
 FILE *fi, *fs;
 
-char *arch_inst;
-arch_inst = (char *)malloc(sizeof(char)*SIZE_NOM_ARCH);
-
-strcpy(arch_inst,argv[1]);
-
-//printf("Archivo: %s\n",arch_inst);
-
-char *arch_sol;
-arch_sol= (char *)malloc(sizeof(char)*SIZE_NOM_ARCH);
-
-strcpy(arch_sol,argv[2]);
-
-//printf("Archivo sol: %s\n",arch_sol);
-
-// Leer archivo, almacenando matriz ETC
-
-if((fi=fopen(arch_inst, "r"))==NULL){
-	printf("No se puede leer archivo de instancia %s\n",arch_inst);
-	exit(1);
-}
-
 int i,j;
 
 NT=atoi(argv[3]);
@@ -66,6 +45,11 @@ for (i=0;i<NT;i++){
 		printf("Error al reservar memoria para fila %d de ETC\n",i);
 		exit(2);
 	}
+}
+
+if((fi=fopen(argv[1], "r"))==NULL){
+	printf("No se puede leer archivo de instancia %s\n",argv[1]);
+	exit(1);
 }
 
 int max_etc=0;
@@ -91,8 +75,8 @@ for (i=0;i<NT;i++){
 	asig[i]=NO_ASIG;
 }
 
-if((fs=fopen(arch_sol, "r"))==NULL){
-	printf("No se puede leer archivo de solucion %s\n",arch_sol);
+if((fs=fopen(argv[2], "r"))==NULL){
+	printf("No se puede leer archivo de solucion %s\n", argv[2]);
 	exit(1);
 }
 
@@ -108,13 +92,6 @@ for (i=0;i<NT;i++) {
         exit(1);
     }
 }
-
-/*printf("Sol: [");
-for (i=0;i<NT;i++){
-	printf("%d ",asig[i]);
-}
-printf("]\n");
-*/
 
 int maq;
 
