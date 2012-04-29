@@ -14,7 +14,7 @@
 
 #define PALS_RTASK_RANDS                6144*20
 
-#define PALS_GPU_RTASK__THREADS         128
+#define PALS_GPU_RTASK__THREADS         256
 
 __global__ void pals_rtask_kernel(
     ushort loops_count, ushort machines_count, ushort tasks_count, float current_makespan,
@@ -192,9 +192,9 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
     struct pals_gpu_rtask_instance &instance, struct pals_gpu_rtask_result &result) {
 
     // Asignación del paralelismo del algoritmo.
-    instance.blocks = 32; //128;
+    instance.blocks = 512; //32; //128;
     instance.threads = PALS_GPU_RTASK__THREADS;
-    instance.loops = 16; //32; //32;
+    instance.loops = 1; //8 //32; //32;
 
     // Cantidad total de movimientos a evaluar.
     instance.total_tasks = instance.blocks * instance.threads * instance.loops;
@@ -491,7 +491,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         */
     }
 
-    for (int i = 0; i < instance.blocks; i++) {
+    //for (int i = 0; i < instance.blocks; i++) {
+    for (int i = 0; i < 1; i++) {
         // Calculo cuales fueron los elementos modificados en ese mejor movimiento.
         int block_idx = (i + best_block_idx) % instance.blocks;
 
