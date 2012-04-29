@@ -876,7 +876,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             }
         }
 
-        if (increase_depth >= 500) {
+        //if (increase_depth >= 500) {
+		if (increase_depth >= (etc_matrix->machines_count * 1000)) {
             /*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 
             instance.blocks += 8;
