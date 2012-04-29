@@ -665,12 +665,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     int best_solution_iter = -1;
 
-    clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
+    //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
 
     int iter;
     /*for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0)
         && (ts_stop_condition_current.tv_sec - ts_stop_condition_start.tv_sec) <= 5; iter++) {*/
-	for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
+    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
     //for (iter = 0; (iter < PALS_COUNT); iter++) {
         
         if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
@@ -880,7 +880,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
 
         //if (increase_depth >= 500) {
-		if (increase_depth >= (etc_matrix->machines_count * 1000)) {
+        if ((iter-best_solution_iter) >= (etc_matrix->machines_count * 1000)) {
             /*if (DEBUG) fprintf(stdout, "[DEBUG] Increase depth on iteration %d.\n", iter);
 
             instance.blocks += 8;
@@ -900,7 +900,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             }*/
 
             convergence_flag = 1;
-            increase_depth = 0;
+            //increase_depth = 0;
         }
 
         // Timming -----------------------------------------------------
@@ -910,7 +910,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         // Nuevo seed.
         seed++;
 
-        clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
+        //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
     }
 
     // Timming -----------------------------------------------------
@@ -1010,8 +1010,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
         fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
         fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
-                fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
-                fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
+        fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
+        fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
     }
 
     // Libero la memoria del dispositivo.
