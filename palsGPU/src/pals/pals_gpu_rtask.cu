@@ -723,7 +723,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         cantidad_swaps_iter = 0;
         cantidad_movs_iter = 0;
 
-        for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
+        for (int result_idx = 0; result_idx < 1; result_idx++) {
             //if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 
             if (result.delta[result_idx] < 0.0) { //|| (increase_depth < 50)) {

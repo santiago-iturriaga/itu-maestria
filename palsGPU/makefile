@@ -2,7 +2,7 @@
 
 NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
 #NVCC=/usr/local/cuda/bin/nvcc 
-#NVCCLocal=/home/santiago/cuda/bin/nvcc 
+NVCCLocal=/home/santiago/cuda/bin/nvcc 
 
 all: pals-opt verificador minmin
 
@@ -23,7 +23,7 @@ pals-gdb: src/main.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_gpu_prtask.cu \
 		src/pals/pals_serial.cu 
-	$(NVCC) -g --ptxas-options=-v -maxrregcount=16 src/main.cu \
+	$(NVCCLocal) -g --ptxas-options=-v -maxrregcount=16 src/main.cu \
 		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
