@@ -138,7 +138,8 @@ int main(int argc, char** argv)
 		// Timming -----------------------------------------------------
 
 		//compute_mct(etc_matrix, current_solution);
-		compute_minmin(etc_matrix, current_solution);
+		//compute_minmin(etc_matrix, current_solution);
+                compute_mct(etc_matrix, current_solution);
 	
 		// Timming -----------------------------------------------------
 		timming_end(">> MCT Time", ts_mct);

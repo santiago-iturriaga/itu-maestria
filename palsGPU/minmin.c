@@ -129,14 +129,14 @@ while (nro_asig < NT){
 	nro_asig++;
 }
 
-float makespan=0.0;
-for (j=0;j<NM;j++){
-	if (mach[j]>makespan){
-		makespan = mach[j];
-	}
-}
+//float makespan=0.0;
+//for (j=0;j<NM;j++){
+//	if (mach[j]>makespan){
+//		makespan = mach[j];
+//	}
+//}
 
-fprintf(stdout,"Makespan: %f\n",makespan);
+//fprintf(stdout,"Makespan: %f\n",makespan);
 
 //fprintf(stdout,"[");
 for (i=0;i<NT;i++){
