@@ -1,1 +1,1 @@
-/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU/run.one.minmin.sh A.u_c_hilo
+/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU/32768x1024/run.one.minmin.sh A.u_c_hilo
