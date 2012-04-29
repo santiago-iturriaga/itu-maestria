@@ -23,7 +23,7 @@ def calcular_medidas(valores):
     for valor in valores:
         aux_valor += math.pow(valor-avg,2)
 
-    stddev = math.sqrt(aux_valor / (len(valores)-1))
+    stddev = 0 #math.sqrt(aux_valor / (len(valores)-1))
 
     return (min, max, avg, stddev)
 
