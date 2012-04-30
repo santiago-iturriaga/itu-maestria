@@ -491,8 +491,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         */
     }
 
-    //for (int i = 0; i < instance.blocks; i++) {
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < instance.blocks; i++) {
         // Calculo cuales fueron los elementos modificados en ese mejor movimiento.
         int block_idx = (i + best_block_idx) % instance.blocks;
 
@@ -723,7 +722,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         cantidad_swaps_iter = 0;
         cantidad_movs_iter = 0;
 
-        for (int result_idx = 0; result_idx < 1; result_idx++) {
+        for (int result_idx = 0; result_idx < instance.result_count; result_idx++) {
             //if (DEBUG) fprintf(stdout, "[DEBUG] Movement %d, delta = %f.\n", result_idx, result.delta[result_idx]);
 
             if (result.delta[result_idx] < 0.0) { //|| (increase_depth < 50)) {
