@@ -17,9 +17,9 @@
 
 #define TOTALLY_FUCKUP_AUX_SIZE         6
 
-#define PALS_GPU_RTASK__BLOCKS          128
-#define PALS_GPU_RTASK__THREADS         256
-#define PALS_GPU_RTASK__LOOPS           4
+#define PALS_GPU_RTASK__BLOCKS          512
+#define PALS_GPU_RTASK__THREADS         512
+#define PALS_GPU_RTASK__LOOPS           1
 
 #define APPLY_BEST_KERNEL_BLOCKS        1
 #define APPLY_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS >> 1
@@ -866,13 +866,17 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             exit(EXIT_FAILURE);
         }
 
+        float old;
+        old = current_solution->makespan;
         current_solution->makespan = makespan_ct_aux[0];
 
         for (ushort i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
             if (current_solution->makespan < makespan_ct_aux[i]) {
                 current_solution->makespan = makespan_ct_aux[i];
             }
-        }        
+        }  
+        
+        assert(old >= current_solution->makespan);
 
         if (DEBUG) {
             fprintf(stdout, "[DEBUG] makespan: %f...", current_solution->makespan);
