@@ -878,6 +878,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         
         if (old < current_solution->makespan) {
             fprintf(stderr, "PUTA! on iteration %d\n", iter);
+            fprintf(stderr, "old %f\n", old);
+            fprintf(stderr, "new %f\n", current_solution->makespan);
             assert(false);
         }
 
