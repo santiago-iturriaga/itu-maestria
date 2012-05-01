@@ -10,9 +10,9 @@
 #define SOLUTION_H_
 
 struct solution {
-	ushort *task_assignment;
-	float *machine_compute_time;	
-	float makespan;
+    ushort *task_assignment;
+    float *machine_compute_time;
+    float makespan;
 };
 
 struct solution* create_empty_solution(struct matrix *etc_matrix);

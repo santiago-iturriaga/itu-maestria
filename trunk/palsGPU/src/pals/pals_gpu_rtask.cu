@@ -858,6 +858,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             exit(EXIT_FAILURE);
         }
 
+        /*
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -865,16 +866,20 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
             exit(EXIT_FAILURE);
         }
+        * */
 
+        
         float old;
         old = current_solution->makespan;
-        current_solution->makespan = makespan_ct_aux[0];
+        current_solution->makespan = current_solution->machine_compute_time[makespan_idx_aux[0]];
 
+        /*
         for (ushort i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
             if (current_solution->makespan < makespan_ct_aux[i]) {
                 current_solution->makespan = makespan_ct_aux[i];
             }
-        }  
+        } 
+        * */ 
         
         if (old < current_solution->makespan) {
             fprintf(stderr, "PUTA! on iteration %d\n", iter);
@@ -882,6 +887,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             fprintf(stderr, "new %f\n", current_solution->makespan);
             assert(false);
         }
+
+        // Timming -----------------------------------------------------
+        timming_end(">> pals_gpu_rtask_post", ts_post);
+        // Timming -----------------------------------------------------
 
         if (DEBUG) {
             fprintf(stdout, "[DEBUG] makespan: %f...", current_solution->makespan);
@@ -935,61 +944,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 }
             }
         }
-
-        /*
-        if ((cantidad_movs_iter > 0) || (cantidad_swaps_iter > 0)) {
-            // Actualiza el makespan de la solución.
-            // Si cambio el makespan, busco el nuevo makespan.
-            ushort machine = 0;
-            current_solution->makespan = current_solution->machine_compute_time[0];
-
-            for (ushort i = 1; i < etc_matrix->machines_count; i++) {
-                if (current_solution->makespan < current_solution->machine_compute_time[i]) {
-                    current_solution->makespan = current_solution->machine_compute_time[i];
-                    machine = i;
-                }
-            }
-
-            if (current_solution->makespan < best_solution->makespan) {
-                clone_solution(etc_matrix, best_solution, current_solution);
-                best_solution_iter = iter;
-            }
-
-            if (DEBUG) {
-                fprintf(stdout, "   swaps performed  : %ld.\n", cantidad_swaps_iter);
-                fprintf(stdout, "   movs performed   : %ld.\n", cantidad_movs_iter);
-            }
-
-            cantidad_swaps += cantidad_swaps_iter;
-            cantidad_movs += cantidad_movs_iter;
-        }
-
-        if (best_solution_iter == iter) {
-            increase_depth = 0;
-
-            if (DEBUG) {
-                fprintf(stdout, "   makespan improved: %f.\n", current_solution->makespan);
-            }
-        } else {
-            increase_depth++;
-
-            if (DEBUG) {
-                fprintf(stdout, "   makespan unchanged: %f (%d).\n", current_solution->makespan, increase_depth);
-            }
-        }
-
-        if (increase_depth >= 5) {
-            //if (increase_depth >= 500) {
-            //if ((iter-best_solution_iter) >= (etc_matrix->machines_count * 1000)) {
-                
-            convergence_flag = 1;
-            //increase_depth = 0;
-        }
-        * */
-
-        // Timming -----------------------------------------------------
-        timming_end(">> pals_gpu_rtask_post", ts_post);
-        // Timming -----------------------------------------------------
 
         // Nuevo seed.
         seed++;
