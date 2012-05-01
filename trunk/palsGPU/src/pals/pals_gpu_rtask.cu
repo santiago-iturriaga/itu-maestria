@@ -50,7 +50,7 @@ __global__ void pals_rtask_kernel(ushort machines_count,
     __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
     #pragma unroll
-    for (ushort loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
+    for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
         if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
             // Si es impar...
