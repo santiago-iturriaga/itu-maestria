@@ -28,7 +28,7 @@
 #define COMPUTE_MAKESPAN_KERNEL_BLOCKS        2
 #define COMPUTE_MAKESPAN_KERNEL_THREADS       512
 
-__global__ void pals_rtask_kernel(ushort loops_count, ushort machines_count, 
+__global__ void pals_rtask_kernel(ushort machines_count, 
     ushort tasks_count, float current_makespan, float *gpu_etc_matrix, 
     ushort *gpu_task_assignment, float *gpu_machine_compute_time,
     int *gpu_random_numbers, int *gpu_best_movements_op,
@@ -49,7 +49,8 @@ __global__ void pals_rtask_kernel(ushort loops_count, ushort machines_count,
     __shared__ ushort block_loops[PALS_GPU_RTASK__THREADS];
     __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
-    for (ushort loop = 0; loop < loops_count; loop++) {
+    #pragma unroll
+    for (ushort loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
         if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
             // Si es impar...
@@ -576,7 +577,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     dim3 threads(instance.threads, 1, 1);
 
     pals_rtask_kernel<<< grid, threads >>>(
-        instance.loops,
         etc_matrix->machines_count,
         etc_matrix->tasks_count,
         s->makespan,
