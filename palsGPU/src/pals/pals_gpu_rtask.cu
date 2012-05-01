@@ -25,6 +25,8 @@
 #define APPLY_BEST_KERNEL_THREADS       256
 // APPLY_BEST_KERNEL_THREADS debe ser PALS_GPU_RTASK__BLOCKS / 2
 
+// No puedo trabajar con más de COMPUTE_MAKESPAN_KERNEL_THREADS * COMPUTE_MAKESPAN_KERNEL_BLOCKS machines.
+// 512 * 2 = 1024
 #define COMPUTE_MAKESPAN_KERNEL_BLOCKS        2
 #define COMPUTE_MAKESPAN_KERNEL_THREADS       512
 
@@ -634,7 +636,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     }
 
     int move_type = instance.cpu_totally_fuckup_aux[0];
-    int block_idx = instance.cpu_totally_fuckup_aux[1];
+    //int block_idx = instance.cpu_totally_fuckup_aux[1];
     int thread_idx = instance.cpu_totally_fuckup_aux[2];
     int loop_idx = instance.cpu_totally_fuckup_aux[3];
     int random1 = instance.cpu_totally_fuckup_aux[4];
@@ -721,8 +723,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // ==============================================================================
 
     // Time stop condition -----------------------------------------
-    timespec ts_stop_condition_start, ts_stop_condition_current;
-    clock_gettime(CLOCK_REALTIME, &ts_stop_condition_start);
+    //timespec ts_stop_condition_start, ts_stop_condition_current;
+    //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_start);
 
     // Timming -----------------------------------------------------
     timespec ts_init;
@@ -794,9 +796,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     const short cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
     if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
-
-    short increase_depth;
-    increase_depth = 0;
 
     ulong cantidad_swaps = 0;
     ulong cantidad_movs = 0;
