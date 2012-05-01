@@ -624,22 +624,23 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_deltas,
         instance.gpu_totally_fuckup_aux);
 
-    //cudaThreadSynchronize();
+    cudaThreadSynchronize();
     
-    if (cudaMemcpy(instance.cpu_totally_fuckup_aux, instance.gpu_totally_fuckup_aux, sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE, 
+    /*if (cudaMemcpy(instance.cpu_totally_fuckup_aux, instance.gpu_totally_fuckup_aux, sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE, 
         cudaMemcpyDeviceToHost) != cudaSuccess) {
         
         fprintf(stderr, "[ERROR] Copiando gpu_totally_fuckup_aux.\n");
         exit(EXIT_FAILURE);            
-    }
+    }*/
 
+    /*
     int move_type = instance.cpu_totally_fuckup_aux[0];
     //int block_idx = instance.cpu_totally_fuckup_aux[1];
     int thread_idx = instance.cpu_totally_fuckup_aux[2];
     int loop_idx = instance.cpu_totally_fuckup_aux[3];
     int random1 = instance.cpu_totally_fuckup_aux[4];
     int random2 = instance.cpu_totally_fuckup_aux[5];
-    
+    */
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
     // Timming -----------------------------------------------------
@@ -653,6 +654,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timming_start(ts_pals_post);
     // Timming -----------------------------------------------------
     
+    /*
     if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
         ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
         ushort task_y = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->tasks_count - 1));
@@ -709,7 +711,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         }
         // <======= DEBUG
     }
-
+    */
+    
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_pals_post", ts_pals_post);
     // Timming -----------------------------------------------------
@@ -881,17 +884,19 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         } 
         * */ 
         
+        /*
         if (old < current_solution->makespan) {
             fprintf(stderr, "PUTA! on iteration %d\n", iter);
             fprintf(stderr, "old %f\n", old);
             fprintf(stderr, "new %f\n", current_solution->makespan);
             assert(false);
         }
-
+        */
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_post", ts_post);
         // Timming -----------------------------------------------------
 
+        /*
         if (DEBUG) {
             fprintf(stdout, "[DEBUG] makespan: %f...", current_solution->makespan);
             
@@ -944,7 +949,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 }
             }
         }
-
+        */
         // Nuevo seed.
         seed++;
 
