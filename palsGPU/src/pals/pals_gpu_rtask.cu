@@ -17,8 +17,8 @@
 
 #define TOTALLY_FUCKUP_AUX_SIZE         6
 
-#define PALS_GPU_RTASK__BLOCKS          512
-#define PALS_GPU_RTASK__THREADS         512
+#define PALS_GPU_RTASK__BLOCKS          64
+#define PALS_GPU_RTASK__THREADS         256
 #define PALS_GPU_RTASK__LOOPS           1
 
 #define APPLY_BEST_KERNEL_BLOCKS        1
