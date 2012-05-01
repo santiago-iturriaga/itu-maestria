@@ -23,7 +23,6 @@
 
 #define APPLY_BEST_KERNEL_BLOCKS        1
 #define APPLY_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS >> 1
-// APPLY_BEST_KERNEL_THREADS debe ser PALS_GPU_RTASK__BLOCKS / 2
 
 // No puedo trabajar con más de COMPUTE_MAKESPAN_KERNEL_THREADS * COMPUTE_MAKESPAN_KERNEL_BLOCKS machines.
 // 512 * 2 = 1024
@@ -67,7 +66,8 @@ __global__ void pals_rtask_kernel(ushort machines_count,
             delta = 0.0;
 
             // ================= Obtengo las tareas sorteadas.
-            task_x = (random1 + loop) % tasks_count;
+            //task_x = (random1 + loop) % tasks_count;
+            task_x = (random1 + loop) & (tasks_count-1);
 
             task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
             if (task_y >= task_x) task_y++;
