@@ -44,7 +44,7 @@ pals-opt: src/main.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu 
-	$(NVCC) -maxrregcount=16 src/main.cu \
+	$(NVCC) -O3 -maxrregcount=16 src/main.cu \
 		src/load_instance.cu src/load_params.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
