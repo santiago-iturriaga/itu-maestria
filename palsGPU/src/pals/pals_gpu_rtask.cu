@@ -261,14 +261,14 @@ __global__ void pals_apply_best_kernel(ushort machines_count,
         int loop_idx = gpu_best_movements_loop[i];
         int random1 = gpu_random_numbers[2 * i];
         int random2 = gpu_random_numbers[(2 * i) + 1];
-        
+        /*
         gpu_totally_fuckup_aux[0] = mov_type;
         gpu_totally_fuckup_aux[1] = i;
         gpu_totally_fuckup_aux[2] = thread_idx;
         gpu_totally_fuckup_aux[3] = loop_idx;
         gpu_totally_fuckup_aux[4] = random1;
         gpu_totally_fuckup_aux[5] = random2;
-
+        */
         if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
             // Si es impar...
             // Movimiento SWAP.
@@ -571,7 +571,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timming_start(ts_pals);
     // Timming -----------------------------------------------------
 
-    cudaThreadSynchronize();
+    if (DEBUG) cudaThreadSynchronize();
 
     dim3 grid(instance.blocks, 1, 1);
     dim3 threads(instance.threads, 1, 1);
@@ -596,7 +596,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         exit(EXIT_FAILURE);
     }
 
-    cudaThreadSynchronize();
+    if (DEBUG) cudaThreadSynchronize();
 
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_pals", ts_pals);
@@ -624,23 +624,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_deltas,
         instance.gpu_totally_fuckup_aux);
 
-    cudaThreadSynchronize();
+    if (DEBUG) cudaThreadSynchronize();
     
-    /*if (cudaMemcpy(instance.cpu_totally_fuckup_aux, instance.gpu_totally_fuckup_aux, sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE, 
-        cudaMemcpyDeviceToHost) != cudaSuccess) {
-        
-        fprintf(stderr, "[ERROR] Copiando gpu_totally_fuckup_aux.\n");
-        exit(EXIT_FAILURE);            
-    }*/
-
-    /*
-    int move_type = instance.cpu_totally_fuckup_aux[0];
-    //int block_idx = instance.cpu_totally_fuckup_aux[1];
-    int thread_idx = instance.cpu_totally_fuckup_aux[2];
-    int loop_idx = instance.cpu_totally_fuckup_aux[3];
-    int random1 = instance.cpu_totally_fuckup_aux[4];
-    int random2 = instance.cpu_totally_fuckup_aux[5];
-    */
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
     // Timming -----------------------------------------------------
@@ -653,65 +638,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timespec ts_pals_post;
     timming_start(ts_pals_post);
     // Timming -----------------------------------------------------
-    
-    /*
-    if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
-        ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
-        ushort task_y = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->tasks_count - 1));
-        if (task_y >= task_x) task_y++;
-       
-        ushort machine_a = s->task_assignment[task_x];
-        ushort machine_b = s->task_assignment[task_y];
-        
-        // Actualizo la asignación de cada tarea en el host.
-        s->task_assignment[task_x] = machine_b;
-        s->task_assignment[task_y] = machine_a;
-
-        // Actualizo los compute time de cada máquina luego del move en el host.
-        s->machine_compute_time[machine_a] = 
-            s->machine_compute_time[machine_a] +
-            get_etc_value(etc_matrix, machine_a, task_y) - 
-            get_etc_value(etc_matrix, machine_a, task_x);
-
-        s->machine_compute_time[machine_b] = 
-            s->machine_compute_time[machine_b] +
-            get_etc_value(etc_matrix, machine_b, task_x) - 
-            get_etc_value(etc_matrix, machine_b, task_y);
-       
-        // =======> DEBUG
-        if (DEBUG) { 
-            ushort machine_a = s->task_assignment[task_x];
-            ushort machine_b = s->task_assignment[task_y];
-
-            fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d.\n",
-                task_x, machine_a, task_y, machine_b);
-        }
-        // <======= DEBUG
-    } else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
-        ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
-        ushort machine_a = s->task_assignment[task_x];
-        ushort machine_b = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->machines_count - 1));
-        if (machine_b >= machine_a) machine_b++;
-
-        s->task_assignment[task_x] = machine_b;
-    
-        // Actualizo los compute time de cada máquina luego del move en el host.
-        s->machine_compute_time[machine_a] = 
-            s->machine_compute_time[machine_a] - 
-            get_etc_value(etc_matrix, machine_a, task_x);
-
-        s->machine_compute_time[machine_b] = 
-            s->machine_compute_time[machine_b] +
-            get_etc_value(etc_matrix, machine_b, task_x);
-   
-        // =======> DEBUG
-        if (DEBUG) {
-            fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d.\n",
-                task_x, machine_a, machine_b);
-        }
-        // <======= DEBUG
-    }
-    */
     
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_pals_post", ts_pals_post);
@@ -798,15 +724,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     const short cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
     if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
 
-    ulong cantidad_swaps = 0;
-    ulong cantidad_movs = 0;
-
     short convergence_flag;
     convergence_flag = 0;
 
     int best_solution_iter = -1;
+    float best_solution = VERY_BIG_FLOAT;
 
-    int makespan_idx_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
+    //int makespan_idx_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
     float makespan_ct_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
 
     //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
@@ -853,6 +777,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             etc_matrix->machines_count, instance.gpu_machine_compute_time,
             instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
+        /*
         if (cudaMemcpy(makespan_idx_aux, instance.gpu_makespan_idx_aux, sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -860,8 +785,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(int));
             exit(EXIT_FAILURE);
         }
+        * */
 
-        /*
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -869,87 +794,32 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
             exit(EXIT_FAILURE);
         }
-        * */
-
         
         float old;
         old = current_solution->makespan;
-        current_solution->makespan = current_solution->machine_compute_time[makespan_idx_aux[0]];
 
-        /*
+        current_solution->makespan = makespan_ct_aux[0];
+
         for (ushort i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
             if (current_solution->makespan < makespan_ct_aux[i]) {
                 current_solution->makespan = makespan_ct_aux[i];
             }
         } 
-        * */ 
         
-        /*
+        if (current_solution->makespan < best_solution) {
+            best_solution = current_solution->makespan;
+            best_solution_iter = iter;
+        }
+        
         if (old < current_solution->makespan) {
             fprintf(stderr, "PUTA! on iteration %d\n", iter);
             fprintf(stderr, "old %f\n", old);
-            fprintf(stderr, "new %f\n", current_solution->makespan);
-            assert(false);
+            fprintf(stderr, "new %f\n\n", current_solution->makespan);
         }
-        */
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_post", ts_post);
         // Timming -----------------------------------------------------
 
-        /*
-        if (DEBUG) {
-            fprintf(stdout, "[DEBUG] makespan: %f...", current_solution->makespan);
-            
-            float verificar_makespan;
-            verificar_makespan = current_solution->machine_compute_time[0];
-
-            for (ushort i = 1; i < etc_matrix->machines_count; i++) {
-                if (verificar_makespan < current_solution->machine_compute_time[i]) {
-                    verificar_makespan = current_solution->machine_compute_time[i];
-                }
-            }
-            
-            assert(verificar_makespan == current_solution->makespan);
-            fprintf(stdout, " OK\n");
-        }
-
-        if (DEBUG) {
-            // Validación de la memoria del dispositivo.
-            fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
-
-            ushort aux_task_assignment[etc_matrix->tasks_count];
-
-            if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(short),
-                cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-                fprintf(stderr, "[ERROR] Copiando task_assignment al host (%ld bytes).\n", etc_matrix->tasks_count * sizeof(short));
-                exit(EXIT_FAILURE);
-            }
-
-            for (ushort i = 0; i < etc_matrix->tasks_count; i++) {
-                if (current_solution->task_assignment[i] != aux_task_assignment[i]) {
-                    fprintf(stdout, "[INFO] task assignment diff => task %d on host: %d, on device: %d\n",
-                        i, current_solution->task_assignment[i], aux_task_assignment[i]);
-                }
-            }
-
-            float aux_machine_compute_time[etc_matrix->machines_count];
-
-            if (cudaMemcpy(aux_machine_compute_time, instance.gpu_machine_compute_time, etc_matrix->machines_count * sizeof(float),
-                cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-                fprintf(stderr, "[ERROR] Copiando machine_compute_time al host (%ld bytes).\n", etc_matrix->machines_count * sizeof(float));
-                exit(EXIT_FAILURE);
-            }
-
-            for (ushort i = 0; i < etc_matrix->machines_count; i++) {
-                if (current_solution->machine_compute_time[i] != aux_machine_compute_time[i]) {
-                    fprintf(stdout, "[INFO] machine CT diff => machine %d on host: %f, on device: %f\n",
-                        i, current_solution->machine_compute_time[i], aux_machine_compute_time[i]);
-                }
-            }
-        }
-        */
         // Nuevo seed.
         seed++;
 
@@ -964,75 +834,31 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     if (DEBUG) {
         fprintf(stdout, "[DEBUG] Total iterations       : %d.\n", iter);
         fprintf(stdout, "[DEBUG] Iter. best sol. found  : %d.\n", best_solution_iter);
-
-        fprintf(stdout, "[DEBUG] Total swaps performed  : %ld.\n", cantidad_swaps);
-        fprintf(stdout, "[DEBUG] Total movs performed   : %ld.\n", cantidad_movs);
+        fprintf(stdout, "[DEBUG] Best sol. found        : %f.\n", best_solution);
+        fprintf(stdout, "[DEBUG] Current sol.           : %f.\n", current_solution->makespan);
 
         fprintf(stdout, "[DEBUG] Current blocks count   : %d.\n", instance.blocks);
         fprintf(stdout, "[DEBUG] Current loops count    : %d.\n", instance.loops);
     }
 
-    if (DEBUG) {
-        // Validación de la memoria del dispositivo.
-        fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
-
-        ushort aux_task_assignment[etc_matrix->tasks_count];
-
-        if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(short),
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando task_assignment al host (%ld bytes).\n", etc_matrix->tasks_count * sizeof(short));
-            exit(EXIT_FAILURE);
-        }
-
-        for (ushort i = 0; i < etc_matrix->tasks_count; i++) {
-            if (current_solution->task_assignment[i] != aux_task_assignment[i]) {
-                fprintf(stdout, "[INFO] task assignment diff => task %d on host: %d, on device: %d\n",
-                    i, current_solution->task_assignment[i], aux_task_assignment[i]);
-            }
-        }
-
-        float aux_machine_compute_time[etc_matrix->machines_count];
-
-        if (cudaMemcpy(aux_machine_compute_time, instance.gpu_machine_compute_time, etc_matrix->machines_count * sizeof(float),
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando machine_compute_time al host (%ld bytes).\n", etc_matrix->machines_count * sizeof(float));
-            exit(EXIT_FAILURE);
-        }
-
-        for (ushort i = 0; i < etc_matrix->machines_count; i++) {
-            if (current_solution->machine_compute_time[i] != aux_machine_compute_time[i]) {
-                fprintf(stdout, "[INFO] machine CT diff => machine %d on host: %f, on device: %f\n",
-                    i, current_solution->machine_compute_time[i], aux_machine_compute_time[i]);
-            }
-        }
+    int task_assignment_size = sizeof(short) * etc_matrix->tasks_count;
+    if (cudaMemcpy(current_solution->task_assignment, instance.gpu_task_assignment, 
+        task_assignment_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+            
+        fprintf(stderr, "[ERROR] Copiando task_assignment desde el dispositivo (%d bytes).\n", task_assignment_size);
+        exit(EXIT_FAILURE);
     }
-
+    
+    int machine_compute_time_size = sizeof(float) * etc_matrix->machines_count;
+    if (cudaMemcpy(current_solution->machine_compute_time, instance.gpu_machine_compute_time, 
+        machine_compute_time_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
+            
+        fprintf(stderr, "[ERROR] Copiando machine_compute_time desde el dispositivo (%d bytes).\n", machine_compute_time_size);
+        exit(EXIT_FAILURE);
+    }
+   
     // Libera la memoria del dispositivo con los números aleatorios.
     RNG_rand48_cleanup(r48);
-
-    // Reconstruye el compute time de cada máquina.
-    // NOTA: tengo que hacer esto cada tanto por errores acumulados en el redondeo.
-    for (ushort i = 0; i < etc_matrix->machines_count; i++) {
-        current_solution->machine_compute_time[i] = 0.0;
-    }
-
-    for (ushort i = 0; i < etc_matrix->tasks_count; i++) {
-        ushort assigned_machine = current_solution->task_assignment[i];
-
-        current_solution->machine_compute_time[assigned_machine] =
-            current_solution->machine_compute_time[assigned_machine] +
-            get_etc_value(etc_matrix, assigned_machine, i);
-    }
-
-    // Actualiza el makespan de la solución.
-    current_solution->makespan = current_solution->machine_compute_time[0];
-    for (ushort i = 1; i < etc_matrix->machines_count; i++) {
-        if (current_solution->makespan < current_solution->machine_compute_time[i]) {
-            current_solution->makespan = current_solution->machine_compute_time[i];
-        }
-    }
 
     // ===========> DEBUG
     if (DEBUG) {
@@ -1045,10 +871,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         fprintf(stdout, "[DEBUG] Nuevo makespan: %f\n", current_solution->makespan);
     } else {
         if (!OUTPUT_SOLUTION) fprintf(stdout, "%f\n", current_solution->makespan);
+        
         fprintf(stderr, "CANT_ITERACIONES|%d\n", iter);
         fprintf(stderr, "BEST_FOUND|%d\n", best_solution_iter);
-        fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
-        fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);
+        /*fprintf(stderr, "TOTAL_SWAPS|%ld\n", cantidad_swaps);
+        fprintf(stderr, "TOTAL_MOVES|%ld\n", cantidad_movs);*/
+        fprintf(stderr, "TOTAL_SWAPS|0\n");
+        fprintf(stderr, "TOTAL_MOVES|0\n");
+        fprintf(stderr, "BEST_FOUND_VALUE|%f\n", best_solution);
+        fprintf(stderr, "CURRENT_FOUND_VALUE|%f\n", current_solution->makespan);
     }
 
     // Libero la memoria del dispositivo.
