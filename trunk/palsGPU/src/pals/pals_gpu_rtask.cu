@@ -18,7 +18,7 @@
 #define TOTALLY_FUCKUP_AUX_SIZE         6
 
 #define PALS_GPU_RTASK__BLOCKS          256
-#define PALS_GPU_RTASK__THREADS         128
+#define PALS_GPU_RTASK__THREADS         256
 #define PALS_GPU_RTASK__LOOPS           4
 
 #define APPLY_BEST_KERNEL_BLOCKS        1
@@ -51,7 +51,6 @@ __global__ void pals_rtask_kernel(ushort machines_count,
     __shared__ ushort block_loops[PALS_GPU_RTASK__THREADS];
     __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
-    #pragma unroll
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
         if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
