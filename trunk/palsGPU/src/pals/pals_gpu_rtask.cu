@@ -66,14 +66,10 @@ __global__ void pals_rtask_kernel(ushort machines_count,
             delta = 0.0;
 
             // ================= Obtengo las tareas sorteadas.
-            //task_x = (random1 + loop) % tasks_count;
-            task_x = (random1 + loop) & (tasks_count-1);
+            task_x = (random1 + loop) % tasks_count;
 
-            //task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
-            task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) & (tasks_count - 1);
-            if (task_y >= task_x) {
-                task_y = (task_y + 1) & (tasks_count - 1);
-            }
+            task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
+            if (task_y >= task_x) task_y++;
 
             // ================= Obtengo las máquinas a las que estan asignadas las tareas.
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
@@ -143,17 +139,13 @@ __global__ void pals_rtask_kernel(ushort machines_count,
 
             // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
             // ================= y el compute time de la máquina.
-            //task_x = (random1 + loop) % tasks_count;
-            task_x = (random1 + loop) & (tasks_count-1);
+            task_x = (random1 + loop) % tasks_count;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
             machine_a_ct_old = gpu_machine_compute_time[machine_a];
 
             // ================= Obtengo la máquina destino sorteada.
-            //machine_b = ((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
-            machine_b = ((random2 >> 1) + (loop * block_dim) + thread_idx) & (machines_count - 1);
-            if (machine_b >= machine_a) {
-                machine_b = (machine_b + 1) & (machines_count - 1);
-            }
+            machine_b = ((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
+            if (machine_b >= machine_a) machine_b++;
 
             machine_b_ct_old = gpu_machine_compute_time[machine_b];
 
