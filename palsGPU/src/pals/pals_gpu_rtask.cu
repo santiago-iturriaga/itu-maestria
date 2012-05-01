@@ -9,11 +9,13 @@
 
 #include "../random/cpu_rand.h"
 #include "../random/RNG_rand48.h"
+#include "../random/mtgp-1.1/mtgp32-cuda.h"
 
 #include "pals_gpu_rtask.h"
 
 #define VERY_BIG_FLOAT                  1073741824
-#define PALS_RTASK_RANDS                6144*20
+//#define PALS_RTASK_RANDS                6144*20
+#define PALS_RTASK_RANDS                1048576
 
 #define TOTALLY_FUCKUP_AUX_SIZE         6
 
@@ -715,14 +717,22 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // Ejecuto GPUPALS.
     int seed = input.seed;
 
-    RNG_rand48 r48;
-    RNG_rand48_init(r48, PALS_RTASK_RANDS); // Debe ser múltiplo de 6144
+    //RNG_rand48 r48;
+    //RNG_rand48_init(r48, PALS_RTASK_RANDS); // Debe ser múltiplo de 6144
+
+    int prng_vector_size = PALS_RTASK_RANDS;
+    //unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
+
+    mtgp32_status mt_status;
+    mtgp32_initialize(&mt_status, prng_vector_size, seed);
 
     // Cantidad de números aleatorios por invocación.
     unsigned int rand_iter_size = instance.blocks * 2;
 
-    const short cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
-    if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", cant_iter_generadas);
+    int prng_cant_iter_generadas = PALS_RTASK_RANDS / rand_iter_size;
+    int prng_iter_actual = prng_cant_iter_generadas;
+    
+    if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", prng_cant_iter_generadas);
 
     short convergence_flag;
     convergence_flag = 0;
@@ -749,9 +759,14 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timespec ts_rand;
         timming_start(ts_rand);
 
-        if (iter % cant_iter_generadas == 0) {
+        prng_iter_actual = prng_iter_actual + (instance.blocks * 2);
+
+        if (prng_iter_actual >= prng_cant_iter_generadas) {
             if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
-            RNG_rand48_generate(r48, seed);
+            
+            //RNG_rand48_generate(r48, seed);
+            mtgp32_generate_uint32(&mt_status);
+            prng_iter_actual = 0;
         }
 
         timming_end(">> RNG_rand48", ts_rand);
@@ -762,7 +777,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         // Timming -----------------------------------------------------
 
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            &(r48.res[(iter % cant_iter_generadas) * rand_iter_size]));
+            (int*)(&(mt_status.d_data[prng_iter_actual])));
 
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -858,7 +873,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     }
    
     // Libera la memoria del dispositivo con los números aleatorios.
-    RNG_rand48_cleanup(r48);
+    //RNG_rand48_cleanup(r48);
+    mtgp32_free(&mt_status);
 
     // ===========> DEBUG
     if (DEBUG) {
