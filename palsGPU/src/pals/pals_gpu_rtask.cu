@@ -427,16 +427,16 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
     }
 
     if (cudaMalloc((void**)&(instance.gpu_totally_fuckup_aux), sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_totally_fuckup_aux (%d bytes).\n", sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE);
+        fprintf(stderr, "[ERROR] Solicitando memoria gpu_totally_fuckup_aux (%lu bytes).\n", sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE);
         exit(EXIT_FAILURE);
     }
 
     if (cudaMalloc((void**)&(instance.gpu_makespan_idx_aux), sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_makespan_idx_aux (%d bytes).\n", sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS);
+        fprintf(stderr, "[ERROR] Solicitando memoria gpu_makespan_idx_aux (%lu bytes).\n", sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS);
         exit(EXIT_FAILURE);
     }
     if (cudaMalloc((void**)&(instance.gpu_makespan_ct_aux), sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_makespan_ct_aux (%d bytes).\n", sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS);
+        fprintf(stderr, "[ERROR] Solicitando memoria gpu_makespan_ct_aux (%lu bytes).\n", sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS);
         exit(EXIT_FAILURE);
     }    
     
