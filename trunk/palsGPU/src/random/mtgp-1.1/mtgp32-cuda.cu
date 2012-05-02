@@ -174,38 +174,14 @@ __global__ void mtgp32_uint32_kernel(mtgp32_kernel_status_t* d_status,
     // main loop
     for (int i = 0; i < size; i += LARGE_SIZE) {
 
-#if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-    if ((i == 0) && (bid == 0) && (tid <= 1)) {
-        printf("status[LARGE_SIZE - N + tid]:%08x\n",
-           status[LARGE_SIZE - N + tid]);
-        printf("status[LARGE_SIZE - N + tid + 1]:%08x\n",
-           status[LARGE_SIZE - N + tid + 1]);
-        printf("status[LARGE_SIZE - N + tid + pos]:%08x\n",
-           status[LARGE_SIZE - N + tid + pos]);
-        printf("sh1:%d\n", sh1_tbl[bid]);
-        printf("sh2:%d\n", sh2_tbl[bid]);
-        printf("mask:%08x\n", mask[0]);
-        for (int j = 0; j < 16; j++) {
-        printf("tbl[%d]:%08x\n", j, param_tbl[0][j]);
-        }
-    }
-#endif
     r = para_rec(status[LARGE_SIZE - N + tid],
          status[LARGE_SIZE - N + tid + 1],
          status[LARGE_SIZE - N + tid + pos],
          bid);
     status[tid] = r;
-#if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-    if ((i == 0) && (bid == 0) && (tid <= 1)) {
-        printf("status[tid]:%08x\n", status[tid]);
-    }
-#endif
+
     o = temper(r, status[LARGE_SIZE - N + tid + pos - 1], bid);
-#if defined(DEBUG) && defined(__DEVICE_EMULATION__)
-    if ((i == 0) && (bid == 0) && (tid <= 1)) {
-        printf("r:%08" PRIx32 "\n", r);
-    }
-#endif
+
     d_data[size * bid + i + tid] = o;
     __syncthreads();
     r = para_rec(status[(4 * THREAD_NUM - N + tid) % LARGE_SIZE],
@@ -308,14 +284,7 @@ void make_kernel_data32(mtgp32_kernel_status_t * d_status,
     for (i = 0; i < block_num; i++) {
         mtgp32_init_state(&(h_status[i].status[0]), &params[i], seed + i + 1);
     }
-    /*
-#if defined(DEBUG)
-    printf("h_status[0].status[0]:%08"PRIx32"\n", h_status[0].status[0]);
-    printf("h_status[0].status[1]:%08"PRIx32"\n", h_status[0].status[1]);
-    printf("h_status[0].status[2]:%08"PRIx32"\n", h_status[0].status[2]);
-    printf("h_status[0].status[3]:%08"PRIx32"\n", h_status[0].status[3]);
-#endif
-* */
+
     ccudaMemcpy(d_status, h_status,
         sizeof(mtgp32_kernel_status_t) * block_num,
         cudaMemcpyHostToDevice);
@@ -405,10 +374,6 @@ void mtgp32_print_generated_uint32(struct mtgp32_status *status) {
 void mtgp32_generate_uint32(struct mtgp32_status *status) {
     cudaError_t e;
 
-    #if defined(DEBUG)
-    //fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
-    #endif
-        
     /* kernel call */
     mtgp32_uint32_kernel<<< status->block_num, THREAD_NUM >>>(
         status->d_status, status->d_data, status->num_data / status->block_num);
@@ -444,10 +409,6 @@ void mtgp32_print_generated_floats(struct mtgp32_status *status) {
 void mtgp32_generate_float(struct mtgp32_status *status) {                
     cudaError_t e;
 
-    #if defined(DEBUG)
-    //fprintf(stdout, "[DEBUG] Generating single precision floating point random numbers.\n");
-    #endif
-        
     /* kernel call */
     mtgp32_single_kernel<<< status->block_num, THREAD_NUM >>>(
         status->d_status, status->d_data, status->num_data / status->block_num);
@@ -468,20 +429,18 @@ int mtgp32_get_suitable_block_num() {
 
 // Se generan (768 * block_num) números aleatorios por cada vez.
 void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsigned int seed) {
-    #if defined(DEBUG)
     float gputime;
     cudaEvent_t start;
     cudaEvent_t end;
-    
-    ccudaEventCreate(&start);
-    ccudaEventCreate(&end);
 
-    ccudaEventRecord(start, 0);
-    #endif
+    if (DEBUG) {
+        ccudaEventCreate(&start);
+        ccudaEventCreate(&end);
+
+        ccudaEventRecord(start, 0);
     
-    #if defined(INFO) || defined(DEBUG)
-    fprintf(stdout, "[INFO] === Initializing Mersenne Twister =======================\n");
-    #endif
+        fprintf(stdout, "[INFO] === Initializing Mersenne Twister =======================\n");
+    }
     
     status->numbers_per_gen = numbers_per_gen;
     status->num_data = numbers_per_gen;
@@ -509,25 +468,25 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsign
         status->num_data = status->num_data + status->num_unit - r;
     }
     
-    #if defined(INFO) || defined(DEBUG)
-    fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d (size %lu Mb)\n", 
-        status->block_num, status->num_unit, status->num_data, (status->num_data * sizeof(uint32_t)) / (1024*1024));
-    #endif
+    if (DEBUG) {
+        fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d (size %lu Mb)\n", 
+            status->block_num, status->num_unit, status->num_data, (status->num_data * sizeof(uint32_t)) / (1024*1024));
+    }
     
     make_constant(MTGPDC_PARAM_TABLE, status->block_num);
     make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num, seed);
     
     ccudaMalloc((void**)&(status->d_data), sizeof(uint32_t) * status->num_data);
     
-    #if defined(DEBUG)
-    ccudaEventRecord(end, 0);
-    ccudaEventSynchronize(end);
-    ccudaEventElapsedTime(&gputime, start, end);
-    fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
-        
-    ccudaEventDestroy(start);
-    ccudaEventDestroy(end);
-    #endif
+    if (DEBUG) {
+        ccudaEventRecord(end, 0);
+        ccudaEventSynchronize(end);
+        ccudaEventElapsedTime(&gputime, start, end);
+        fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
+            
+        ccudaEventDestroy(start);
+        ccudaEventDestroy(end);
+    }
 }
 
 void mtgp32_free(struct mtgp32_status *status) {
