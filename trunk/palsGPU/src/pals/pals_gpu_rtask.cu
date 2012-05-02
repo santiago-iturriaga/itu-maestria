@@ -186,9 +186,9 @@ __global__ void pals_rtask_kernel(
 
     if (thread_idx == 0) {
         gpu_best_movements_op[block_idx] = block_op[0];
-        gpu_best_movements_data1[block_idx] = block_data1[0];
-        gpu_best_movements_data2[block_idx] = block_data2[0];
-        gpu_best_deltas[block_idx] = block_deltas[0];
+        gpu_best_movements_data1[block_idx] = 1; //block_data1[0];
+        gpu_best_movements_data2[block_idx] = 2; //block_data2[0];
+        gpu_best_deltas[block_idx] = 15.0; //block_deltas[0];
     }
 }
 
