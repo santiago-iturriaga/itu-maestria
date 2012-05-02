@@ -30,35 +30,37 @@
 #define COMPUTE_MAKESPAN_KERNEL_BLOCKS        1
 #define COMPUTE_MAKESPAN_KERNEL_THREADS       512
 
-__global__ void pals_rtask_kernel(ushort machines_count,
-    ushort tasks_count, float current_makespan, float *gpu_etc_matrix,
-    ushort *gpu_task_assignment, float *gpu_machine_compute_time,
-    int *gpu_random_numbers, int *gpu_best_movements_op,
-    int *gpu_best_movements_thread, int *gpu_best_movements_loop,
+__global__ void pals_rtask_kernel(
+    int machines_count,
+    int tasks_count, 
+    float *gpu_etc_matrix,
+    int *gpu_task_assignment, 
+    float *gpu_machine_compute_time,
+    int *gpu_random_numbers, 
+    int *gpu_best_movements_op,
+    int *gpu_best_movements_data1, 
+    int *gpu_best_movements_data2,
     float *gpu_best_deltas)
 {
     const unsigned int thread_idx = threadIdx.x;
     const unsigned int block_idx = blockIdx.x;
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
-    const short mov_type = 0; //(short)(block_idx & 0x1);
+    const short mov_type = 0; //(short)(block_idx & 0x1);  // Comparación a nivel de bit para saber si es par o impar.
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
 
-    __shared__ short block_operations[PALS_GPU_RTASK__THREADS];
-    __shared__ ushort block_threads[PALS_GPU_RTASK__THREADS];
-    __shared__ ushort block_loops[PALS_GPU_RTASK__THREADS];
+    __shared__ short block_op[PALS_GPU_RTASK__THREADS];
+    __shared__ int block_data1[PALS_GPU_RTASK__THREADS];
+    __shared__ int block_data2[PALS_GPU_RTASK__THREADS];
     __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
-        if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
-            // Si es impar...
-            // Movimiento SWAP.
-
-            ushort task_x, task_y;
-            ushort machine_a, machine_b;
+        if (mov_type == PALS_GPU_RTASK_SWAP) {
+            int task_x, task_y;
+            int machine_a, machine_b;
 
             float machine_a_ct_old, machine_b_ct_old;
             float machine_a_ct_new, machine_b_ct_new;
@@ -93,44 +95,25 @@ __global__ void pals_rtask_kernel(ushort machines_count,
                 machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
                 machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-                if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
-                    // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-                    if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
-                    if (machine_b_ct_new > current_makespan) delta = delta + (machine_b_ct_new - current_makespan);
-                } else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {
-                    // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-
-                    if (machine_a_ct_old+1 >= current_makespan) {
-                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
-                    } else {
-                        delta = delta + 1/(machine_a_ct_new - machine_a_ct_old);
-                    }
-
-                    if (machine_b_ct_old+1 >= current_makespan) {
-                        delta = delta + (machine_b_ct_new - machine_b_ct_old);
-                    } else {
-                        delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-                    }
-                } else {
-                    // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-                    delta = delta + (machine_a_ct_new - machine_a_ct_old);
-                    delta = delta + (machine_b_ct_new - machine_b_ct_old);
-                    delta = 1 / delta;
-                }
+                float max_old;
+                max_old = machine_a_ct_old;
+                if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
+                
+                delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
             }
 
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-                block_operations[thread_idx] = PALS_GPU_RTASK_SWAP;
-                block_threads[thread_idx] = (short)thread_idx;
-                block_loops[thread_idx] = loop;
+                block_op[thread_idx] = PALS_GPU_RTASK_SWAP;
+                block_data1[thread_idx] = task_x;
+                block_data2[thread_idx] = task_y;
                 block_deltas[thread_idx] = delta;
             }
         } else {
-            // Si es par...
             // Movimiento MOVE.
+            // PALS_GPU_RTASK_MOVE
 
-            ushort task_x;
-            ushort machine_a, machine_b;
+            int task_x;
+            int machine_a, machine_b;
 
             float machine_a_ct_old, machine_b_ct_old;
             float machine_a_ct_new, machine_b_ct_new;
@@ -140,12 +123,12 @@ __global__ void pals_rtask_kernel(ushort machines_count,
 
             // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
             // ================= y el compute time de la máquina.
-            task_x = (random1 + loop) % tasks_count;
+            task_x = 0; //(random1 + loop) % tasks_count;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
             machine_a_ct_old = gpu_machine_compute_time[machine_a];
 
             // ================= Obtengo la máquina destino sorteada.
-            machine_b = ((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
+            machine_b = 1; //((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
             if (machine_b >= machine_a) machine_b++;
 
             machine_b_ct_old = gpu_machine_compute_time[machine_b];
@@ -154,6 +137,7 @@ __global__ void pals_rtask_kernel(ushort machines_count,
             machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
             machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
+            /*
             if (machine_b_ct_new > current_makespan) {
                 // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
                 delta = delta + (machine_b_ct_new - current_makespan);
@@ -167,11 +151,12 @@ __global__ void pals_rtask_kernel(ushort machines_count,
                 delta = delta + (machine_b_ct_new - machine_b_ct_old);
                 delta = 1 / delta;
             }
+            * */
 
-            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-                block_operations[thread_idx] = PALS_GPU_RTASK_MOVE;
-                block_threads[thread_idx] = (short)thread_idx;
-                block_loops[thread_idx] = loop;
+            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {                
+                block_op[thread_idx] = PALS_GPU_RTASK_MOVE;
+                block_data1[thread_idx] = task_x;
+                block_data2[thread_idx] = machine_b;
                 block_deltas[thread_idx] = delta;
             }
         }
@@ -180,36 +165,43 @@ __global__ void pals_rtask_kernel(ushort machines_count,
     __syncthreads();
 
     // Aplico reduce para quedarme con el mejor delta.
-    int pos;
-    for (int i = 1; i < block_dim; i *= 2) {
-        pos = 2 * i * thread_idx;
+    float delta_current, delta;
 
-        if (pos < block_dim) {
-            if (block_deltas[pos] > block_deltas[pos + i]) {
-                block_operations[pos] = block_operations[pos + i];
-                block_loops[pos] = block_loops[pos + i];
-                block_threads[pos] = block_threads[pos + i];
-                block_deltas[pos] = block_deltas[pos + i];
+    for(unsigned int s=block_dim/2; s>0; s>>=1)
+    {
+        if (thread_idx < s)
+        {
+            delta_current = block_deltas[thread_idx];
+            delta = block_deltas[thread_idx + s];
+
+            if (delta < delta_current) {
+                block_op[thread_idx] = block_op[thread_idx + s];
+                block_data1[thread_idx] = block_data1[thread_idx + s];
+                block_data2[thread_idx] = block_data2[thread_idx + s];
+                block_deltas[thread_idx] = delta;
             }
         }
-
         __syncthreads();
     }
 
     if (thread_idx == 0) {
-        gpu_best_movements_op[block_idx] = (int)block_operations[0];    // Best movement operation.
-        gpu_best_movements_thread[block_idx] = (int)block_threads[0];   // Best movement thread index.
-        gpu_best_movements_loop[block_idx] = (int)block_loops[0];       // Best movement loop index.
-        gpu_best_deltas[block_idx] = block_deltas[0];                   // Best movement delta.
+        gpu_best_movements_op[block_idx] = block_op[0];
+        gpu_best_movements_data1[block_idx] = block_data1[0];
+        gpu_best_movements_data2[block_idx] = block_data2[0];
+        gpu_best_deltas[block_idx] = block_deltas[0];
     }
 }
 
-__global__ void pals_apply_best_kernel(ushort machines_count,
-    ushort tasks_count, float *gpu_etc_matrix,
-    ushort *gpu_task_assignment, float *gpu_machine_compute_time,
-    int *gpu_random_numbers, int *gpu_best_movements_op,
-    int *gpu_best_movements_thread, int *gpu_best_movements_loop,
-    float *gpu_best_deltas, int *gpu_totally_fuckup_aux) {
+__global__ void pals_apply_best_kernel(
+    int machines_count,
+    int tasks_count, 
+    float *gpu_etc_matrix,
+    int *gpu_task_assignment, 
+    float *gpu_machine_compute_time,
+    int *gpu_best_movements_op,
+    int *gpu_best_movements_data1, 
+    int *gpu_best_movements_data2,
+    float *gpu_best_deltas) {
 
     __shared__ unsigned int sdata_idx[APPLY_BEST_KERNEL_THREADS];
     __shared__ float sdata[APPLY_BEST_KERNEL_THREADS];
@@ -258,31 +250,23 @@ __global__ void pals_apply_best_kernel(ushort machines_count,
         i = sdata_idx[0];
 
         int mov_type = gpu_best_movements_op[i];
-        int thread_idx = gpu_best_movements_thread[i];
-        int loop_idx = gpu_best_movements_loop[i];
-        int random1 = gpu_random_numbers[2 * i];
-        int random2 = gpu_random_numbers[(2 * i) + 1];
+        int data1 = gpu_best_movements_data1[i];
+        int data2 = gpu_best_movements_data2[i];
+        float delta = sdata[0];
 
-        gpu_totally_fuckup_aux[0] = mov_type;
-        gpu_totally_fuckup_aux[1] = i;
-        gpu_totally_fuckup_aux[2] = thread_idx;
-        gpu_totally_fuckup_aux[3] = loop_idx;
-        gpu_totally_fuckup_aux[4] = random1;
-        gpu_totally_fuckup_aux[5] = random2;
+        gpu_best_movements_op[0] = mov_type;
+        gpu_best_movements_data1[1] = data1;
+        gpu_best_movements_data2[2] = data2;
+        gpu_best_deltas[3] = delta;
 
-        if (mov_type == 0) { // Comparación a nivel de bit para saber si es par o impar.
-            // Si es impar...
+        if (mov_type == PALS_GPU_RTASK_SWAP) {
             // Movimiento SWAP.
 
-            ushort task_x, task_y;
-            ushort machine_a, machine_b;
-
-            // ================= Obtengo las tareas sorteadas.
-            task_x = (random1 + loop_idx) % tasks_count;
-            task_y = ((random2 >> 1) + (loop_idx * PALS_GPU_RTASK__THREADS)  + thread_idx) % (tasks_count - 1);
-            if (task_y >= task_x) task_y++;
-
-            // ================= Obtengo las máquinas a las que estan asignadas las tareas.
+            int task_x, task_y;
+            task_x = data1;
+            task_y = data2;
+            
+            int machine_a, machine_b;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
             machine_b = gpu_task_assignment[task_y]; // Máquina b.
 
@@ -301,20 +285,14 @@ __global__ void pals_apply_best_kernel(ushort machines_count,
             aux_ct = aux_ct + gpu_etc_matrix[(machine_b * tasks_count) + task_x];
             gpu_machine_compute_time[machine_b] = aux_ct;
         } else {
-            // Si es par...
             // Movimiento MOVE.
 
-            ushort task_x;
-            ushort machine_a, machine_b;
-
-            // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
-            // ================= y el compute time de la máquina.
-            task_x = (random1 + loop_idx) % tasks_count;
+            int task_x;
+            task_x = data1;
+            
+            int machine_a, machine_b;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
-
-            // ================= Obtengo la máquina destino sorteada.
-            machine_b = ((random2 >> 1) + (loop_idx * PALS_GPU_RTASK__THREADS) + thread_idx) % (machines_count - 1);
-            if (machine_b >= machine_a) machine_b++;
+            machine_b = data2;
 
             // UPDATE!
             gpu_task_assignment[task_x] = machine_b;
@@ -331,8 +309,11 @@ __global__ void pals_apply_best_kernel(ushort machines_count,
     }
 }
 
-__global__ void pals_compute_makespan(ushort machines_count,
-    float *gpu_machine_compute_time, int *machine_idx, float *machine_ct) {
+__global__ void pals_compute_makespan(
+    int machines_count,
+    float *gpu_machine_compute_time, 
+    int *machine_idx, 
+    float *machine_ct) {
 
     __shared__ unsigned int sdata_idx[COMPUTE_MAKESPAN_KERNEL_THREADS];
     __shared__ float sdata[COMPUTE_MAKESPAN_KERNEL_THREADS];
@@ -413,23 +394,18 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_op (%d bytes).\n", best_movements_size);
         exit(EXIT_FAILURE);
     }
-    if (cudaMalloc((void**)&(instance.gpu_best_movements_thread), best_movements_size) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_thread (%d bytes).\n", best_movements_size);
+    if (cudaMalloc((void**)&(instance.gpu_best_movements_data1), best_movements_size) != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_data1 (%d bytes).\n", best_movements_size);
         exit(EXIT_FAILURE);
     }
-    if (cudaMalloc((void**)&(instance.gpu_best_movements_loop), best_movements_size) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_loop (%d bytes).\n", best_movements_size);
+    if (cudaMalloc((void**)&(instance.gpu_best_movements_data2), best_movements_size) != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_movements_data2 (%d bytes).\n", best_movements_size);
         exit(EXIT_FAILURE);
     }
 
     int best_deltas_size = sizeof(float) * instance.blocks;
     if (cudaMalloc((void**)&(instance.gpu_best_deltas), best_deltas_size) != cudaSuccess) {
         fprintf(stderr, "[ERROR] Solicitando memoria gpu_best_deltas (%d bytes).\n", best_deltas_size);
-        exit(EXIT_FAILURE);
-    }
-
-    if (cudaMalloc((void**)&(instance.gpu_totally_fuckup_aux), sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Solicitando memoria gpu_totally_fuckup_aux (%lu bytes).\n", sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE);
         exit(EXIT_FAILURE);
     }
 
@@ -441,8 +417,6 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Solicitando memoria gpu_makespan_ct_aux (%lu bytes).\n", sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS);
         exit(EXIT_FAILURE);
     }
-
-    instance.cpu_totally_fuckup_aux = (int*)malloc(sizeof(int) * TOTALLY_FUCKUP_AUX_SIZE);
 
     timming_end(".. gpu_best_movements", ts_1);
 
@@ -471,7 +445,7 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
     timming_start(ts_3);
 
     // Copio la asignación de tareas a máquinas actuales.
-    int task_assignment_size = sizeof(short) * etc_matrix->tasks_count;
+    int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;
     if (cudaMalloc((void**)&(instance.gpu_task_assignment), task_assignment_size) != cudaSuccess) {
         fprintf(stderr, "[ERROR] Solicitando memoria task_assignment (%d bytes).\n", task_assignment_size);
         exit(EXIT_FAILURE);
@@ -532,22 +506,15 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
         exit(EXIT_FAILURE);
     }
 
-    if (cudaFree(instance.gpu_best_movements_thread) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_best_movements_thread.\n");
+    if (cudaFree(instance.gpu_best_movements_data1) != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_best_movements_data1.\n");
         exit(EXIT_FAILURE);
     }
 
-    if (cudaFree(instance.gpu_best_movements_loop) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_best_movements_loop.\n");
+    if (cudaFree(instance.gpu_best_movements_data2) != cudaSuccess) {
+        fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_best_movements_data2.\n");
         exit(EXIT_FAILURE);
     }
-
-    if (cudaFree(instance.gpu_totally_fuckup_aux) != cudaSuccess) {
-        fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_totally_fuckup_aux.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    free(instance.cpu_totally_fuckup_aux);
 
     if (cudaFree(instance.gpu_makespan_idx_aux) != cudaSuccess) {
         fprintf(stderr, "[ERROR] Liberando la memoria solicitada para gpu_makespan_idx_aux.\n");
@@ -565,8 +532,8 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
 
     // Pido el espacio de memoria para obtener los resultados desde la gpu.
     int *best_movements_op = (int*)malloc(sizeof(int) * instance.blocks);
-    int *best_movements_thread = (int*)malloc(sizeof(int) * instance.blocks);
-    int *best_movements_loop = (int*)malloc(sizeof(int) * instance.blocks);
+    int *best_movements_data1 = (int*)malloc(sizeof(int) * instance.blocks);
+    int *best_movements_data2 = (int*)malloc(sizeof(int) * instance.blocks);
     float *best_deltas = (float*)malloc(sizeof(float) * instance.blocks);
     int *rands_nums = (int*)malloc(sizeof(int) * instance.blocks * 2);
 
@@ -577,23 +544,23 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_op).\n");
         exit(EXIT_FAILURE);
     }
-    if (cudaMemcpy(best_movements_thread, instance.gpu_best_movements_thread, sizeof(int) * instance.blocks,
+    if (cudaMemcpy(best_movements_data1, instance.gpu_best_movements_data1, sizeof(int) * instance.blocks,
         cudaMemcpyDeviceToHost) != cudaSuccess) {
 
-        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_thread).\n");
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_data1).\n");
         exit(EXIT_FAILURE);
     }
-    if (cudaMemcpy(best_movements_loop, instance.gpu_best_movements_loop, sizeof(int) * instance.blocks,
+    if (cudaMemcpy(best_movements_data2, instance.gpu_best_movements_data2, sizeof(int) * instance.blocks,
         cudaMemcpyDeviceToHost) != cudaSuccess) {
 
-        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_loop).\n");
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_data2).\n");
         exit(EXIT_FAILURE);
     }
 
     if (cudaMemcpy(best_deltas, instance.gpu_best_deltas, sizeof(float) * instance.blocks,
         cudaMemcpyDeviceToHost) != cudaSuccess) {
 
-        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps_delta).\n");
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_deltas).\n");
         exit(EXIT_FAILURE);
     }
 
@@ -607,8 +574,8 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
     for (int block_idx = 0; block_idx < instance.blocks; block_idx++) {
         // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
         int move_type = best_movements_op[block_idx];
-        int thread_idx = best_movements_thread[block_idx];
-        int loop_idx = best_movements_loop[block_idx];
+        int data1 = best_movements_data1[block_idx];
+        int data2 = best_movements_data1[block_idx];
         float delta = best_deltas[block_idx];
 
         unsigned int random1 = rands_nums[2 * block_idx];
@@ -617,26 +584,22 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         fprintf(stdout, "RANDOMS: %u %u\n", random1, random2);
 
         if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
-            ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
-
-            ushort task_y = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->tasks_count - 1));
-            if (task_y >= task_x) task_y++;
+            int task_x = data1;
+            int task_y = data2;
         
             // =======> DEBUG
             if (DEBUG) { 
-                ushort machine_a = s->task_assignment[task_x];
-                ushort machine_b = s->task_assignment[task_y];
+                int machine_a = s->task_assignment[task_x];
+                int machine_b = s->task_assignment[task_y];
 
                 fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f.\n",
                     task_x, machine_a, task_y, machine_b, delta);
             }
             // <======= DEBUG
         } else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
-            ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
-            ushort machine_a = s->task_assignment[task_x];
-
-            ushort machine_b = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->machines_count - 1));
-            if (machine_b >= machine_a) machine_b++;
+            int task_x = data1;
+            int machine_a = s->task_assignment[task_x];
+            int machine_b = data2;
         
             // =======> DEBUG
             if (DEBUG) {
@@ -668,14 +631,13 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     pals_rtask_kernel<<< grid, threads >>>(
         etc_matrix->machines_count,
         etc_matrix->tasks_count,
-        s->makespan,
         instance.gpu_etc_matrix,
         instance.gpu_task_assignment,
         instance.gpu_machine_compute_time,
         gpu_random_numbers,
         instance.gpu_best_movements_op,
-        instance.gpu_best_movements_thread,
-        instance.gpu_best_movements_loop,
+        instance.gpu_best_movements_data1,
+        instance.gpu_best_movements_data2,
         instance.gpu_best_deltas);
 
     cudaError_t e;
@@ -737,7 +699,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 }
 
 void load_sol_from_gpu(struct matrix *etc_matrix, struct pals_gpu_rtask_instance &instance, struct solution *cpu_solution) {
-    int task_assignment_size = sizeof(short) * etc_matrix->tasks_count;
+    int task_assignment_size = sizeof(int) * etc_matrix->tasks_count;
     if (cudaMemcpy(cpu_solution->task_assignment, instance.gpu_task_assignment,
         task_assignment_size, cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -758,16 +720,16 @@ void comparar_sol_cpu_vs_gpu(struct matrix *etc_matrix, struct solution *current
     // Validación de la memoria del dispositivo.
     fprintf(stdout, ">> VALIDANDO MEMORIA GPU\n");
 
-    ushort aux_task_assignment[etc_matrix->tasks_count];
+    int aux_task_assignment[etc_matrix->tasks_count];
 
-    if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(short),
+    if (cudaMemcpy(aux_task_assignment, instance.gpu_task_assignment, etc_matrix->tasks_count * sizeof(int),
         cudaMemcpyDeviceToHost) != cudaSuccess) {
 
-        fprintf(stderr, "[ERROR] Copiando task_assignment al host (%ld bytes).\n", etc_matrix->tasks_count * sizeof(short));
+        fprintf(stderr, "[ERROR] Copiando task_assignment al host (%ld bytes).\n", etc_matrix->tasks_count * sizeof(int));
         exit(EXIT_FAILURE);
     }
 
-    for (ushort i = 0; i < etc_matrix->tasks_count; i++) {
+    for (int i = 0; i < etc_matrix->tasks_count; i++) {
         if (current_solution->task_assignment[i] != aux_task_assignment[i]) {
             fprintf(stdout, "[INFO] task assignment diff => task %d on host: %d, on device: %d\n",
                 i, current_solution->task_assignment[i], aux_task_assignment[i]);
@@ -783,7 +745,7 @@ void comparar_sol_cpu_vs_gpu(struct matrix *etc_matrix, struct solution *current
         exit(EXIT_FAILURE);
     }
 
-    for (ushort i = 0; i < etc_matrix->machines_count; i++) {
+    for (int i = 0; i < etc_matrix->machines_count; i++) {
         if (current_solution->machine_compute_time[i] != aux_machine_compute_time[i]) {
             fprintf(stdout, "[INFO] machine CT diff => machine %d on host: %f, on device: %f\n",
                 i, current_solution->machine_compute_time[i], aux_machine_compute_time[i]);
@@ -846,7 +808,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     if (DEBUG) fprintf(stdout, "[INFO] Cantidad de iteraciones por generación de numeros aleatorios: %d.\n", prng_cant_iter_generadas);
 
-    short convergence_flag;
+    int convergence_flag;
     convergence_flag = 0;
 
     int best_solution_iter = -1;
