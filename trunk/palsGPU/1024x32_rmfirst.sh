@@ -1,6 +1,6 @@
 BASE_PATH=$(pwd)
-SRC_PATH="32768x1024/instances.src"
-DEST_PATH="32768x1024/instances"
+SRC_PATH="1024x32/instances.src"
+DEST_PATH="1024x32/instances"
 
 rm ${SRC_PATH}/*.log
 mkdir -p ${DEST_PATH}
