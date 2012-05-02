@@ -100,7 +100,7 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
                 machine, assigned_tasks_count, aux_compute_time, s->machine_compute_time[machine]);
         }
 
-        assert(s->machine_compute_time[machine] == aux_compute_time);
+        //assert(s->machine_compute_time[machine] == aux_compute_time);
     }
 
     for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
