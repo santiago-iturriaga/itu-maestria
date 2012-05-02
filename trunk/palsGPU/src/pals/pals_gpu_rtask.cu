@@ -603,7 +603,7 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
         exit(EXIT_FAILURE);
     }
-    
+       
     for (int block_idx = 0; block_idx < instance.blocks; block_idx++) {
         // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
         int move_type = best_movements_op[block_idx];
@@ -611,9 +611,10 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         int loop_idx = best_movements_loop[block_idx];
         float delta = best_deltas[block_idx];
 
-        int random_idx = block_idx;
-        int random1 = rands_nums[random_idx];
-        int random2 = rands_nums[random_idx + 1];
+        unsigned int random1 = rands_nums[2 * block_idx];
+        unsigned int random2 = rands_nums[(2 * block_idx) + 1];
+        
+        fprintf(stdout, "RANDOMS: %u %u\n", random1, random2);
 
         if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
             ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
