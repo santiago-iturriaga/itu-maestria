@@ -798,6 +798,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         // Timming -----------------------------------------------------
 
         if (DEBUG) cudaThreadSynchronize();
+        fprintf(stdout, "-1\n");
+        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+            cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
+                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
+            exit(EXIT_FAILURE);
+        }
+
         fprintf(stdout, "0\n");
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
