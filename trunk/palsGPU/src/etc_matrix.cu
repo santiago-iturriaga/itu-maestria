@@ -38,7 +38,7 @@ void free_etc_matrix(struct matrix *etc_matrix) {
     free(etc_matrix);
 }
 
-int get_matrix_coord(struct matrix *etc_matrix, ushort machine, ushort task) {
+int get_matrix_coord(struct matrix *etc_matrix, int machine, int task) {
     assert(machine < etc_matrix->machines_count);
     //assert(machine >= 0);
     assert(task < etc_matrix->tasks_count);
@@ -47,21 +47,21 @@ int get_matrix_coord(struct matrix *etc_matrix, ushort machine, ushort task) {
     return (machine * etc_matrix->tasks_count) + task;
 }
 
-void set_etc_value(struct matrix *etc_matrix, ushort machine, ushort task, float value) {
+void set_etc_value(struct matrix *etc_matrix, int machine, int task, float value) {
     // TODO: Ojo! esto no debería ser válido. Pero queda comentado porque la instancia de 65536x2048 tiene 0.0.
     // assert(value > 0.0);
 
     etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)] = value;
 }
 
-float get_etc_value(struct matrix *etc_matrix, ushort machine, ushort task) {
+float get_etc_value(struct matrix *etc_matrix, int machine, int task) {
     return etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)];
 }
 
 void show_etc_matrix(struct matrix *etc_matrix) {
     fprintf(stdout, "[INFO] ETC Matrix =========================== \n");
-    for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
-        for (ushort machine = 0; machine < etc_matrix->machines_count; machine++) {
+    for (int task = 0; task < etc_matrix->tasks_count; task++) {
+        for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
             fprintf(stdout, "    Task %i on machine %i -> %f\n", task, machine, etc_matrix->data[get_matrix_coord(etc_matrix, machine, task)]);
         }
     }

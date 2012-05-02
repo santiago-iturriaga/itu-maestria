@@ -17,18 +17,15 @@
 struct pals_gpu_rtask_instance {
     // Datos del estado actual del problema a resolver.
     float *gpu_etc_matrix;
-    ushort *gpu_task_assignment;
+    int *gpu_task_assignment;
     float *gpu_machine_compute_time;
     
     // Espacio de memoria en el dispositivo para almacenar los
     // mejores movimientos encontrados en cada iteración.
     int *gpu_best_movements_op;
-    int *gpu_best_movements_thread;
-    int *gpu_best_movements_loop;
+    int *gpu_best_movements_data1;
+    int *gpu_best_movements_data2;
     float *gpu_best_deltas;
-    
-    int *gpu_totally_fuckup_aux;
-    int *cpu_totally_fuckup_aux;
     
     int *gpu_makespan_idx_aux;
     float *gpu_makespan_ct_aux;
