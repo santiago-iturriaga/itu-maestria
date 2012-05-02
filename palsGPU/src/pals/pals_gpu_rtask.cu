@@ -6,6 +6,7 @@
 
 #include "../config.h"
 #include "../utils.h"
+#include "../cuda-util.h"
 
 #include "../random/cpu_rand.h"
 #include "../random/RNG_rand48.h"
@@ -714,8 +715,16 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     // ==============================================================================
 
     // Timming -----------------------------------------------------
-    timespec ts_pals;
-    timming_start(ts_pals);
+    float gputime;
+    cudaEvent_t start;
+    cudaEvent_t end;
+
+    if (DEBUG) {
+        ccudaEventCreate(&start);
+        ccudaEventCreate(&end);
+
+        ccudaEventRecord(start, 0);
+    }
     // Timming -----------------------------------------------------
 
     if (DEBUG) cudaThreadSynchronize();
@@ -742,10 +751,15 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         exit(EXIT_FAILURE);
     }
 
-    if (DEBUG) cudaThreadSynchronize();
+    cudaThreadSynchronize();
 
     // Timming -----------------------------------------------------
-    timming_end(".. pals_gpu_rtask_pals", ts_pals);
+    if (DEBUG) {
+        ccudaEventRecord(end, 0);
+        ccudaEventSynchronize(end);
+        ccudaEventElapsedTime(&gputime, start, end);
+        fprintf(stdout, "[TIME] PALS search processing time: %f (ms)\n", gputime);
+    }
     // Timming -----------------------------------------------------
 
     //if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
@@ -755,8 +769,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     // =====================================================================
 
     // Timming -----------------------------------------------------
-    timespec ts_pals_reduce;
-    timming_start(ts_pals_reduce);
+    if (DEBUG) {
+        ccudaEventRecord(start, 0);
+    }
     // Timming -----------------------------------------------------
 
     pals_apply_best_kernel<<< 1, APPLY_BEST_KERNEL_THREADS >>>(
@@ -769,27 +784,17 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_movements_data1,
         instance.gpu_best_movements_data2,
         instance.gpu_best_deltas);
-
-    if (DEBUG) cudaThreadSynchronize();
+   
+    // Timming -----------------------------------------------------
+    if (DEBUG) {
+        ccudaEventRecord(end, 0);
+        ccudaEventSynchronize(end);
+        ccudaEventElapsedTime(&gputime, start, end);
+        fprintf(stdout, "[TIME] Reduce processing time: %f (ms)\n", gputime);
+    }
+    // Timming -----------------------------------------------------
 
     //if (DEBUG) show_first_search_results(etc_matrix, s, instance);
-    
-    // Timming -----------------------------------------------------
-    timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
-    // Timming -----------------------------------------------------
-
-    // =====================================================================
-    // Se carga el mejor de los movimientos.
-    // =====================================================================
-
-    // Timming -----------------------------------------------------
-    timespec ts_pals_post;
-    timming_start(ts_pals_post);
-    // Timming -----------------------------------------------------
-
-    // Timming -----------------------------------------------------
-    timming_end(".. pals_gpu_rtask_pals_post", ts_pals_post);
-    // Timming -----------------------------------------------------
 }
 
 void load_sol_from_gpu(struct matrix *etc_matrix, struct pals_gpu_rtask_instance &instance, struct solution *cpu_solution) {
@@ -946,8 +951,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
             (int*)(&(mt_status.d_data[prng_iter_actual])));
-        /*pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            (int*)mt_status.d_data);*/
 
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -958,65 +961,69 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timming_start(ts_post);
         // Timming -----------------------------------------------------
 
-        pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
-            etc_matrix->machines_count, instance.gpu_machine_compute_time,
-            instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
-
-        /*
-        if (cudaMemcpy(makespan_idx_aux, instance.gpu_makespan_idx_aux, sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando gpu_makespan_idx_aux al host (%ld bytes).\n",
-                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(int));
-            exit(EXIT_FAILURE);
-        }
-        * */
-
-        if (DEBUG) cudaThreadSynchronize();
-
-        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
-                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
-            exit(EXIT_FAILURE);
-        }
-
         if (DEBUG) {
-            for (int i = 0; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
-                fprintf(stdout, "COMPUTE_MAKESPAN %f\n", makespan_ct_aux[i]);
+            cudaThreadSynchronize();
+
+            pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
+                etc_matrix->machines_count, instance.gpu_machine_compute_time,
+                instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
+
+            /*
+            if (cudaMemcpy(makespan_idx_aux, instance.gpu_makespan_idx_aux, sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+                cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+                fprintf(stderr, "[ERROR] Copiando gpu_makespan_idx_aux al host (%ld bytes).\n",
+                    COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(int));
+                exit(EXIT_FAILURE);
             }
-        }
+            * */
 
-        float old;
-        old = current_solution->makespan;
+            if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+                cudaMemcpyDeviceToHost) != cudaSuccess) {
 
-        current_solution->makespan = makespan_ct_aux[0];
-
-        for (int i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
-            if (current_solution->makespan < makespan_ct_aux[i]) {
-                current_solution->makespan = makespan_ct_aux[i];
+                fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
+                    COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
+                exit(EXIT_FAILURE);
             }
-        }
 
-        if (current_solution->makespan < best_solution) {
-            best_solution = current_solution->makespan;
-            best_solution_iter = iter;
-        }
+            if (DEBUG) {
+                for (int i = 0; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
+                    fprintf(stdout, "COMPUTE_MAKESPAN %f\n", makespan_ct_aux[i]);
+                }
+            }
 
-        //if (old < current_solution->makespan) {
-            //fprintf(stderr, "PUTA! on iteration %d\n", iter);
+            float old;
+            old = current_solution->makespan;
+
+            current_solution->makespan = makespan_ct_aux[0];
+
+            for (int i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
+                if (current_solution->makespan < makespan_ct_aux[i]) {
+                    current_solution->makespan = makespan_ct_aux[i];
+                }
+            }
+
+            if (current_solution->makespan < best_solution) {
+                best_solution = current_solution->makespan;
+                best_solution_iter = iter;
+            }
+
+            if (old < current_solution->makespan) {
+                fprintf(stderr, "PUTA! on iteration %d\n", iter);
+            }
             fprintf(stderr, ">> makespan old %f\n", old);
             fprintf(stderr, ">> makespan new %f\n\n", current_solution->makespan);
-        //}
+        }
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_post", ts_post);
         // Timming -----------------------------------------------------
 
+        /*
         load_sol_from_gpu(etc_matrix, instance, current_solution);
         if (DEBUG) validate_solution(etc_matrix, current_solution);
         if (DEBUG) refresh_solution(etc_matrix, current_solution);
         if (DEBUG) comparar_sol_cpu_vs_gpu(etc_matrix, current_solution, instance);
+        * */
 
         //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
     }
