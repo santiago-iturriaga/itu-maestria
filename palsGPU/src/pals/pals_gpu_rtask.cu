@@ -26,8 +26,8 @@
 #define APPLY_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS >> 1
 
 // No puedo trabajar con más de COMPUTE_MAKESPAN_KERNEL_THREADS * COMPUTE_MAKESPAN_KERNEL_BLOCKS machines.
-// 512 * 2 = 1024
-#define COMPUTE_MAKESPAN_KERNEL_BLOCKS        2
+// 512 * 1 * 2 = 1024
+#define COMPUTE_MAKESPAN_KERNEL_BLOCKS        1
 #define COMPUTE_MAKESPAN_KERNEL_THREADS       512
 
 __global__ void pals_rtask_kernel(ushort machines_count,
@@ -811,6 +811,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timming_start(ts_post);
         // Timming -----------------------------------------------------
 
+        if (DEBUG) cudaThreadSynchronize();
+        fprintf(stdout, "1\n");
+        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+            cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
+                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
+            exit(EXIT_FAILURE);
+        }
+
         pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
             etc_matrix->machines_count, instance.gpu_machine_compute_time,
             instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
@@ -825,8 +835,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
         * */
 
-    if (DEBUG) cudaThreadSynchronize();
-
+        if (DEBUG) cudaThreadSynchronize();
+        fprintf(stdout, "2\n");
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
