@@ -7,33 +7,33 @@
 #Optional: type of task execution times: (0-real, 1-integer).
 #Optional: seed for the pseudorandom number generator.
 
-mkdir 32768x1024
-cd 32768x1024
+mkdir -p 32768x1024/instances.src
+cd 32768x1024/instances.src
 
 #A.u_c_hihi
-../generator 32768 1024 1 1 0 0 0 1240440634
+../../generator 32768 1024 1 1 0 0 0 1240440634
 #A.u_c_hilo
-../generator 32768 1024 1 0 0 0 0 1240440631
+../../generator 32768 1024 1 0 0 0 0 1240440631
 #A.u_c_lohi
-../generator 32768 1024 0 1 0 0 0 1240440639
+../../generator 32768 1024 0 1 0 0 0 1240440639
 #A.u_c_lolo
-../generator 32768 1024 0 0 0 0 0 1240440550
+../../generator 32768 1024 0 0 0 0 0 1240440550
 
 #A.u_s_hihi
-../generator 32768 1024 1 1 1 0 0 1240440656
+../../generator 32768 1024 1 1 1 0 0 1240440656
 #A.u_s_hilo
-../generator 32768 1024 1 0 1 0 0 1240440659
+../../generator 32768 1024 1 0 1 0 0 1240440659
 #A.u_s_lohi
-../generator 32768 1024 0 1 1 0 0 1240440665
+../../generator 32768 1024 0 1 1 0 0 1240440665
 #A.u_s_lolo
-../generator 32768 1024 0 0 1 0 0 1240440662
+../../generator 32768 1024 0 0 1 0 0 1240440662
 
 #A.u_u_hihi
-../generator 32768 1024 1 1 2 0 0 1240440654
+../../generator 32768 1024 1 1 2 0 0 1240440654
 #A.u_u_hilo
-../generator 32768 1024 1 0 2 0 0 1240440649
+../../generator 32768 1024 1 0 2 0 0 1240440649
 #A.u_u_lohi
-../generator 32768 1024 0 1 2 0 0 1240440643
+../../generator 32768 1024 0 1 2 0 0 1240440643
 #A.u_u_lolo
-../generator 32768 1024 0 0 2 0 0 1240440646
+../../generator 32768 1024 0 0 2 0 0 1240440646
 
