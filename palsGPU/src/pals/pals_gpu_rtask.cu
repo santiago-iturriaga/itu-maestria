@@ -960,7 +960,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     int iter;
     for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < 10); iter++) {
-
         if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
         // ==============================================================================
@@ -1024,6 +1023,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             fprintf(stdout, "[TIME] Busqueda del makespan: %f (ms)\n", gputime);
         }
         // Timming -----------------------------------------------------
+
+        fprintf(stdout, "Prueba: %d\n", ((1 << 1) - 1));
+        fprintf(stdout, "Prueba 2: %d\n", iter & ((1 << 1) - 1));
 
         //if (iter & ((1 << 10) -1) == 0) {
         if (iter & ((1 << 1) - 1) == 0) {
