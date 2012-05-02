@@ -66,42 +66,41 @@ __global__ void pals_rtask_kernel(
             float machine_a_ct_new, machine_b_ct_new;
 
             float delta;
-            delta = 0.0;
+            delta = VERY_BIG_FLOAT;
 
             // ================= Obtengo las tareas sorteadas.
-            task_x = 0; //(random1 + loop) % tasks_count;
+            task_x = (random1 + loop) & (tasks_count-1);
+            task_y = (random2 + ((loop * block_dim) + thread_idx)) & (tasks_count - 1);
 
-            task_y = 156; //((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
-            if (task_y >= task_x) task_y++;
+            if (task_x != task_y) {
+                // ================= Obtengo las máquinas a las que estan asignadas las tareas.
+                machine_a = gpu_task_assignment[task_x]; // Máquina a.
+                machine_b = gpu_task_assignment[task_y]; // Máquina b.
 
-            // ================= Obtengo las máquinas a las que estan asignadas las tareas.
-            machine_a = gpu_task_assignment[task_x]; // Máquina a.
-            machine_b = gpu_task_assignment[task_y]; // Máquina b.
+                if (machine_a != machine_b) {
+                    // Calculo el delta del swap sorteado.
 
-            if (machine_a != machine_b) {
-                // Calculo el delta del swap sorteado.
+                    // Máquina 1.
+                    machine_a_ct_old = gpu_machine_compute_time[machine_a];
 
-                // Máquina 1.
-                machine_a_ct_old = gpu_machine_compute_time[machine_a];
+                    machine_a_ct_new = machine_a_ct_old;
+                    machine_a_ct_new = machine_a_ct_new - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
+                    machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
 
-                machine_a_ct_new = machine_a_ct_old;
-                machine_a_ct_new = machine_a_ct_new - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
-                machine_a_ct_new = machine_a_ct_new + gpu_etc_matrix[(machine_a * tasks_count) + task_y]; // Sumo el ETC de y en a.
+                    // Máquina 2.
+                    machine_b_ct_old = gpu_machine_compute_time[machine_b];
 
-                // Máquina 2.
-                machine_b_ct_old = gpu_machine_compute_time[machine_b];
+                    machine_b_ct_new = machine_b_ct_old;
+                    machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
+                    machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-                machine_b_ct_new = machine_b_ct_old;
-                machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
-                machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
-
-                float max_old;
-                max_old = machine_a_ct_old;
-                if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
-                
-                delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
+                    float max_old;
+                    max_old = machine_a_ct_old;
+                    if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
+                    
+                    delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
+                }
             }
-
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
                 block_op[thread_idx] = PALS_GPU_RTASK_SWAP;
                 block_data1[thread_idx] = task_x;
