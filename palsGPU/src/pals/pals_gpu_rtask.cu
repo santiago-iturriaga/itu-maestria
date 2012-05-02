@@ -560,6 +560,93 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
     }
 }
 
+void show_search_results(struct matrix *etc_matrix, struct solution *s,
+    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers) {
+
+    // Pido el espacio de memoria para obtener los resultados desde la gpu.
+    int *best_movements_op = (int*)malloc(sizeof(int) * instance.blocks);
+    int *best_movements_thread = (int*)malloc(sizeof(int) * instance.blocks);
+    int *best_movements_loop = (int*)malloc(sizeof(int) * instance.blocks);
+    float *best_deltas = (float*)malloc(sizeof(float) * instance.blocks);
+    int *rands_nums = (int*)malloc(sizeof(int) * instance.blocks * 2);
+
+    // Copio los mejores movimientos desde el dispositivo.
+    if (cudaMemcpy(best_movements_op, instance.gpu_best_movements_op, sizeof(int) * instance.blocks,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_op).\n");
+        exit(EXIT_FAILURE);
+    }
+    if (cudaMemcpy(best_movements_thread, instance.gpu_best_movements_thread, sizeof(int) * instance.blocks,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_thread).\n");
+        exit(EXIT_FAILURE);
+    }
+    if (cudaMemcpy(best_movements_loop, instance.gpu_best_movements_loop, sizeof(int) * instance.blocks,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_movements_loop).\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cudaMemcpy(best_deltas, instance.gpu_best_deltas, sizeof(float) * instance.blocks,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (best_swaps_delta).\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (cudaMemcpy(rands_nums, gpu_random_numbers, sizeof(int) * instance.blocks * 2,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    for (int block_idx = 0; block_idx < instance.blocks; block_idx++) {
+        // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
+        int move_type = best_movements_op[block_idx];
+        int thread_idx = best_movements_thread[block_idx];
+        int loop_idx = best_movements_loop[block_idx];
+        float delta = best_deltas[block_idx];
+
+        int random_idx = block_idx;
+        int random1 = rands_nums[random_idx];
+        int random2 = rands_nums[random_idx + 1];
+
+        if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
+            ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
+
+            ushort task_y = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->tasks_count - 1));
+            if (task_y >= task_x) task_y++;
+        
+            // =======> DEBUG
+            if (DEBUG) { 
+                ushort machine_a = s->task_assignment[task_x];
+                ushort machine_b = s->task_assignment[task_y];
+
+                fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f.\n",
+                    task_x, machine_a, task_y, machine_b, delta);
+            }
+            // <======= DEBUG
+        } else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
+            ushort task_x = (ushort)((random1 + loop_idx) % etc_matrix->tasks_count);
+            ushort machine_a = s->task_assignment[task_x];
+
+            ushort machine_b = (ushort)(((random2 >> 1) + (loop_idx * instance.threads) + thread_idx) % (etc_matrix->machines_count - 1));
+            if (machine_b >= machine_a) machine_b++;
+        
+            // =======> DEBUG
+            if (DEBUG) {
+                fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f.\n",
+                    task_x, machine_a, machine_b, delta);
+            }
+            // <======= DEBUG
+        }
+    }
+}
+
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers) {
 
@@ -602,6 +689,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_pals", ts_pals);
     // Timming -----------------------------------------------------
+
+    if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
 
     // =====================================================================
     // Hago un reduce y aplico el mejor movimiento.
