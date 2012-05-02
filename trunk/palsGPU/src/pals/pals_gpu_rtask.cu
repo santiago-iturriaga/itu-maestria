@@ -46,7 +46,7 @@ __global__ void pals_rtask_kernel(
     const unsigned int block_idx = blockIdx.x;
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
-    const short mov_type = 0; //(short)(block_idx & 0x1);  // Comparación a nivel de bit para saber si es par o impar.
+    const short mov_type = (short)(block_idx & 0x11);
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
@@ -58,7 +58,9 @@ __global__ void pals_rtask_kernel(
 
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
-        if (mov_type == PALS_GPU_RTASK_SWAP) {
+        if (mov_type <= 2) {
+            // PALS_GPU_RTASK_SWAP
+            
             int task_x, task_y;
             int machine_a, machine_b;
 
@@ -70,7 +72,7 @@ __global__ void pals_rtask_kernel(
 
             // ================= Obtengo las tareas sorteadas.
             task_x = (random1 + loop) & (tasks_count-1);
-            task_y = (random2 + ((loop * block_dim) + thread_idx)) & (tasks_count - 1);
+            task_y = (random2 + (loop * block_dim) + thread_idx) & (tasks_count - 1);
 
             if (task_x != task_y) {
                 // ================= Obtengo las máquinas a las que estan asignadas las tareas.
@@ -108,7 +110,6 @@ __global__ void pals_rtask_kernel(
                 block_deltas[thread_idx] = delta;
             }
         } else {
-            // Movimiento MOVE.
             // PALS_GPU_RTASK_MOVE
 
             int task_x;
@@ -118,39 +119,30 @@ __global__ void pals_rtask_kernel(
             float machine_a_ct_new, machine_b_ct_new;
 
             float delta;
-            delta = 0.0;
+            delta = VERY_BIG_FLOAT;
 
             // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
             // ================= y el compute time de la máquina.
-            task_x = 0; //(random1 + loop) % tasks_count;
+            task_x = (random1 + loop) & (tasks_count - 1);
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
-            machine_a_ct_old = gpu_machine_compute_time[machine_a];
 
             // ================= Obtengo la máquina destino sorteada.
-            machine_b = 1; //((random2 >> 1) + (loop * block_dim) + thread_idx) % (machines_count - 1);
-            if (machine_b >= machine_a) machine_b++;
+            machine_b = (random2 + (loop * block_dim) + thread_idx) & (machines_count - 1);
 
-            machine_b_ct_old = gpu_machine_compute_time[machine_b];
+            if (machine_a != machine_b) {
+                machine_a_ct_old = gpu_machine_compute_time[machine_a];
+                machine_b_ct_old = gpu_machine_compute_time[machine_b];
 
-            // Calculo el delta del swap sorteado.
-            machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
-            machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
+                // Calculo el delta del swap sorteado.
+                machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
+                machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
-            /*
-            if (machine_b_ct_new > current_makespan) {
-                // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-                delta = delta + (machine_b_ct_new - current_makespan);
-            } else if (machine_a_ct_old+1 >= current_makespan) {
-                // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-                delta = delta + (machine_a_ct_new - machine_a_ct_old);
-                delta = delta + 1/(machine_b_ct_new - machine_b_ct_old);
-            } else {
-                // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
-                delta = delta + (machine_a_ct_new - machine_a_ct_old);
-                delta = delta + (machine_b_ct_new - machine_b_ct_old);
-                delta = 1 / delta;
+                float max_old;
+                max_old = machine_a_ct_old;
+                if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
+                
+                delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
             }
-            * */
 
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {                
                 block_op[thread_idx] = PALS_GPU_RTASK_MOVE;
