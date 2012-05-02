@@ -186,9 +186,9 @@ __global__ void pals_rtask_kernel(
 
     if (thread_idx == 0) {
         gpu_best_movements_op[block_idx] = block_op[0];
-        gpu_best_movements_data1[block_idx] = 1; //block_data1[0];
-        gpu_best_movements_data2[block_idx] = 2; //block_data2[0];
-        gpu_best_deltas[block_idx] = 15.0; //block_deltas[0];
+        gpu_best_movements_data1[block_idx] = block_data1[0];
+        gpu_best_movements_data2[block_idx] = block_data2[0];
+        gpu_best_deltas[block_idx] = block_deltas[0];
     }
 }
 
@@ -575,7 +575,7 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
         int move_type = best_movements_op[block_idx];
         int data1 = best_movements_data1[block_idx];
-        int data2 = best_movements_data1[block_idx];
+        int data2 = best_movements_data2[block_idx];
         float delta = best_deltas[block_idx];
 
         unsigned int random1 = rands_nums[2 * block_idx];
