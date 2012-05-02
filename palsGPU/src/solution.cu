@@ -95,10 +95,10 @@ void validate_solution(struct matrix *etc_matrix, struct solution *s) {
             }
         }
 
-        /*if (DEBUG) {
+        if (s->machine_compute_time[machine] != aux_compute_time) {
             fprintf(stdout, "[DEBUG] Machine %d >> assigned tasks %d, compute time %f, expected compute time %f.\n",
                 machine, assigned_tasks_count, aux_compute_time, s->machine_compute_time[machine]);
-        }*/
+        }
 
         assert(s->machine_compute_time[machine] == aux_compute_time);
     }
