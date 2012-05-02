@@ -1027,7 +1027,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
         // Timming -----------------------------------------------------
 
-        if (iter & ((1 << 10) -1) == 0) {
+        //if (iter & ((1 << 10) -1) == 0) {
+        if (iter & ((1 << 0) -1) == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
                 cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -1049,6 +1050,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             if (old <= current_solution->makespan) {
                 convergence_flag++;
             }
+            
+            if (DEBUG) fprintf(stdout, ">> Makespan: %f\n", current_solution->makespan);
         }
 
         if (DEBUG) {
