@@ -55,6 +55,7 @@ __global__ void pals_rtask_kernel(
     __shared__ int block_data2[PALS_GPU_RTASK__THREADS];
     __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
 
+    #pragma unroll
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
         if (mov_type <= 2) {
@@ -927,8 +928,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         // Sorteo de numeros aleatorios.
         // ==============================================================================
 
-        timespec ts_rand;
-        timming_start(ts_rand);
+        // Timming -----------------------------------------------------
+        float gputime;
+        cudaEvent_t start;
+        cudaEvent_t end;
+
+        ccudaEventCreate(&start);
+        ccudaEventCreate(&end);
+
+        ccudaEventRecord(start, 0);
+        // Timming -----------------------------------------------------
 
         prng_iter_actual = prng_iter_actual + rand_iter_size;
 
@@ -940,24 +949,15 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             prng_iter_actual = 0;
         }
 
-        timming_end(">> RNG_rand48", ts_rand);
-
         // Timming -----------------------------------------------------
-        timespec ts_wrapper;
-        timming_start(ts_wrapper);
+        ccudaEventRecord(end, 0);
+        ccudaEventSynchronize(end);
+        ccudaEventElapsedTime(&gputime, start, end);
+        fprintf(stdout, "[TIME] Generación de numeros aleatorios: %f (ms)\n", gputime);
         // Timming -----------------------------------------------------
 
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
             (int*)(&(mt_status.d_data[prng_iter_actual])));
-
-        // Timming -----------------------------------------------------
-        timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
-        // Timming -----------------------------------------------------
-
-        // Timming -----------------------------------------------------
-        timespec ts_post;
-        timming_start(ts_post);
-        // Timming -----------------------------------------------------
 
         if (DEBUG) {
             cudaThreadSynchronize();
@@ -1012,9 +1012,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             fprintf(stderr, ">> makespan old %f\n", old);
             fprintf(stderr, ">> makespan new %f\n\n", current_solution->makespan);
         }
-        // Timming -----------------------------------------------------
-        timming_end(">> pals_gpu_rtask_post", ts_post);
-        // Timming -----------------------------------------------------
 
         /*
         load_sol_from_gpu(etc_matrix, instance, current_solution);
