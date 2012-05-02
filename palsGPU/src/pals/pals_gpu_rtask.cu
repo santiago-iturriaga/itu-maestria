@@ -101,7 +101,7 @@ __global__ void pals_rtask_kernel(
                     if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
                     
                     if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
-                        delta = (machine_a_ct_new - VERY_BIG_FLOAT) + (machine_b_ct_new - VERY_BIG_FLOAT);
+                        delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                     } else {
                         delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
                     }
@@ -146,7 +146,7 @@ __global__ void pals_rtask_kernel(
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
                 
                 if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
-                    delta = (machine_a_ct_new - VERY_BIG_FLOAT) + (machine_b_ct_new - VERY_BIG_FLOAT);
+                    delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                 } else {
                     delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
                 }
