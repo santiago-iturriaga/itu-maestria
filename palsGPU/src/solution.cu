@@ -50,6 +50,21 @@ void free_solution(struct solution *s) {
     free(s);
 }
 
+void refresh_solution(struct matrix *etc_matrix, struct solution *s) {
+    for (ushort machine = 0; machine < etc_matrix->machines_count; machine++) {
+        s->machine_compute_time[machine] = 0.0;
+    }
+    
+    s->makespan = 0.0;
+    
+    for (ushort task = 0; task < etc_matrix->tasks_count; task++) {
+        int machine = s->task_assignment[task];
+        
+        s->machine_compute_time[machine] += get_etc_value(etc_matrix, machine, task);
+        if (s->makespan < s->machine_compute_time[machine]) s->makespan = s->machine_compute_time[machine];
+    }
+}
+
 void validate_solution(struct matrix *etc_matrix, struct solution *s) {
     fprintf(stdout, "[INFO] Validate solution =========================== \n");
     fprintf(stdout, "[INFO] Dimension (%d x %d).\n", etc_matrix->tasks_count, etc_matrix->machines_count);
