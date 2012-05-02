@@ -966,13 +966,37 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
             (int*)(&(mt_status.d_data[prng_iter_actual])));
 
-        if (DEBUG) {
-            cudaThreadSynchronize();
+        cudaThreadSynchronize();
 
+        // Timming -----------------------------------------------------
+        if (DEBUG) {
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
+
+            ccudaEventRecord(start, 0);
+        }
+        // Timming -----------------------------------------------------
+        
+        pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
+            etc_matrix->machines_count, instance.gpu_machine_compute_time,
+            instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
+
+        // Timming -----------------------------------------------------
+        if (DEBUG) {
+            ccudaEventRecord(end, 0);
+            ccudaEventSynchronize(end);
+            ccudaEventElapsedTime(&gputime, start, end);
+            fprintf(stdout, "[TIME] Busqueda del makespan: %f (ms)\n", gputime);
+        }
+        // Timming -----------------------------------------------------
+
+        if (DEBUG) {
+            /*cudaThreadSynchronize();
+            
             pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
                 etc_matrix->machines_count, instance.gpu_machine_compute_time,
                 instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
-
+            */
             /*
             if (cudaMemcpy(makespan_idx_aux, instance.gpu_makespan_idx_aux, sizeof(int) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
                 cudaMemcpyDeviceToHost) != cudaSuccess) {
