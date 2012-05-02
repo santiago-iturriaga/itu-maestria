@@ -19,6 +19,7 @@ struct solution* create_empty_solution(struct matrix *etc_matrix);
 void clone_solution(struct matrix *etc_matrix, struct solution *dst, struct solution *src);
 void free_solution(struct solution *s);
 
+void refresh_solution(struct matrix *etc_matrix, struct solution *s);
 void validate_solution(struct matrix *etc_matrix, struct solution *s);
 void show_solution(struct matrix *etc_matrix, struct solution *s);
 
