@@ -18,8 +18,6 @@
 //#define PALS_RTASK_RANDS                6144*20
 #define PALS_RTASK_RANDS                1048576
 
-#define TOTALLY_FUCKUP_AUX_SIZE         6
-
 #define PALS_GPU_RTASK__BLOCKS          64
 #define PALS_GPU_RTASK__THREADS         256
 #define PALS_GPU_RTASK__LOOPS           1
