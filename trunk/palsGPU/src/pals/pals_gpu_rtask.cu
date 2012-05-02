@@ -75,7 +75,7 @@ __global__ void pals_rtask_kernel(
             float machine_a_ct_new, machine_b_ct_new;
 
             float delta;
-            delta = VERY_BIG_FLOAT;
+            delta = 0.0; //VERY_BIG_FLOAT;
 
             // ================= Obtengo las tareas sorteadas.
             task_x = (random1 + loop) & (tasks_count-1);
@@ -155,7 +155,7 @@ __global__ void pals_rtask_kernel(
             float machine_a_ct_new, machine_b_ct_new;
 
             float delta;
-            delta = VERY_BIG_FLOAT;
+            delta = 0.0; //VERY_BIG_FLOAT;
 
             // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
             // ================= y el compute time de la máquina.
