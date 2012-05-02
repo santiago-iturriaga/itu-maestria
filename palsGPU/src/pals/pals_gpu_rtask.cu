@@ -934,11 +934,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         float gputime;
         cudaEvent_t start;
         cudaEvent_t end;
+        if (DEBUG) {
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
 
-        ccudaEventCreate(&start);
-        ccudaEventCreate(&end);
-
-        ccudaEventRecord(start, 0);
+            ccudaEventRecord(start, 0);
+        }
         // Timming -----------------------------------------------------
 
         prng_iter_actual = prng_iter_actual + rand_iter_size;
@@ -952,10 +953,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
 
         // Timming -----------------------------------------------------
-        ccudaEventRecord(end, 0);
-        ccudaEventSynchronize(end);
-        ccudaEventElapsedTime(&gputime, start, end);
-        fprintf(stdout, "[TIME] Generación de numeros aleatorios: %f (ms)\n", gputime);
+        if (DEBUG) {
+            ccudaEventRecord(end, 0);
+            ccudaEventSynchronize(end);
+            ccudaEventElapsedTime(&gputime, start, end);
+            fprintf(stdout, "[TIME] Generacion de numeros aleatorios: %f (ms)\n", gputime);
+        }
         // Timming -----------------------------------------------------
 
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
