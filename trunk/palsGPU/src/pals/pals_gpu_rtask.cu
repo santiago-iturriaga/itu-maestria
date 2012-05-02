@@ -1026,7 +1026,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         // Timming -----------------------------------------------------
 
         //if (iter & ((1 << 10) -1) == 0) {
-        if (iter & ((1 << 1) -1) == 0) {
+        if (iter & ((1 << 1) - 1) == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
                 cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -1049,7 +1049,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 convergence_flag++;
             }
             
-            if (DEBUG) fprintf(stdout, ">> Makespan: %f\n", current_solution->makespan);
+            if (DEBUG) fprintf(stdout, ">> Makespan: %f (convergence: %d)\n", current_solution->makespan, convergence_flag);
         }
 
         if (DEBUG) {
@@ -1067,7 +1067,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                     COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(int));
                 exit(EXIT_FAILURE);
             }
-            * */
+            
 
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
                 cudaMemcpyDeviceToHost) != cudaSuccess) {
@@ -1103,7 +1103,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 fprintf(stderr, "PUTA! on iteration %d\n", iter);
             }
             fprintf(stderr, ">> makespan old %f\n", old);
-            fprintf(stderr, ">> makespan new %f\n\n", current_solution->makespan);
+            fprintf(stderr, ">> makespan new %f\n\n", current_solution->makespan);*/
         }
 
         /*
