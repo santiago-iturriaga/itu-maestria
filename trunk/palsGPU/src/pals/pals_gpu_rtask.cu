@@ -655,22 +655,19 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timming_start(ts_pals_reduce);
     // Timming -----------------------------------------------------
 
-    /*
     pals_apply_best_kernel<<< 1, APPLY_BEST_KERNEL_THREADS >>>(
         etc_matrix->machines_count,
         etc_matrix->tasks_count,
         instance.gpu_etc_matrix,
         instance.gpu_task_assignment,
         instance.gpu_machine_compute_time,
-        gpu_random_numbers,
         instance.gpu_best_movements_op,
-        instance.gpu_best_movements_thread,
-        instance.gpu_best_movements_loop,
-        instance.gpu_best_deltas,
-        instance.gpu_totally_fuckup_aux);
+        instance.gpu_best_movements_data1,
+        instance.gpu_best_movements_data2,
+        instance.gpu_best_deltas);
 
     if (DEBUG) cudaThreadSynchronize();
-    */
+    
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
     // Timming -----------------------------------------------------
@@ -824,7 +821,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timespec ts_rand;
         timming_start(ts_rand);
 
-        prng_iter_actual = prng_iter_actual + (instance.blocks * 2);
+        prng_iter_actual = prng_iter_actual + rand_iter_size;
 
         if (prng_iter_actual >= prng_cant_iter_generadas) {
             if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
@@ -841,29 +838,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timming_start(ts_wrapper);
         // Timming -----------------------------------------------------
 
-        if (DEBUG) cudaThreadSynchronize();
-        fprintf(stdout, "-1\n");
-        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
-                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
-            exit(EXIT_FAILURE);
-        }
-
-        fprintf(stdout, "0\n");
-        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
-                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
-            exit(EXIT_FAILURE);
-        }
-
-        /*pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            (int*)(&(mt_status.d_data[prng_iter_actual])));*/
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            (int*)mt_status.d_data);
+            (int*)(&(mt_status.d_data[prng_iter_actual])));
+        /*pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
+            (int*)mt_status.d_data);*/
 
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -873,16 +851,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timespec ts_post;
         timming_start(ts_post);
         // Timming -----------------------------------------------------
-
-        if (DEBUG) cudaThreadSynchronize();
-        fprintf(stdout, "1\n");
-        if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
-            cudaMemcpyDeviceToHost) != cudaSuccess) {
-
-            fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
-                COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
-            exit(EXIT_FAILURE);
-        }
 
         pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
             etc_matrix->machines_count, instance.gpu_machine_compute_time,
@@ -899,7 +867,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         * */
 
         if (DEBUG) cudaThreadSynchronize();
-        fprintf(stdout, "2\n");
+
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
