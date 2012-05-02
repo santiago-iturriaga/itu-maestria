@@ -156,7 +156,7 @@ __global__ void pals_rtask_kernel(
     __syncthreads();
 
     // Aplico reduce para quedarme con el mejor delta.
-    /*float delta_current, delta;
+    float delta_current, delta;
 
     for(unsigned int s=block_dim/2; s>0; s>>=1)
     {
@@ -173,7 +173,7 @@ __global__ void pals_rtask_kernel(
             }
         }
         __syncthreads();
-    }*/
+    }
 
     if (thread_idx == 0) {
         gpu_best_movements_op[block_idx] = block_op[0];
