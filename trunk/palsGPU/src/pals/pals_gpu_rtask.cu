@@ -612,6 +612,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timming_start(ts_pals_reduce);
     // Timming -----------------------------------------------------
 
+    /*
     pals_apply_best_kernel<<< 1, APPLY_BEST_KERNEL_THREADS >>>(
         etc_matrix->machines_count,
         etc_matrix->tasks_count,
@@ -626,7 +627,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_totally_fuckup_aux);
 
     if (DEBUG) cudaThreadSynchronize();
-
+    */
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
     // Timming -----------------------------------------------------
