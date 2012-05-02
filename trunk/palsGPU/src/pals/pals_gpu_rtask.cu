@@ -207,6 +207,7 @@ __global__ void pals_apply_best_kernel(
 
     if (i + blockDim.x < PALS_GPU_RTASK__BLOCKS) {
         float aux = gpu_best_deltas[i + blockDim.x];
+        
         if (aux < delta) {
             delta = aux;
             delta_idx = i + blockDim.x;
@@ -246,9 +247,9 @@ __global__ void pals_apply_best_kernel(
         float delta = sdata[0];
 
         gpu_best_movements_op[0] = mov_type;
-        gpu_best_movements_data1[1] = data1;
-        gpu_best_movements_data2[2] = data2;
-        gpu_best_deltas[3] = delta;
+        gpu_best_movements_data1[0] = data1;
+        gpu_best_movements_data2[0] = data2;
+        gpu_best_deltas[0] = delta;
 
         if (mov_type == PALS_GPU_RTASK_SWAP) {
             // Movimiento SWAP.
