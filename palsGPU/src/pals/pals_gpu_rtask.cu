@@ -776,8 +776,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         timming_start(ts_wrapper);
         // Timming -----------------------------------------------------
 
+        //pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
+        //    (int*)(&(mt_status.d_data[prng_iter_actual])));
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            (int*)(&(mt_status.d_data[prng_iter_actual])));
+            (int*)mt_status.d_data);
+
 
         // Timming -----------------------------------------------------
         timming_end(">> pals_gpu_rtask_wrapper", ts_wrapper);
@@ -802,6 +805,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
         * */
 
+	if (DEBUG) cudaThreadSynchronize();
+
         if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
             cudaMemcpyDeviceToHost) != cudaSuccess) {
 
@@ -810,12 +815,20 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             exit(EXIT_FAILURE);
         }
         
+	fprintf(stdout, "pepepepep\n");
+	if (DEBUG) {
+	  fprintf(stdout, "lololololo\n");
+	  for (int i = 0; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
+	    fprintf(stdout, "COMPUTEMAKESPAN %f\n", makespan_ct_aux[i]);
+	  }
+	}
+
         float old;
         old = current_solution->makespan;
 
         current_solution->makespan = makespan_ct_aux[0];
 
-        for (ushort i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
+        for (int i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
             if (current_solution->makespan < makespan_ct_aux[i]) {
                 current_solution->makespan = makespan_ct_aux[i];
             }
