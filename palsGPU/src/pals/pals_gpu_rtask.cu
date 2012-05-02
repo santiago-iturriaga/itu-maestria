@@ -1031,6 +1031,26 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     timming_start(ts_finalize);
     // Timming -----------------------------------------------------
 
+    pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
+        etc_matrix->machines_count, instance.gpu_machine_compute_time,
+        instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
+
+    if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+        cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
+            COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
+        exit(EXIT_FAILURE);
+    }
+
+    current_solution->makespan = makespan_ct_aux[0];
+
+    for (int i = 1; i < COMPUTE_MAKESPAN_KERNEL_BLOCKS; i++) {
+        if (current_solution->makespan < makespan_ct_aux[i]) {
+            current_solution->makespan = makespan_ct_aux[i];
+        }
+    }
+
     if (DEBUG) {
         fprintf(stdout, "[DEBUG] Total iterations       : %d.\n", iter);
         fprintf(stdout, "[DEBUG] Iter. best sol. found  : %d.\n", best_solution_iter);
@@ -1042,6 +1062,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     }
 
     load_sol_from_gpu(etc_matrix, instance, current_solution);
+    
     if (DEBUG) validate_solution(etc_matrix, current_solution);
     if (DEBUG) refresh_solution(etc_matrix, current_solution);
     if (DEBUG) comparar_sol_cpu_vs_gpu(etc_matrix, current_solution, instance);
