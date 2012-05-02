@@ -1,6 +1,6 @@
 BASE_PATH=$(pwd)
-SRC_PATH="instances.src"
-DEST_PATH="instances"
+SRC_PATH="32768x1024/instances.src"
+DEST_PATH="32768x1024/instances"
 
 mkdir -p ${DEST_PATH}
 
@@ -11,7 +11,6 @@ cd ${BASE_PATH}
 for s in ${SCENARIOS}
 do
 	echo ">>> ${s}"
-        
 	EXEC="python remove_first_line.py ${SRC_PATH}/${s}"
 	echo ${EXEC}
 	${EXEC} > ${DEST_PATH}/${s}
