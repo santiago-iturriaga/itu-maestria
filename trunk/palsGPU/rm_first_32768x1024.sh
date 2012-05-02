@@ -1,6 +1,6 @@
 BASE_PATH=$(pwd)
-SRC_PATH="32768x1024.src"
-DEST_PATH="32768x1024.M"
+SRC_PATH="instances.src"
+DEST_PATH="instances"
 
 mkdir -p ${DEST_PATH}
 
