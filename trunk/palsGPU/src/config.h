@@ -16,6 +16,6 @@
 //#define PALS_COUNT 100000
 //#define PALS_COUNT 1000000
 //#define PALS_COUNT 1500000
-#define PALS_COUNT 4000000
+#define PALS_COUNT 3932159
 
 #endif //CONFIG_H_

@@ -15,11 +15,13 @@
 #include "pals_gpu_rtask.h"
 
 #define VERY_BIG_FLOAT                  1073741824
-//#define PALS_RTASK_RANDS                6144*20
-#define PALS_RTASK_RANDS                1048576
 
-#define PALS_GPU_RTASK__BLOCKS          64
-#define PALS_GPU_RTASK__THREADS         256
+//#define PALS_RTASK_RANDS                6144*20
+//#define PALS_RTASK_RANDS                1048576
+#define PALS_RTASK_RANDS                33554432
+
+#define PALS_GPU_RTASK__BLOCKS          128
+#define PALS_GPU_RTASK__THREADS         512
 #define PALS_GPU_RTASK__LOOPS           1
 
 #define APPLY_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS >> 1
