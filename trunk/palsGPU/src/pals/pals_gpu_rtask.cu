@@ -107,12 +107,13 @@ __global__ void pals_rtask_kernel(
                     max_old = machine_a_ct_old;
                     if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
 
+                    /*
                     if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
                         delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                     } else {
                         delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
                     }
-                    /*
+                    */
                     if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
                         // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
                         if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
@@ -135,7 +136,7 @@ __global__ void pals_rtask_kernel(
                         delta = delta + (machine_a_ct_new - machine_a_ct_old);
                         delta = delta + (machine_b_ct_new - machine_b_ct_old);
                         delta = 1 / delta;
-                    }*/
+                    }
                 }
             }
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
@@ -172,6 +173,7 @@ __global__ void pals_rtask_kernel(
                 machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
                 machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
+                /*
                 float max_old;
                 max_old = machine_a_ct_old;
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
@@ -181,7 +183,7 @@ __global__ void pals_rtask_kernel(
                 } else {
                     delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
                 }
-                /*
+                */
                 if (machine_b_ct_new > current_makespan) {
                     // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
                     delta = delta + (machine_b_ct_new - current_makespan);
@@ -194,7 +196,7 @@ __global__ void pals_rtask_kernel(
                     delta = delta + (machine_a_ct_new - machine_a_ct_old);
                     delta = delta + (machine_b_ct_new - machine_b_ct_old);
                     delta = 1 / delta;
-                }*/
+                }
             }
 
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
@@ -807,7 +809,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     }
     // Timming -----------------------------------------------------
 
-    //if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
+    if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
 
     // =====================================================================
     // Hago un reduce y aplico el mejor movimiento.
@@ -839,7 +841,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     }
     // Timming -----------------------------------------------------
 
-    //if (DEBUG) show_first_search_results(etc_matrix, s, instance);
+    if (DEBUG) show_first_search_results(etc_matrix, s, instance);
 }
 
 void load_sol_from_gpu(struct matrix *etc_matrix, struct pals_gpu_rtask_instance &instance, struct solution *cpu_solution) {
@@ -1024,12 +1026,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
         // Timming -----------------------------------------------------
 
-        fprintf(stdout, "Prueba: %d\n", ((1 << 1) - 1));
-        fprintf(stdout, "Prueba 2: %d\n", iter & ((1 << 1) - 1));
-
         int status = iter & ((1 << 1) - 1);
-
-        //if (iter & ((1 << 10) -1) == 0) {
+        //int status = iter & ((1 << 10) -1);
+            
         if (status == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
                 cudaMemcpyDeviceToHost) != cudaSuccess) {
