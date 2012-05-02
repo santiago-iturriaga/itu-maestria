@@ -681,6 +681,13 @@ void show_first_search_results(struct matrix *etc_matrix, struct solution *s,
         if (DEBUG) {
             fprintf(stdout, "[DEBUG] BEST MOVEMENT => Task %d in %d is moved to machine %d. Delta %f.\n",
                 task_x, machine_a, machine_b, delta);
+                
+            fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a]);
+            fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b]);
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a] - 
+                get_etc_value(etc_matrix, machine_a, task_x));
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b] + 
+                get_etc_value(etc_matrix, machine_b, task_x));
         }
         // <======= DEBUG
     }
