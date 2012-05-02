@@ -41,7 +41,7 @@ __global__ void pals_rtask_kernel(ushort machines_count,
     const unsigned int block_idx = blockIdx.x;
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
-    const short mov_type = (short)(block_idx & 0x1);
+    const short mov_type = 0; //(short)(block_idx & 0x1);
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
@@ -67,9 +67,9 @@ __global__ void pals_rtask_kernel(ushort machines_count,
             delta = 0.0;
 
             // ================= Obtengo las tareas sorteadas.
-            task_x = (random1 + loop) % tasks_count;
+            task_x = 0; //(random1 + loop) % tasks_count;
 
-            task_y = ((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
+            task_y = 1; //((random2 >> 1) + (loop * block_dim)  + thread_idx) % (tasks_count - 1);
             if (task_y >= task_x) task_y++;
 
             // ================= Obtengo las máquinas a las que estan asignadas las tareas.
