@@ -748,7 +748,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
     timming_end(".. pals_gpu_rtask_pals", ts_pals);
     // Timming -----------------------------------------------------
 
-    if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
+    //if (DEBUG) show_search_results(etc_matrix, s, instance, gpu_random_numbers);
 
     // =====================================================================
     // Hago un reduce y aplico el mejor movimiento.
@@ -772,7 +772,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
     if (DEBUG) cudaThreadSynchronize();
 
-    if (DEBUG) show_first_search_results(etc_matrix, s, instance);
+    //if (DEBUG) show_first_search_results(etc_matrix, s, instance);
     
     // Timming -----------------------------------------------------
     timming_end(".. pals_gpu_rtask_reduce", ts_pals_reduce);
