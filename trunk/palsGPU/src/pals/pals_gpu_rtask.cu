@@ -35,15 +35,16 @@
 
 __global__ void pals_rtask_kernel(
     int machines_count,
-    int tasks_count, 
+    int tasks_count,
     float *gpu_etc_matrix,
-    int *gpu_task_assignment, 
+    int *gpu_task_assignment,
     float *gpu_machine_compute_time,
-    int *gpu_random_numbers, 
+    int *gpu_random_numbers,
     int *gpu_best_movements_op,
-    int *gpu_best_movements_data1, 
+    int *gpu_best_movements_data1,
     int *gpu_best_movements_data2,
-    float *gpu_best_deltas)
+    float *gpu_best_deltas,
+    float *gpu_makespan_array)
 {
     const unsigned int thread_idx = threadIdx.x;
     const unsigned int block_idx = blockIdx.x;
@@ -53,6 +54,8 @@ __global__ void pals_rtask_kernel(
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
+
+    const float current_makespan = gpu_makespan_array[0];
 
     __shared__ short block_op[PALS_GPU_RTASK__THREADS];
     __shared__ int block_data1[PALS_GPU_RTASK__THREADS];
@@ -64,7 +67,7 @@ __global__ void pals_rtask_kernel(
         // Tipo de movimiento.
         if (mov_type <= 2) {
             // PALS_GPU_RTASK_SWAP
-            
+
             int task_x, task_y;
             int machine_a, machine_b;
 
@@ -100,14 +103,39 @@ __global__ void pals_rtask_kernel(
                     machine_b_ct_new = machine_b_ct_new - gpu_etc_matrix[(machine_b * tasks_count) + task_y]; // Resto el ETC de y en b.
                     machine_b_ct_new = machine_b_ct_new + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
+                    /*
                     float max_old;
                     max_old = machine_a_ct_old;
                     if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
-                    
+
                     if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
                         delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                     } else {
                         delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
+                    }
+                    * */
+                    if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+                        // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+                        if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
+                        if (machine_b_ct_new > current_makespan) delta = delta + (machine_b_ct_new - current_makespan);
+                    } else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {
+                        // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+                        if (machine_a_ct_old+1 >= current_makespan) {
+                            delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                        } else {
+                            delta = delta + 1 / (machine_a_ct_new - machine_a_ct_old);
+                        }
+
+                        if (machine_b_ct_old+1 >= current_makespan) {
+                            delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                        } else {
+                            delta = delta + 1 / (machine_b_ct_new - machine_b_ct_old);
+                        }
+                    } else {
+                        // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+                        delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                        delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                        delta = 1 / delta;
                     }
                 }
             }
@@ -145,18 +173,33 @@ __global__ void pals_rtask_kernel(
                 machine_a_ct_new = machine_a_ct_old - gpu_etc_matrix[(machine_a * tasks_count) + task_x]; // Resto del ETC de x en a.
                 machine_b_ct_new = machine_b_ct_old + gpu_etc_matrix[(machine_b * tasks_count) + task_x]; // Sumo el ETC de x en b.
 
+                /*
                 float max_old;
                 max_old = machine_a_ct_old;
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
-                
+
                 if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
                     delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                 } else {
                     delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
                 }
+                * */
+                if (machine_b_ct_new > current_makespan) {
+                    // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+                    delta = delta + (machine_b_ct_new - current_makespan);
+                } else if (machine_a_ct_old+1 >= current_makespan) {
+                    // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+                    delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                    delta = delta + 1 / (machine_b_ct_new - machine_b_ct_old);
+                } else {
+                    // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+                    delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                    delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                    delta = 1 / delta;
+                }
             }
 
-            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {                
+            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
                 block_op[thread_idx] = PALS_GPU_RTASK_MOVE;
                 block_data1[thread_idx] = task_x;
                 block_data2[thread_idx] = machine_b;
@@ -197,12 +240,12 @@ __global__ void pals_rtask_kernel(
 
 __global__ void pals_apply_best_kernel(
     int machines_count,
-    int tasks_count, 
+    int tasks_count,
     float *gpu_etc_matrix,
-    int *gpu_task_assignment, 
+    int *gpu_task_assignment,
     float *gpu_machine_compute_time,
     int *gpu_best_movements_op,
-    int *gpu_best_movements_data1, 
+    int *gpu_best_movements_data1,
     int *gpu_best_movements_data2,
     float *gpu_best_deltas) {
 
@@ -219,7 +262,7 @@ __global__ void pals_apply_best_kernel(
 
     if (i + blockDim.x < PALS_GPU_RTASK__BLOCKS) {
         float aux = gpu_best_deltas[i + blockDim.x];
-        
+
         if (aux < delta) {
             delta = aux;
             delta_idx = i + blockDim.x;
@@ -269,7 +312,7 @@ __global__ void pals_apply_best_kernel(
             int task_x, task_y;
             task_x = data1;
             task_y = data2;
-            
+
             int machine_a, machine_b;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
             machine_b = gpu_task_assignment[task_y]; // Máquina b.
@@ -293,7 +336,7 @@ __global__ void pals_apply_best_kernel(
 
             int task_x;
             task_x = data1;
-            
+
             int machine_a, machine_b;
             machine_a = gpu_task_assignment[task_x]; // Máquina a.
             machine_b = data2;
@@ -315,8 +358,8 @@ __global__ void pals_apply_best_kernel(
 
 __global__ void pals_compute_makespan(
     int machines_count,
-    float *gpu_machine_compute_time, 
-    int *machine_idx, 
+    float *gpu_machine_compute_time,
+    int *machine_idx,
     float *machine_ct) {
 
     __shared__ unsigned int sdata_idx[COMPUTE_MAKESPAN_KERNEL_THREADS];
@@ -574,9 +617,9 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Copiando al host los números aleatorios sorteados.\n");
         exit(EXIT_FAILURE);
     }
-       
+
     for (int block_idx = 0; block_idx < instance.blocks; block_idx++) {
-        // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
+        // Calculo cuales fueron los elementos modificados en ese mejor movimiento.
         int move_type = best_movements_op[block_idx];
         int data1 = best_movements_data1[block_idx];
         int data2 = best_movements_data2[block_idx];
@@ -584,15 +627,15 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
 
         unsigned int random1 = rands_nums[2 * block_idx];
         unsigned int random2 = rands_nums[(2 * block_idx) + 1];
-        
+
         fprintf(stdout, "RANDOMS: %u %u\n", random1, random2);
 
         if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
             int task_x = data1;
             int task_y = data2;
-        
+
             // =======> DEBUG
-            if (DEBUG) { 
+            if (DEBUG) {
                 int machine_a = s->task_assignment[task_x];
                 int machine_b = s->task_assignment[task_y];
 
@@ -604,7 +647,7 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
             int task_x = data1;
             int machine_a = s->task_assignment[task_x];
             int machine_b = data2;
-        
+
             // =======> DEBUG
             if (DEBUG) {
                 fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f.\n",
@@ -613,7 +656,7 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
             // <======= DEBUG
         }
     }
-    
+
     free(best_movements_op);
     free(best_movements_data1);
     free(best_movements_data2);
@@ -656,8 +699,8 @@ void show_first_search_results(struct matrix *etc_matrix, struct solution *s,
         fprintf(stderr, "[ERROR] Copiando los mejores movimientos al host (gpu_best_deltas).\n");
         exit(EXIT_FAILURE);
     }
-      
-    // Calculo cuales fueron los elementos modificados en ese mejor movimiento. 
+
+    // Calculo cuales fueron los elementos modificados en ese mejor movimiento.
     int block_idx = 0;
     int move_type = best_movements_op[block_idx];
     int data1 = best_movements_data1[block_idx];
@@ -667,20 +710,20 @@ void show_first_search_results(struct matrix *etc_matrix, struct solution *s,
     if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
         int task_x = data1;
         int task_y = data2;
-    
+
         // =======> DEBUG
-        if (DEBUG) { 
+        if (DEBUG) {
             int machine_a = s->task_assignment[task_x];
             int machine_b = s->task_assignment[task_y];
 
             fprintf(stdout, "[DEBUG] BEST MOVEMENT => Task %d in %d swaps with task %d in %d. Delta %f.\n",
                 task_x, machine_a, task_y, machine_b, delta);
-                
+
             fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a]);
             fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b]);
-            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a] + 
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a] +
                 get_etc_value(etc_matrix, machine_a, task_y) - get_etc_value(etc_matrix, machine_a, task_x));
-            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b] + 
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b] +
                 get_etc_value(etc_matrix, machine_b, task_x) - get_etc_value(etc_matrix, machine_b, task_y));
         }
         // <======= DEBUG
@@ -688,22 +731,22 @@ void show_first_search_results(struct matrix *etc_matrix, struct solution *s,
         int task_x = data1;
         int machine_a = s->task_assignment[task_x];
         int machine_b = data2;
-    
+
         // =======> DEBUG
         if (DEBUG) {
             fprintf(stdout, "[DEBUG] BEST MOVEMENT => Task %d in %d is moved to machine %d. Delta %f.\n",
                 task_x, machine_a, machine_b, delta);
-                
+
             fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a]);
             fprintf(stdout, "[DEBUG] Current machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b]);
-            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a] - 
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_a, s->machine_compute_time[machine_a] -
                 get_etc_value(etc_matrix, machine_a, task_x));
-            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b] + 
+            fprintf(stdout, "[DEBUG] New machine %d compute time %f\n", machine_b, s->machine_compute_time[machine_b] +
                 get_etc_value(etc_matrix, machine_b, task_x));
         }
         // <======= DEBUG
     }
-    
+
     free(best_movements_op);
     free(best_movements_data1);
     free(best_movements_data2);
@@ -745,7 +788,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_movements_op,
         instance.gpu_best_movements_data1,
         instance.gpu_best_movements_data2,
-        instance.gpu_best_deltas);
+        instance.gpu_best_deltas,
+        instance.gpu_makespan_ct_aux);
 
     cudaError_t e;
     e = cudaGetLastError();
@@ -787,7 +831,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_movements_data1,
         instance.gpu_best_movements_data2,
         instance.gpu_best_deltas);
-   
+
     // Timming -----------------------------------------------------
     if (DEBUG) {
         ccudaEventRecord(end, 0);
@@ -921,6 +965,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
 
+    // Cargo el makespan de la solución actual en la GPU.
+    pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
+        etc_matrix->machines_count, instance.gpu_machine_compute_time,
+        instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
+
     int iter;
     /*for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0)
         && (ts_stop_condition_current.tv_sec - ts_stop_condition_start.tv_sec) <= 5; iter++) {*/
@@ -976,7 +1025,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             ccudaEventRecord(start, 0);
         }
         // Timming -----------------------------------------------------
-        
+
+        // Recalculo el makespan.
         pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
             etc_matrix->machines_count, instance.gpu_machine_compute_time,
             instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
@@ -992,7 +1042,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
         if (DEBUG) {
             /*cudaThreadSynchronize();
-            
+
             pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
                 etc_matrix->machines_count, instance.gpu_machine_compute_time,
                 instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
@@ -1090,7 +1140,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     }
 
     load_sol_from_gpu(etc_matrix, instance, current_solution);
-    
+
     if (DEBUG) validate_solution(etc_matrix, current_solution);
     if (DEBUG) refresh_solution(etc_matrix, current_solution);
     if (DEBUG) comparar_sol_cpu_vs_gpu(etc_matrix, current_solution, instance);
