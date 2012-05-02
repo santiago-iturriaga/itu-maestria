@@ -904,10 +904,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // PALS aleatorio por tarea.
     // ==============================================================================
 
-    // Time stop condition -----------------------------------------
-    //timespec ts_stop_condition_start, ts_stop_condition_current;
-    //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_start);
-
     // Timming -----------------------------------------------------
     timespec ts_init;
     timming_start(ts_init);
@@ -937,11 +933,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // Ejecuto GPUPALS.
     int seed = input.seed;
 
-    //RNG_rand48 r48;
-    //RNG_rand48_init(r48, PALS_RTASK_RANDS); // Debe ser múltiplo de 6144
-
     int prng_vector_size = PALS_RTASK_RANDS;
-    //unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
 
     mtgp32_status mt_status;
     mtgp32_initialize(&mt_status, prng_vector_size, seed);
@@ -963,17 +955,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     //int makespan_idx_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
     float makespan_ct_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
 
-    //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
-
     // Cargo el makespan de la solución actual en la GPU.
     pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
         etc_matrix->machines_count, instance.gpu_machine_compute_time,
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
     int iter;
-    /*for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0)
-        && (ts_stop_condition_current.tv_sec - ts_stop_condition_start.tv_sec) <= 5; iter++) {*/
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag == 0); iter++) {
+    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < 10); iter++) {
 
         if (DEBUG) fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
 
@@ -998,7 +986,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if (prng_iter_actual >= prng_cant_iter_generadas) {
             if (DEBUG) fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
 
-            //RNG_rand48_generate(r48, seed);
             mtgp32_generate_uint32(&mt_status);
             prng_iter_actual = 0;
         }
@@ -1039,6 +1026,30 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             fprintf(stdout, "[TIME] Busqueda del makespan: %f (ms)\n", gputime);
         }
         // Timming -----------------------------------------------------
+
+        if (iter & ((1 << 10) -1) == 0) {
+            if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
+                cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+                fprintf(stderr, "[ERROR] Copiando gpu_makespan_ct_aux al host (%ld bytes).\n",
+                    COMPUTE_MAKESPAN_KERNEL_BLOCKS * sizeof(float));
+                exit(EXIT_FAILURE);
+            }
+
+            float old;
+            old = current_solution->makespan;
+
+            current_solution->makespan = makespan_ct_aux[0];
+            if (current_solution->makespan < best_solution) {
+                best_solution = current_solution->makespan;
+                best_solution_iter = iter;
+                convergence_flag = 0;
+            }
+            
+            if (old <= current_solution->makespan) {
+                convergence_flag++;
+            }
+        }
 
         if (DEBUG) {
             /*cudaThreadSynchronize();
@@ -1100,8 +1111,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if (DEBUG) refresh_solution(etc_matrix, current_solution);
         if (DEBUG) comparar_sol_cpu_vs_gpu(etc_matrix, current_solution, instance);
         * */
-
-        //clock_gettime(CLOCK_REALTIME, &ts_stop_condition_current);
     }
 
     // Timming -----------------------------------------------------
