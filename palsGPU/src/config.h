@@ -5,9 +5,9 @@
 #define DEBUG 1
 #define TIMMING 1
 
-#define PALS_COUNT 1
+//#define PALS_COUNT 1
 //#define PALS_COUNT 2
-//#define PALS_COUNT 10
+#define PALS_COUNT 10
 //#define PALS_COUNT 25
 //#define PALS_COUNT 250
 //#define PALS_COUNT 5000
