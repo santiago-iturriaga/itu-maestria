@@ -46,7 +46,9 @@ int main(int argc, char** argv)
     // =============================================================
     // Loading problem instance
     // =============================================================
-    if (DEBUG) fprintf(stdout, "[DEBUG] Loading problem instance...\n");
+    #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Loading problem instance...\n");
+    #endif
 
     // Se pide el espacio de memoria para la matriz de ETC.
     struct matrix *etc_matrix = create_etc_matrix(&input);
@@ -60,14 +62,19 @@ int main(int argc, char** argv)
     // =============================================================
     // Create empty solution
     // =============================================================
-    if (DEBUG) fprintf(stdout, "[DEBUG] Creating empty solution...\n");
+    #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Creating empty solution...\n");
+    #endif
+    
     struct solution *current_solution = create_empty_solution(etc_matrix);
 
     // =============================================================
     // Solving the problem.
     // =============================================================
-    if (DEBUG) fprintf(stdout, "[DEBUG] Executing algorithm...\n");
-
+    #if defined(DEBUG)
+        fprintf(stdout, "[DEBUG] Executing algorithm...\n");
+    #endif
+    
     // Timming -----------------------------------------------------
     timespec ts;
     timming_start(ts);
@@ -77,8 +84,10 @@ int main(int argc, char** argv)
         // =============================================================
         // Candidate solution
         // =============================================================
-        if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
-
+        #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+        #endif
+        
         // Timming -----------------------------------------------------
         timespec ts_mct;
         timming_start(ts_mct);
@@ -90,7 +99,9 @@ int main(int argc, char** argv)
         timming_end(">> MCT Time", ts_mct);
         // Timming -----------------------------------------------------
 
-        if (DEBUG) validate_solution(etc_matrix, current_solution);
+        #if defined(DEBUG)
+            validate_solution(etc_matrix, current_solution);
+        #endif
 
         // =============================================================
         // Serial. Versión de búsqueda completa.
@@ -101,7 +112,9 @@ int main(int argc, char** argv)
         // =============================================================
         // Candidate solution
         // =============================================================
-        if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+        #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+        #endif
 
         // Timming -----------------------------------------------------
         timespec ts_mct;
@@ -114,7 +127,9 @@ int main(int argc, char** argv)
         timming_end(">> MCT Time", ts_mct);
         // Timming -----------------------------------------------------
 
-        if (DEBUG) validate_solution(etc_matrix, current_solution);
+        #if defined(DEBUG)
+            validate_solution(etc_matrix, current_solution);
+        #endif
 
         // =============================================================
         // CUDA. Versión de búsqueda completa.
@@ -127,7 +142,9 @@ int main(int argc, char** argv)
         // =============================================================
         // Candidate solution
         // =============================================================
-        if (DEBUG) fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+        #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] Creating initial candiate solution...\n");
+        #endif
 
         // Timming -----------------------------------------------------
         timespec ts_mct;
@@ -142,7 +159,9 @@ int main(int argc, char** argv)
         timming_end(">> MCT Time", ts_mct);
         // Timming -----------------------------------------------------
 
-        if (DEBUG) validate_solution(etc_matrix, current_solution);
+        #if defined(DEBUG)
+            validate_solution(etc_matrix, current_solution);
+        #endif
 
         // =============================================================
         // CUDA. Búsqueda aleatoria por tarea.
@@ -161,12 +180,12 @@ int main(int argc, char** argv)
 
     }
 
-    if (OUTPUT_SOLUTION) {
+    #if defined(OUTPUT_SOLUTION)
         //fprintf(stdout, "%d %d\n", etc_matrix->tasks_count, etc_matrix->machines_count);
         for (int task_id = 0; task_id < etc_matrix->tasks_count; task_id++) {
             fprintf(stdout, "%d\n", current_solution->task_assignment[task_id]);
         }
-    }
+    #endif
 
     // Timming -----------------------------------------------------
     timming_end("Elapsed algorithm total time", ts);

@@ -8,24 +8,24 @@
 
 /* Reads the input file and stores de data in the ETC matrix */
 int load_instance(struct params *input, struct matrix *etc_matrix) {
-	FILE *fi;
+    FILE *fi;
 
-	if ((fi = fopen(input->instance_path, "r")) == NULL) {
-		fprintf(stderr, "[ERROR] Reading the input file %s.\n", input->instance_path);
-		return EXIT_FAILURE;
-	}
+    if ((fi = fopen(input->instance_path, "r")) == NULL) {
+        fprintf(stderr, "[ERROR] Reading the input file %s.\n", input->instance_path);
+        return EXIT_FAILURE;
+    }
 
-	float value;
-	for (int task = 0; task < input->tasks_count; task++) {
-		for (int machine = 0; machine < input->machines_count; machine++) {
-			fscanf(fi, "%f", &value);
-			
-			set_etc_value(etc_matrix, machine, task, value); 
-		}
-	}
+    float value;
+    for (int task = 0; task < input->tasks_count; task++) {
+        for (int machine = 0; machine < input->machines_count; machine++) {
+            fscanf(fi, "%f", &value);
+            
+            set_etc_value(etc_matrix, machine, task, value); 
+        }
+    }
 
-	fclose(fi);
-	return EXIT_SUCCESS;
+    fclose(fi);
+    return EXIT_SUCCESS;
 }
 
 #endif //_LOAD_INSTANCE_C_

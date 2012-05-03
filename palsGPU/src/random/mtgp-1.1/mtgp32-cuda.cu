@@ -429,18 +429,18 @@ int mtgp32_get_suitable_block_num() {
 
 // Se generan (768 * block_num) números aleatorios por cada vez.
 void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsigned int seed) {
-    float gputime;
-    cudaEvent_t start;
-    cudaEvent_t end;
+    #if defined(TIMMING)
+        float gputime;
+        cudaEvent_t start;
+        cudaEvent_t end;
 
-    if (DEBUG) {
         ccudaEventCreate(&start);
         ccudaEventCreate(&end);
 
         ccudaEventRecord(start, 0);
     
         fprintf(stdout, "[INFO] === Initializing Mersenne Twister =======================\n");
-    }
+    #endif
     
     status->numbers_per_gen = numbers_per_gen;
     status->num_data = numbers_per_gen;
@@ -468,17 +468,17 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsign
         status->num_data = status->num_data + status->num_unit - r;
     }
     
-    if (DEBUG) {
+    #if defined(DEBUG)
         fprintf(stdout, "[DEBUG] block_num: %d, num_unit: %d, num_data: %d (size %lu Mb)\n", 
             status->block_num, status->num_unit, status->num_data, (status->num_data * sizeof(uint32_t)) / (1024*1024));
-    }
+    #endif
     
     make_constant(MTGPDC_PARAM_TABLE, status->block_num);
     make_kernel_data32(status->d_status, MTGPDC_PARAM_TABLE, status->block_num, seed);
     
     ccudaMalloc((void**)&(status->d_data), sizeof(uint32_t) * status->num_data);
     
-    if (DEBUG) {
+    #if defined(TIMMING)
         ccudaEventRecord(end, 0);
         ccudaEventSynchronize(end);
         ccudaEventElapsedTime(&gputime, start, end);
@@ -486,7 +486,7 @@ void mtgp32_initialize(struct mtgp32_status *status, int numbers_per_gen, unsign
             
         ccudaEventDestroy(start);
         ccudaEventDestroy(end);
-    }
+    #endif
 }
 
 void mtgp32_free(struct mtgp32_status *status) {
