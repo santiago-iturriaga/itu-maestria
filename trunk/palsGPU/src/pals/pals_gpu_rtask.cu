@@ -450,6 +450,7 @@ __global__ void pals_apply_multi_best_kernel(
             }
         }
     }
+    __syncthreads();
     
     if (tid == 0) {
         if (block_discarded == 0) {
