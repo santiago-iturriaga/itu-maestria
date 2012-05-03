@@ -16,13 +16,18 @@
 
 #define VERY_BIG_FLOAT                  1073741824
 
+#define PALS_GPU__CONVERGENCE           VERY_BIG_FLOAT
+
 //#define PALS_RTASK_RANDS                6144*20
-#define PALS_RTASK_RANDS                1048576
+#define PALS_RTASK_RANDS                131072
+//#define PALS_RTASK_RANDS                1048576
 //#define PALS_RTASK_RANDS                33554432
 
-#define PALS_GPU_RTASK__BLOCKS          128
+#define PALS_GPU_RTASK__BLOCKS          32
+//#define PALS_GPU_RTASK__BLOCKS          128
 //#define PALS_GPU_RTASK__BLOCKS          64
-#define PALS_GPU_RTASK__LOOPS           1
+//#define PALS_GPU_RTASK__LOOPS           1
+#define PALS_GPU_RTASK__LOOPS           16
 // No es posible aumentar más debido al tamaño de la memoria SHARED
 #define PALS_GPU_RTASK__THREADS         256
 
@@ -1242,7 +1247,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
     int iter;
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < 10); iter++) {
+    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_GPU__CONVERGENCE); iter++) {
         #if defined(DEBUG)
             fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
         #endif
@@ -1312,9 +1317,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         #endif
         // Timming -----------------------------------------------------
 
-        int status = 0;
+        //int status = 0;
         //int status = iter & ((1 << 1) - 1);
-        //int status = iter & ((1 << 10) -1);
+        int status = iter & ((1 << 10) - 1);
             
         if (status == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
