@@ -1208,8 +1208,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         #endif
         // Timming -----------------------------------------------------
 
+        int status = 0;
         //int status = iter & ((1 << 1) - 1);
-        int status = iter & ((1 << 10) -1);
+        //int status = iter & ((1 << 10) -1);
             
         if (status == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
@@ -1284,11 +1285,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     load_sol_from_gpu(etc_matrix, instance, current_solution);
     
-    #if defined(DEBUG)
+    /*#if defined(DEBUG)
         validate_solution(etc_matrix, current_solution);
         refresh_solution(etc_matrix, current_solution);
         comparar_sol_cpu_vs_gpu(etc_matrix, current_solution, instance);
-    #endif
+    #endif*/
 
     // Libera la memoria del dispositivo con los números aleatorios.
     //RNG_rand48_cleanup(r48);
