@@ -451,9 +451,9 @@ __global__ void pals_apply_multi_best_kernel(
                     if (aux_block_machine_a == current_block_machine_b) block_discarded++;
                     if (aux_block_machine_b == current_block_machine_a) block_discarded++;
                     
-                    if ((aux_block_deltas == current_block_deltas) && (block_discarded > 0)) {
+                    /*if ((aux_block_deltas == current_block_deltas) && (block_discarded > 0)) {
                         if (tid < bid) block_discarded = 0;
-                    }
+                    }*/
                 }
             }
         }
