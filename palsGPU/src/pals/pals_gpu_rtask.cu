@@ -501,7 +501,9 @@ __global__ void pals_apply_multi_best_kernel(
         }
     }*/
     
-    gpu_best_movements_discarded[bid] = block_discarded;
+    if (tid == 0) {
+        gpu_best_movements_discarded[bid] = block_discarded;
+    }
 }
 
 __global__ void pals_compute_makespan(
