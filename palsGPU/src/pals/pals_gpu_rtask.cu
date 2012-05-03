@@ -1026,8 +1026,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         }
         // Timming -----------------------------------------------------
 
-        int status = iter & ((1 << 1) - 1);
-        //int status = iter & ((1 << 10) -1);
+        //int status = iter & ((1 << 1) - 1);
+        int status = iter & ((1 << 10) -1);
             
         if (status == 0) {
             if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
