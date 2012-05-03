@@ -420,11 +420,30 @@ __global__ void pals_sort_multi_best_kernel(
         }
 
         __syncthreads();
+        
+        if (pos > 0) {
+            if (movement_delta[pos] < movement_delta[pos - 1]) {
+                atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
+                
+                aux_index = movement_index[pos];
+                aux_delta = movement_delta[pos];
+                
+                movement_index[pos] = movement_index[pos - 1];
+                movement_delta[pos] = movement_delta[pos - 1];
+                
+                movement_index[pos - 1] = aux_index;
+                movement_delta[pos - 1] = aux_delta;
+            }
+        }
+
+        __syncthreads();
     } while (swaps > 0);
     
-    gpu_best_movements_discarded[movement_index[0]] = 0;
+    int best = movement_index[0];
+    gpu_best_movements_discarded[best] = 0;
     
-    if (tid != movement_index[0]) gpu_best_movements_discarded[tid] = 1;
+    if (tid != best) gpu_best_movements_discarded[tid] = 1;
+    
     /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
         gpu_best_movements_discarded[i] = 1;
     }*/
@@ -1053,7 +1072,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
             instance.gpu_best_movements_data2,
             instance.gpu_best_movements_discarded,
             instance.gpu_best_deltas);
-        pals_apply_multi_best_kernel<<< APPLY_MULTI_BEST_KERNEL_BLOCKS, APPLY_MULTI_BEST_KERNEL_THREADS >>>(
+        /*pals_apply_multi_best_kernel<<< APPLY_MULTI_BEST_KERNEL_BLOCKS, APPLY_MULTI_BEST_KERNEL_THREADS >>>(
             etc_matrix->machines_count,
             etc_matrix->tasks_count,
             instance.gpu_etc_matrix,
@@ -1063,7 +1082,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
             instance.gpu_best_movements_data1,
             instance.gpu_best_movements_data2,
             instance.gpu_best_movements_discarded,
-            instance.gpu_best_deltas);
+            instance.gpu_best_deltas);*/
     #endif
     
     // Timming -----------------------------------------------------
