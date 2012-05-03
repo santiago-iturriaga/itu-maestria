@@ -1,8 +1,8 @@
 #CC=gcc
 
-NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
+NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc -arch=compute_20
 #NVCC=/usr/local/cuda/bin/nvcc 
-NVCCLocal=/home/santiago/cuda/bin/nvcc -L/home/santiago/cuda/fake-libs/
+NVCCLocal=/home/santiago/cuda/bin/nvcc -L/home/santiago/cuda/fake-libs/ -arch=compute_20
 
 MTGP32_INC = src/random/mtgp-1.1/mtgp32-fast.h \
 	src/random/mtgp-1.1/mtgp32-fast.c \
