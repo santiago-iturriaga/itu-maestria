@@ -417,7 +417,6 @@ __global__ void pals_apply_multi_best_kernel(
     }
     __syncthreads();
     
-    /*
     if (block_discarded == 0) {
         if ((tid != bid) && (tid < PALS_GPU_RTASK__BLOCKS)) {
             int aux_block_op;
@@ -434,17 +433,17 @@ __global__ void pals_apply_multi_best_kernel(
                 
                 if (aux_block_op >= 0) {
                     if (aux_block_op == PALS_GPU_RTASK_SWAP) {
-                        aux_block_task_x = gpu_best_movements_data1[bid];
-                        aux_block_task_y = gpu_best_movements_data2[bid];
+                        aux_block_task_x = gpu_best_movements_data1[tid];
+                        aux_block_task_y = gpu_best_movements_data2[tid];
 
                         aux_block_machine_a = gpu_task_assignment[aux_block_task_x];
                         aux_block_machine_b = gpu_task_assignment[aux_block_task_y];
                     } else if (aux_block_op == PALS_GPU_RTASK_MOVE) {
-                        aux_block_task_x = gpu_best_movements_data1[bid];
+                        aux_block_task_x = gpu_best_movements_data1[tid];
                         aux_block_task_y = -1;
 
                         aux_block_machine_a = gpu_task_assignment[aux_block_task_x];
-                        aux_block_machine_b = gpu_best_movements_data2[bid];
+                        aux_block_machine_b = gpu_best_movements_data2[tid];
                     }
                     
                     if (aux_block_machine_a == current_block_machine_a) block_discarded++;
@@ -452,14 +451,14 @@ __global__ void pals_apply_multi_best_kernel(
                     if (aux_block_machine_a == current_block_machine_b) block_discarded++;
                     if (aux_block_machine_b == current_block_machine_a) block_discarded++;
                     
-                    //if ((aux_block_deltas == current_block_deltas) && (block_discarded > 0)) {
-                    //    if (tid < bid) block_discarded = 0;
-                    //}
+                    if ((aux_block_deltas == current_block_deltas) && (block_discarded > 0)) {
+                        if (tid < bid) block_discarded = 0;
+                    }
                 }
             }
         }
     }
-    __syncthreads();*/
+    __syncthreads();
     
     /*
     if (tid == 0) {
