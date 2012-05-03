@@ -508,6 +508,8 @@ __global__ void pals_sort_multi_best_kernel(
                 }
             }
         }
+        
+        __syncthreads();
     }
     
     gpu_best_movements_discarded[tid] = movement_discard[tid];
@@ -1092,7 +1094,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
             instance.gpu_best_movements_data2,
             instance.gpu_best_movements_discarded,
             instance.gpu_best_deltas);
-        /*pals_apply_multi_best_kernel<<< APPLY_MULTI_BEST_KERNEL_BLOCKS, APPLY_MULTI_BEST_KERNEL_THREADS >>>(
+        pals_apply_multi_best_kernel<<< APPLY_MULTI_BEST_KERNEL_BLOCKS, APPLY_MULTI_BEST_KERNEL_THREADS >>>(
             etc_matrix->machines_count,
             etc_matrix->tasks_count,
             instance.gpu_etc_matrix,
@@ -1102,7 +1104,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
             instance.gpu_best_movements_data1,
             instance.gpu_best_movements_data2,
             instance.gpu_best_movements_discarded,
-            instance.gpu_best_deltas);*/
+            instance.gpu_best_deltas);
     #endif
     
     // Timming -----------------------------------------------------
