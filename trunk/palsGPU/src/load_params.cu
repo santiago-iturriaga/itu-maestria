@@ -7,18 +7,26 @@
 int load_params(int argc, char **argv, struct params *input) {
     if (argc >= 5) {
         input->instance_path = argv[1];
-        if (DEBUG) fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
+        #if defined(DEBUG)
+            fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
+        #endif
 
         input->tasks_count = atoi(argv[2]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
-
+        #if defined(DEBUG)
+            fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
+        #endif
+        
         input->machines_count = atoi(argv[3]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
-
+        #if defined(DEBUG)
+            fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
+        #endif
+        
         input->algorithm = atoi(argv[4]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] Algorithm: %d", input->algorithm);
-
-        if (DEBUG) {
+        #if defined(DEBUG)
+            fprintf(stdout, "[PARAMS] Algorithm: %d", input->algorithm);
+        #endif
+        
+        #if defined(DEBUG)
             if (input->algorithm == PALS_Serial) {
                 fprintf(stdout, " (PALS_Serial)\n");
             } else if (input->algorithm == PALS_GPU) {
@@ -30,11 +38,13 @@ int load_params(int argc, char **argv, struct params *input) {
             } else if (input->algorithm == MCT) {
                 fprintf(stdout, " (MCT)\n");
             }
-        }
+        #endif
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
-            if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+            #if defined(DEBUG) 
+                fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+            #endif
         } else {
             input->seed = 0;
             input->gpu_device = 0;
@@ -42,7 +52,9 @@ int load_params(int argc, char **argv, struct params *input) {
 
         if (argc >= 7) {
             input->gpu_device = atoi(argv[6]);
-            if (DEBUG) fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
+            #if defined(DEBUG) 
+                fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
+            #endif
         } else {
             input->gpu_device = 0;
         }

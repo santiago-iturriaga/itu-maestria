@@ -1,9 +1,15 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define OUTPUT_SOLUTION 1
-#define DEBUG 0
-#define TIMMING 0
+//#define OUTPUT_SOLUTION
+#define DEBUG
+#define TIMMING
+
+//#define SIMPLE_DELTA
+#define COMPLEX_DELTA
+
+//#define SINGLE_STEP
+#define MULTI_STEP
 
 //#define PALS_COUNT 1
 //#define PALS_COUNT 2
@@ -16,7 +22,7 @@
 //#define PALS_COUNT 100000
 //#define PALS_COUNT 1000000
 //#define PALS_COUNT 1500000
-//#define PALS_COUNT 3932159
-#define PALS_COUNT 7864318
+#define PALS_COUNT 3932159
+//#define PALS_COUNT 7864318
 
 #endif //CONFIG_H_
