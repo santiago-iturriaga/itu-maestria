@@ -26,6 +26,7 @@ struct pals_gpu_rtask_instance {
     int *gpu_best_movements_data1;
     int *gpu_best_movements_data2;
     float *gpu_best_deltas;
+    int *gpu_best_movements_discarded;
     
     int *gpu_makespan_idx_aux;
     float *gpu_makespan_ct_aux;
