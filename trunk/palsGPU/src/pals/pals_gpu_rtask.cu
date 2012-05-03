@@ -422,9 +422,9 @@ __global__ void pals_sort_multi_best_kernel(
         __syncthreads();
     } while (swaps > 0);
     
-    gpu_best_movements_discarded[0] = 0;
+    gpu_best_movements_discarded[movement_index[0]] = 0;
     
-    if (tid != 0) gpu_best_movements_discarded[tid] = 1;
+    if (tid != movement_index[0]) gpu_best_movements_discarded[tid] = 1;
     /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
         gpu_best_movements_discarded[i] = 1;
     }*/
