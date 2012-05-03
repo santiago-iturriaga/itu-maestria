@@ -421,11 +421,11 @@ __global__ void pals_apply_multi_best_kernel(
     if (block_discarded == 0) {
         if ((tid != bid) && (tid < PALS_GPU_RTASK__BLOCKS)) {
             int aux_block_op;
-            int aux_block_task_x = -1;
-            int aux_block_task_y = -1;
-            int aux_block_machine_a = -1;
-            int aux_block_machine_b = -1;
-            float aux_block_deltas = 0.0;
+            int aux_block_task_x;
+            int aux_block_task_y;
+            int aux_block_machine_a;
+            int aux_block_machine_b;
+            float aux_block_deltas;
         
             aux_block_deltas = gpu_best_deltas[tid];
             
@@ -460,6 +460,7 @@ __global__ void pals_apply_multi_best_kernel(
         }
     }
     __syncthreads();*/
+    
     /*
     if (tid == 0) {
         if (block_discarded == 0) {
@@ -499,6 +500,8 @@ __global__ void pals_apply_multi_best_kernel(
             gpu_best_movements_discarded[bid] = 1;
         }
     }*/
+    
+    gpu_best_movements_discarded[bid] = block_discarded;
 }
 
 __global__ void pals_compute_makespan(
