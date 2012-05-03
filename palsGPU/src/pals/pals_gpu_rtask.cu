@@ -450,8 +450,9 @@ __global__ void pals_apply_multi_best_kernel(
                     (aux_block_machine_a == current_block_machine_b) ||
                     (aux_block_machine_b == current_block_machine_a)) {
 
-                    if (aux_block_deltas < current_block_deltas) {            
-                        block_discarded = 1;
+                    if (aux_block_deltas < current_block_deltas) {
+                        atomicExch(&block_discarded, 1);
+                        //block_discarded = 1;
                     }
                 }
             }
