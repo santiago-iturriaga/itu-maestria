@@ -386,12 +386,21 @@ __global__ void pals_sort_multi_best_kernel(
     unsigned int bid = blockIdx.x;
     unsigned int tid = threadIdx.x;
 
-    __shared__ int movement_index[PALS_GPU_RTASK__BLOCKS];
+    __shared__ short movement_op[PALS_GPU_RTASK__BLOCKS];
+    __shared__ int movement_data1[PALS_GPU_RTASK__BLOCKS];
+    __shared__ int movement_data2[PALS_GPU_RTASK__BLOCKS];
     __shared__ float movement_delta[PALS_GPU_RTASK__BLOCKS];
+    __shared__ int movement_index[PALS_GPU_RTASK__BLOCKS];
+    __shared__ int movement_discard[PALS_GPU_RTASK__BLOCKS];
+    
     __shared__ unsigned int swaps;
 
-    movement_index[tid] = tid;
+    movement_op[tid] = gpu_best_movements_op[tid];
+    movement_data1[tid] = gpu_best_movements_data1[tid];
+    movement_data2[tid] = gpu_best_movements_data2[tid];
     movement_delta[tid] = gpu_best_deltas[tid];
+    movement_index[tid] = tid;
+    movement_discard[tid] = 0;
     
     __syncthreads();
     
@@ -439,60 +448,69 @@ __global__ void pals_sort_multi_best_kernel(
         __syncthreads();
     } while (swaps > 0);
     
-    int index = movement_index[0];
-    gpu_best_movements_discarded[index] = 0;
+    int index, prev_index; /*= movement_index[0];
+    gpu_best_movements_discarded[index] = 0;*/
+        
+    int aux;
+        
+    int mov_task_x;
+    int mov_task_y;
+    int mov_machine_a;
+    int mov_machine_b;
     
-    /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
-        index = movement_index[i];
+    int prev_mov_task_x;
+    int prev_mov_task_y;
+    int prev_mov_machine_a;
+    int prev_mov_machine_b;
         
-        
-        
-        __syncthreads();
-    }*/
-    
-        /*
-    if (block_discarded == 0) {
-        if (tid != bid) {
-            int aux_block_op;
-            int aux_block_task_x;
-            int aux_block_task_y;
-            int aux_block_machine_a;
-            int aux_block_machine_b;
-            float aux_block_deltas;
-        
-            aux_block_op = gpu_best_movements_op[tid];
+    for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
+        if (tid < i) {
+            index = movement_index[i];
+            mov_task_x = movement_data1[index];
             
-            if (aux_block_op >= 0) {
-                if (aux_block_op == PALS_GPU_RTASK_SWAP) {
-                    aux_block_task_x = gpu_best_movements_data1[tid];
-                    aux_block_task_y = gpu_best_movements_data2[tid];
-
-                    aux_block_machine_a = gpu_task_assignment[aux_block_task_x];
-                    aux_block_machine_b = gpu_task_assignment[aux_block_task_y];
-                } else if (aux_block_op == PALS_GPU_RTASK_MOVE) {
-                    aux_block_task_x = gpu_best_movements_data1[tid];
-                    aux_block_task_y = -1;
-
-                    aux_block_machine_a = gpu_task_assignment[aux_block_task_x];
-                    aux_block_machine_b = gpu_best_movements_data2[tid];
-                }
-    
-                aux_block_deltas = gpu_best_deltas[tid];
+            aux = movement_op[index];
+            if (aux == PALS_GPU_RTASK_SWAP) {
+                mov_task_y = movement_data2[index];
                 
-                if ((aux_block_machine_a == current_block_machine_a) ||
-                    (aux_block_machine_b == current_block_machine_b) ||
-                    (aux_block_machine_a == current_block_machine_b) ||
-                    (aux_block_machine_b == current_block_machine_a)) {
+                mov_machine_a = gpu_task_assignment[mov_task_x];
+                mov_machine_b = gpu_task_assignment[mov_task_y];
+            } else if (aux == PALS_GPU_RTASK_MOVE) {
+                mov_task_y = -1;
 
-                    if (aux_block_deltas < current_block_deltas) {
-                        atomicExch(&block_discarded, 1);
-                        //block_discarded = 1;
-                    }
+                mov_machine_a = gpu_task_assignment[mov_task_x];
+                mov_machine_b = movement_data2[index];
+            }        
+
+            prev_index = movement_index[tid];
+            
+            if (movement_discard[prev_index] == 0) {
+                prev_mov_task_x = movement_data1[prev_index];
+            
+                aux = gpu_best_movements_op[prev_index];
+                if (aux == PALS_GPU_RTASK_SWAP) {
+                    prev_mov_task_y = movement_data2[prev_index];
+
+                    prev_mov_machine_a = gpu_task_assignment[prev_mov_task_x];
+                    prev_mov_machine_b = gpu_task_assignment[prev_mov_task_y];
+                } else if (aux == PALS_GPU_RTASK_MOVE) {
+                    prev_mov_task_y = -1;
+
+                    prev_mov_machine_a = gpu_task_assignment[prev_mov_task_x];
+                    prev_mov_machine_b = movement_data2[prev_index];
+                }
+                
+                if ((mov_machine_a == prev_mov_machine_a) ||
+                    (mov_machine_b == prev_mov_machine_b) ||
+                    (mov_machine_a == prev_mov_machine_b) ||
+                    (mov_machine_b == prev_mov_machine_a)) {
+
+                    movement_discard[index] = 1;
                 }
             }
         }
     }
-    __syncthreads();*/
+    
+    gpu_best_movements_discarded[tid] = movement_discard[tid];
 }
 
 __global__ void pals_apply_multi_best_kernel(
