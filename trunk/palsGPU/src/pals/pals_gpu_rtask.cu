@@ -26,17 +26,21 @@
 // No es posible aumentar más debido al tamaño de la memoria SHARED
 #define PALS_GPU_RTASK__THREADS         256
 
-// APPLY_BEST_KERNEL_BLOCKS siempre debe ser 1
-#define APPLY_BEST_KERNEL_BLOCKS        1
-#define APPLY_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS >> 1
+// APPLY_BEST_KERNEL_BLOCKS siempre debe ser 1!!!
+#define APPLY_BEST_KERNEL_BLOCKS            1
+#define APPLY_BEST_KERNEL_THREADS           PALS_GPU_RTASK__BLOCKS >> 1
 
-#define APPLY_MULTI_BEST_KERNEL_BLOCKS        PALS_GPU_RTASK__BLOCKS
-#define APPLY_MULTI_BEST_KERNEL_THREADS       PALS_GPU_RTASK__BLOCKS
+#define SORT_MULTI_BEST_KERNEL_BLOCKS       PALS_GPU_RTASK__BLOCKS
+#define SORT_MULTI_BEST_KERNEL_THREADS      1
 
-// No puedo trabajar con más de COMPUTE_MAKESPAN_KERNEL_THREADS * COMPUTE_MAKESPAN_KERNEL_BLOCKS machines.
+#define APPLY_MULTI_BEST_KERNEL_BLOCKS      1
+#define APPLY_MULTI_BEST_KERNEL_THREADS     PALS_GPU_RTASK__BLOCKS
+
+// No puedo trabajar con más de:
+// COMPUTE_MAKESPAN_KERNEL_THREADS * COMPUTE_MAKESPAN_KERNEL_BLOCKS machines.
 // 512 * 1 * 2 = 1024
-#define COMPUTE_MAKESPAN_KERNEL_BLOCKS        1
-#define COMPUTE_MAKESPAN_KERNEL_THREADS       512
+#define COMPUTE_MAKESPAN_KERNEL_BLOCKS      1
+#define COMPUTE_MAKESPAN_KERNEL_THREADS     512
 
 __global__ void pals_rtask_kernel(
     int machines_count,
@@ -366,7 +370,8 @@ __global__ void pals_apply_best_kernel(
     }
 }
 
-__global__ void pals_apply_multi_best_kernel(
+
+__global__ void pals_sort_multi_best_kernel(
     int machines_count,
     int tasks_count,
     float *gpu_etc_matrix,
@@ -381,42 +386,50 @@ __global__ void pals_apply_multi_best_kernel(
     unsigned int bid = blockIdx.x;
     unsigned int tid = threadIdx.x;
 
-    __shared__ int current_block_op;
-    __shared__ int current_block_task_x;
-    __shared__ int current_block_task_y;
-    __shared__ int current_block_machine_a;
-    __shared__ int current_block_machine_b;
-    __shared__ float current_block_deltas;
-    __shared__ int block_discarded;
+    __shared__ int movement_index[PALS_GPU_RTASK__BLOCKS];
+    __shared__ float movement_delta[PALS_GPU_RTASK__BLOCKS];
+    __shared__ unsigned int swaps;
+
+    movement_index[tid] = tid;
+    movement_index[tid] = gpu_best_deltas[tid];
     
-    if (tid == 0) {
-        block_discarded = 0;
-        current_block_deltas = gpu_best_deltas[bid];
-        
-        if (current_block_deltas < 0.0) {
-            current_block_op = gpu_best_movements_op[bid];
-            
-            if (current_block_op == PALS_GPU_RTASK_SWAP) {
-                current_block_task_x = gpu_best_movements_data1[bid];
-                current_block_task_y = gpu_best_movements_data2[bid];
-
-                current_block_machine_a = gpu_task_assignment[current_block_task_x];
-                current_block_machine_b = gpu_task_assignment[current_block_task_y];
-            } else if (current_block_op == PALS_GPU_RTASK_MOVE) {
-                current_block_task_x = gpu_best_movements_data1[bid];
-                current_block_task_y = -1;
-
-                current_block_machine_a = gpu_task_assignment[current_block_task_x];
-                current_block_machine_b = gpu_best_movements_data2[bid];
-            } else {
-                block_discarded = 1;
-            }
-        } else {
-            block_discarded = 1;
-        }
-    }
     __syncthreads();
     
+    int pos = tid * 2; 
+    int aux_index;
+    float aux_delta;
+    
+    // Sort =======================================================
+    do {
+        if (tid == 0) swaps = 0;
+        __syncthreads();
+        
+        if (pos < PALS_GPU_RTASK__BLOCKS) {
+            if (movement_delta[pos] > movement_delta[pos + 1]) {
+                atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
+                
+                aux_index = movement_index[pos];
+                aux_delta = movement_delta[pos];
+                
+                movement_index[pos] = movement_index[pos + 1];
+                movement_delta[pos] = movement_delta[pos + 1];
+                
+                movement_index[pos + 1] = aux_index;
+                movement_delta[pos + 1] = aux_delta;
+            }
+        }
+
+        __syncthreads();
+    } while (swaps > 0);
+    
+    gpu_best_movements_discarded[0] = 0;
+    
+    if (tid != 0) gpu_best_movements_discarded[tid] = 1;
+    /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
+        gpu_best_movements_discarded[i] = 1;
+    }*/
+    
+        /*
     if (block_discarded == 0) {
         if (tid != bid) {
             int aux_block_op;
@@ -458,51 +471,83 @@ __global__ void pals_apply_multi_best_kernel(
             }
         }
     }
-    __syncthreads();
+    __syncthreads();*/
+}
+
+__global__ void pals_apply_multi_best_kernel(
+    int machines_count,
+    int tasks_count,
+    float *gpu_etc_matrix,
+    int *gpu_task_assignment,
+    float *gpu_machine_compute_time,
+    int *gpu_best_movements_op,
+    int *gpu_best_movements_data1,
+    int *gpu_best_movements_data2,
+    int *gpu_best_movements_discarded,
+    float *gpu_best_deltas) {
+
+    unsigned int bid = blockIdx.x;
+    unsigned int tid = threadIdx.x;
     
-    /*
-    if (tid == 0) {
-        if (block_discarded == 0) {
-            if (current_block_op == PALS_GPU_RTASK_SWAP) {
-                // Movimiento SWAP.
+    int current_block_op;
+    int current_block_task_x;
+    int current_block_task_y;
+    int current_block_machine_a;
+    int current_block_machine_b;
+    float current_block_deltas;
+    int block_discarded;
+       
+    block_discarded = gpu_best_movements_discarded[bid];
+    
+    if (block_discarded == 0) {
+        current_block_deltas = gpu_best_deltas[bid];
+        current_block_op = gpu_best_movements_op[bid];
+                
+        if (current_block_op == PALS_GPU_RTASK_SWAP) {
+            current_block_task_x = gpu_best_movements_data1[bid];
+            current_block_task_y = gpu_best_movements_data2[bid];
 
-                // UPDATE!
-                gpu_task_assignment[current_block_task_x] = current_block_machine_b;
-                gpu_task_assignment[current_block_task_y] = current_block_machine_a;
+            current_block_machine_a = gpu_task_assignment[current_block_task_x];
+            current_block_machine_b = gpu_task_assignment[current_block_task_y];
+        } else if (current_block_op == PALS_GPU_RTASK_MOVE) {
+            current_block_task_x = gpu_best_movements_data1[bid];
+            current_block_task_y = -1;
 
-                float aux_ct;
-                aux_ct = gpu_machine_compute_time[current_block_machine_a];
-                aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_x];
-                aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_y];
-                gpu_machine_compute_time[current_block_machine_a] = aux_ct;
-
-                aux_ct = gpu_machine_compute_time[current_block_machine_b];
-                aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_y];
-                aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_x];
-                gpu_machine_compute_time[current_block_machine_b] = aux_ct;
-            } else {
-                // Movimiento MOVE.
-
-                // UPDATE!
-                gpu_task_assignment[current_block_task_x] = current_block_machine_b;
-
-                float aux_ct;
-                aux_ct = gpu_machine_compute_time[current_block_machine_a];
-                aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_x];
-                gpu_machine_compute_time[current_block_machine_a] = aux_ct;
-
-                aux_ct = gpu_machine_compute_time[current_block_machine_b];
-                aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_x];
-                gpu_machine_compute_time[current_block_machine_b] = aux_ct;
-            }
-        } else {
-            gpu_best_movements_discarded[bid] = 1;
+            current_block_machine_a = gpu_task_assignment[current_block_task_x];
+            current_block_machine_b = gpu_best_movements_data2[bid];
         }
-    }*/
-    
-    if (tid == 0) {
-        if (block_discarded > 0) {
-            gpu_best_movements_discarded[bid] = block_discarded;
+        
+        if (current_block_op == PALS_GPU_RTASK_SWAP) {
+            // Movimiento SWAP.
+
+            // UPDATE!
+            gpu_task_assignment[current_block_task_x] = current_block_machine_b;
+            gpu_task_assignment[current_block_task_y] = current_block_machine_a;
+
+            float aux_ct;
+            aux_ct = gpu_machine_compute_time[current_block_machine_a];
+            aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_x];
+            aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_y];
+            gpu_machine_compute_time[current_block_machine_a] = aux_ct;
+
+            aux_ct = gpu_machine_compute_time[current_block_machine_b];
+            aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_y];
+            aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_x];
+            gpu_machine_compute_time[current_block_machine_b] = aux_ct;
+        } else {
+            // Movimiento MOVE.
+
+            // UPDATE!
+            gpu_task_assignment[current_block_task_x] = current_block_machine_b;
+
+            float aux_ct;
+            aux_ct = gpu_machine_compute_time[current_block_machine_a];
+            aux_ct = aux_ct - gpu_etc_matrix[(current_block_machine_a * tasks_count) + current_block_task_x];
+            gpu_machine_compute_time[current_block_machine_a] = aux_ct;
+
+            aux_ct = gpu_machine_compute_time[current_block_machine_b];
+            aux_ct = aux_ct + gpu_etc_matrix[(current_block_machine_b * tasks_count) + current_block_task_x];
+            gpu_machine_compute_time[current_block_machine_b] = aux_ct;
         }
     }
 }
@@ -997,6 +1042,17 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
             instance.gpu_best_deltas);
     #endif
     #if defined(MULTI_STEP)
+        pals_sort_multi_best_kernel<<< SORT_MULTI_BEST_KERNEL_BLOCKS, SORT_MULTI_BEST_KERNEL_THREADS >>>(
+            etc_matrix->machines_count,
+            etc_matrix->tasks_count,
+            instance.gpu_etc_matrix,
+            instance.gpu_task_assignment,
+            instance.gpu_machine_compute_time,
+            instance.gpu_best_movements_op,
+            instance.gpu_best_movements_data1,
+            instance.gpu_best_movements_data2,
+            instance.gpu_best_movements_discarded,
+            instance.gpu_best_deltas);
         pals_apply_multi_best_kernel<<< APPLY_MULTI_BEST_KERNEL_BLOCKS, APPLY_MULTI_BEST_KERNEL_THREADS >>>(
             etc_matrix->machines_count,
             etc_matrix->tasks_count,
