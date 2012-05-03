@@ -447,6 +447,10 @@ __global__ void pals_apply_multi_best_kernel(
                 if (aux_block_machine_b == current_block_machine_b) block_discarded++;
                 if (aux_block_machine_a == current_block_machine_b) block_discarded++;
                 if (aux_block_machine_b == current_block_machine_a) block_discarded++;
+                
+                if ((aux_block_deltas == current_block_deltas) && (block_discarded > 0)) {
+                    if (tid < bid) block_discarded = 0;
+                }
             }
         }
     }
@@ -487,7 +491,7 @@ __global__ void pals_apply_multi_best_kernel(
                 gpu_machine_compute_time[current_block_machine_b] = aux_ct;
             }
         } else {
-            gpu_best_movements_op[bid] = -1;
+            gpu_best_movements_op[bid] = 0 - current_block_op;
         }
     }
 }
@@ -764,7 +768,7 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
         unsigned int random1 = rands_nums[2 * block_idx];
         unsigned int random2 = rands_nums[(2 * block_idx) + 1];
 
-        fprintf(stdout, "RANDOMS: %u %u\n", random1, random2);
+        //fprintf(stdout, "RANDOMS: %u %u\n", random1, random2);
 
         if (move_type == PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
             int task_x = data1;
@@ -773,18 +777,33 @@ void show_search_results(struct matrix *etc_matrix, struct solution *s,
             int machine_a = s->task_assignment[task_x];
             int machine_b = s->task_assignment[task_y];
 
-            fprintf(stdout, "[DEBUG] Task %d in %d swaps with task %d in %d. Delta %f.\n",
+            fprintf(stdout, "[DEBUG] [+++] Task %d in %d swaps with task %d in %d. Delta %f.\n",
                 task_x, machine_a, task_y, machine_b, delta);
         } else if (move_type == PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
             int task_x = data1;
             int machine_a = s->task_assignment[task_x];
             int machine_b = data2;
 
-            fprintf(stdout, "[DEBUG] Task %d in %d is moved to machine %d. Delta %f.\n",
+            fprintf(stdout, "[DEBUG] [+++] Task %d in %d is moved to machine %d. Delta %f.\n",
                 task_x, machine_a, machine_b, delta);
         } else {
-            fprintf(stdout, "[DEBUG] Movement discarded!! delta %f, data1 %d, data2 %d\n",
-                delta, data1, data2);
+            if (move_type == 0-PALS_GPU_RTASK_SWAP) { // Movement type: SWAP
+                int task_x = data1;
+                int task_y = data2;
+
+                int machine_a = s->task_assignment[task_x];
+                int machine_b = s->task_assignment[task_y];
+
+                fprintf(stdout, "[DEBUG] [---] Movement discarded!! Task %d in %d swap with task %d in %d. Delta %f.\n",
+                    task_x, machine_a, task_y, machine_b, delta);
+            } else if (move_type == 0-PALS_GPU_RTASK_MOVE) { // Movement type: MOVE
+                int task_x = data1;
+                int machine_a = s->task_assignment[task_x];
+                int machine_b = data2;
+
+                fprintf(stdout, "[DEBUG] [---] Movement discarded!! Task %d in %d is move to machine %d. Delta %f.\n",
+                    task_x, machine_a, machine_b, delta);
+            }
         }
     }
 
