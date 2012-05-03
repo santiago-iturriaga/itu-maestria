@@ -442,13 +442,13 @@ __global__ void pals_sort_multi_best_kernel(
     int index = movement_index[0];
     gpu_best_movements_discarded[index] = 0;
     
-    for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
+    /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
         index = movement_index[i];
         
         
         
         __syncthreads();
-    }
+    }*/
     
         /*
     if (block_discarded == 0) {
