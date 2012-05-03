@@ -31,6 +31,14 @@ struct pals_gpu_rtask_instance {
     int *gpu_makespan_idx_aux;
     float *gpu_makespan_ct_aux;
     
+    int *cpu_best_movements_op;
+    int *cpu_best_movements_data1;
+    int *cpu_best_movements_data2;
+    float *cpu_best_deltas;
+    
+    char *result_task_history;
+    char *result_machine_history;
+    
     // Parámetros de ejecución del kernel.
     ushort blocks;
     ushort threads;
