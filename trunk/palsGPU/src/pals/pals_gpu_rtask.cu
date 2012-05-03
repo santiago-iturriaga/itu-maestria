@@ -406,7 +406,7 @@ __global__ void pals_sort_multi_best_kernel(
         
         if (pos + 1 < PALS_GPU_RTASK__BLOCKS) {
             if (movement_delta[pos] > movement_delta[pos + 1]) {
-                atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
+                swaps = 1;
                 
                 aux_index = movement_index[pos];
                 aux_delta = movement_delta[pos];
@@ -423,7 +423,7 @@ __global__ void pals_sort_multi_best_kernel(
         
         if ((pos > 0) && (pos < PALS_GPU_RTASK__BLOCKS)) {
             if (movement_delta[pos] < movement_delta[pos - 1]) {
-                atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
+                swaps = 1;
                 
                 aux_index = movement_index[pos];
                 aux_delta = movement_delta[pos];
@@ -439,14 +439,16 @@ __global__ void pals_sort_multi_best_kernel(
         __syncthreads();
     } while (swaps > 0);
     
-    int best = movement_index[0];
-    gpu_best_movements_discarded[best] = 0;
+    int index = movement_index[0];
+    gpu_best_movements_discarded[index] = 0;
     
-    if (tid != best) gpu_best_movements_discarded[tid] = 1;
-    
-    /*for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
-        gpu_best_movements_discarded[i] = 1;
-    }*/
+    for (int i = 1; i < PALS_GPU_RTASK__BLOCKS; i++) {
+        index = movement_index[i];
+        
+        
+        
+        __syncthreads();
+    }
     
         /*
     if (block_discarded == 0) {
