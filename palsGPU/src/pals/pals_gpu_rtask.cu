@@ -391,7 +391,7 @@ __global__ void pals_sort_multi_best_kernel(
     __shared__ unsigned int swaps;
 
     movement_index[tid] = tid;
-    movement_index[tid] = gpu_best_deltas[tid];
+    movement_delta[tid] = gpu_best_deltas[tid];
     
     __syncthreads();
     
@@ -404,7 +404,7 @@ __global__ void pals_sort_multi_best_kernel(
         if (tid == 0) swaps = 0;
         __syncthreads();
         
-        if (pos < PALS_GPU_RTASK__BLOCKS) {
+        if (pos + 1 < PALS_GPU_RTASK__BLOCKS) {
             if (movement_delta[pos] > movement_delta[pos + 1]) {
                 atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
                 
@@ -421,7 +421,7 @@ __global__ void pals_sort_multi_best_kernel(
 
         __syncthreads();
         
-        if (pos > 0) {
+        if ((pos > 0) && (pos < PALS_GPU_RTASK__BLOCKS)) {
             if (movement_delta[pos] < movement_delta[pos - 1]) {
                 atomicInc(&swaps, PALS_GPU_RTASK__BLOCKS);
                 
