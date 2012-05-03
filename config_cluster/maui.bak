@@ -97,7 +97,7 @@ SRCFG[eolica] TPN=1
 SRCFG[eolica] TASKCOUNT=1
 SRCFG[eolica] RESOURCES=PROCS:8
 SRCFG[eolica] NODEFEATURES=class0
-SRCFG[eolica] USERLIST=aguti
+SRCFG[eolica] USERLIST=eolico
 
 SRCFG[rodrigoa] PERIOD=INFINITY
 #SRCFG[rodrigoa] STARTTIME=00:00:00
