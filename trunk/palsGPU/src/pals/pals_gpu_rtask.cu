@@ -734,11 +734,6 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
         exit(EXIT_FAILURE);
     }
 
-    if (!(instance.result_task_history = (char*)malloc(sizeof(char) * etc_matrix->tasks_count))) {
-        fprintf(stderr, "[ERROR] Solicitando memoria result_task_history (%lu bytes).\n", 
-            sizeof(char) * etc_matrix->tasks_count);
-        exit(EXIT_FAILURE);
-    }
     if (!(instance.result_machine_history = (char*)malloc(sizeof(char) * etc_matrix->tasks_count))) {
         fprintf(stderr, "[ERROR] Solicitando memoria result_machine_history (%lu bytes).\n", 
             sizeof(char) * etc_matrix->tasks_count);
@@ -863,7 +858,6 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
     free(instance.cpu_best_movements_data2);
     free(instance.cpu_best_deltas);
     
-    free(instance.result_task_history);
     free(instance.result_machine_history);
 }
 
@@ -1165,7 +1159,6 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         }
 
         // Aplico el mejor movimiento.
-        memset(instance.result_task_history, 0, etc_matrix->tasks_count);
         memset(instance.result_machine_history, 0, etc_matrix->machines_count);
 
         for (int i = 0; i < instance.blocks; i++) {
@@ -1193,13 +1186,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
 
             if (delta < 0.0) {
                 if (move_type == PALS_GPU_RTASK_SWAP) {
-                    if ((instance.result_task_history[task_x] == 0) && (instance.result_task_history[task_y] == 0) &&
-                        (instance.result_machine_history[machine_a] == 0) && (instance.result_machine_history[machine_b] == 0))   {
+                    if ((instance.result_machine_history[machine_a] == 0) && 
+                        (instance.result_machine_history[machine_b] == 0))   {
 
                         cant_swaps++;
 
-                        instance.result_task_history[task_x] = 1;
-                        instance.result_task_history[task_y] = 1;
                         instance.result_machine_history[machine_a] = 1;
                         instance.result_machine_history[machine_b] = 1;
 
@@ -1225,13 +1216,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
                         pals_gpu_rtask_update_machine(instance, machine_b, s->machine_compute_time[machine_b]);
                     }
                 } else if (move_type == PALS_GPU_RTASK_MOVE) {
-                    if ((instance.result_task_history[task_x] == 0) &&
-                        (instance.result_machine_history[machine_a] == 0) &&
+                    if ((instance.result_machine_history[machine_a] == 0) &&
                         (instance.result_machine_history[machine_b] == 0))   {
 
                         cant_movs++;
 
-                        instance.result_task_history[task_x] = 1;
                         instance.result_machine_history[machine_a] = 1;
                         instance.result_machine_history[machine_b] = 1;
 
