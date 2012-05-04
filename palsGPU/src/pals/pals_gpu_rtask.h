@@ -36,7 +36,6 @@ struct pals_gpu_rtask_instance {
     int *cpu_best_movements_data2;
     float *cpu_best_deltas;
     
-    char *result_task_history;
     char *result_machine_history;
     
     // Parámetros de ejecución del kernel.
