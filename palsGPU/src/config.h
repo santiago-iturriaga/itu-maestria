@@ -1,9 +1,9 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-//#define OUTPUT_SOLUTION
-#define DEBUG
-#define TIMMING
+#define OUTPUT_SOLUTION
+//#define DEBUG
+//#define TIMMING
 
 //#define SIMPLE_DELTA
 #define COMPLEX_DELTA
