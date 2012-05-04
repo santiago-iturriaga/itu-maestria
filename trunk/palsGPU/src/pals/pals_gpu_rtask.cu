@@ -59,7 +59,8 @@ __global__ void pals_rtask_kernel(
     int *gpu_best_movements_data2,
     float *gpu_best_deltas,
     int *gpu_best_movements_discarded,
-    float *gpu_makespan_array)
+    float *gpu_makespan_array,
+    float cpu_current_makespan)
 {
     const unsigned int thread_idx = threadIdx.x;
     const unsigned int block_idx = blockIdx.x;
@@ -70,7 +71,11 @@ __global__ void pals_rtask_kernel(
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
 
-    const float current_makespan = gpu_makespan_array[0];
+    #if defined(MULTI_STEP_CPU)
+        const float current_makespan = cpu_current_makespan;
+    #else
+        const float current_makespan = gpu_makespan_array[0];
+    #endif
 
     __shared__ short block_op[PALS_GPU_RTASK__THREADS];
     __shared__ int block_data1[PALS_GPU_RTASK__THREADS];
@@ -1092,7 +1097,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_movements_data2,
         instance.gpu_best_deltas,
         instance.gpu_best_movements_discarded,
-        instance.gpu_makespan_ct_aux);
+        instance.gpu_makespan_ct_aux,
+        s->makespan);
 
     cudaError_t e;
     e = cudaGetLastError();
