@@ -178,6 +178,8 @@ int archivers_adhoc(struct pals_cpu_1pop_thread_arg *instance, int new_solution_
         }
         else
         {
+            instance->total_population_full++;
+            
             if (candidato_reemplazo != -1) {
                 if (DEBUG_DEV) {
                     fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
@@ -208,7 +210,6 @@ int archivers_adhoc(struct pals_cpu_1pop_thread_arg *instance, int new_solution_
                 return 1;
             } else {
                 instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
-                instance->total_population_full++;
 
                 if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
                         new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);

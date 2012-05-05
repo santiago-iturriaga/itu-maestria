@@ -584,8 +584,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
                 
                 // !!!!!!!!!!!!!!!!!!!
-                fprintf(stdout, "[INIT] makespan(%f) energy(%f)\n", get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
-                    get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                //fprintf(stdout, "[INIT] makespan(%f) energy(%f)\n", get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                //    get_energy(&(thread_instance->population[thread_instance->thread_idx])));
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 

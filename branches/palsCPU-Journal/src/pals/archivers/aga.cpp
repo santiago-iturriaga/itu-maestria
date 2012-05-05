@@ -91,10 +91,7 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
     }
 
     if (new_solution_is_dominated == 0)  // Solution is non-dominated by the list.
-    {    
-        //fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
-        //instance->population_count[0], instance->count_threads, instance->population_max_size);
-        
+    {            
         if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size)
         {
             int to_replace = new_solution_pos;
@@ -104,10 +101,14 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                                            
             int most_square_pop;
             most_square_pop = instance->archiver_state->grid_pop[new_solution_grid_pos];
+         
+            /*
+            fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
+                instance->population_count[0], instance->count_threads, instance->population_max_size);
             
             fprintf(stdout, "[DEBUG] aga thread(%d) new_sol_grid_pos(%d) new_sol_grid_square(%d)\n", 
                 instance->thread_idx, new_solution_grid_pos, most_square_pop);
-            
+            */
             for (int i = 0; i < instance->population_max_size; i++)
             {
                 if ((instance->population[i].status == SOLUTION__STATUS_READY) && 
@@ -119,10 +120,11 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                     int i_square_pop;
                     i_square_pop = instance->archiver_state->grid_pop[i_grid_pos];
 
-                    fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
-                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);
+                    /*fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
+                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);*/
                         
-                    if (instance->archiver_state->grid_pop[i_square_pop] > most_square_pop)
+                    //if (instance->archiver_state->grid_pop[i_square_pop] > most_square_pop)
+                    if (i_square_pop > most_square_pop)
                     {
                         most_square_pop = instance->archiver_state->grid_pop[i_square_pop];
                         to_replace = i;
@@ -188,7 +190,7 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
         }
     }
     
-    fprintf(stdout, ">>> Min makespan(%f) Min energy(%f)\n", actual_best_makespan, actual_best_energy);
+    //fprintf(stdout, ">>> Min makespan(%f) Min energy(%f)\n", actual_best_makespan, actual_best_energy);
 
     assert(actual_best_makespan < init_best_makespan);
     assert(actual_best_energy < init_best_energy);
@@ -341,6 +343,8 @@ void archivers_aga_init(struct pals_cpu_1pop_instance *instance) {
     instance->archiver_state->max_locations = pow(2, ARCHIVER__AGA_DEPTH * OBJECTIVES); // Number of locations in grid.
     instance->archiver_state->grid_pop = (int*)(malloc(sizeof(int) * (instance->archiver_state->max_locations + 1)));
     instance->archiver_state->grid_sol_loc = (int*)(malloc(sizeof(int) * instance->population_max_size));
+    
+    //fprintf(stdout, "starting grid_pop size: %d\n", instance->archiver_state->max_locations+1);
     
     for (int i = 0; i < OBJECTIVES; i++) {
         instance->archiver_state->gl_offset[i] = 0.0;
