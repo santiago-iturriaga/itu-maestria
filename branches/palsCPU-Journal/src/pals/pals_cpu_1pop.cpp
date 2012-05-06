@@ -515,6 +515,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
 
+    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * (thread_instance->thread_idx+1);
+
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
         (thread_instance->total_iterations < thread_instance->max_iterations) &&
@@ -760,10 +762,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 int work_do_iteration = 1;
 
-                /*int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
-                    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));*/
+                int work_iteration_size = (int)floor((work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
+                    (random * (work_thread_iterations - (work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
 
-                int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS) + 1;
+                //int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
+                //    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
+
+                //int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS) + 1;
 
                 while (work_do_iteration == 1)
                 {
@@ -1012,11 +1017,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             // Intento hacer otro loop de trabajo y vuelvo a probar.
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
 
-                            //rand_generate(thread_instance, random);
-                            random = 1;
+                            rand_generate(thread_instance, random);
+                            //random = 1;
 
                             work_do_iteration = 1;
-                            work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
+                            work_iteration_size = (int)floor(random * work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) + 1;
 
                             thread_instance->total_re_iterations++;
                         }

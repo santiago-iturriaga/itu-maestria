@@ -1,6 +1,7 @@
 CC=gcc -Wall -std=c99
 CX=g++ -Wall
-LIBS=-lpthread -lrt -mtune=opteron -mfpmath=sse -m64
+LIBS=-lpthread -lrt 
+#-mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
 
 all: pals-gdb verificador fp
