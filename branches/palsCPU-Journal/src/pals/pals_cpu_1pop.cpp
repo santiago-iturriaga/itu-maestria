@@ -515,7 +515,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
 
-    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * (thread_instance->thread_idx+1);
+    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * ((2 * (thread_instance->thread_idx >> 1)) + 1);
 
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
