@@ -18,7 +18,7 @@
 //#define PALS_COUNT 25
 //#define PALS_COUNT 250
 //#define PALS_COUNT 5000
-#define PALS_COUNT 10000
+#define PALS_COUNT 20000
 //#define PALS_COUNT 50000
 //#define PALS_COUNT 100000
 //#define PALS_COUNT 1000000
