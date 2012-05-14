@@ -4,7 +4,7 @@ BASE_PATH=".."
 INSTANCE_PATH="instances"
 SOL_PATH="solutions"
 DIM_SIZE="8192 256"
-GPU_DEVICE="0"
+GPU_DEVICE="1"
 
 mkdir -p ${SOL_PATH}
 
