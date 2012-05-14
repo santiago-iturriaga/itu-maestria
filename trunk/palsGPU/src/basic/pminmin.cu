@@ -60,7 +60,7 @@ void compute_pminmin(struct matrix *etc_matrix, struct solution *sol, int number
     }
 
     #ifdef DEBUG 
-    fprintf(stdout, "[DEBUG] MinMin Solution makespan: %f.\n", sol->makespan);
+    fprintf(stdout, "[DEBUG] pMinMin %d-threads solution makespan: %f.\n", numberOfThreads, sol->makespan);
     #endif
     
     // Timming -----------------------------------------------------
@@ -82,9 +82,9 @@ void* compute_pminmin_thread(void *data) {
 
     solution_l = create_empty_solution_dim(nt, etc->machines_count);
 
-    #ifdef DEBUG 
+    /*#ifdef DEBUG 
     fprintf(stdout, "[DEBUG] calculando PMinMin...i thread de %d a %d, NT=%d\n", t_i, t_f, nt);
-    #endif
+    #endif*/
 
     int assigned_tasks[nt];
     for (int i = t_i; i < t_f; i++) {
@@ -139,9 +139,9 @@ void* compute_pminmin_thread(void *data) {
 
         sol->task_assignment[best_task] = best_machine;
 
-        #ifdef DEBUG 
+        /*#ifdef DEBUG 
         fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
-        #endif
+        #endif*/
 
         solution_l->machine_compute_time[best_machine] = solution_l->machine_compute_time[best_machine] +
             get_etc_value(etc, best_machine, best_task);
