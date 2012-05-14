@@ -1666,8 +1666,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             }
         #endif
         
-        timespec ts_end;
-        clock_gettime(CLOCK_REALTIME, &ts_end);
+        clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
             timeout_end = 1;
         }
