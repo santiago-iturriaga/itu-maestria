@@ -27,7 +27,7 @@ verificador: verificador.c
 	$(CC) -g verificador.c -o bin/verificador
 	
 minmin: minmin.c
-	$(CC) minmin.c -o bin/minmin #-O3
+	$(CC) minmin.c -o bin/minmin -O3
 
 pals-gdb: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
