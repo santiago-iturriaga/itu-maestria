@@ -259,6 +259,33 @@ __global__ void pals_rtask_kernel(
                         delta = 1 / delta;
                     }
                 #endif
+                #if defined(MIXED_DELTA)
+                    if (delta_type == 0) {
+                        float max_old;
+                        max_old = machine_a_ct_old;
+                        if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
+
+                        if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
+                            delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
+                        } else {
+                            delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
+                        }
+                    } else {
+                        if (machine_b_ct_new > current_makespan) {
+                            // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+                            delta = delta + (machine_b_ct_new - current_makespan);
+                        } else if (machine_a_ct_old+1 >= current_makespan) {
+                            // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+                            delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                            delta = delta + 1 / (machine_b_ct_new - machine_b_ct_old);
+                        } else {
+                            // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+                            delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                            delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                            delta = 1 / delta;
+                        }
+                    }
+                #endif
             }
 
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
