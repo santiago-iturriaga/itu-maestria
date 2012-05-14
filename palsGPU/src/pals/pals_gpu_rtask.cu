@@ -1471,9 +1471,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
     int iter;
     for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_GPU__CONVERGENCE); iter++) {
-        #if defined(DEBUG)
+        /*#if defined(DEBUG)
             fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
-        #endif
+        #endif*/
 
         // ==============================================================================
         // Sorteo de numeros aleatorios.
@@ -1495,9 +1495,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         prng_iter_actual = prng_iter_actual + rand_iter_size;
 
         if (prng_iter_actual >= prng_cant_iter_generadas) {
-            #if defined(DEBUG)
+            /*#if defined(DEBUG)
                 fprintf(stdout, "[INFO] Generando %d números aleatorios...\n", PALS_RTASK_RANDS);
-            #endif
+            #endif*/
 
             mtgp32_generate_uint32(&mt_status);
             prng_iter_actual = 0;
