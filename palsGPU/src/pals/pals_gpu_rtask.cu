@@ -1343,9 +1343,9 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         #endif
         // Timming -----------------------------------------------------
 
-        #if defined(DEBUG)
-            show_search_results(etc_matrix, s, instance, gpu_random_numbers);
-        #endif
+        //#if defined(DEBUG)
+        //    show_search_results(etc_matrix, s, instance, gpu_random_numbers);
+        //#endif
 
         //#if defined(DEBUG)
         //    show_first_search_results(etc_matrix, s, instance);
