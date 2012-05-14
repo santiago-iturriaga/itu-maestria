@@ -152,9 +152,21 @@ int main(int argc, char** argv)
         timming_start(ts_mct);
         // Timming -----------------------------------------------------
 
-        //compute_mct(etc_matrix, current_solution);
-        //compute_minmin(etc_matrix, current_solution);
-                compute_mct(etc_matrix, current_solution);
+        #if defined(INIT_WITH_MCT)
+            compute_mct(etc_matrix, current_solution);
+        #endif
+        #if defined(INIT_WITH_MINMIN)
+            compute_minmin(etc_matrix, current_solution);
+        #endif
+        #if defined(INIT_WITH_PMINMIN)
+            int thread_count;
+            thread_count = etc_matrix->machines_count >> 5;
+            
+            if (thread_count == 0) thread_count = 1;
+            if (thread_count > MAX_THREAD_COUNT) thread_count = MAX_THREAD_COUNT;
+            
+            compute_pminmin(etc_matrix, current_solution, thread_count);
+        #endif
 
         // Timming -----------------------------------------------------
         timming_end(">> MCT Time", ts_mct);
