@@ -78,8 +78,8 @@ pals-opt: src/main.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
-		${MTGP32_SRC} ${LINK} \
-			-o bin/pals
+		${MTGP32_SRC} \
+			-o bin/pals ${LINK}
 
 local: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
