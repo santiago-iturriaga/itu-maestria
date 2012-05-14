@@ -71,7 +71,7 @@ __global__ void pals_rtask_kernel(
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
     const short mov_type = (short)(block_idx & 0x11);
-    const short delta_type = (short)(iteration_nro & 0x11);
+    const short delta_type = (short)(iteration_nro & 0x1111);
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
@@ -164,7 +164,7 @@ __global__ void pals_rtask_kernel(
                         }
                     #endif
                     #if defined(MIXED_DELTA)
-                        if (delta_type == 0) {
+                        if (delta_type != 0) {
                             if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
                                 delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
                             } else {
@@ -260,7 +260,7 @@ __global__ void pals_rtask_kernel(
                     }
                 #endif
                 #if defined(MIXED_DELTA)
-                    if (delta_type == 0) {
+                    if (delta_type != 0) {
                         float max_old;
                         max_old = machine_a_ct_old;
                         if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
