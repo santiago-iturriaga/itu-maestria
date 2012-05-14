@@ -3,7 +3,7 @@
 #include "config.h"
 #include "solution.h"
 
-struct solution* create_empty_solution(struct matrix *etc_matrix) {
+struct solution* create_empty_solution_dim(int nt, int nm) {
     struct solution *new_solution;
     new_solution = (struct solution*)(malloc(sizeof(struct solution)));
 
@@ -13,29 +13,33 @@ struct solution* create_empty_solution(struct matrix *etc_matrix) {
     }
 
     new_solution->makespan = 0.0;
-    new_solution->task_assignment = (int*)(malloc(sizeof(int) * etc_matrix->tasks_count));
+    new_solution->task_assignment = (int*)(malloc(sizeof(int) * nt));
 
     if (new_solution->task_assignment == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->task_assignment.\n");
         exit(EXIT_FAILURE);
     }
 
-    for (int task = 0; task < etc_matrix->tasks_count; task++) {
+    for (int task = 0; task < nt; task++) {
         new_solution->task_assignment[task] = 0; /* not yet assigned */
     }
 
-    new_solution->machine_compute_time = (float*)(malloc(sizeof(float) * etc_matrix->machines_count));
+    new_solution->machine_compute_time = (float*)(malloc(sizeof(float) * nm));
 
     if (new_solution->machine_compute_time == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el new_solution->machine_compute_time.\n");
         exit(EXIT_FAILURE);
     }
 
-    for (int machine = 0; machine < etc_matrix->machines_count; machine++) {
+    for (int machine = 0; machine < nm; machine++) {
         new_solution->machine_compute_time[machine] = 0.0;
     }
 
     return new_solution;
+}
+
+struct solution* create_empty_solution(struct matrix *etc_matrix) {
+    return create_empty_solution_dim(etc_matrix->tasks_count, etc_matrix->machines_count);
 }
 
 void clone_solution(struct matrix *etc_matrix, struct solution *dst, struct solution *src) {

@@ -11,6 +11,7 @@
 #define PALS_Serial 0
 #define PALS_GPU 1
 #define PALS_GPU_randTask 2
+#define pMinMin 3
 #define MinMin 4
 #define MCT 5
 

@@ -5,12 +5,14 @@
 //#define DEBUG
 //#define TIMMING
 
-//#define SIMPLE_DELTA
-#define COMPLEX_DELTA
+#define SIMPLE_DELTA
+//#define COMPLEX_DELTA
 
 //#define SINGLE_STEP
-//#define MULTI_STEP
+//#define MULTI_STEP_GPU
 #define MULTI_STEP_CPU
+
+#define MAX_THREAD_COUNT 8
 
 //#define PALS_COUNT 1
 //#define PALS_COUNT 2

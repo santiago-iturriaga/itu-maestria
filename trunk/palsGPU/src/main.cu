@@ -25,6 +25,7 @@
 
 #include "basic/mct.h"
 #include "basic/minmin.h"
+#include "basic/pminmin.h"
 
 #include "random/RNG_rand48.h"
 
@@ -173,6 +174,16 @@ int main(int argc, char** argv)
     } else if (input.algorithm == MinMin) {
 
         compute_minmin(etc_matrix, current_solution);
+
+    } else if (input.algorithm == pMinMin) {
+
+        int thread_count;
+        thread_count = etc_matrix->machines_count >> 5;
+        
+        if (thread_count == 0) thread_count = 1;
+        if (thread_count > MAX_THREAD_COUNT) thread_count = MAX_THREAD_COUNT;
+
+        compute_pminmin(etc_matrix, current_solution, thread_count);
 
     } else if (input.algorithm == MCT) {
 

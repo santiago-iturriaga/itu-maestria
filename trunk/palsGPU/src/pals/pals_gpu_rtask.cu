@@ -24,12 +24,12 @@
 //#define PALS_RTASK_RANDS                33554432
 
 #define PALS_GPU_RTASK__BLOCKS          32
-//#define PALS_GPU_RTASK__BLOCKS          64
-//#define PALS_GPU_RTASK__BLOCKS          128
-//#define PALS_GPU_RTASK__LOOPS           1
-//#define PALS_GPU_RTASK__LOOPS		8
-//#define PALS_GPU_RTASK__LOOPS           16
-#define PALS_GPU_RTASK__LOOPS          64
+//#define PALS_GPU_RTASK__BLOCKS        64
+//#define PALS_GPU_RTASK__BLOCKS        128
+//#define PALS_GPU_RTASK__LOOPS         1
+//#define PALS_GPU_RTASK__LOOPS         8
+//#define PALS_GPU_RTASK__LOOPS         16
+#define PALS_GPU_RTASK__LOOPS           64
 
 // No es posible aumentar más debido al tamaño de la memoria SHARED
 #define PALS_GPU_RTASK__THREADS         256
@@ -1309,7 +1309,7 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
                 instance.gpu_best_movements_data2,
                 instance.gpu_best_deltas);
         #endif
-        #if defined(MULTI_STEP)
+        #if defined(MULTI_STEP_GPU)
             pals_sort_multi_best_kernel<<< SORT_MULTI_BEST_KERNEL_BLOCKS, SORT_MULTI_BEST_KERNEL_THREADS >>>(
                 etc_matrix->machines_count,
                 etc_matrix->tasks_count,
