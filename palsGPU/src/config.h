@@ -5,8 +5,9 @@
 //#define DEBUG
 //#define TIMMING
 
-#define SIMPLE_DELTA
+//#define SIMPLE_DELTA
 //#define COMPLEX_DELTA
+#define MIXED_DELTA
 
 //#define SINGLE_STEP
 //#define MULTI_STEP_GPU
