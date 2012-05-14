@@ -14,6 +14,10 @@
 
 #define MAX_THREAD_COUNT 8
 
+//#define INIT_WITH_MCT
+//#define INIT_WITH_MINMIN
+#define INIT_WITH_PMINMIN
+
 //#define PALS_COUNT 1
 //#define PALS_COUNT 2
 //#define PALS_COUNT 10
