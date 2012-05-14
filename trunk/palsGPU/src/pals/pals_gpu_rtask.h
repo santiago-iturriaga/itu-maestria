@@ -70,6 +70,7 @@ void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance);
  * Ejecuta PALS en el dispositivo.
  */
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s, 
-    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers);
+    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers,
+    int iteration_nro);
 
 #endif /* PALS_GPU_H_ */

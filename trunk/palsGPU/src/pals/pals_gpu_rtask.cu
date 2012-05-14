@@ -63,13 +63,15 @@ __global__ void pals_rtask_kernel(
     float *gpu_best_deltas,
     int *gpu_best_movements_discarded,
     float *gpu_makespan_array,
-    float cpu_current_makespan)
+    float cpu_current_makespan,
+    int iteration_nro)
 {
     const unsigned int thread_idx = threadIdx.x;
     const unsigned int block_idx = blockIdx.x;
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
     const short mov_type = (short)(block_idx & 0x11);
+    const short delta_type = (short)(iteration_nro & 0x1);
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
@@ -161,6 +163,40 @@ __global__ void pals_rtask_kernel(
                             delta = 1 / delta;
                         }
                     #endif
+                    #if defined(MIXED_DELTA)
+                        if (delta_type == 0) {
+                            if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
+                                delta = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
+                            } else {
+                                delta = (machine_a_ct_new - max_old) + (machine_b_ct_new - max_old);
+                            }
+                        } else {
+                            if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+                                // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
+                                if (machine_a_ct_new > current_makespan) delta = delta + (machine_a_ct_new - current_makespan);
+                                if (machine_b_ct_new > current_makespan) delta = delta + (machine_b_ct_new - current_makespan);
+                            } else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {
+                                // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
+                                if (machine_a_ct_old+1 >= current_makespan) {
+                                    delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                                } else {
+                                    delta = delta + 1 / (machine_a_ct_new - machine_a_ct_old);
+                                }
+
+                                if (machine_b_ct_old+1 >= current_makespan) {
+                                    delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                                } else {
+                                    delta = delta + 1 / (machine_b_ct_new - machine_b_ct_old);
+                                }
+                            } else {
+                                // Ninguna de las máquinas intervenía en el makespan. Intento favorecer lo otros movimientos.
+                                delta = delta + (machine_a_ct_new - machine_a_ct_old);
+                                delta = delta + (machine_b_ct_new - machine_b_ct_old);
+                                delta = 1 / delta;
+                            }
+                        }
+                    #endif
+                    
                 }
             }
             if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
@@ -1074,7 +1110,8 @@ __global__ void pals_update_data(
 }
 
 void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
-    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers) {
+    struct pals_gpu_rtask_instance &instance, int *gpu_random_numbers, 
+    int iteration_nro) {
 
     // ==============================================================================
     // Ejecución del algoritmo.
@@ -1113,7 +1150,8 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_deltas,
         instance.gpu_best_movements_discarded,
         instance.gpu_makespan_ct_aux,
-        s->makespan);
+        s->makespan,
+        iteration_nro);
 
     cudaError_t e;
     e = cudaGetLastError();
@@ -1524,7 +1562,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         old_makespan = current_solution->makespan;
 
         pals_gpu_rtask_wrapper(etc_matrix, current_solution, instance,
-            (int*)(&(mt_status.d_data[prng_iter_actual])));
+            (int*)(&(mt_status.d_data[prng_iter_actual])), iter);
 
         // Fin de la búsqueda. Evalúo la situación.
 
