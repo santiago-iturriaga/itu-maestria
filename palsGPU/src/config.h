@@ -13,7 +13,7 @@
 //#define MULTI_STEP_GPU
 #define MULTI_STEP_CPU
 
-#define MAX_THREAD_COUNT 8
+#define MAX_THREAD_COUNT 12
 
 //#define INIT_WITH_MCT
 //#define INIT_WITH_MINMIN
