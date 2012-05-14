@@ -14,6 +14,7 @@ struct matrix {
     int tasks_count;
     int machines_count;
     float* data;
+    int shifts;
 };
 
 struct matrix* create_etc_matrix(struct params *input);
