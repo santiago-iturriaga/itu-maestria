@@ -19,7 +19,7 @@ MTGP32_SRC = src/random/mtgp-1.1/mtgp32-fast.c \
 	src/random/mtgp-1.1/mtgp32-cuda.cu \
 	src/random/mtgp-1.1/mtgp32dc-param-11213.c \
 	src/cuda-util.cu
-CUDALINK = -lcuda
+LINK = -lcuda -lrt -lpthread
 
 all: pals-opt verificador minmin
 
@@ -34,8 +34,8 @@ pals-gdb: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
-		src/random/RNG_rand48.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
@@ -46,12 +46,13 @@ pals-gdb: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
-		${MTGP32_SRC} ${CUDALINK} \
+		${MTGP32_SRC} ${LINK} \
 			-o bin/pals
 
 pals-opt: src/main.cu \
@@ -59,6 +60,7 @@ pals-opt: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
@@ -70,19 +72,21 @@ pals-opt: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
-		${MTGP32_SRC} ${CUDALINK} \
+		${MTGP32_SRC} ${LINK} \
 			-o bin/pals
 
-pals-local: src/main.cu \
+local: src/main.cu \
 		src/load_params.cu src/load_instance.cu src/etc_matrix.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
@@ -94,12 +98,13 @@ pals-local: src/main.cu \
 		src/solution.cu src/utils.cu src/gpu_utils.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
 		src/pals/pals_gpu.cu \
 		src/pals/pals_gpu_rtask.cu \
 		src/pals/pals_serial.cu \
-		${MTGP32_SRC} ${CUDALINK} \
+		${MTGP32_SRC} ${LINK} \
 			-o bin/pals
 
 clean:

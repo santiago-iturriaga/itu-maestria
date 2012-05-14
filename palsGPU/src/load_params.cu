@@ -33,6 +33,8 @@ int load_params(int argc, char **argv, struct params *input) {
                 fprintf(stdout, " (PALS_GPU)\n");
             } else if (input->algorithm == PALS_GPU_randTask) {
                 fprintf(stdout, " (PALS_GPU_randTask)\n");
+            } else if (input->algorithm == pMinMin) {
+                fprintf(stdout, " (pMin-Min)\n");
             } else if (input->algorithm == MinMin) {
                 fprintf(stdout, " (Min-Min)\n");
             } else if (input->algorithm == MCT) {
@@ -82,6 +84,7 @@ int load_params(int argc, char **argv, struct params *input) {
         fprintf(stdout, "       Algorithm = 0 Serial full\n");
         fprintf(stdout, "                   1 GPU full\n");
         fprintf(stdout, "                   2 GPU rand. task\n");
+        fprintf(stdout, "                   3 parallel Min-Min\n");
         fprintf(stdout, "                   4 Min-Min\n");
         fprintf(stdout, "                   5 MCT\n");
         fprintf(stdout, "\n");
