@@ -71,7 +71,7 @@ __global__ void pals_rtask_kernel(
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
 
     const short mov_type = (short)(block_idx & 0x11);
-    const short delta_type = (short)(iteration_nro & 0x1);
+    const short delta_type = (short)((iteration_nro >> 2) & 0x1);
 
     const unsigned int random1 = gpu_random_numbers[2 * block_idx];
     const unsigned int random2 = gpu_random_numbers[(2 * block_idx) + 1];
