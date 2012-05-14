@@ -23,7 +23,7 @@ int load_params(int argc, char **argv, struct params *input) {
         
         input->algorithm = atoi(argv[4]);
         #if defined(DEBUG)
-            fprintf(stdout, "[PARAMS] Algorithm: %d", input->algorithm);
+            fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
         #endif
         
         #if defined(DEBUG)
@@ -42,14 +42,15 @@ int load_params(int argc, char **argv, struct params *input) {
             }
         #endif
 
+        input->seed = 0;
+        input->gpu_device = 0;
+        input->timeout = 60;
+
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
             #if defined(DEBUG) 
                 fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
             #endif
-        } else {
-            input->seed = 0;
-            input->gpu_device = 0;
         }
 
         if (argc >= 7) {
@@ -57,8 +58,13 @@ int load_params(int argc, char **argv, struct params *input) {
             #if defined(DEBUG) 
                 fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
             #endif
-        } else {
-            input->gpu_device = 0;
+        }
+        
+        if (argc >= 8) {
+            input->timeout = atoi(argv[7]);
+            #if defined(DEBUG) 
+                fprintf(stdout, "[PARAMS] timeout: %d\n", input->gpu_device);
+            #endif
         }
 
         // Input validation.

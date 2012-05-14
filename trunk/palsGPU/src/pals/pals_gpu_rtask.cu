@@ -16,8 +16,6 @@
 
 #define VERY_BIG_FLOAT                  1073741824
 
-#define PALS_GPU__CONVERGENCE           VERY_BIG_FLOAT
-
 //#define PALS_RTASK_RANDS                6144*20
 //#define PALS_RTASK_RANDS                131072
 #define PALS_RTASK_RANDS                262144
@@ -1487,6 +1485,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // PALS aleatorio por tarea.
     // ==============================================================================
 
+    timespec ts_timeout_current;
+    timespec ts_timeout_start;
+    clock_gettime(CLOCK_REALTIME, &ts_timeout_start);
+
+    int timeout_end = 0;
+
     // Timming -----------------------------------------------------
     timespec ts_init;
     timming_start(ts_init);
@@ -1544,7 +1548,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
     int iter;
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_GPU__CONVERGENCE); iter++) {
+    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_CONVERGENCE)
+        && (timeout_end == 0); iter++) {
+            
         /*#if defined(DEBUG)
             fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
         #endif*/
@@ -1659,6 +1665,12 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 #endif
             }
         #endif
+        
+        timespec ts_end;
+        clock_gettime(CLOCK_REALTIME, &ts_end);
+        if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
+            timeout_end = 1;
+        }
     }
 
     // Timming -----------------------------------------------------

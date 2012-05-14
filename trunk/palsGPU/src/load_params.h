@@ -17,11 +17,12 @@
 
 struct params {
     char *instance_path;
-    ushort machines_count;
-    ushort tasks_count;
+    int machines_count;
+    int tasks_count;
     int seed;
     int gpu_device;
     int algorithm;
+    int timeout;
 };
 
 int load_params(int argc, char **argv, struct params *input);
