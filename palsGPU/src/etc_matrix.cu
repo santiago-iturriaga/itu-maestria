@@ -30,11 +30,14 @@ struct matrix* create_etc_matrix(struct params *input) {
         exit(EXIT_FAILURE);
     }
 
-    etc_matrix->shifts = 0;
-    while(etc_matrix->tasks_count > 0) {
-        etc_matrix->tasks_count >> 1;
+    etc_matrix->shifts = -1;
+    int aux_tasks = etc_matrix->tasks_count;
+    while(aux_tasks > 0) {
+        aux_tasks = aux_tasks >> 1;
         etc_matrix->shifts++;
     }
+
+    //fprintf(stdout, "SHIFTS: %d\n", etc_matrix->shifts);
 
     return etc_matrix;
 }
@@ -49,6 +52,10 @@ int get_matrix_coord(struct matrix *etc_matrix, int machine, int task) {
     //assert(machine >= 0);
     assert(task < etc_matrix->tasks_count);
     //assert(task >= 0);
+
+    /*fprintf(stdout, "(machine * etc_matrix->tasks_count) = %d\n", (machine * etc_matrix->tasks_count));
+    fprintf(stdout, "(machine << etc_matrix->shifts) = %d\n", (machine << etc_matrix->shifts));
+    assert((machine * etc_matrix->tasks_count) == (machine << etc_matrix->shifts));*/
 
     return (machine << etc_matrix->shifts) + task;
     //return (machine * etc_matrix->tasks_count) + task;
