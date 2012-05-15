@@ -23,10 +23,10 @@
 //#define PALS_RTASK_RANDS                33554432
 
 //#define PALS_GPU_RTASK__BLOCKS          32
-#define PALS_GPU_RTASK__BLOCKS        64
+#define PALS_GPU_RTASK__BLOCKS        128
 //#define PALS_GPU_RTASK__BLOCKS        128
 //#define PALS_GPU_RTASK__LOOPS         1
-#define PALS_GPU_RTASK__LOOPS         8
+#define PALS_GPU_RTASK__LOOPS         1
 //#define PALS_GPU_RTASK__LOOPS         16
 //#define PALS_GPU_RTASK__LOOPS           64
 
