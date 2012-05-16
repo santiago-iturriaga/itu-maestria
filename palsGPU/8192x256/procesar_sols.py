@@ -12,7 +12,7 @@ if __name__ == '__main__':
     for instancia in range(21)[1:]:
         resultados[instancia] = {}
         
-        for a in algoritmo:
+        for a in algoritmos:
             base_path = 'solutions/' + instancia + '.' + a
             print base_path
 
