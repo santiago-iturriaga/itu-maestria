@@ -36,7 +36,7 @@ if __name__ == '__main__':
                     dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
                     dtime = dtime_mins * 60 + dtime_secs
 
-                resultados[instancia][a] = (instancia, a, dmake, dtime)
+                resultados[instancia][a] = (dmake, dtime)
             else:
                 exit(-1)
 
@@ -45,9 +45,9 @@ if __name__ == '__main__':
     print "====== Tabla de makespan ======"
     print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
     for instancia in range(21)[1:]:
-        (, , minmin_make, minmin_time) = resultados[instancia]['minmin']
-        (, , pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
-        (, , pals_make, pals_time) = resultados[instancia]['pals']
+        (minmin_make, minmin_time) = resultados[instancia]['minmin']
+        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
+        (pals_make, pals_time) = resultados[instancia]['pals']
         
         print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (str(instancia), \
             minmin_make, pminmin_make, pals_make, \
@@ -57,9 +57,9 @@ if __name__ == '__main__':
     print "====== Tabla de tiempos (segundos) ======"
     print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
     for instancia in range(21)[1:]:
-        (, , minmin_make, minmin_time) = resultados[instancia]['minmin']
-        (, , pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
-        (, , pals_make, pals_time) = resultados[instancia]['pals']
+        (minmin_make, minmin_time) = resultados[instancia]['minmin']
+        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
+        (pals_make, pals_time) = resultados[instancia]['pals']
         
         print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (str(instancia), \
             minmin_time, pminmin_time, pals_time, \
