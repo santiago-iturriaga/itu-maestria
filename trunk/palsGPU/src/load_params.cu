@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #include "config.h"
 #include "load_params.h"
@@ -44,7 +45,8 @@ int load_params(int argc, char **argv, struct params *input) {
 
         input->seed = 0;
         input->gpu_device = 0;
-        input->timeout = 60;
+        input->timeout = INT_MAX;
+        input->target_makespan = -1;
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
@@ -63,7 +65,14 @@ int load_params(int argc, char **argv, struct params *input) {
         if (argc >= 8) {
             input->timeout = atoi(argv[7]);
             #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] timeout: %d\n", input->gpu_device);
+                fprintf(stdout, "[PARAMS] timeout: %d s\n", input->timeout);
+            #endif
+        }
+        
+        if (argc >= 9) {
+            input->target_makespan = atof(argv[8]);
+            #if defined(DEBUG) 
+                fprintf(stdout, "[PARAMS] target makespan: %f\n", input->target_makespan);
             #endif
         }
 
@@ -86,7 +95,7 @@ int load_params(int argc, char **argv, struct params *input) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");
-        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device]\n\n", argv[0]);
+        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan]\n\n", argv[0]);
         fprintf(stdout, "       Algorithm = 0 Serial full\n");
         fprintf(stdout, "                   1 GPU full\n");
         fprintf(stdout, "                   2 GPU rand. task\n");
