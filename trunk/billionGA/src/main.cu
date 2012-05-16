@@ -76,10 +76,9 @@ int main(int argc, char **argv) {
     struct bga_state problem_state;
     bga_initialization(&problem_state, problem_size, nthreads, NUMBER_OF_SAMPLES);
 
-    int current_iteration = 0;
-
     #pragma omp parallel // private(th_id)
     {
+	int current_iteration = 0;
         int th_id = omp_get_thread_num();
 
         int th_device = (starting_gpu_device + th_id) % number_gpus;
@@ -105,15 +104,13 @@ int main(int argc, char **argv) {
         #endif
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
-            #pragma omp barrier
-            if (th_id == 0) {
-                current_iteration++;
+            current_iteration++;
 
-                #if defined(DEBUG)
+            if (th_id == 0) {
+                if (current_iteration % 10 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
-                #endif
+                }
             }
-            #pragma omp barrier
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
             #if defined(DEBUG)
