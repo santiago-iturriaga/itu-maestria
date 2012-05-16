@@ -49,7 +49,7 @@ if __name__ == '__main__':
         (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
         (pals_make, pals_time) = resultados[instancia]['pals']
         
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (str(instancia), \
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
             minmin_make, pminmin_make, pals_make, \
             100-(pminmin_make * 100 / minmin_make), \
             100-(pals_make * 100 / minmin_make))
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
         (pals_make, pals_time) = resultados[instancia]['pals']
         
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (str(instancia), \
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
             minmin_time, pminmin_time, pals_time, \
             100-(pminmin_time * 100 / minmin_time), \
             100-(pals_time * 100 / minmin_time))
