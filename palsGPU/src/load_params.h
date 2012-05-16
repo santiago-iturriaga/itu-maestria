@@ -22,7 +22,9 @@ struct params {
     int seed;
     int gpu_device;
     int algorithm;
+    
     int timeout;
+    float target_makespan;
 };
 
 int load_params(int argc, char **argv, struct params *input);

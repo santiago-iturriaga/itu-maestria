@@ -48,9 +48,9 @@ void free_etc_matrix(struct matrix *etc_matrix) {
 }
 
 int get_matrix_coord(struct matrix *etc_matrix, int machine, int task) {
-    assert(machine < etc_matrix->machines_count);
+    //assert(machine < etc_matrix->machines_count);
     //assert(machine >= 0);
-    assert(task < etc_matrix->tasks_count);
+    //assert(task < etc_matrix->tasks_count);
     //assert(task >= 0);
 
     /*fprintf(stdout, "(machine * etc_matrix->tasks_count) = %d\n", (machine * etc_matrix->tasks_count));
