@@ -1,6 +1,12 @@
 //#define INFO
 //#define DEBUG
 
+// The full fitness update model updates the probability vector according
+// to the total sample fitness, but requires an extra barrier to sync the threads.
+//#define FULL_FITNESS_UPDATE
+
+#define PARTIAL_FITNESS_UPDATE
+
 #define NUMBER_OF_SAMPLES       2
 
 // Debe ser divisible entre 32 (8 y 4)

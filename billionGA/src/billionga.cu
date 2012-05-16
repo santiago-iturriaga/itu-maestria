@@ -693,7 +693,18 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
 
     int best_sample_index, worst_sample_index;
 
-    if (state->samples_fitness[0] >= state->samples_fitness[1]) {
+    float fitness_sample_a, fitness_sample_b;
+    #if defined(FULL_FITNESS_UPDATE)
+        fitness_sample_a = state->samples_fitness[0];
+        fitness_sample_b = state->samples_fitness[1];
+    #endif
+    #if defined(PARTIAL_FITNESS_UPDATE)
+        fitness_sample_a = state->samples_vector_fitness[0][prob_vector_number];
+        fitness_sample_b = state->samples_vector_fitness[1][prob_vector_number];
+    #endif
+
+
+    if (fitness_sample_a >= fitness_sample_b) {
         best_sample_index = 0;
         worst_sample_index = 1;
     }
