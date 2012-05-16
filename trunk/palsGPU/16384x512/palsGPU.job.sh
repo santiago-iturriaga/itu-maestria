@@ -1,0 +1,2 @@
+oarsub -p "host='gaia-61'" -l core=12,walltime=20:00:00 -n "palsGPU-16k" /home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU/16384x512/palsGPU.16k.sh
+
