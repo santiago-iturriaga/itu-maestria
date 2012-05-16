@@ -119,11 +119,12 @@ NODECFG[node37.cluster.fing] PARTITION=general
 NODECFG[node38.cluster.fing] PARTITION=quick
 #NODECFG[telsa.cluster.fing] PARTITION=general
 
-CLASSCFG[publica]       PLIST=general
-CLASSCFG[medium_jobs]   PLIST=general
-CLASSCFG[long_jobs]     PLIST=general
-CLASSCFG[big_jobs]      PLIST=general
-CLASSCFG[quick_jobs]    PLIST=quick
+CLASSCFG[publica]       PLIST=general,quick&
+CLASSCFG[medium_jobs]   PLIST=general,quick&
+CLASSCFG[long_jobs]     PLIST=general,quick&
+CLASSCFG[big_jobs]      PLIST=general,quick&
+#CLASSCFG[quick_jobs]    PLIST=quick:general PDEF=quick
+CLASSCFG[quick_jobs]    PLIST=quick,general&
 
 # =============================================================
 # Standing reservations
