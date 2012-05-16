@@ -6,30 +6,12 @@ import math
 cantidad_instancias = 20
 algoritmos = ['pminmin', 'minmin', 'pals']
 
-def calcular_medidas(valores):
-    min = valores[0]
-    max = valores[0]
-    total = 0.0
-
-    for valor in valores:
-        total += valor
-        if valor < min: min = valor
-        if valor > max: max = valor
-
-    avg = float(total) / float(len(valores))
-    
-    aux_valor = 0.0
-    for valor in valores:
-        aux_valor += math.pow(valor-avg,2)
-
-    stddev = 0 #math.sqrt(aux_valor / (len(valores)-1))
-
-    return (min, max, avg, stddev)
-
-  if __name__ == '__main__':
-    resultados = []
+if __name__ == '__main__':
+    resultados = {}
 
     for instancia in range(21)[1:]:
+        resultados[instancia] = {}
+        
         for a in algoritmo:
             base_path = 'solutions/' + instancia + '.' + a
             print base_path
@@ -40,118 +22,46 @@ def calcular_medidas(valores):
 
                 dtime_file = open(base_path + '.time')
                 dtime_lines = dtime_file.readlines()
-                dtime_line = dtime_lines[1].strip()
-                dtime_str = dtime_line.split('\t')[1].strip()
-                dtime_mins = int(dtime_str.split('m')[0].strip())
-                dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-                dtime = dtime_mins * 60 + dtime_secs
-		if a == 'pals':
-  dtime_line = dtime_lines[1].strip()
-				                  dtime_str = dtime_line.split('\t')[1].strip()
-						                  dtime_mins = int(dtime_str.split('m')[0].strip())
-								                  dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-										                  dtime = dtime_mins * 60 + dtime_secs
 
-		else:
+                if a == 'pals':
+                    dtime_line = dtime_lines[5].strip()
+                    dtime_str = dtime_line.split('\t')[1].strip()
+                    dtime_mins = int(dtime_str.split('m')[0].strip())
+                    dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
+                    dtime = dtime_mins * 60 + dtime_secs
+                else:
+                    dtime_line = dtime_lines[1].strip()
+                    dtime_str = dtime_line.split('\t')[1].strip()
+                    dtime_mins = int(dtime_str.split('m')[0].strip())
+                    dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
+                    dtime = dtime_mins * 60 + dtime_secs
 
-
-                resultados_deterministas.append((instancia, d.strip('.'), dmake, dtime))
+                resultados[instancia][a] = (instancia, a, dmake, dtime)
             else:
                 exit(-1)
 
-        for iter in range(ITER_GPU):
-            base_path = 'solutions/' + instancia + '.palsGPU.' + str(iter)
-            #print base_path
-
-            if os.path.isfile(base_path  + '.makespan'):
-                dmake_file = open(base_path  + '.makespan')
-                dmake = float(dmake_file.readline())
-
-                dtime_file = open(base_path  + '.time')
-                dtime_lines = dtime_file.readlines()
-                dtime_line = dtime_lines[1].strip()
-                dtime_str = dtime_line.split('\t')[1].strip()
-                dtime_mins = int(dtime_str.split('m')[0].strip())
-                dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-                dtime = dtime_mins * 60 + dtime_secs
-
-                dinfo_file = open(base_path  + '.info')
-                dinfo_cant_iter = int(dinfo_file.readline().split('|')[1].strip())
-                dinfo_best_found = int(dinfo_file.readline().split('|')[1].strip())
-
-                resultados_palsGPU.append((instancia, dmake, dtime, dinfo_cant_iter, dinfo_best_found))
-            else:
-                exit(-1)
-
-    #print resultados_deterministas
-    #print resultados_palsGPU
-
-    medidas_palsGPU = {}
-    medidas_deterministas = {}
-
-    for instancia in instancias:
-        make_values = []
-        time_values = []
-        cant_iter_values = []
-	best_found_values = []
-
-        for (r_inst, r_make, r_time, r_cant_iter, r_best_found) in resultados_palsGPU:
-            if r_inst == instancia:
-                make_values.append(r_make)
-                time_values.append(r_time)
-                cant_iter_values.append(r_cant_iter)
-                best_found_values.append(r_best_found)
-
-        (make_min, make_max, make_avg, make_stddev) = calcular_medidas(make_values)
-        (time_min, time_max, time_avg, time_stddev) = calcular_medidas(time_values)
-        (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev) = calcular_medidas(cant_iter_values)
-        (best_found_min, best_found_max, best_found_avg, best_found_stddev) = calcular_medidas(best_found_values)
-
-        medidas_palsGPU[instancia] = [(make_min, make_max, make_avg, make_stddev), \
-            (time_min, time_max, time_avg, time_stddev), \
-            (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev),
-            (best_found_min, best_found_max, best_found_avg, best_found_stddev)]
-
-        medidas_deterministas[instancia] = {}
-
-        for (r_inst, r_d, r_make, r_time) in resultados_deterministas:
-            if r_inst == instancia:
-                medidas_deterministas[instancia][r_d] = (r_make, r_time)
+    print resultados
 
     print "====== Tabla de makespan ======"
-    print "Instancia,MCT,Min-Min,Best PGPU,Avg PGPU,Stddev PGPU,Worst PGPU,Avg PGPU vs Min-Min"
-    for instancia in instancias:
-        (minmin_make, minmin_time) = medidas_deterministas[instancia]['minmin']
-        (mct_make, mct_time) = medidas_deterministas[instancia]['mct']
+    print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
+    for instancia in range(21)[1:]:
+        (minmin_make, minmin_time) = resultados[instancia]['minmin']
+        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
+        (pals_make, pals_time) = resultados[instancia]['pals']
         
-        [(make_min, make_max, make_avg, make_stddev), \
-        (time_min, time_max, time_avg, time_stddev), \
-        (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
-        (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
-        print "%s,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, mct_make, minmin_make, make_min, make_avg, (make_stddev * 100 / make_avg), make_max, 100-(make_avg * 100 / minmin_make))
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+            minmin_make, pminmin_make, pals_make, \
+            100-(pminmin_make * 100 / minmin_make), \
+            100-(pals_make * 100 / minmin_make))
 
     print "====== Tabla de tiempos (segundos) ======"
-    print "Instancia,MCT,Min-Min,Min time PGPU,Avg time PGPU,Stddev time PGPU,Worst time PGPU,Avg time PGPU vs Min-Min"
-    total_avg_time = 0.0
-    for instancia in instancias:
-        (minmin_make, minmin_time) = medidas_deterministas[instancia]['minmin']
-        (mct_make, mct_time) = medidas_deterministas[instancia]['mct']
+    print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
+    for instancia in range(21)[1:]:
+        (minmin_make, minmin_time) = resultados[instancia]['minmin']
+        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
+        (pals_make, pals_time) = resultados[instancia]['pals']
         
-        [(make_min, make_max, make_avg, make_stddev), \
-        (time_min, time_max, time_avg, time_stddev), \
-        (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
-        (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
-        print "%s,%.4f,%.4f,%.4f,%.4f,%.1f,%.4f,%.1f" % (instancia, mct_time, minmin_time, time_min, time_avg, (time_stddev * 100 / time_avg), time_max, 100-(time_avg * 100 / minmin_time))
-
-        total_avg_time = total_avg_time + time_avg
-
-    print ">> Total avg time: %.4f" % total_avg_time
-
-    print "====== Tabla de iteraciones ======"
-    print "Instancia,Min iter PGPU,Avg iter PGPU,Stddev iter PGPU,Worst iter PGPU,Best found min, Best found avg"
-    for instancia in instancias:       
-        [(make_min, make_max, make_avg, make_stddev), \
-        (time_min, time_max, time_avg, time_stddev), \
-        (cant_iter_min, cant_iter_max, cant_iter_avg, cant_iter_stddev), \
-        (best_found_min, best_found_max, best_found_avg, best_found_stddev)] = medidas_palsGPU[instancia]
-        print "%s,%d,%.1f,%.1f,%d,%d,%.1f" % (instancia, cant_iter_min, cant_iter_avg, (cant_iter_stddev * 100 / cant_iter_avg), cant_iter_max, best_found_min, best_found_avg)
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+            minmin_time, pminmin_time, pals_time, \
+            100-(pminmin_time * 100 / minmin_time), \
+            100-(pals_time * 100 / minmin_time))
