@@ -3,9 +3,8 @@
 import os
 import math
 
-ITER_GPU=1
-
-deterministas = ['.mct.', '.minmin.']
+cantidad_instancias = 20
+algoritmos = ['pminmin', 'minmin', 'pals']
 
 def calcular_medidas(valores):
     min = valores[0]
@@ -27,43 +26,34 @@ def calcular_medidas(valores):
 
     return (min, max, avg, stddev)
 
-if __name__ == '__main__':
-    instancias_raw = []
+  if __name__ == '__main__':
+    resultados = []
 
-    for filename in os.listdir('solutions'):
-        palsParts = filename.split('.palsGPU.')
-        if len(palsParts) > 1:
-            instancias_raw.append(palsParts[0])
-        else:
-            for d in deterministas:
-                dParts = filename.split(d)
-                if len(dParts) > 1:
-                    instancias_raw.append(dParts[0])
+    for instancia in range(21)[1:]:
+        for a in algoritmo:
+            base_path = 'solutions/' + instancia + '.' + a
+            print base_path
 
-    instancias = list(set(instancias_raw))
-    instancias.sort()
-
-    #print instancias
-
-    resultados_deterministas = []
-    resultados_palsGPU = []
-
-    for instancia in instancias:
-        for d in deterministas:
-            base_path = 'solutions/' + instancia + d
-            #print base_path
-
-            if os.path.isfile(base_path + 'makespan'):
-                dmake_file = open(base_path + 'makespan')
+            if os.path.isfile(base_path + '.makespan'):
+                dmake_file = open(base_path + '.makespan')
                 dmake = float(dmake_file.readline())
 
-                dtime_file = open(base_path + 'time')
+                dtime_file = open(base_path + '.time')
                 dtime_lines = dtime_file.readlines()
                 dtime_line = dtime_lines[1].strip()
                 dtime_str = dtime_line.split('\t')[1].strip()
                 dtime_mins = int(dtime_str.split('m')[0].strip())
                 dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
                 dtime = dtime_mins * 60 + dtime_secs
+		if a == 'pals':
+  dtime_line = dtime_lines[1].strip()
+				                  dtime_str = dtime_line.split('\t')[1].strip()
+						                  dtime_mins = int(dtime_str.split('m')[0].strip())
+								                  dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
+										                  dtime = dtime_mins * 60 + dtime_secs
+
+		else:
+
 
                 resultados_deterministas.append((instancia, d.strip('.'), dmake, dtime))
             else:
