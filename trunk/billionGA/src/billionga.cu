@@ -25,7 +25,7 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     state->number_of_samples = number_of_samples;
     state->number_of_prob_vectors = number_of_prob_vectors;
 
-    state->population_size = sqrt(3.1416) * sqrt(number_of_bits) * log10(number_of_bits) / 2;
+    state->population_size = POPULATION_SIZE; //sqrt(3.1416) * sqrt(number_of_bits) * log10(number_of_bits) / 2;
     state->update_value = 1 / state->population_size;
 
     #if defined(INFO) || defined(DEBUG)

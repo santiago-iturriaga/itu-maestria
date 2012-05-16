@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             if (th_id == 0) {
-                if (current_iteration % 10 == 0) {
+                if (current_iteration % 100 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                 }
             }

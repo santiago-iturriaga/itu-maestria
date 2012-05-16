@@ -1,6 +1,9 @@
 //#define INFO
 //#define DEBUG
 
+//#define POPULATION_SIZE sqrt(3.1416)*sqrt(number_of_bits)*log10(number_of_bits)/2
+#define POPULATION_SIZE 1000
+
 // The full fitness update model updates the probability vector according
 // to the total sample fitness, but requires an extra barrier to sync the threads.
 //#define FULL_FITNESS_UPDATE
