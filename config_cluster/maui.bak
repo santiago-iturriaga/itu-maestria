@@ -77,6 +77,16 @@ CLASSCFG[especial]	PRIORITY=10080
 CLASSCFG[big_jobs]	PRIORITY=1
 CLASSCFG[big_jobs]	FSTARGET=25.0
 
+# =============================================================
+# Partitions
+# =============================================================
+
+NODECFG[node02.cluster.fing] PARTITION=general
+
+# =============================================================
+# Standing reservations
+# =============================================================
+
 # Reserva grupo eolica. 1 nodo 8 CPU (node0X o node2X) entre las 16:00 y las 02:00.
 #SRCFG[eolica] PERIOD=INFINITY
 #SRCFG[eolica] STARTTIME=16:00:00 ENDTIME=02:00:00
