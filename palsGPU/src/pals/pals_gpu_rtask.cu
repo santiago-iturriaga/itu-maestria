@@ -1536,6 +1536,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     int convergence_flag;
     convergence_flag = 0;
 
+    int target_makespan_found;
+    target_makespan_found = 0;
+
     int best_solution_iter = -1;
     float best_solution = VERY_BIG_FLOAT;
 
@@ -1548,8 +1551,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
     int iter;
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_CONVERGENCE)
-        && (timeout_end == 0); iter++) {
+    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_CONVERGENCE) 
+        && (timeout_end == 0) && (target_makespan_found == 0); iter++) {
             
         /*#if defined(DEBUG)
             fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
@@ -1663,6 +1666,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                 #if defined(DEBUG)
                     fprintf(stdout, ">> Makespan: %f (convergence: %d)\n", current_solution->makespan, convergence_flag);
                 #endif
+            }
+            
+            if (current_solution->makespan <= input.target_makespan) {
+                target_makespan_found = 1;
             }
         #endif
         
