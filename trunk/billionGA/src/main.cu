@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 
     #pragma omp parallel // private(th_id)
     {
-	int current_iteration = 0;
+        int current_iteration = 0;
         int th_id = omp_get_thread_num();
 
         int th_device = (starting_gpu_device + th_id) % number_gpus;
@@ -118,11 +118,13 @@ int main(int argc, char **argv) {
             #endif
             bga_compute_sample_part_fitness(&problem_state, th_id);
 
-            #pragma omp barrier
-            if (th_id == 0) {
-                bga_compute_sample_full_fitness(&problem_state);
-            }
-            #pragma omp barrier
+            #if defined(FULL_FITNESS_UPDATE)
+                #pragma omp barrier
+                if (th_id == 0) {
+                    bga_compute_sample_full_fitness(&problem_state);
+                }
+                #pragma omp barrier
+            #endif
             
             bga_model_update(&problem_state, th_id);
 
@@ -151,7 +153,10 @@ int main(int argc, char **argv) {
         }
 
         #pragma omp barrier
-        if (th_id == 0) fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+        if (th_id == 0) {
+            bga_compute_sample_full_fitness(&problem_state);
+            fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+        }
 
         // === Libero la memoria del Mersenne Twister.
         mtgp32_free(&mt_status);
