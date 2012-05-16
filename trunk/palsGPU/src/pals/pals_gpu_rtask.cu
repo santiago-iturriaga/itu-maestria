@@ -1640,8 +1640,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             // Timming -----------------------------------------------------
 
             //int status = 0;
-            //int status = iter & ((1 << 1) - 1);
-            int status = iter & ((1 << 10) - 1);
+            int status = iter & ((1 << 1) - 1);
+            //int status = iter & ((1 << 10) - 1);
 
             if (status == 0) {
                 if (cudaMemcpy(makespan_ct_aux, instance.gpu_makespan_ct_aux, sizeof(float) * COMPUTE_MAKESPAN_KERNEL_BLOCKS,
@@ -1667,11 +1667,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
                     fprintf(stdout, ">> Makespan: %f (convergence: %d)\n", current_solution->makespan, convergence_flag);
                 #endif
             }
-            
-            if (current_solution->makespan <= input.target_makespan) {
-                target_makespan_found = 1;
-            }
         #endif
+        
+        if (current_solution->makespan <= input.target_makespan) {
+            target_makespan_found = 1;
+        }
         
         clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
