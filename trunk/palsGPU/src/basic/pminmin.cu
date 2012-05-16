@@ -46,7 +46,6 @@ void compute_pminmin(struct matrix *etc_matrix, struct solution *sol, int number
 
     // Calcula el makespan de la solución.
     int m;
-
     for (int i = 0; i < etc_matrix->tasks_count; i++) {
         m = sol->task_assignment[i];
         sol->machine_compute_time[m] += get_etc_value(etc_matrix, m, i);
@@ -69,8 +68,6 @@ void compute_pminmin(struct matrix *etc_matrix, struct solution *sol, int number
 }
 
 void* compute_pminmin_thread(void *data) {
-    struct solution *solution_l;
-
     struct threadData *d = (struct threadData *)data;
 
     int t_i = (int)d->t_i;
@@ -79,8 +76,6 @@ void* compute_pminmin_thread(void *data) {
     struct solution *sol = d->sol;
     
     int nt = t_f - t_i;
-
-    solution_l = create_empty_solution_dim(nt, etc->machines_count);
 
     /*#ifdef DEBUG 
     fprintf(stdout, "[DEBUG] calculando PMinMin...i thread de %d a %d, NT=%d\n", t_i, t_f, nt);
@@ -92,6 +87,9 @@ void* compute_pminmin_thread(void *data) {
     }
 
     int assigned_tasks_count = 0;
+    
+    float *machine_compute_time = (float*)malloc(sizeof(float) * etc->machines_count); //solution_l->machine_compute_time;
+    for (int i = 0; i < etc->machines_count; i++) machine_compute_time[i] = 0.0;
 
     while (assigned_tasks_count < nt) { // Mientras quede una tarea sin asignar.
         int best_task;
@@ -111,13 +109,13 @@ void* compute_pminmin_thread(void *data) {
 
                 float best_machine_cost_for_task;
 
-                best_machine_cost_for_task = solution_l->machine_compute_time[0] +
+                best_machine_cost_for_task = machine_compute_time[0] +
                     get_etc_value(etc, 0, task_i);
 
                 for (int machine_x = 1; machine_x < etc->machines_count; machine_x++) {
                     float current_cost;
 
-                    current_cost = solution_l->machine_compute_time[machine_x] +
+                    current_cost = machine_compute_time[machine_x] +
                         get_etc_value(etc, machine_x, task_i);
 
                     if (current_cost < best_machine_cost_for_task) {
@@ -143,9 +141,11 @@ void* compute_pminmin_thread(void *data) {
         fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
         #endif*/
 
-        solution_l->machine_compute_time[best_machine] = solution_l->machine_compute_time[best_machine] +
-            get_etc_value(etc, best_machine, best_task);
+        machine_compute_time[best_machine] = best_cost;
+            //solution_l->machine_compute_time[best_machine] + get_etc_value(etc, best_machine, best_task);
     }
+    
+    free(machine_compute_time);
     
     return EXIT_SUCCESS;
 }
