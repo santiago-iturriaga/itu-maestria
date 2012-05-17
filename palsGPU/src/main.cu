@@ -66,10 +66,10 @@ int main(int argc, char** argv)
     timespec ts_loading_end;
     clock_gettime(CLOCK_REALTIME, &ts_loading_end);
 
-    double elapsed;
-    elapsed = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
+    double elapsed_loading;
+    elapsed_loading = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
         + ((ts_loading_end.tv_nsec - ts_loading.tv_nsec) / 1000.0);
-    fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed);
+    fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed_loading);
 
     // =============================================================
     // Create empty solution
@@ -163,6 +163,9 @@ int main(int argc, char** argv)
         timming_start(ts_mct);
         // Timming -----------------------------------------------------
 
+        timespec ts_init;
+        clock_gettime(CLOCK_REALTIME, &ts_init);
+    
         if (input.init_algorithm == MCT) {
             compute_mct(etc_matrix, current_solution);
         } else if (input.init_algorithm == MinMin) {
@@ -182,6 +185,14 @@ int main(int argc, char** argv)
             
             compute_pminmin(etc_matrix, current_solution, thread_count);
         }
+
+        timespec ts_init_end;
+        clock_gettime(CLOCK_REALTIME, &ts_init_end);
+
+        double elapsed_init;
+        elapsed_init = ((ts_init_end.tv_sec - ts_init.tv_sec) * 1000000.0) 
+            + ((ts_init_end.tv_nsec - ts_init.tv_nsec) / 1000.0);
+        fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed_init);
 
         // Timming -----------------------------------------------------
         timming_end(">> MCT Time", ts_mct);
