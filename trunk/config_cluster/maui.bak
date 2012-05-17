@@ -102,6 +102,8 @@ NODECFG[node38.cluster.fing] PARTITION=quick
 
 # publica == small_jobs
 
+SYSCFG[base]            PLIST=general,quick&
+
 CLASSCFG[publica]       PRIORITY=10 
 CLASSCFG[publica]       FSTARGET=40.0
 CLASSCFG[medium_jobs]   PRIORITY=5
@@ -112,7 +114,6 @@ CLASSCFG[big_jobs]      PRIORITY=1
 CLASSCFG[big_jobs]      FSTARGET=15.0
 CLASSCFG[quick_jobs]    PRIORITY=100
 
-SYSCFG[base]            PLIST=general,quick&
 CLASSCFG[quick_jobs]    PLIST=quick
 
 #CLASSCFG[publica]   PRIORITY=1
