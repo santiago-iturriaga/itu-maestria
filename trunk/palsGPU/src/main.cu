@@ -167,10 +167,10 @@ int main(int argc, char** argv)
         clock_gettime(CLOCK_REALTIME, &ts_init);
     
         if (input.init_algorithm == MCT) {
-            fprintf(stdout, "MCT");
+            fprintf(stderr, "INIT|MCT\n");
             compute_mct(etc_matrix, current_solution);
         } else if (input.init_algorithm == MinMin) {
-            fprintf(stdout, "MinMin");
+            fprintf(stdout, "INIT|MINMIN\n");
             compute_minmin(etc_matrix, current_solution);
         } else if (input.init_algorithm == pMinMin) {
             int thread_count = -1;
@@ -185,7 +185,7 @@ int main(int argc, char** argv)
             if (thread_count <= 0) thread_count = 1;
             if (thread_count > MAX_THREAD_COUNT) thread_count = MAX_THREAD_COUNT;
             
-            fprintf(stdout, "Thread number: %d\n", thread_count);
+            fprintf(stderr, "INIT|pMINMIN|%d\n", thread_count);
             compute_pminmin(etc_matrix, current_solution, thread_count);
         }
 
