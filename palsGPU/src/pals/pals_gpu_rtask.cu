@@ -1542,6 +1542,8 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     int best_solution_iter = -1;
     float best_solution = VERY_BIG_FLOAT;
 
+    int last_report = 0;
+
     //int makespan_idx_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
     float makespan_ct_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
 
@@ -1676,6 +1678,11 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
             timeout_end = 1;
+        }
+        
+        if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
+            last_report = ts_timeout_current.tv_sec;
+            fprintf(stderr, "MAKESPAN|%lu|%f\n", ts_timeout_current.tv_sec, current_solution->makespan);
         }
     }
 

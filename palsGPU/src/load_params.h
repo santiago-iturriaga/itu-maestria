@@ -25,6 +25,7 @@ struct params {
     
     int timeout;
     float target_makespan;
+    int init_algorithm;
 };
 
 int load_params(int argc, char **argv, struct params *input);
