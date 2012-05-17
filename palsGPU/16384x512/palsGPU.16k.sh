@@ -4,10 +4,10 @@ INSTANCE="/home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_16384x51
 BASE_PATH="/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU"
 DIMENSION="16384 512"
 
-#TIMEOUT=90
-TIMEOUT=900
-#TARGET_M=0
-TARGET_M=1901
+TIMEOUT=90
+#TIMEOUT=900
+TARGET_M=0
+#TARGET_M=1901
 
 mkdir -p ${BASE_PATH}/16384x512/solutions
 
