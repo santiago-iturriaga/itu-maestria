@@ -74,6 +74,7 @@ create queue quick_jobs
 set queue quick_jobs queue_type = Execution
 set queue quick_jobs max_user_queuable = 100
 set queue quick_jobs acl_user_enable = True
+set queue quick_jobs acl_users = siturria@node01.cluster.fing
 set queue quick_jobs resources_max.ncpus = 24
 set queue quick_jobs resources_max.nodect = 24
 set queue quick_jobs resources_max.nodes = 24

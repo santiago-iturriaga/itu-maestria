@@ -70,29 +70,6 @@ CREDWEIGHT      1
 CLASSWEIGHT     1
 
 # =============================================================
-# Queues priorities
-# =============================================================
-
-# publica == small_jobs
-CLASSCFG[publica]       PRIORITY=10
-CLASSCFG[publica]       FSTARGET=40.0
-CLASSCFG[medium_jobs]   PRIORITY=5
-CLASSCFG[medium_jobs]   FSTARGET=30.0
-CLASSCFG[long_jobs]     PRIORITY=1
-CLASSCFG[long_jobs]     FSTARGET=15.0
-CLASSCFG[big_jobs]      PRIORITY=1
-CLASSCFG[big_jobs]      FSTARGET=15.0
-CLASSCFG[quick_jobs]    PRIORITY=100
-
-#CLASSCFG[publica]   PRIORITY=1
-#CLASSCFG[publica]   FSTARGET=25.0
-#CLASSCFG[privada]   PRIORITY=4
-#CLASSCFG[privada]   FSTARGET=75.0
-#CLASSCFG[especial]  PRIORITY=10080
-#CLASSCFG[big_jobs]  PRIORITY=1
-#CLASSCFG[big_jobs]  FSTARGET=25.0
-
-# =============================================================
 # Partitions (max. 2 partitions)
 # =============================================================
 
@@ -119,12 +96,44 @@ NODECFG[node37.cluster.fing] PARTITION=general
 NODECFG[node38.cluster.fing] PARTITION=quick
 #NODECFG[telsa.cluster.fing] PARTITION=general
 
-CLASSCFG[publica]       PLIST=general,quick&
-CLASSCFG[medium_jobs]   PLIST=general,quick&
-CLASSCFG[long_jobs]     PLIST=general,quick&
-CLASSCFG[big_jobs]      PLIST=general,quick&
+# =============================================================
+# Queues config
+# =============================================================
+
+# publica == small_jobs
+
+SYSCFG[base]            PLIST= 
+
+CLASSCFG[publica]       PRIORITY=10 
+CLASSCFG[publica]       FSTARGET=40.0
+CLASSCFG[medium_jobs]   PRIORITY=5
+CLASSCFG[medium_jobs]   FSTARGET=30.0
+CLASSCFG[long_jobs]     PRIORITY=1
+CLASSCFG[long_jobs]     FSTARGET=15.0
+CLASSCFG[big_jobs]      PRIORITY=1
+CLASSCFG[big_jobs]      FSTARGET=15.0
+CLASSCFG[quick_jobs]    PRIORITY=100
+
+#CLASSCFG[publica]       PLIST=general,quick&
+#CLASSCFG[medium_jobs]   PLIST=general,quick&
+#CLASSCFG[long_jobs]     PLIST=general,quick&
+#CLASSCFG[big_jobs]      PLIST=general,quick&
 #CLASSCFG[quick_jobs]    PLIST=quick:general PDEF=quick
-CLASSCFG[quick_jobs]    PLIST=quick,general&
+#CLASSCFG[quick_jobs]    PLIST=quick,general&
+
+#CLASSCFG[publica]       PRIORITY=10 FSTARGET=40.0 PLIST=general,quick&
+#CLASSCFG[medium_jobs]   PRIORITY=5 FSTARGET=30.0 PLIST=general,quick&
+#CLASSCFG[long_jobs]     PRIORITY=1 FSTARGET=15.0 PLIST=general,quick&
+#CLASSCFG[big_jobs]      PRIORITY=1 FSTARGET=15.0 PLIST=general,quick&
+#CLASSCFG[quick_jobs]    PRIORITY=100 PLIST=quick,general&
+
+#CLASSCFG[publica]   PRIORITY=1
+#CLASSCFG[publica]   FSTARGET=25.0
+#CLASSCFG[privada]   PRIORITY=4
+#CLASSCFG[privada]   FSTARGET=75.0
+#CLASSCFG[especial]  PRIORITY=10080
+#CLASSCFG[big_jobs]  PRIORITY=1
+#CLASSCFG[big_jobs]  FSTARGET=25.0
 
 # =============================================================
 # Standing reservations
