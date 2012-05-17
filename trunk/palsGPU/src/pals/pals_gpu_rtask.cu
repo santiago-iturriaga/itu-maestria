@@ -1556,9 +1556,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_CONVERGENCE) 
         && (timeout_end == 0) && (target_makespan_found == 0); iter++) {
             
-        /*#if defined(DEBUG)
+        //#if defined(DEBUG)
             fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
-        #endif*/
+        //#endif
 
         // ==============================================================================
         // Sorteo de numeros aleatorios.
@@ -1679,6 +1679,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
             timeout_end = 1;
         }
+        
+        fprintf(stderr, "error...\n");
+        fprintf(stdout, "no error...\n");
         
         if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
             last_report = ts_timeout_current.tv_sec;
