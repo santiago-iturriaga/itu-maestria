@@ -114,7 +114,18 @@ CLASSCFG[big_jobs]      PRIORITY=1
 CLASSCFG[big_jobs]      FSTARGET=15.0
 CLASSCFG[quick_jobs]    PRIORITY=100
 
-CLASSCFG[quick_jobs]    PLIST=quick,general&
+#CLASSCFG[publica]       PLIST=general,quick&
+#CLASSCFG[medium_jobs]   PLIST=general,quick&
+#CLASSCFG[long_jobs]     PLIST=general,quick&
+#CLASSCFG[big_jobs]      PLIST=general,quick&
+#CLASSCFG[quick_jobs]    PLIST=quick:general PDEF=quick
+#CLASSCFG[quick_jobs]    PLIST=quick,general&
+
+#CLASSCFG[publica]       PRIORITY=10 FSTARGET=40.0 PLIST=general,quick&
+#CLASSCFG[medium_jobs]   PRIORITY=5 FSTARGET=30.0 PLIST=general,quick&
+#CLASSCFG[long_jobs]     PRIORITY=1 FSTARGET=15.0 PLIST=general,quick&
+#CLASSCFG[big_jobs]      PRIORITY=1 FSTARGET=15.0 PLIST=general,quick&
+#CLASSCFG[quick_jobs]    PRIORITY=100 PLIST=quick,general&
 
 #CLASSCFG[publica]   PRIORITY=1
 #CLASSCFG[publica]   FSTARGET=25.0
