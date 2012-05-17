@@ -3,9 +3,12 @@ export LD_LIBRARY_PATH=/home/clusterusers/siturriaga/cuda/lib64:/home/clusteruse
 INSTANCE="/home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_16384x512_hihi_"
 BASE_PATH="/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU"
 DIMENSION="16384 512"
+DIMENSION_X="16384x512"
 
-TIMEOUT=90
+#TIMEOUT=120
+TIMEOUT=300
 #TIMEOUT=900
+
 TARGET_M=0
 #TARGET_M=1901
 
@@ -16,14 +19,52 @@ do
     RAND=$RANDOM
     echo "Random ${RAND}"
 
-    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} 1> ${BASE_PATH}/16384x512/solutions/${i}.pals.sol) 2> ${BASE_PATH}/16384x512/solutions/${i}.pals.time"
+    echo "=== PALS+MCT ==============================================="
+    NAME="pals+mct"
+    ID=5
+    THREADS=1
+    
+    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
 
-    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} \
-        1> ${BASE_PATH}/16384x512/solutions/${i}.pals.sol) \
-        2> ${BASE_PATH}/16384x512/solutions/${i}.pals.time
+    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
 
-    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/16384x512/solutions/${i}.pals.sol ${DIMENSION} > ${BASE_PATH}/16384x512/solutions/${i}.pals.makespan"
+    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
 
-    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/16384x512/solutions/${i}.pals.sol ${DIMENSION} \
-        > ${BASE_PATH}/16384x512/solutions/${i}.pals.makespan
+    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+        
+    echo "=== PALS+pMINMIN 12 ==============================================="
+    NAME="pals+pminmin+12"
+    ID=3
+    THREADS=12
+    
+    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+
+    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+
+    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+
+    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+
+    echo "=== PALS+pMINMIN 10 ==============================================="
+    NAME="pals+pminmin+10"
+    ID=3
+    THREADS=10
+    
+    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+
+    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+
+    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+
+    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+
 done
