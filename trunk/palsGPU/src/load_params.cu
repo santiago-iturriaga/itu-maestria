@@ -47,6 +47,7 @@ int load_params(int argc, char **argv, struct params *input) {
         input->gpu_device = 0;
         input->timeout = INT_MAX;
         input->target_makespan = -1;
+        input->init_algorithm = pMinMin;
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
@@ -76,6 +77,29 @@ int load_params(int argc, char **argv, struct params *input) {
             #endif
         }
 
+        if (argc >= 10) {
+            input->init_algorithm = atoi(argv[9]);
+            #if defined(DEBUG)
+                fprintf(stdout, "[PARAMS] init algorithm: %d", input->init_algorithm);
+            #endif
+            
+            #if defined(DEBUG)
+                if (input->init_algorithm == PALS_Serial) {
+                    fprintf(stdout, " (PALS_Serial)\n");
+                } else if (input->init_algorithm == PALS_GPU) {
+                    fprintf(stdout, " (PALS_GPU)\n");
+                } else if (input->init_algorithm == PALS_GPU_randTask) {
+                    fprintf(stdout, " (PALS_GPU_randTask)\n");
+                } else if (input->init_algorithm == pMinMin) {
+                    fprintf(stdout, " (pMin-Min)\n");
+                } else if (input->init_algorithm == MinMin) {
+                    fprintf(stdout, " (Min-Min)\n");
+                } else if (input->init_algorithm == MCT) {
+                    fprintf(stdout, " (MCT)\n");
+                }
+            #endif
+        }
+        
         // Input validation.
         if (input->tasks_count < 1) {
             fprintf(stderr, "[ERROR] Invalid tasks count.\n");
@@ -95,7 +119,7 @@ int load_params(int argc, char **argv, struct params *input) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");
-        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan]\n\n", argv[0]);
+        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan] [init algorithm]\n\n", argv[0]);
         fprintf(stdout, "       Algorithm = 0 Serial full\n");
         fprintf(stdout, "                   1 GPU full\n");
         fprintf(stdout, "                   2 GPU rand. task\n");

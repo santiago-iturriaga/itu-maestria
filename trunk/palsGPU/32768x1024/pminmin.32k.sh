@@ -14,11 +14,11 @@ do
     echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 3 ${RAND} 0 120 1> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.sol) 2> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.time"
 
     time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 3 ${RAND} 0 120 \
-	1> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.sol) \
-	2> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.time
+        1> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.sol) \
+        2> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.time
 
     echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.sol ${DIMENSION} > ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.makespan"
 
     ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.sol ${DIMENSION} \
-	> ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.makespan
+        > ${BASE_PATH}/32768x1024/solutions/${i}.pminmin.makespan
 done

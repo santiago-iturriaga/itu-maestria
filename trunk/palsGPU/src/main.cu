@@ -51,6 +51,9 @@ int main(int argc, char** argv)
         fprintf(stdout, "[DEBUG] Loading problem instance...\n");
     #endif
 
+    timespec ts_loading;
+    clock_gettime(CLOCK_REALTIME, &ts_loading);
+
     // Se pide el espacio de memoria para la matriz de ETC.
     struct matrix *etc_matrix = create_etc_matrix(&input);
 
@@ -59,6 +62,14 @@ int main(int argc, char** argv)
         fprintf(stderr, "[ERROR] Ocurrió un error leyendo el archivo de instancia.\n");
         return EXIT_FAILURE;
     }
+
+    timespec ts_loading_end;
+    clock_gettime(CLOCK_REALTIME, &ts_loading_end);
+
+    double elapsed;
+    elapsed = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
+        + ((ts_loading_end.tv_nsec - ts_loading.tv_nsec) / 1000.0);
+    fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed);
 
     // =============================================================
     // Create empty solution
@@ -152,21 +163,25 @@ int main(int argc, char** argv)
         timming_start(ts_mct);
         // Timming -----------------------------------------------------
 
-        #if defined(INIT_WITH_MCT)
+        if (input.init_algorithm == MCT) {
             compute_mct(etc_matrix, current_solution);
-        #endif
-        #if defined(INIT_WITH_MINMIN)
+        } else if (input.init_algorithm == MinMin) {
             compute_minmin(etc_matrix, current_solution);
-        #endif
-        #if defined(INIT_WITH_PMINMIN)
-            int thread_count;
-            thread_count = etc_matrix->machines_count >> 5;
+        } else if (input.init_algorithm == pMinMin) {
+            int thread_count = -1;
             
-            if (thread_count == 0) thread_count = 1;
+            int aux_tasks = etc_matrix->tasks_count;
+            while(aux_tasks > 0) {
+                aux_tasks = aux_tasks >> 1;
+                thread_count++;
+            }
+            thread_count = thread_count + (thread_count - 8);
+            
+            if (thread_count <= 0) thread_count = 1;
             if (thread_count > MAX_THREAD_COUNT) thread_count = MAX_THREAD_COUNT;
             
             compute_pminmin(etc_matrix, current_solution, thread_count);
-        #endif
+        }
 
         // Timming -----------------------------------------------------
         timming_end(">> MCT Time", ts_mct);
