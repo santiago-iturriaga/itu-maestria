@@ -173,14 +173,7 @@ int main(int argc, char** argv)
             fprintf(stdout, "INIT|MINMIN\n");
             compute_minmin(etc_matrix, current_solution);
         } else if (input.init_algorithm == pMinMin) {
-            int thread_count = -1;
-            
-            int aux_tasks = etc_matrix->tasks_count;
-            while(aux_tasks > 0) {
-                aux_tasks = aux_tasks >> 1;
-                thread_count++;
-            }
-            thread_count = thread_count + (thread_count - 8);
+            int thread_count = input.init_algorithm_threads;
             
             if (thread_count <= 0) thread_count = 1;
             if (thread_count > MAX_THREAD_COUNT) thread_count = MAX_THREAD_COUNT;

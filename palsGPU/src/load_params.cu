@@ -48,6 +48,7 @@ int load_params(int argc, char **argv, struct params *input) {
         input->timeout = INT_MAX;
         input->target_makespan = -1;
         input->init_algorithm = pMinMin;
+        input->init_algorithm = 1;
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
@@ -97,6 +98,13 @@ int load_params(int argc, char **argv, struct params *input) {
                 } else if (input->init_algorithm == MCT) {
                     fprintf(stdout, " (MCT)\n");
                 }
+            #endif
+        }
+
+        if (argc >= 11) {
+            input->init_algorithm_threads = atoi(argv[10]);
+            #if defined(DEBUG) 
+                fprintf(stdout, "[PARAMS] init algorithm threads: %d s\n", input->init_algorithm_threads);
             #endif
         }
         
