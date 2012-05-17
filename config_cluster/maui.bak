@@ -114,7 +114,7 @@ CLASSCFG[big_jobs]      PRIORITY=1
 CLASSCFG[big_jobs]      FSTARGET=15.0
 CLASSCFG[quick_jobs]    PRIORITY=100
 
-CLASSCFG[quick_jobs]    PLIST=quick
+CLASSCFG[quick_jobs]    PLIST=quick,general&
 
 #CLASSCFG[publica]   PRIORITY=1
 #CLASSCFG[publica]   FSTARGET=25.0
