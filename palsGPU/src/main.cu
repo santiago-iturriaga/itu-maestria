@@ -195,7 +195,7 @@ int main(int argc, char** argv)
         double elapsed_init;
         elapsed_init = ((ts_init_end.tv_sec - ts_init.tv_sec) * 1000000.0) 
             + ((ts_init_end.tv_nsec - ts_init.tv_nsec) / 1000.0);
-        fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed_init);
+        fprintf(stderr, "INIT(microsegs)|%f\n", elapsed_init);
 
         // Timming -----------------------------------------------------
         timming_end(">> MCT Time", ts_mct);

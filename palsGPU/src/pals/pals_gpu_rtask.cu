@@ -1557,7 +1557,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         && (timeout_end == 0) && (target_makespan_found == 0); iter++) {
             
         //#if defined(DEBUG)
-            fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
+            //fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
         //#endif
 
         // ==============================================================================
@@ -1679,9 +1679,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
             timeout_end = 1;
         }
-        
-        fprintf(stderr, "error...\n");
-        fprintf(stdout, "no error...\n");
         
         if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
             last_report = ts_timeout_current.tv_sec;
