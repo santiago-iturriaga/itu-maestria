@@ -130,7 +130,7 @@ sudo qmgr -c "set node node37.cluster.fing properties += cpu24"
 sudo qmgr -c "set node node37.cluster.fing properties += ram72"
 sudo qmgr -c "set node node37.cluster.fing properties += class3"
 
-sudo qmgr -c "set node node38.cluster.fing properties = all"
+sudo qmgr -c "set node node38.cluster.fing properties = quick"
 sudo qmgr -c "set node node38.cluster.fing properties += cpu"
 sudo qmgr -c "set node node38.cluster.fing properties += cpu24"
 sudo qmgr -c "set node node38.cluster.fing properties += ram72"
