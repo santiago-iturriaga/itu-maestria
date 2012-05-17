@@ -1560,6 +1560,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
             //fprintf(stdout, "[INFO] Iteracion %d =====================\n", iter);
         //#endif
 
+        if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
+            last_report = ts_timeout_current.tv_sec;
+            fprintf(stderr, "MAKESPAN|%lu|%f\n", ts_timeout_current.tv_sec, current_solution->makespan);
+        } /*else {
+            fprintf(stderr, "%l\n", ts_timeout_current.tv_sec - last_report);
+        }*/
+
         // ==============================================================================
         // Sorteo de numeros aleatorios.
         // ==============================================================================
@@ -1679,13 +1686,6 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         if ((ts_timeout_current.tv_sec - ts_timeout_start.tv_sec) > input.timeout) {
             timeout_end = 1;
         }
-        
-        if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
-            last_report = ts_timeout_current.tv_sec;
-            fprintf(stderr, "MAKESPAN|%lu|%f\n", ts_timeout_current.tv_sec, current_solution->makespan);
-        } /*else {
-            fprintf(stderr, "%l\n", ts_timeout_current.tv_sec - last_report);
-        }*/
     }
 
     // Timming -----------------------------------------------------
