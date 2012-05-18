@@ -334,18 +334,12 @@ void bga_show_prob_vector_state(struct bga_state *state) {
 
             long sum = 0;
 
-            for (int i = 0; i < probs_to_show_count; i++) {
-                float aux;
-                aux = (float)probs_to_show[i] / (float)state->population_size;
-                
-                fprintf(stdout, " %d (%.4f)", probs_to_show[i], aux);
+            for (int i = 0; i < probs_to_show_count; i++) {               
+                fprintf(stdout, " %d (%.4f)", probs_to_show[i], (float)probs_to_show[i] / (float)state->population_size);
                 sum += probs_to_show[i];
             }
-            
-            float percent;
-            percent = sum / (probs_to_show_count * state->population_size);
-            
-            fprintf(stdout, "... Total [%d]: %ld ( %f )\n", probs_to_show_count, sum, percent);
+                      
+            fprintf(stdout, "... Total [%d]: %ld ( %f )\n", probs_to_show_count, sum, (float)sum / (float)(probs_to_show_count * state->population_size));
         }
 
         vector_sum_int(state->gpu_prob_vectors[prob_vector_number],
@@ -356,9 +350,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     accumulated_probability = vector_sum_int_get(
         state->gpu_int32_vector_sum[0], 
         state->cpu_int32_vector_sum[0]);
-    float aux;
-    aux = accumulated_probability / state->max_prob_sum;
-    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", aux);
+    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", 
+        (float)accumulated_probability / (float)state->max_prob_sum);
 
     #if defined(DEBUG)
     ccudaEventRecord(end, 0);
