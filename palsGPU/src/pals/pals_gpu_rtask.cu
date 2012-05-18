@@ -726,6 +726,9 @@ __global__ void pals_compute_makespan(
 void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
     struct pals_gpu_rtask_instance &instance) {
 
+    timespec ts_loading;
+    clock_gettime(CLOCK_REALTIME, &ts_loading);
+
     // Asignación del paralelismo del algoritmo.
     instance.blocks = PALS_GPU_RTASK__BLOCKS;
     instance.threads = PALS_GPU_RTASK__THREADS;
@@ -865,6 +868,16 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
     timming_end(".. gpu_machine_compute_time", ts_4);
 
     // =========================================================================
+
+    cudaThreadSynchronize();
+
+    timespec ts_loading_end;
+    clock_gettime(CLOCK_REALTIME, &ts_loading_end);
+
+    double elapsed_loading;
+    elapsed_loading = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
+        + ((ts_loading_end.tv_nsec - ts_loading.tv_nsec) / 1000.0);
+    fprintf(stderr, "GPU_LOADING(s)|%f\n", elapsed_loading/1000000);
 }
 
 void pals_gpu_rtask_finalize(struct pals_gpu_rtask_instance &instance) {
@@ -1562,7 +1575,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
         if ((ts_timeout_current.tv_sec - last_report) > REPORT_EVERY_SECONDS) {
             last_report = ts_timeout_current.tv_sec;
-            fprintf(stderr, "MAKESPAN|%lu|%f\n", ts_timeout_current.tv_sec, current_solution->makespan);
+            fprintf(stderr, "MAKESPAN|%lu|%d|%f\n", ts_timeout_current.tv_sec, iter, current_solution->makespan);
         } /*else {
             fprintf(stderr, "%l\n", ts_timeout_current.tv_sec - last_report);
         }*/
