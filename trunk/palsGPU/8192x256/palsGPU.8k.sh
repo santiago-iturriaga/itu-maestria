@@ -52,36 +52,53 @@ do
     ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
         > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
 
-    echo "=== PALS+pMINMIN 10 ==============================================="
-    NAME="pals+pminmin+10"
-    ID=3
-    THREADS=10
+    #echo "=== PALS+pMINMIN 10 ==============================================="
+    #NAME="pals+pminmin+10"
+    #ID=3
+    #THREADS=10
     
-    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+    #echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
 
-    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
-        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
-        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+    #time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        #1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        #2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
 
-    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+    #echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
 
-    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
-        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+    #${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        #> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
 
-    echo "=== PALS+pMINMIN 8 ==============================================="
-    NAME="pals+pminmin+8"
-    ID=3
-    THREADS=8
+    #echo "=== PALS+pMINMIN 8 ==============================================="
+    #NAME="pals+pminmin+8"
+    #ID=3
+    #THREADS=8
     
-    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+    #echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
 
-    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
-        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
-        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+    #time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        #1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        #2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
 
-    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+    #echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
 
-    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
-        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+    #${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        #> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
 
 done
+
+echo "=== PALS+MINMIN ==============================================="
+i=1
+NAME="pals+minmin"
+ID=4
+THREADS=1
+
+echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+
+time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+    1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+    2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+
+echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+
+${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+    > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
