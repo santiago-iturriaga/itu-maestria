@@ -774,7 +774,7 @@ void bga_free(struct bga_state *state) {
             
         fprintf(stderr, "[INFO] Freeing vector_sum_bit_free[%d]\n", vector_number);
         vector_sum_bit_free(
-            state->cpu_int_vector_sum[vector_number], 
+            state->gpu_int_vector_sum[vector_number], 
             state->cpu_int_vector_sum[vector_number]);
     }
     
