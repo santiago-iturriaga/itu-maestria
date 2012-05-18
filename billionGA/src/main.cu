@@ -108,6 +108,12 @@ int main(int argc, char **argv) {
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
             current_iteration++;
 
+            if (th_id == 0) {
+                if (current_iteration % 1 == 0) {
+                    fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+                }
+            }
+
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
             #if defined(DEBUG)
                 #pragma omp barrier
@@ -126,8 +132,6 @@ int main(int argc, char **argv) {
 
             if (th_id == 0) {
                 if (current_iteration % 1 == 0) {
-                    fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
-                    
                     float aux;                   
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
                     
