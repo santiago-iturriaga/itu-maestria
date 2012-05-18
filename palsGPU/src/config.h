@@ -14,7 +14,7 @@
 #define MULTI_STEP_CPU
 
 #define MAX_THREAD_COUNT        12
-#define REPORT_EVERY_SECONDS    10
+#define REPORT_EVERY_SECONDS    1
 
 #define PALS_COUNT              7864318
 #define PALS_CONVERGENCE        7864318

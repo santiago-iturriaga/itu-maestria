@@ -76,7 +76,7 @@ if __name__ == '__main__':
         
         print "%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
             mct_make, minmin_make, pminmin_make, pals_mct_make, pals_pminmin_make, \
-            100-(mct_make * 100 / mct_make), \
+            100-(mct_make * 100 / minmin_make), \
             100-(pminmin_make * 100 / minmin_make), \
             100-(pals_mct_make * 100 / minmin_make), \
             100-(pals_pminmin_make * 100 / minmin_make))
