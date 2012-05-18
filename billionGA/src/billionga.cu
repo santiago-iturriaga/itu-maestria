@@ -350,7 +350,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     accumulated_probability = vector_sum_int_get(
         state->gpu_int32_vector_sum[0], 
         state->cpu_int32_vector_sum[0]);
-    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", 
+    fprintf(stdout, "[INFO] Prob. vector accumulated probability (%ld / %ld): %f\n", 
+        accumulated_probability, state->max_prob_sum, 
         (float)accumulated_probability / (float)state->max_prob_sum);
 
     #if defined(DEBUG)
