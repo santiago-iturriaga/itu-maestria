@@ -762,14 +762,17 @@ void bga_free(struct bga_state *state) {
         }
         free(state->gpu_samples[sample_number]);
     }
+       
     free(state->gpu_samples);
     free(state->samples_fitness);
 
     for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
+        fprintf(stderr, "[INFO] Freeing vector_sum_float_free[%d]\n", vector_number);
         vector_sum_float_free(
             state->gpu_float_vector_sum[vector_number], 
             state->cpu_float_vector_sum[vector_number]);
             
+        fprintf(stderr, "[INFO] Freeing vector_sum_bit_free[%d]\n", vector_number);
         vector_sum_bit_free(
             state->cpu_int_vector_sum[vector_number], 
             state->cpu_int_vector_sum[vector_number]);
