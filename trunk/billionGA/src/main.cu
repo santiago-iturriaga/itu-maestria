@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
         if (th_id == 0) {
             float final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
             fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", final_acc_prob);
-            fprintf(stdout, "\n\n[FINAL] Success probability: %.4f \%\n", final_acc_prob * 100 / problem_state.number_of_bits);
+            fprintf(stdout, "            Success probability    : %.4f\%\n", final_acc_prob * 100 / problem_state.number_of_bits);
             
         }
 
