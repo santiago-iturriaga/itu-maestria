@@ -674,7 +674,7 @@ void cpu_model_update(float *gpu_prob_vector, int prob_vector_size,
         new_acc_prob += prob_vector[i];
     }
     
-    fprintf(stdout, "[DEBUG] Acc. prob. => Current %f, New %f (delta: %f)\n", 
+    fprintf(stdout, "[DEBUG][CPU] Acc. prob. => Current %f, New %f (delta: %f)\n", 
         current_acc_prob, new_acc_prob, new_acc_prob - current_acc_prob);
         
     free(prob_vector);
@@ -776,6 +776,9 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
 
     best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
     worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
+
+    cpu_model_update(state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+        best_sample, worst_sample, state->update_value);
 
     kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
         state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
