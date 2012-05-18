@@ -8,8 +8,8 @@
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
-//#define SHOW_PROB_VECTOR_BITS   16
-#define SHOW_PROB_VECTOR_BITS   8388608
+#define SHOW_PROB_VECTOR_BITS   16
+//#define SHOW_PROB_VECTOR_BITS   8388608
 #define SHOW_SAMPLE_BITS        128
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
