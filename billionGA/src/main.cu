@@ -109,6 +109,9 @@ int main(int argc, char **argv) {
             if (th_id == 0) {
                 if (current_iteration % 100 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+                    
+                    bga_get_part_accumulated_prob(&problem_state, th_id);
+                    fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
                 }
             }
 
@@ -132,10 +135,6 @@ int main(int argc, char **argv) {
             //if (th_id == 0) bga_show_prob_vector_state(&problem_state);
             //#endif
 
-            if (termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
-                bga_get_part_accumulated_prob(&problem_state, th_id);
-            }
-
             #if !defined(DEBUG) && defined(INFO)
                 if (!(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
                     bga_get_part_accumulated_prob(&problem_state, th_id);
@@ -151,6 +150,8 @@ int main(int argc, char **argv) {
                 }
             #endif
         }
+
+        bga_get_part_accumulated_prob(&problem_state, th_id);
 
         #pragma omp barrier
         if (th_id == 0) {
