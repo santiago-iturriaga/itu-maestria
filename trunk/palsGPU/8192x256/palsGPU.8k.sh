@@ -12,18 +12,20 @@ mkdir -p ${BASE_PATH}/8192x256/solutions
 #TIMEOUT=300
 TIMEOUT=900
 
-TARGET_M=0
-#TARGET_M=(1840 )
+TARGET_M_ARRAY=(1845 1889 1894 1890 1859 1863 1897 1874 1871 1865 1840 1867 1895  1884 1851 1846 1874 1862  1892 1869)
 
-MAX_ITER=20000
-#MAX_ITER=1048576
+#MAX_ITER=20000
+MAX_ITER=1048576
 
 for (( i=1; i<21; i++ ))
 do
-    set -x
+    #TARGET_M=0
+    TARGET_M=${TARGET_M_ARRAY[i-1]}
     
     RAND=$RANDOM
     echo "Random ${RAND}"
+
+    set -x
 
     echo "=== PALS+MCT ==============================================="
     NAME="pals+mct"

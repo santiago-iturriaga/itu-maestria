@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     for instancia in range(21)[1:]:
         resultados[instancia] = {}
-        
+
         for a in algoritmos:
             base_path = 'solutions/' + str(instancia) + '.' + a
             print base_path
@@ -31,7 +31,7 @@ if __name__ == '__main__':
                         dtime_mins = int(dtime_str.split('m')[0].strip())
                         dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
                         dtime = dtime_mins * 60 + dtime_secs
-                        
+
                     if line.split('|')[0].strip() == 'LOADING(s)':
                         host_init_time = float(line.split('|')[1].strip())
 
@@ -48,8 +48,8 @@ if __name__ == '__main__':
                         milestone_time = int(line.split('|')[1].strip())
                         milestone_iteration = int(line.split('|')[2].strip())
                         milestone_value = float(line.split('|')[3].strip())
-                        
-                        milestones.append((milestone_time, milestone_value))
+
+                        milestones.append((milestone_time, milestone_iteration, milestone_value))
 
                 resultados[instancia][a] = (dmake, dtime, host_init_time, \
                     sol_init_type, sol_init_time, device_init_time, milestones)
@@ -59,33 +59,42 @@ if __name__ == '__main__':
     print resultados
 
     print "====== Tabla de makespan ======"
-    print "Instancia,MinMin,PALS MCT,PALS pMinMin,Improv. MCT vs MinMin,Improv. pMinMin vs MinMin,Improv. PALS MCT vs MinMin,Improv. PALS pMinMin vs MinMin"
+    print "Instancia,MinMin,PALS MCT,PALS pMinMin,Improv. PALS MCT vs MinMin,Improv. PALS pMinMin vs MinMin"
     for instancia in range(21)[1:]:
         mct_make = resultados[instancia]['mct'][0]
         minmin_make = resultados[instancia]['minmin'][0]
         pminmin_make = resultados[instancia]['pminmin'][0]
         pals_mct_make = resultados[instancia]['pals+mct'][0]
         pals_pminmin_make = resultados[instancia]['pals+pminmin+12'][0]
-        
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
             minmin_make, pals_mct_make, pals_pminmin_make, \
-            100-(mct_make * 100 / minmin_make), \
-            100-(pminmin_make * 100 / minmin_make), \
             100-(pals_mct_make * 100 / minmin_make), \
             100-(pals_pminmin_make * 100 / minmin_make))
 
-    #print "====== Tabla de tiempos (segundos) ======"
-    #print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
-    #for instancia in range(21)[1:]:
-        #(dmake, dtime, host_init_time, sol_init_type, sol_init_time, device_init_time, milestones)
+    print "====== Tabla de tiempos (segundos) ======"
+    print "Instancia,MinMin,Speedup PALS MCT,Speedup PALS pMinMin"
+    for instancia in range(21)[1:]:
+        minmin_time = resultados[instancia]['minmin'][1]
+        pals_mct_time = resultados[instancia]['pals+mct'][1]
+        pals_pminmin_time = resultados[instancia]['pals+pminmin+12'][1]
+
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+            minmin_time, pals_pminmin_time, pals_mct_time, \
+            minmin_time / pals_pminmin_time, \
+            minmin_time / pals_mct_time)
+
+    print "====== Ejemplo evolución ======"
+    print "Iteracion,PALS MCT,PALS pMinMin"
+    pals_mct_miles = resultados[1]['pals+mct'][6]
+    pals_pminmin_miles = resultados[1]['pals+pminmin+12'][6]
+
+    tope = len(pals_mct_miles)
+    if len(pals_pminmin_miles) < tope: tope = len(pals_pminmin_miles)
+
+    for index in range(tope):
+        (mct_milestone_time, mct_milestone_iteration, mct_milestone_value) = pals_mct_miles[index]
+        (pminmin_milestone_time, pminmin_milestone_iteration, pminmin_milestone_value) = pals_pminmin_miles[index]
         
-        #mct_make = resultados[instancia]['mct'][0]
-        #minmin_make = resultados[instancia]['minmin'][0]
-        #pminmin_make = resultados[instancia]['pminmin'][0]
-        #pals_mct_make = resultados[instancia]['pals+mct'][0]
-        #pals_pminmin_make = resultados[instancia]['pals+pminmin+12'][0]
-        
-        #print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
-            #minmin_time, pminmin_time, pals_time, \
-            #100-(pminmin_time * 100 / minmin_time), \
-            #100-(pals_time * 100 / minmin_time))
+        print "%d,%.1f,%.1f" % (mct_milestone_iteration, \
+            mct_milestone_value, pminmin_milestone_value)

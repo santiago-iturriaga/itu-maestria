@@ -12,18 +12,20 @@ TIMEOUT=30
 #TIMEOUT=300
 #TIMEOUT=900
 
-TARGET_M=0
-#TARGET_M=1901
+TARGET_M_ARRAY=(1934 1940 1949 1922 1904 1901 1945 1903 1937 1935 1937 1916 1911 1927 1944 1939 1933 1929 1910 1941)
 
-MAX_ITER=20000
-#MAX_ITER=1048576
+#MAX_ITER=20000
+MAX_ITER=1048576
 
 for (( i=1; i<21; i++ ))
 do
-    set -x
+    #TARGET_M=0
+    TARGET_M=${TARGET_M_ARRAY[i-1]}
     
     RAND=$RANDOM
     echo "Random ${RAND}"
+
+    set -x
 
     echo "=== PALS+MCT ==============================================="
     NAME="pals+mct"
