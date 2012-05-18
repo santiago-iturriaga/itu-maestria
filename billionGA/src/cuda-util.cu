@@ -52,6 +52,29 @@ void vector_set_int(int *gpu_vector, int size, int value) {
     kern_vector_set_int<<< VECTOR_SET_BLOCKS, VECTOR_SET_THREADS >>>(gpu_vector, size, value);
 }
 
+/*
+ * Establece el valor de todos los elementos de un vector a "value".
+ */
+__global__ void kern_vector_set_long(long *gpu_vector, int size, int value) {
+    int bits_per_loop = gridDim.x * blockDim.x;
+    
+    int loop_count = size / bits_per_loop;
+    if (size % bits_per_loop > 0) loop_count++;
+        
+    for (int i = 0; i < loop_count; i++) {
+        int current_position = (i * bits_per_loop) + (blockIdx.x * blockDim.x + threadIdx.x);
+        
+        if (current_position < size) {
+            gpu_vector[current_position] = value;
+        }
+        
+        __syncthreads();
+    }
+}
+void vector_set_long(long *gpu_vector, int size, int value) {
+    kern_vector_set_long<<< VECTOR_SET_BLOCKS, VECTOR_SET_THREADS >>>(gpu_vector, size, value);
+}
+
 // ------------------------------------------------------------------
 
 void vector_sum_float_alloc(float **gpu_partial_sum, float **cpu_partial_sum) {      
@@ -231,6 +254,89 @@ int vector_sum_bit_get(int *gpu_partial_sum, int *cpu_partial_sum) {
 }
 
 void vector_sum_bit_free(int *gpu_partial_sum, int *cpu_partial_sum) {
+    ccudaFree(gpu_partial_sum);
+    free(cpu_partial_sum);
+}
+
+// ------------------------------------------------------------------
+
+/*
+ * Reduce un array sumando cada de sus int.
+ * gpu_output_data debe tener un elemento por bloque del kernel.
+ */
+__global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int bit_size)
+{
+    __shared__ long sdata[VECTOR_SUM_SHARED_MEM];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int bid = blockIdx.x;
+    unsigned int int_size = bit_size >> 5;
+    
+    unsigned int adds_per_loop = gridDim.x * blockDim.x;
+    unsigned int loops_count = int_size / adds_per_loop;
+    if (int_size % adds_per_loop > 0) loops_count++;
+
+    unsigned int starting_position;
+    
+    for (unsigned int loop = 0; loop < loops_count; loop++) {
+        // Perform first level of reduction, reading from global memory, writing to shared memory
+        starting_position = adds_per_loop * loop;
+        
+        unsigned int i = starting_position + (bid * blockDim.x) + tid;
+
+        long sum = 0;
+        
+        if (i < int_size) {
+            sum += gpu_input_data[i];
+            sdata[tid] = sum;
+        } else {
+            sdata[tid] = 0;
+        }
+        
+        __syncthreads();
+
+        // do reduction in shared mem
+        for(unsigned int s = blockDim.x/2; s > 0; s >>= 1) 
+        {
+            if (tid < s) 
+            {
+                sdata[tid] = sum = sum + sdata[tid + s];
+            }
+            __syncthreads();
+        }
+
+        // write result for this block to global mem 
+        if (tid == 0) gpu_output_data[blockIdx.x] += sdata[0];
+    
+        __syncthreads();
+    }
+}
+void vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int size) {
+    kern_vector_sum_int<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>(gpu_input_data, gpu_output_data, size);
+}
+
+void vector_sum_int_alloc(long **gpu_partial_sum, long **cpu_partial_sum) {      
+    ccudaMalloc((void**)gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS);
+    *cpu_partial_sum = (long*)malloc(sizeof(long) * VECTOR_SUM_BLOCKS);
+}
+
+void vector_sum_int_init(long *gpu_partial_sum) {      
+    kern_vector_set_long<<< 1, VECTOR_SUM_BLOCKS >>>(
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+}
+
+long vector_sum_int_get(long *gpu_partial_sum, long *cpu_partial_sum) {   
+    long accumulated_sum = 0;
+    
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        accumulated_sum += cpu_partial_sum[i];
+    }
+    
+    return accumulated_sum;
+}
+
+void vector_sum_int_free(long *gpu_partial_sum, long *cpu_partial_sum) {
     ccudaFree(gpu_partial_sum);
     free(cpu_partial_sum);
 }
