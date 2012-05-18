@@ -336,7 +336,7 @@ void bga_show_prob_vector_state(struct bga_state *state) {
 
             for (int i = 0; i < probs_to_show_count; i++) {
                 float aux;
-                aux = probs_to_show[i] / (probs_to_show_count * state->population_size);
+                aux = probs_to_show[i] / state->population_size;
                 
                 fprintf(stdout, " %d (%.4f)", probs_to_show[i], aux);
                 sum += probs_to_show[i];
