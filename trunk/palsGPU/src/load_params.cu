@@ -8,40 +8,40 @@
 int load_params(int argc, char **argv, struct params *input) {
     if (argc >= 5) {
         input->instance_path = argv[1];
-        #if defined(DEBUG)
-            fprintf(stdout, "[PARAMS] instance path: %s\n", input->instance_path);
-        #endif
+        //#if defined(DEBUG)
+            fprintf(stderr, "[PARAMS] instance path: %s\n", input->instance_path);
+        //#endif
 
         input->tasks_count = atoi(argv[2]);
-        #if defined(DEBUG)
-            fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
-        #endif
+        //#if defined(DEBUG)
+            fprintf(stderr, "[PARAMS] tasks count: %d\n", input->tasks_count);
+        //#endif
         
         input->machines_count = atoi(argv[3]);
-        #if defined(DEBUG)
-            fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
-        #endif
+        //#if defined(DEBUG)
+            fprintf(stderr, "[PARAMS] machines count: %d\n", input->machines_count);
+        //#endif
         
         input->algorithm = atoi(argv[4]);
-        #if defined(DEBUG)
-            fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
-        #endif
+        //#if defined(DEBUG)
+            fprintf(stderr, "[PARAMS] algorithm: %d", input->algorithm);
+        //#endif
         
-        #if defined(DEBUG)
+        //#if defined(DEBUG)
             if (input->algorithm == PALS_Serial) {
-                fprintf(stdout, " (PALS_Serial)\n");
+                fprintf(stderr, " (PALS_Serial)\n");
             } else if (input->algorithm == PALS_GPU) {
-                fprintf(stdout, " (PALS_GPU)\n");
+                fprintf(stderr, " (PALS_GPU)\n");
             } else if (input->algorithm == PALS_GPU_randTask) {
-                fprintf(stdout, " (PALS_GPU_randTask)\n");
+                fprintf(stderr, " (PALS_GPU_randTask)\n");
             } else if (input->algorithm == pMinMin) {
-                fprintf(stdout, " (pMin-Min)\n");
+                fprintf(stderr, " (pMin-Min)\n");
             } else if (input->algorithm == MinMin) {
-                fprintf(stdout, " (Min-Min)\n");
+                fprintf(stderr, " (Min-Min)\n");
             } else if (input->algorithm == MCT) {
-                fprintf(stdout, " (MCT)\n");
+                fprintf(stderr, " (MCT)\n");
             }
-        #endif
+        //#endif
 
         input->seed = 0;
         input->gpu_device = 0;
@@ -52,61 +52,61 @@ int load_params(int argc, char **argv, struct params *input) {
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
-            #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
-            #endif
         }
+        //#if defined(DEBUG) 
+            fprintf(stderr, "[PARAMS] seed: %d\n", input->seed);
+        //#endif
 
         if (argc >= 7) {
             input->gpu_device = atoi(argv[6]);
-            #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] gpu device: %d\n", input->gpu_device);
-            #endif
         }
+        //#if defined(DEBUG) 
+            fprintf(stderr, "[PARAMS] gpu device: %d\n", input->gpu_device);
+        //#endif
         
         if (argc >= 8) {
             input->timeout = atoi(argv[7]);
-            #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] timeout: %d s\n", input->timeout);
-            #endif
         }
+        //#if defined(DEBUG) 
+            fprintf(stderr, "[PARAMS] timeout: %d s\n", input->timeout);
+        //#endif
         
         if (argc >= 9) {
             input->target_makespan = atof(argv[8]);
-            #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] target makespan: %f\n", input->target_makespan);
-            #endif
         }
+        //#if defined(DEBUG) 
+            fprintf(stderr, "[PARAMS] target makespan: %f\n", input->target_makespan);
+        //#endif
 
         if (argc >= 10) {
             input->init_algorithm = atoi(argv[9]);
-            #if defined(DEBUG)
-                fprintf(stdout, "[PARAMS] init algorithm: %d", input->init_algorithm);
-            #endif
-            
-            #if defined(DEBUG)
-                if (input->init_algorithm == PALS_Serial) {
-                    fprintf(stdout, " (PALS_Serial)\n");
-                } else if (input->init_algorithm == PALS_GPU) {
-                    fprintf(stdout, " (PALS_GPU)\n");
-                } else if (input->init_algorithm == PALS_GPU_randTask) {
-                    fprintf(stdout, " (PALS_GPU_randTask)\n");
-                } else if (input->init_algorithm == pMinMin) {
-                    fprintf(stdout, " (pMin-Min)\n");
-                } else if (input->init_algorithm == MinMin) {
-                    fprintf(stdout, " (Min-Min)\n");
-                } else if (input->init_algorithm == MCT) {
-                    fprintf(stdout, " (MCT)\n");
-                }
-            #endif
         }
+        //#if defined(DEBUG)
+            fprintf(stderr, "[PARAMS] init algorithm: %d", input->init_algorithm);
+        //#endif
+        
+        //#if defined(DEBUG)
+            if (input->init_algorithm == PALS_Serial) {
+                fprintf(stderr, " (PALS_Serial)\n");
+            } else if (input->init_algorithm == PALS_GPU) {
+                fprintf(stderr, " (PALS_GPU)\n");
+            } else if (input->init_algorithm == PALS_GPU_randTask) {
+                fprintf(stderr, " (PALS_GPU_randTask)\n");
+            } else if (input->init_algorithm == pMinMin) {
+                fprintf(stderr, " (pMin-Min)\n");
+            } else if (input->init_algorithm == MinMin) {
+                fprintf(stderr, " (Min-Min)\n");
+            } else if (input->init_algorithm == MCT) {
+                fprintf(stderr, " (MCT)\n");
+            }
+        //#endif
 
         if (argc >= 11) {
             input->init_algorithm_threads = atoi(argv[10]);
-            #if defined(DEBUG) 
-                fprintf(stdout, "[PARAMS] init algorithm threads: %d s\n", input->init_algorithm_threads);
-            #endif
         }
+        //#if defined(DEBUG) 
+            fprintf(stderr, "[PARAMS] init algorithm threads: %d s\n", input->init_algorithm_threads);
+        //#endif
         
         // Input validation.
         if (input->tasks_count < 1) {

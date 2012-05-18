@@ -170,7 +170,7 @@ int main(int argc, char** argv)
             fprintf(stderr, "INIT|MCT\n");
             compute_mct(etc_matrix, current_solution);
         } else if (input.init_algorithm == MinMin) {
-            fprintf(stdout, "INIT|MINMIN\n");
+            fprintf(stderr, "INIT|MINMIN\n");
             compute_minmin(etc_matrix, current_solution);
         } else if (input.init_algorithm == pMinMin) {
             int thread_count = input.init_algorithm_threads;
