@@ -28,12 +28,13 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 
     state->population_size = POPULATION_SIZE; //sqrt(3.1416) * sqrt(number_of_bits) * log10(number_of_bits) / 2;
     state->update_value = 1; // / state->population_size;
+    state->max_prob_sum = (number_of_bits * POPULATION_SIZE);
 
     //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] === Initializing Billion GA ====================\n");
         fprintf(stdout, "[INFO] Problem size   : %ld\n", number_of_bits);
-        fprintf(stdout, "[INFO] Population size: %f\n", state->population_size);
-        fprintf(stdout, "[INFO] Update value   : %f\n", state->update_value);
+        fprintf(stdout, "[INFO] Population size: %d\n", state->population_size);
+        fprintf(stdout, "[INFO] Update value   : %d\n", state->update_value);
         fprintf(stdout, "[INFO] Num. of vectors: %d\n", state->number_of_prob_vectors);
     //#endif
 
@@ -334,7 +335,10 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             long sum = 0;
 
             for (int i = 0; i < probs_to_show_count; i++) {
-                fprintf(stdout, " %d (%.4f)", probs_to_show[i], probs_to_show[i] / state->population_size);
+                float aux;
+                aux = probs_to_show[i] / (probs_to_show_count * state->population_size);
+                
+                fprintf(stdout, " %d (%.4f)", probs_to_show[i], aux);
                 sum += probs_to_show[i];
             }
             
@@ -352,8 +356,9 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     accumulated_probability = vector_sum_int_get(
         state->gpu_int32_vector_sum[0], 
         state->cpu_int32_vector_sum[0]);
-    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", accumulated_probability / 
-        (state->number_of_bits * state->population_size));
+    float aux;
+    aux = accumulated_probability / state->max_prob_sum;
+    fprintf(stdout, "[INFO] Prob. vector accumulated probability: %f\n", aux);
 
     #if defined(DEBUG)
     ccudaEventRecord(end, 0);

@@ -7,8 +7,9 @@ struct bga_state {
     long number_of_bits;
     int number_of_samples;
     
-    double population_size; 
-    double update_value; 
+    int population_size; 
+    int update_value; 
+    int max_prob_sum;
        
     // Probabilities =====
     int **gpu_prob_vectors;           // [VECTOR][BIT_PROBABILITY]
