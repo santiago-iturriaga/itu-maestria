@@ -109,13 +109,12 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             if (th_id == 0) {
-                if (current_iteration % 100 == 0) {
+                if (current_iteration % 1 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                     
-                    float aux;
-                    aux = bga_get_full_accumulated_prob(&problem_state);
+                    float aux;                   
+                    aux = bga_get_part_accumulated_prob(&problem_state, th_id);
                     
-                    bga_get_part_accumulated_prob(&problem_state, th_id);
                     fprintf(stdout, "Accumulated probability: %.4f (delta: %f)\n", aux, aux - current_acc_prob);
                     current_acc_prob = aux;
                 }
