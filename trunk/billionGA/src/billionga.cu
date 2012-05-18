@@ -632,6 +632,56 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
     #endif
 }
 
+void cpu_model_update(float *gpu_prob_vector, int prob_vector_size,
+    int *gpu_best_sample, int *gpu_worst_sample, float update_value) {
+
+    float *prob_vector = (float*)malloc(sizeof(float) * prob_vector_size);
+
+    ccudaMemcpy(prob_vector, gpu_prob_vector,
+        sizeof(uint32_t) * prob_vector_size, cudaMemcpyDeviceToHost);
+
+    float current_acc_prob = 0.0, new_acc_prob = 0.0;
+    for (int i = 0; i < prob_vector_size; i++) {
+        current_acc_prob += prob_vector[i];
+    }
+
+    int sample_size = prob_vector_size >> 5;
+    int *best_sample = (int*)malloc(sizeof(int) * sample_size);
+    int *worst_sample = (int*)malloc(sizeof(int) * sample_size);
+
+    ccudaMemcpy(best_sample, gpu_best_sample,
+        sizeof(uint32_t) * sample_size, cudaMemcpyDeviceToHost);
+        
+    ccudaMemcpy(worst_sample, gpu_worst_sample,
+        sizeof(uint32_t) * sample_size, cudaMemcpyDeviceToHost);
+
+    int best_sample_current_bit_value;
+    int worst_sample_current_bit_value;
+    int delta;
+
+    for (int i = 0; i < prob_vector_size; i++) {
+        int bit_pos = i & ((1 << 5)-1);
+        int int_pos = i >> 5;
+        
+        best_sample_current_bit_value = (best_sample[int_pos] & (1 << bit_pos)) >> bit_pos;
+        worst_sample_current_bit_value = (worst_sample[int_pos] & (1 << bit_pos)) >> bit_pos;
+
+        delta = best_sample_current_bit_value - worst_sample_current_bit_value;
+        prob_vector[i] += delta * update_value;
+    }
+    
+    for (int i = 0; i < prob_vector_size; i++) {
+        new_acc_prob += prob_vector[i];
+    }
+    
+    fprintf(stdout, "[DEBUG] Acc. prob. => Current %f, New %f (delta: %f)\n", 
+        current_acc_prob, new_acc_prob, new_acc_prob - current_acc_prob);
+        
+    free(prob_vector);
+    free(best_sample);
+    free(worst_sample);
+}
+
 __global__ void kern_model_update(float *gpu_prob_vector, int prob_vector_size,
     int *best_sample, int *worst_sample, float update_value) {
 
