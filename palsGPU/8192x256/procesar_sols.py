@@ -4,7 +4,7 @@ import os
 import math
 
 cantidad_instancias = 20
-algoritmos = ['pminmin', 'minmin', 'pals']
+algoritmos = ['pminmin', 'minmin', 'pals+mct', 'pals+pminmin+12']
 
 if __name__ == '__main__':
     resultados = {}
@@ -23,36 +23,56 @@ if __name__ == '__main__':
                 dtime_file = open(base_path + '.time')
                 dtime_lines = dtime_file.readlines()
 
-                if a == 'pals':
-                    dtime_line = dtime_lines[5].strip()
-                    dtime_str = dtime_line.split('\t')[1].strip()
-                    dtime_mins = int(dtime_str.split('m')[0].strip())
-                    dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-                    dtime = dtime_mins * 60 + dtime_secs
-                else:
-                    dtime_line = dtime_lines[1].strip()
-                    dtime_str = dtime_line.split('\t')[1].strip()
-                    dtime_mins = int(dtime_str.split('m')[0].strip())
-                    dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-                    dtime = dtime_mins * 60 + dtime_secs
+                milestones = []
 
-                resultados[instancia][a] = (dmake, dtime)
+                for line in dtime_lines:
+                    if line.split('\t')[0].strip() == 'real':
+                        dtime_str = line.split('\t')[1].strip()
+                        dtime_mins = int(dtime_str.split('m')[0].strip())
+                        dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
+                        dtime = dtime_mins * 60 + dtime_secs
+                        
+                    if line.split('|')[0].strip() == 'LOADING(s)':
+                        host_init_time = float(line.split('|')[1].strip())
+
+                    if line.split('|')[0].strip() == 'INIT':
+                        sol_init_type = line.split('|')[1].strip()
+
+                    if line.split('|')[0].strip() == 'INIT(s)':
+                        sol_init_time = float(line.split('|')[1].strip())
+
+                    if line.split('|')[0].strip() == 'GPU_LOADING(s)':
+                        device_init_time = float(line.split('|')[1].strip())
+
+                    if line.split('|')[0].strip() == 'MAKESPAN':
+                        milestone_time = int(line.split('|')[1].strip())
+                        milestone_iteration = int(line.split('|')[2].strip())
+                        milestone_value = float(line.split('|')[3].strip())
+                        
+                        milestones.append((milestone_time, milestone_value))
+
+                resultados[instancia][a] = (dmake, dtime, host_init_time, \
+                    sol_init_type, sol_init_time, device_init_time, milestones)
             else:
                 exit(-1)
 
     print resultados
 
     print "====== Tabla de makespan ======"
-    print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
+    print "Instancia,MinMin,PALS MCT,PALS pMinMin,Improv. MCT vs MinMin,Improv. pMinMin vs MinMin,Improv. PALS MCT vs MinMin,Improv. PALS pMinMin vs MinMin"
     for instancia in range(21)[1:]:
-        (minmin_make, minmin_time) = resultados[instancia]['minmin']
-        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
-        (pals_make, pals_time) = resultados[instancia]['pals']
+        mct_make = resultados[instancia]['mct'][0]
+        minmin_make = resultados[instancia]['minmin'][0]
+        pminmin_make = resultados[instancia]['pminmin'][0]
+        pals_mct_make = resultados[instancia]['pals+mct'][0]
+        pals_pminmin_make = resultados[instancia]['pals+pminmin+12'][0]
         
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
-            minmin_make, pminmin_make, pals_make, \
+        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+            minmin_make, pals_mct_make, pals_pminmin_make, \
+            100-(mct_make * 100 / minmin_make), \
             100-(pminmin_make * 100 / minmin_make), \
-            100-(pals_make * 100 / minmin_make))
+            100-(pals_mct_make * 100 / minmin_make), \
+            100-(pals_pminmin_make * 100 / minmin_make))
 
     print "====== Tabla de tiempos (segundos) ======"
     print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
