@@ -8,7 +8,8 @@
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
-#define SHOW_PROB_VECTOR_BITS   16
+//#define SHOW_PROB_VECTOR_BITS   16
+#define SHOW_PROB_VECTOR_BITS   8388608
 #define SHOW_SAMPLE_BITS        128
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
@@ -330,10 +331,13 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             ccudaMemcpy(probs_to_show, state->gpu_prob_vectors[prob_vector_number],
                 sizeof(uint32_t) * probs_to_show_count, cudaMemcpyDeviceToHost);
 
+            float sum = 0;
+
             for (int i = 0; i < probs_to_show_count; i++) {
                 fprintf(stdout, " %.4f", probs_to_show[i]);
+                sum += probs_to_show[i];
             }
-            fprintf(stdout, "...\n");
+            fprintf(stdout, "... Total [%d]: %f\n", probs_to_show_count, sum);
         }
 
         vector_sum_float(state->gpu_prob_vectors[prob_vector_number],
