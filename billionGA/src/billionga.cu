@@ -28,14 +28,13 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
     state->population_size = POPULATION_SIZE; //sqrt(3.1416) * sqrt(number_of_bits) * log10(number_of_bits) / 2;
     state->update_value = 1 / state->population_size;
 
-    #if defined(INFO) || defined(DEBUG)
+    //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] === Initializing Billion GA ====================\n");
         fprintf(stdout, "[INFO] Problem size   : %ld\n", number_of_bits);
         fprintf(stdout, "[INFO] Population size: %f\n", state->population_size);
         fprintf(stdout, "[INFO] Update value   : %f\n", state->update_value);
         fprintf(stdout, "[INFO] Num. of vectors: %d\n", state->number_of_prob_vectors);
-        
-    #endif
+    //#endif
 
     // === Pido la memoria =============================================================
     #if defined(INFO) || defined(DEBUG)
