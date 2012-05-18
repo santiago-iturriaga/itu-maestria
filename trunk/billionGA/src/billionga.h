@@ -11,7 +11,7 @@ struct bga_state {
     double update_value; 
        
     // Probabilities =====
-    float **gpu_prob_vectors;           // [VECTOR][BIT_PROBABILITY]
+    int **gpu_prob_vectors;           // [VECTOR][BIT_PROBABILITY]
     int number_of_prob_vectors;
     long prob_vector_bit_count;
     long last_prob_vector_bit_count;
@@ -23,10 +23,10 @@ struct bga_state {
     int *samples_fitness;           // [SAMPLE]
     
     // Auxiliares =========
-    float **gpu_float_vector_sum;   // [VECTOR][INTERNAL]
-    float **cpu_float_vector_sum;   // [VECTOR][INTERNAL]
-    int **gpu_int_vector_sum;       // [VECTOR][INTERNAL]
-    int **cpu_int_vector_sum;       // [VECTOR][INTERNAL]
+    long **gpu_int32_vector_sum;      // [VECTOR][INTERNAL]
+    long **cpu_int32_vector_sum;      // [VECTOR][INTERNAL]
+    int **gpu_bit_vector_sum;       // [VECTOR][INTERNAL]
+    int **cpu_bit_vector_sum;       // [VECTOR][INTERNAL]
 };
 
 // Paso 1 del algortimo.
