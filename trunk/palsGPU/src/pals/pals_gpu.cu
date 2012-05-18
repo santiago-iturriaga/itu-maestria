@@ -17,7 +17,7 @@ void fake_pals_kernel(int block_id, int thread_id, int task_count, int machine_c
 __global__ void pals_kernel(int task_count, int block_size, int tasks_per_thread, float *gpu_etc_matrix,
     int *gpu_task_assignment, int *gpu_best_swaps, float *gpu_best_swaps_delta);
 
-void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {
+void pals_gpu_init(struct matrix *etc_matrix, struct solution *s, struct pals_gpu_instance *instance) {   
     // Cantidad de hilos por bloque.
     instance->block_size = THREADS_PER_BLOCK;
     // Cantidad total de swaps a evaluar.
@@ -89,23 +89,6 @@ void pals_gpu_wrapper(struct matrix *etc_matrix, struct solution *s, struct pals
 
     dim3 grid(instance->number_of_blocks, 1, 1);
     dim3 threads(instance->block_size, 1, 1);
-
-    /*
-    for (int block_id = 0; block_id < instance->number_of_blocks; block_id++) {
-        fprintf(stdout, "[DEBUG] Block: %i ===============================================\n", block_id);
-
-        for (int thread_id = 0; thread_id < instance->block_size; thread_id++) {
-            fprintf(stdout, "[DEBUG] >>> Thread: %i\n", thread_id);
-
-            fake_pals_kernel(
-                block_id,
-                thread_id,
-                etc_matrix->tasks_count,
-                etc_matrix->machines_count,
-                *etc_matrix, *s, *instance);
-        }
-    }
-    */
 
     pals_kernel<<< grid, threads >>>(
         etc_matrix->tasks_count,

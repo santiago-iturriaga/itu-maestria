@@ -20,6 +20,22 @@ do
     RAND=$RANDOM
     echo "Random ${RAND}"
 
+    echo "=== PALS+MCT ==============================================="
+    NAME="pals+mct"
+    ID=5
+    THREADS=1
+    
+    echo "time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} 1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) 2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time"
+
+    time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} 2 ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID} ${THREADS} \
+        1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol) \
+        2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.time
+
+    echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan"
+
+    ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.sol ${DIMENSION} \
+        > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.makespan
+
     echo "=== PALS+pMINMIN 12 ==============================================="
     NAME="pals+pminmin+12"
     ID=3

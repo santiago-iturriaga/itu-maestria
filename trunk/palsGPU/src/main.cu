@@ -63,14 +63,6 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    timespec ts_loading_end;
-    clock_gettime(CLOCK_REALTIME, &ts_loading_end);
-
-    double elapsed_loading;
-    elapsed_loading = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
-        + ((ts_loading_end.tv_nsec - ts_loading.tv_nsec) / 1000.0);
-    fprintf(stderr, "LOADING(microsegs)|%f\n", elapsed_loading);
-
     // =============================================================
     // Create empty solution
     // =============================================================
@@ -79,6 +71,14 @@ int main(int argc, char** argv)
     #endif
     
     struct solution *current_solution = create_empty_solution(etc_matrix);
+
+    timespec ts_loading_end;
+    clock_gettime(CLOCK_REALTIME, &ts_loading_end);
+
+    double elapsed_loading;
+    elapsed_loading = ((ts_loading_end.tv_sec - ts_loading.tv_sec) * 1000000.0) 
+        + ((ts_loading_end.tv_nsec - ts_loading.tv_nsec) / 1000.0);
+    fprintf(stderr, "LOADING(s)|%f\n", elapsed_loading/1000000);
 
     // =============================================================
     // Solving the problem.
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
         double elapsed_init;
         elapsed_init = ((ts_init_end.tv_sec - ts_init.tv_sec) * 1000000.0) 
             + ((ts_init_end.tv_nsec - ts_init.tv_nsec) / 1000.0);
-        fprintf(stderr, "INIT(microsegs)|%f\n", elapsed_init);
+        fprintf(stderr, "INIT(s)|%f\n", elapsed_init/1000000);
 
         // Timming -----------------------------------------------------
         timming_end(">> MCT Time", ts_mct);
