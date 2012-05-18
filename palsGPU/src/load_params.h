@@ -27,6 +27,7 @@ struct params {
     float target_makespan;
     int init_algorithm;
     int init_algorithm_threads;
+    int max_iter;
 };
 
 int load_params(int argc, char **argv, struct params *input);

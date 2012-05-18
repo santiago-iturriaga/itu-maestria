@@ -49,6 +49,7 @@ int load_params(int argc, char **argv, struct params *input) {
         input->target_makespan = -1;
         input->init_algorithm = pMinMin;
         input->init_algorithm = 1;
+        input->max_iter = 100000;
 
         if (argc >= 6) {
             input->seed = atoi(argv[5]);
@@ -107,6 +108,11 @@ int load_params(int argc, char **argv, struct params *input) {
         //#if defined(DEBUG) 
             fprintf(stderr, "[PARAMS] init algorithm threads: %d s\n", input->init_algorithm_threads);
         //#endif
+
+        if (argc >= 12) {
+            input->max_iter = atoi(argv[11]);
+        }
+        fprintf(stderr, "[PARAMS] max iterations: %d s\n", input->max_iter);
         
         // Input validation.
         if (input->tasks_count < 1) {
@@ -127,7 +133,7 @@ int load_params(int argc, char **argv, struct params *input) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");
-        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan] [init algorithm]\n\n", argv[0]);
+        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan] [init algorithm] [max iterations]\n\n", argv[0]);
         fprintf(stdout, "       Algorithm = 0 Serial full\n");
         fprintf(stdout, "                   1 GPU full\n");
         fprintf(stdout, "                   2 GPU rand. task\n");

@@ -38,7 +38,7 @@ void pals_serial(struct params &input, struct matrix *etc_matrix, struct solutio
     ushort best_swap_task_b;
     float best_swap_delta;
 
-    for (int i = 0; i < PALS_COUNT; i++) {
+    for (int i = 0; i < input.max_iter; i++) {
         pals_serial_wrapper(etc_matrix, current_solution, best_swap_task_a, best_swap_task_b, best_swap_delta);
     }
 
