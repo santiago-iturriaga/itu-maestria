@@ -1565,8 +1565,10 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         etc_matrix->machines_count, instance.gpu_machine_compute_time,
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
 
+    int pals_count = input.max_iter;
+
     int iter;
-    for (iter = 0; (iter < PALS_COUNT) && (convergence_flag < PALS_CONVERGENCE) 
+    for (iter = 0; (iter < pals_count) && (convergence_flag < PALS_CONVERGENCE) 
         && (timeout_end == 0) && (target_makespan_found == 0); iter++) {
             
         //#if defined(DEBUG)

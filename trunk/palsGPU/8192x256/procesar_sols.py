@@ -74,14 +74,18 @@ if __name__ == '__main__':
             100-(pals_mct_make * 100 / minmin_make), \
             100-(pals_pminmin_make * 100 / minmin_make))
 
-    print "====== Tabla de tiempos (segundos) ======"
-    print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
-    for instancia in range(21)[1:]:
-        (minmin_make, minmin_time) = resultados[instancia]['minmin']
-        (pminmin_make, pminmin_time) = resultados[instancia]['pminmin']
-        (pals_make, pals_time) = resultados[instancia]['pals']
+    #print "====== Tabla de tiempos (segundos) ======"
+    #print "Instancia,MinMin,pMinMin/D,PALS GPU,Improv. pMinMin vs MinMin,Improv. PALS GPU vs MinMin"
+    #for instancia in range(21)[1:]:
+        #(dmake, dtime, host_init_time, sol_init_type, sol_init_time, device_init_time, milestones)
         
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
-            minmin_time, pminmin_time, pals_time, \
-            100-(pminmin_time * 100 / minmin_time), \
-            100-(pals_time * 100 / minmin_time))
+        #mct_make = resultados[instancia]['mct'][0]
+        #minmin_make = resultados[instancia]['minmin'][0]
+        #pminmin_make = resultados[instancia]['pminmin'][0]
+        #pals_mct_make = resultados[instancia]['pals+mct'][0]
+        #pals_pminmin_make = resultados[instancia]['pals+pminmin+12'][0]
+        
+        #print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, \
+            #minmin_time, pminmin_time, pals_time, \
+            #100-(pminmin_time * 100 / minmin_time), \
+            #100-(pals_time * 100 / minmin_time))
