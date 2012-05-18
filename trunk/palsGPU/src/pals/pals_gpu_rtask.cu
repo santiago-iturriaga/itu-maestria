@@ -1583,7 +1583,7 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
         * */
         if (last_report == 0) {
             fprintf(stderr, "MAKESPAN|%lu|%d|%f\n", ts_timeout_current.tv_sec, iter, current_solution->makespan);
-            last_report = 1000;
+            last_report = 999;
         } else {
             last_report--;
         }
