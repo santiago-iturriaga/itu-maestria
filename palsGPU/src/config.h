@@ -14,10 +14,12 @@
 #define MULTI_STEP_CPU
 
 #define MAX_THREAD_COUNT        12
-#define REPORT_EVERY_SECONDS    1
 
-//#define PALS_COUNT              20000
-//#define PALS_COUNT              7864318
+//#define REPORT_EVERY_SECONDS    1
+#define REPORT_EVERY_SECONDS    1048576
+#define REPORT_EVERY_ITERS      500
+//#define REPORT_EVERY_ITERS      1048576
+
 #define PALS_CONVERGENCE        7864318
 
 #endif //CONFIG_H_
