@@ -749,14 +749,11 @@ void bga_free(struct bga_state *state) {
     #endif
 
     for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
+        //fprintf(stderr, "[INFO] Freeing gpu_prob_vectors[%d]\n", vector_number);
         cudaFree(state->gpu_prob_vectors[vector_number]);
     }
 
     free(state->gpu_prob_vectors);
-
-    for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
-        cudaFree(state->gpu_prob_vectors[vector_number]);
-    }
 
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         for (int vector_number = 0; vector_number < state->number_of_prob_vectors; vector_number++) {
