@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             if (th_id == 0) {
-                if (current_iteration % 1 == 0) {
+                if (current_iteration % 100 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                     
                     bga_get_part_accumulated_prob(&problem_state, th_id);
@@ -138,10 +138,11 @@ int main(int argc, char **argv) {
             #if !defined(DEBUG) && defined(INFO)
                 if (!(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
                     bga_get_part_accumulated_prob(&problem_state, th_id);
-
+                    
                     #pragma omp barrier
-                    if (th_id == 0) {
+                    if (th_id == 0) {                       
                         if (current_iteration % 100 == 0) {
+
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
                             fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
                         }
@@ -155,8 +156,10 @@ int main(int argc, char **argv) {
 
         #pragma omp barrier
         if (th_id == 0) {
-            bga_compute_sample_full_fitness(&problem_state);
-            fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+            float final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
+            fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", final_acc_prob);
+            fprintf(stdout, "\n\n[FINAL] Success probability: %.4f \%\n", final_acc_prob * 100 / problem_state.number_of_bits);
+            
         }
 
         // === Libero la memoria del Mersenne Twister.
