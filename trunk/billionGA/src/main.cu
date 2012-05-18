@@ -67,9 +67,9 @@ int main(int argc, char **argv) {
 
     // === OpenMP   
     int nthreads = omp_get_max_threads(); //omp_get_num_threads();
-    #if defined(INFO) || defined(DEBUG)
+    //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
-    #endif
+    //#endif
     assert(nthreads < 4);
 
     // === Inicialización del cGA
