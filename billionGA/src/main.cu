@@ -103,6 +103,8 @@ int main(int argc, char **argv) {
             #pragma omp barrier
         #endif
 
+        float current_acc_prob = 0;
+
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
             current_iteration++;
 
@@ -110,8 +112,12 @@ int main(int argc, char **argv) {
                 if (current_iteration % 100 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                     
+                    float aux;
+                    aux = bga_get_full_accumulated_prob(&problem_state);
+                    
                     bga_get_part_accumulated_prob(&problem_state, th_id);
-                    fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+                    fprintf(stdout, "Accumulated probability: %.4f (delta: %f)\n", aux, current_acc_prob - aux);
+                    current_acc_prob = aux;
                 }
             }
 
@@ -158,7 +164,7 @@ int main(int argc, char **argv) {
         if (th_id == 0) {
             float final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
             fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", final_acc_prob);
-            fprintf(stdout, "            Success probability    : %.4f\%\n", final_acc_prob * 100 / problem_state.number_of_bits);
+            fprintf(stdout, "            Success probability: %.4f\%\n", final_acc_prob * 100 / problem_state.number_of_bits);
             
         }
 
