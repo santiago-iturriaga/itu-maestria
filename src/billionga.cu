@@ -721,7 +721,9 @@ __global__ void kern_model_update(float *gpu_prob_vector, int prob_vector_size,
             worst_sample_current_bit_value = (worst_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
 
             delta = best_sample_current_bit_value - worst_sample_current_bit_value;
-            atomicAdd(&(gpu_prob_vector[prob_vector_position]), delta * update_value);
+            
+            float aux = gpu_prob_vector[prob_vector_position];
+            gpu_prob_vector[prob_vector_position] = aux + (delta * update_value);
         }
     }
 }
@@ -753,7 +755,6 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
         fitness_sample_a = state->samples_vector_fitness[0][prob_vector_number];
         fitness_sample_b = state->samples_vector_fitness[1][prob_vector_number];
     #endif
-
 
     if (fitness_sample_a >= fitness_sample_b) {
         best_sample_index = 0;
