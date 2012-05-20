@@ -1,8 +1,11 @@
 #export OMP_NUM_THREADS=1
-#time (bin/billionga 1048576 10000 1048576 1 > out-1m.txt)
+#time (bin/billionga 1048576 10000 1048576 1 1> out.std 2> out.err)
+
+#export OMP_NUM_THREADS=4
+#time (bin/billionga 1048576 100000 262144 0 1> out.std 2> out.err)
 
 export OMP_NUM_THREADS=4
-time (bin/billionga 1048576 100000 262144 0 > out-1m.txt)
+time (bin/billionga 1073741824 100000 268435456 0 1> out.std 2> out.err)
 
 #time(bin/billionga 1073741824 10000 268435456 0) > out-1b.txt
 #bin/billionga 1048576 2000000 524288 0
