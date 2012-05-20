@@ -310,10 +310,12 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
     #ifdef ARCHIVER_ADHOC
     // No es necesario...
+        if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using ADHOC archiever\n");
     #endif
     #ifdef ARCHIVER_AGA
-    empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
-    archivers_aga_init(&empty_instance);
+        if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using AGA archiever\n");
+        empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
+        archivers_aga_init(&empty_instance);
     #endif
 
     // =========================================================================
