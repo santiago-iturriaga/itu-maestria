@@ -115,10 +115,19 @@ int main(int argc, char **argv) {
             }
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
+            
             #if defined(DEBUG)
                 #pragma omp barrier
             #endif
             bga_compute_sample_part_fitness(&problem_state, th_id);
+
+            #if defined(DEBUG)
+                #pragma omp barrier
+                if (th_id == 0) {
+                    bga_show_samples(&problem_state);
+                }
+                #pragma omp barrier
+            #endif
 
             #if defined(FULL_FITNESS_UPDATE)
                 #pragma omp barrier
@@ -153,7 +162,9 @@ int main(int argc, char **argv) {
                         if (current_iteration % 100 == 0) {
 
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
-                            fprintf(stdout, "Accumulated probability: %.4f\n", bga_get_full_accumulated_prob(&problem_state));
+                            long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
+                            fprintf(stdout, "Accumulated probability: %.4f\n", final_acc_prob);
+                            fprintf(stdout, "            Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
                         }
                     }
                     #pragma omp barrier
@@ -165,9 +176,9 @@ int main(int argc, char **argv) {
 
         #pragma omp barrier
         if (th_id == 0) {
-            float final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
-            fprintf(stdout, "\n\n[FINAL] Accumulated probability: %.4f\n", final_acc_prob);
-            fprintf(stdout, "            Success probability: %.4f%%\n", final_acc_prob * 100 / problem_state.max_prob_sum);
+            long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
+            fprintf(stdout, "\n\n[FINAL] Accumulated probability: %ld\n", final_acc_prob);
+            fprintf(stdout, "            Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
             
         }
 
