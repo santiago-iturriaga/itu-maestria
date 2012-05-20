@@ -742,8 +742,8 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
 
             delta = 1; //best_sample_current_bit_value - worst_sample_current_bit_value;
             
-            float aux = gpu_prob_vector[prob_vector_position];
-            gpu_prob_vector[prob_vector_position] = aux + (delta);
+            int aux = gpu_prob_vector[prob_vector_position];
+            gpu_prob_vector[prob_vector_position] = aux + delta;
         }
     }
 }
