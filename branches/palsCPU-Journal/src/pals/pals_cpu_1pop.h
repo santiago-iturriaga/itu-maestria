@@ -33,7 +33,7 @@
 
 // CONFIGURACION ==============================================
 
-#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       16
+#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       2
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   2
 
 #define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      12

@@ -13,10 +13,11 @@ SOLUTIONS_BASE_DIR="512x16.test"
 THREADS=4
 
 ITERATIONS=1
-PALS_ITERATIONS=900000000
-PALS_TIMEOUT=30
+PALS_ITERATIONS=100000000
+PALS_TIMEOUT=10
 
-PALS_POP_SIZE=16
+PALS_POP_SIZE=9
+#PALS_POP_SIZE=16
 #PALS_POP_SIZE=300
 
 VERIFICADOR="bin/verificador"
@@ -72,10 +73,11 @@ do
                 OUT="${SOLUTIONS_DIR}/${ALGORITHMS_OUTNAME[a]}.scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
                 rm ${OUT}.*
             
-                RAND=$RANDOM
+                RAND=1 #$RANDOM
                 EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POP_SIZE}"
                 echo ${EXEC}
-                time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
+                #time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
+                time (${EXEC})
             
                 cat ${OUT}.time
             
