@@ -55,8 +55,8 @@ pals-gdb: src/main.cpp \
 		src/pals/ls_selection/machine_sel_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp \
-			-o bin/$(OUTPUT_BIN) $(LIBS)
+		src/pals/pals_serial.cpp $(LIBS) \
+			-o bin/$(OUTPUT_BIN) 
 
 pals-opt: src/main.cpp \
 		src/load_params.cpp \
@@ -101,8 +101,8 @@ pals-opt: src/main.cpp \
 		src/pals/ls_selection/machine_sel_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp 
-			-o bin/$(OUTPUT_BIN) $(LIBS)
+		src/pals/pals_serial.cpp $(LIBS) \
+			-o bin/$(OUTPUT_BIN)
 
 clean:
 	rm bin/$(OUTPUT_BIN)

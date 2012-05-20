@@ -27,7 +27,8 @@
 #define MACH_SEL_SIMPLE
 //#define MACH_SEL_COMPLEX
 
-#define EVOL_GUIDE_SIMPLE
+//#define EVOL_GUIDE_SIMPLE
+#define EVOL_GUIDE_SIMPLE2
 //#define EVOL_GUIDE_COMPLEX
 
 // CONFIGURACION ==============================================
