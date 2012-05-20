@@ -58,8 +58,8 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stdout, "[INFO] Requesting a size %d prob_vector_size CPU memory\n", state->number_of_prob_vectors);
     #endif
 
-    size_t prob_vectors_acc_prob_array_size = sizeof(float) * state->number_of_prob_vectors;
-    state->prob_vectors_acc_prob = (float*)malloc(prob_vectors_acc_prob_array_size);
+    size_t prob_vectors_acc_prob_array_size = sizeof(long) * state->number_of_prob_vectors;
+    state->prob_vectors_acc_prob = (long*)malloc(prob_vectors_acc_prob_array_size);
     if (!state->prob_vectors_acc_prob) {
         fprintf(stderr, "[ERROR] Requesting CPU memory for the prob_vectors_acc_prob\n");
         exit(EXIT_FAILURE);
@@ -269,7 +269,7 @@ void bga_initialize_thread(struct bga_state *state, int prob_vector_number) {
         &(state->cpu_bit_vector_sum[prob_vector_number]));
 }
 
-float bga_get_part_accumulated_prob(struct bga_state *state, int prob_vector_number) {
+long bga_get_part_accumulated_prob(struct bga_state *state, int prob_vector_number) {
     vector_sum_int_init(state->gpu_int32_vector_sum[prob_vector_number]);
 
     int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
@@ -281,15 +281,15 @@ float bga_get_part_accumulated_prob(struct bga_state *state, int prob_vector_num
         state->gpu_int32_vector_sum[prob_vector_number],
         current_prob_vector_number_of_bits);
 
-    state->prob_vectors_acc_prob[prob_vector_number] = (vector_sum_int_get(
+    state->prob_vectors_acc_prob[prob_vector_number] = vector_sum_int_get(
         state->gpu_int32_vector_sum[prob_vector_number],
-        state->cpu_int32_vector_sum[prob_vector_number]) / state->population_size);
+        state->cpu_int32_vector_sum[prob_vector_number]);
 
     return state->prob_vectors_acc_prob[prob_vector_number];
 }
 
-float bga_get_full_accumulated_prob(struct bga_state *state) {
-    float result = 0.0;
+long bga_get_full_accumulated_prob(struct bga_state *state) {
+    long result = 0;
 
     for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
         result += state->prob_vectors_acc_prob[prob_vector_number];
@@ -640,7 +640,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
         #endif
     }
 
-    bga_show_samples(state);
+    //bga_show_samples(state);
 
     #if defined(TIMMING)
         ccudaEventDestroy(start_inner);
