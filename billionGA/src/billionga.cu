@@ -807,10 +807,10 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
     worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
 
-    cpu_model_update(state->gpu_prob_vectors[prob_vector_number], 
+    /*cpu_model_update(state->gpu_prob_vectors[prob_vector_number], 
         current_prob_vector_number_of_bits,
         best_sample, worst_sample);
-
+    */
     kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
         state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
         best_sample, worst_sample);
