@@ -106,13 +106,13 @@ int main(int argc, char **argv) {
         float current_acc_prob = bga_get_part_accumulated_prob(&problem_state, th_id);;
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
-            current_iteration++;
-
             if (th_id == 0) {
-                if (current_iteration % 1 == 0) {
+                if (current_iteration % 1000 == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                 }
             }
+
+            current_iteration++;
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
             bga_model_update(&problem_state, th_id);
 
             if (th_id == 0) {
-                if (current_iteration % 1 == 0) {
+                if (current_iteration % 1000 == 0) {
                     float aux;
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
 
