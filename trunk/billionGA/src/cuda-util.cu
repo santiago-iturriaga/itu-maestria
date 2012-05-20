@@ -239,7 +239,7 @@ void vector_sum_bit_alloc(int **gpu_partial_sum, int **cpu_partial_sum) {
 
 void vector_sum_bit_init(int *gpu_partial_sum) {      
     kern_vector_set_int<<< 1, VECTOR_SUM_BLOCKS >>>(
-        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0);
 }
 
 int vector_sum_bit_get(int *gpu_partial_sum, int *cpu_partial_sum) {   
