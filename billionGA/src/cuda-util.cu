@@ -55,7 +55,7 @@ void vector_set_int(int *gpu_vector, int size, int value) {
 /*
  * Establece el valor de todos los elementos de un vector a "value".
  */
-__global__ void kern_vector_set_long(long *gpu_vector, int size, int value) {
+__global__ void kern_vector_set_long(long *gpu_vector, int size, long value) {
     int bits_per_loop = gridDim.x * blockDim.x;
     
     int loop_count = size / bits_per_loop;
@@ -71,7 +71,7 @@ __global__ void kern_vector_set_long(long *gpu_vector, int size, int value) {
         __syncthreads();
     }
 }
-void vector_set_long(long *gpu_vector, int size, int value) {
+void vector_set_long(long *gpu_vector, int size, long value) {
     kern_vector_set_long<<< VECTOR_SET_BLOCKS, VECTOR_SET_THREADS >>>(gpu_vector, size, value);
 }
 
@@ -322,7 +322,7 @@ void vector_sum_int_alloc(long **gpu_partial_sum, long **cpu_partial_sum) {
 
 void vector_sum_int_init(long *gpu_partial_sum) {      
     kern_vector_set_long<<< 1, VECTOR_SUM_BLOCKS >>>(
-        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0.0);
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0);
 }
 
 long vector_sum_int_get(long *gpu_partial_sum, long *cpu_partial_sum) {   
