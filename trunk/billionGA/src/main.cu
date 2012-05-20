@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {
             if (th_id == 0) {
-                if (current_iteration % 1000 == 0) {
+                if (current_iteration % SHOW_UPDATE_EVERY == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                 }
             }
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
             bga_model_update(&problem_state, th_id);
 
             if (th_id == 0) {
-                if (current_iteration % 1000 == 0) {
+                if (current_iteration % SHOW_UPDATE_EVERY == 0) {
                     float aux;
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
 
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
 
                     #pragma omp barrier
                     if (th_id == 0) {
-                        if (current_iteration % 100 == 0) {
+                        if (current_iteration % SHOW_UPDATE_EVERY == 0) {
 
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
                             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
