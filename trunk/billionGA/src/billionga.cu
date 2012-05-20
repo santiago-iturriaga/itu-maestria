@@ -313,6 +313,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
     fprintf(stdout, "[INFO] === Probability vector status =======================\n");
 
     vector_sum_int_init(state->gpu_int32_vector_sum[0]);
+    
+    vector_sum_int_show(state->gpu_int32_vector_sum[0], state->cpu_int32_vector_sum[0]);
 
     fprintf(stdout, "[INFO] Prob. vector sample:");
 
@@ -340,6 +342,8 @@ void bga_show_prob_vector_state(struct bga_state *state) {
             }
                       
             fprintf(stdout, "... Total [%d]: %ld ( %f )\n", probs_to_show_count, sum, (float)sum / (float)(probs_to_show_count * state->population_size));
+            
+            free(probs_to_show);
         }
 
         vector_sum_int(state->gpu_prob_vectors[prob_vector_number],
@@ -465,6 +469,8 @@ void bga_show_samples(struct bga_state *state) {
                 for (int i = 0; i < bytes_to_show_count; i++) {
                     fprintf(stdout, " %s", int_to_binary(bytes_to_show[i]));
                 }
+
+                free(bytes_to_show);
 
                 fprintf(stdout, "...\n");
             }

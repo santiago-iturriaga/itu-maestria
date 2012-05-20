@@ -336,6 +336,16 @@ long vector_sum_int_get(long *gpu_partial_sum, long *cpu_partial_sum) {
     return accumulated_sum;
 }
 
+void vector_sum_int_show(long *gpu_partial_sum, long *cpu_partial_sum) {   
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    fprintf(stdout, "[INFO] Sum vector: ");
+    for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        fprintf(stdout, "%ld, ", cpu_partial_sum[i]);
+    }
+    
+    fprintf(stdout, "\n");
+}
+
 void vector_sum_int_free(long *gpu_partial_sum, long *cpu_partial_sum) {
     ccudaFree(gpu_partial_sum);
     free(cpu_partial_sum);
