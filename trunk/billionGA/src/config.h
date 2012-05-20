@@ -1,5 +1,6 @@
-//#define INFO
-//#define DEBUG
+#define INFO
+#define DEBUG
+//#define TIMMING
 
 //#define POPULATION_SIZE sqrt(3.1416)*sqrt(number_of_bits)*log10(number_of_bits)/2
 //#define POPULATION_SIZE 500
