@@ -8,7 +8,6 @@ struct bga_state {
     int number_of_samples;
     
     int population_size; 
-    int update_value; 
     long max_prob_sum;
        
     // Probabilities =====
