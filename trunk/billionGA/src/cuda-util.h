@@ -43,7 +43,7 @@ void vector_sum_bit_free(int *gpu_partial_sum, int *cpu_partial_sum);
  * Reduce un array sumando cada uno de los bits de cada int por separado.
  * gpu_output_data debe tener un elemento por bloque del kernel.
  */
-void vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int bit_size);
+void vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int size);
 void vector_sum_int_alloc(long **gpu_partial_sum, long **cpu_partial_sum);
 void vector_sum_int_init(long *gpu_partial_sum);
 long vector_sum_int_get(long *gpu_partial_sum, long *cpu_partial_sum);
