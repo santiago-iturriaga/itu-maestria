@@ -740,9 +740,7 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
             best_sample_current_bit_value = (best_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
             worst_sample_current_bit_value = (worst_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
 
-            delta = best_sample_current_bit_value - worst_sample_current_bit_value;
-            
-            //atomicAdd(&(gpu_prob_vector[prob_vector_position]), delta);
+            delta = 1; //best_sample_current_bit_value - worst_sample_current_bit_value;
             
             float aux = gpu_prob_vector[prob_vector_position];
             gpu_prob_vector[prob_vector_position] = aux + (delta);
