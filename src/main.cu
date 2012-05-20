@@ -39,9 +39,9 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    #if defined(INFO) || defined(DEBUG)
+    //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] === Starting... ===============================\n");
-    #endif
+    //#endif
 
     long problem_size;
     problem_size = atol(argv[1]);
@@ -84,9 +84,9 @@ int main(int argc, char **argv) {
         int th_device = (starting_gpu_device + th_id) % number_gpus;
         ccudaSetDevice(th_device);
 
-        #if defined(INFO) || defined(DEBUG)
+        //#if defined(INFO) || defined(DEBUG)
             fprintf(stdout, "[INFO] Thread %d using device %d.\n", th_id, th_device);
-        #endif
+        //#endif
 
         assert(omp_get_num_threads() == nthreads);
 
