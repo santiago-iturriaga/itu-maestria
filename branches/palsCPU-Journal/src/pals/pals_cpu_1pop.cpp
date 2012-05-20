@@ -18,7 +18,9 @@
 
 #include "archivers/adhoc.h"
 #include "archivers/aga.h"
+
 #include "ls_selection/evol_guide_simple.h"
+#include "ls_selection/evol_guide_simple2.h"
 #include "ls_selection/evol_guide_complex.h"
 #include "ls_selection/machine_sel_simple.h"
 #include "ls_selection/machine_sel_complex.h"
@@ -875,6 +877,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
                                         task_y_best_swap_pos);
                                     #endif
+                                    #ifdef EVOL_GUIDE_SIMPLE2
+                                    ls_best_swap_simple2_selection(thread_instance, selected_solution,
+                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                        task_y_best_swap_pos);
+                                    #endif
                                     #ifdef EVOL_GUIDE_COMPLEX
                                     ls_best_swap_complex_selection(thread_instance, selected_solution,
                                         search_type, machine_a, machine_b, task_x_pos, task_x_current,
@@ -915,6 +924,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     {
                                         #ifdef EVOL_GUIDE_SIMPLE
                                         ls_best_move_simple_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        #endif
+                                        #ifdef EVOL_GUIDE_SIMPLE2
+                                        ls_best_move_simple2_selection(thread_instance, selected_solution,
                                             search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
                                             best_delta_makespan, best_delta_energy, task_x_best_move_pos,
                                             machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);

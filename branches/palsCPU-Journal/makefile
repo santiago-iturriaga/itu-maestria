@@ -4,7 +4,7 @@ LIBS=-lpthread -lrt
 #-mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
 
-all: pals-gdb verificador fp
+all: pals-opt verificador fp
 
 fp: fp_2obj.cpp
 	$(CXX) fp_2obj.cpp -o bin/fp_2obj
@@ -27,6 +27,7 @@ pals-gdb: src/main.cpp \
 		src/pals/archivers/adhoc.cpp \
 		src/pals/archivers/aga.cpp \
 		src/pals/ls_selection/evol_guide_simple.cpp \
+		src/pals/ls_selection/evol_guide_simple2.cpp \
 		src/pals/ls_selection/evol_guide_complex.cpp \
 		src/pals/ls_selection/machine_sel_simple.cpp \
 		src/pals/ls_selection/machine_sel_complex.cpp \
@@ -48,6 +49,7 @@ pals-gdb: src/main.cpp \
 		src/pals/archivers/adhoc.cpp \
 		src/pals/archivers/aga.cpp \
 		src/pals/ls_selection/evol_guide_simple.cpp \
+		src/pals/ls_selection/evol_guide_simple2.cpp \
 		src/pals/ls_selection/evol_guide_complex.cpp \
 		src/pals/ls_selection/machine_sel_simple.cpp \
 		src/pals/ls_selection/machine_sel_complex.cpp \
@@ -68,12 +70,19 @@ pals-opt: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
+		src/pals/archivers/adhoc.cpp \
+		src/pals/archivers/aga.cpp \
+		src/pals/ls_selection/evol_guide_simple.cpp \
+		src/pals/ls_selection/evol_guide_simple2.cpp \
+		src/pals/ls_selection/evol_guide_complex.cpp \
+		src/pals/ls_selection/machine_sel_simple.cpp \
+		src/pals/ls_selection/machine_sel_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
 		src/pals/pals_serial.cpp 
 	$(CX) -O3 src/main.cpp \
-		src/load_instance.cpp \
 		src/load_params.cpp \
+		src/load_instance.cpp \
 		src/etc_matrix.cpp \
 		src/energy_matrix.cpp \
 		src/solution.cpp \
@@ -83,9 +92,16 @@ pals-opt: src/main.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
+		src/pals/archivers/adhoc.cpp \
+		src/pals/archivers/aga.cpp \
+		src/pals/ls_selection/evol_guide_simple.cpp \
+		src/pals/ls_selection/evol_guide_simple2.cpp \
+		src/pals/ls_selection/evol_guide_complex.cpp \
+		src/pals/ls_selection/machine_sel_simple.cpp \
+		src/pals/ls_selection/machine_sel_complex.cpp \
 		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp \
+		src/pals/pals_serial.cpp 
 			-o bin/$(OUTPUT_BIN) $(LIBS)
 
 clean:

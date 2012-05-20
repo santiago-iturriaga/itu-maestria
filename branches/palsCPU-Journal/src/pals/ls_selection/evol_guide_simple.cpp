@@ -6,7 +6,7 @@
 #include "../../random/cpu_drand48.h"
 #include "../../random/cpu_mt.h"
 
-#include "evol_guide_complex.h"
+#include "evol_guide_simple.h"
 
 void ls_best_swap_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, solution *selected_solution,
     int search_type, int machine_a, int machine_b, int task_x_pos, int task_x_current,
