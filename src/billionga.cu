@@ -691,7 +691,7 @@ __global__ void kern_model_update(float *gpu_prob_vector, int prob_vector_size,
 
     int loop_size = gridDim.x * blockDim.x;
     int loop_count = prob_vector_size / loop_size;
-    if (loop_count % loop_size > 0) loop_count++;
+    if (prob_vector_size % loop_size > 0) loop_count++;
 
     int prob_vector_position;
     int block_starting_pos;
