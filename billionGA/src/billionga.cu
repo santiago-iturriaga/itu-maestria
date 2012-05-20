@@ -750,7 +750,7 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
             
             //int aux = gpu_prob_vector[prob_vector_position];
             //gpu_prob_vector[prob_vector_position] = gpu_prob_vector[prob_vector_position] + delta;
-            gpu_prob_vector[prob_vector_position] = 0;
+            //gpu_prob_vector[prob_vector_position] = 0;
         }
     }
 }
