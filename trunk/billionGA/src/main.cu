@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
 
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
                             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
-                            fprintf(stdout, "Accumulated probability: %.4f\n", final_acc_prob);
+                            fprintf(stdout, "Accumulated probability: %ld\n", final_acc_prob);
                             fprintf(stdout, "            Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
                         }
                     }
