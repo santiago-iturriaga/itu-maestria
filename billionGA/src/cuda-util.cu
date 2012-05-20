@@ -264,17 +264,15 @@ void vector_sum_bit_free(int *gpu_partial_sum, int *cpu_partial_sum) {
  * Reduce un array sumando cada de sus int.
  * gpu_output_data debe tener un elemento por bloque del kernel.
  */
-__global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int bit_size)
+__global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int size)
 {
     __shared__ long sdata[VECTOR_SUM_SHARED_MEM];
 
     unsigned int tid = threadIdx.x;
-    unsigned int bid = blockIdx.x;
-    unsigned int int_size = bit_size >> 5;
     
-    unsigned int adds_per_loop = gridDim.x * blockDim.x;
-    unsigned int loops_count = int_size / adds_per_loop;
-    if (int_size % adds_per_loop > 0) loops_count++;
+    unsigned int adds_per_loop = gridDim.x * blockDim.x * 2;
+    unsigned int loops_count = size / adds_per_loop;
+    if (size % adds_per_loop > 0) loops_count++;
 
     unsigned int starting_position;
     
@@ -282,17 +280,20 @@ __global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, 
         // Perform first level of reduction, reading from global memory, writing to shared memory
         starting_position = adds_per_loop * loop;
         
-        unsigned int i = starting_position + (bid * blockDim.x) + tid;
+        unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
-        long sum = 0;
-        
-        if (i < int_size) {
-            sum += gpu_input_data[i];
-            sdata[tid] = sum;
+        long mySum;
+        if (i < size) {
+            mySum = gpu_input_data[i];
+            
+            if (i + blockDim.x < size) {
+                mySum += gpu_input_data[i + blockDim.x];  
+            }
         } else {
-            sdata[tid] = 0;
+            mySum = 0;
         }
-        
+
+        sdata[tid] = mySum;
         __syncthreads();
 
         // do reduction in shared mem
@@ -300,7 +301,7 @@ __global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, 
         {
             if (tid < s) 
             {
-                sdata[tid] = sum = sum + sdata[tid + s];
+                sdata[tid] = mySum = mySum + sdata[tid + s];
             }
             __syncthreads();
         }
@@ -311,6 +312,7 @@ __global__ void kern_vector_sum_int(int *gpu_input_data, long *gpu_output_data, 
         __syncthreads();
     }
 }
+
 void vector_sum_int(int *gpu_input_data, long *gpu_output_data, unsigned int size) {
     kern_vector_sum_int<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>(gpu_input_data, gpu_output_data, size);
 }
