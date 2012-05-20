@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
 
                     fprintf(stdout, "Accumulated probability: %.4f (delta: %f)\n", aux, aux - current_acc_prob);
+                    fprintf(stdout, "    Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
                     current_acc_prob = aux;
                 }
             }
