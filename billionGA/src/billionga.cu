@@ -723,14 +723,6 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
     int worst_sample_current_bit_value;
     int delta;
 
-    /*
-    prob_vector_position = tid;
-    if (prob_vector_position < prob_vector_size) {
-        if (tid == 0) gpu_prob_vector[prob_vector_position] = loop_count;
-        else gpu_prob_vector[prob_vector_position] = 0;
-    }
-    * */
-
     for (int loop = 0; loop < loop_count; loop++) {
         block_starting_pos = (loop_size * loop) + (bid * blockDim.x);
 
