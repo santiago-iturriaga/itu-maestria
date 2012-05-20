@@ -976,8 +976,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if ((original_makespan > get_makespan(selected_solution)) ||
                         (original_energy > get_energy(selected_solution)))
                     {
-                        refresh_energy(selected_solution);
-
                         int mutex_locked;
                         int new_solution_eval = 0;
 

@@ -51,10 +51,14 @@ void ls_best_swap_simple2_selection(pals_cpu_1pop_thread_arg *thread_instance, s
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
 
+    float max;
+    max = machine_a_ct_old;
+    if (machine_a_ct_old < machine_b_ct_old) max = machine_b_ct_old;
+
     float swap_diff_makespan;
     swap_diff_makespan =
-        (machine_a_ct_new - machine_a_ct_old) +
-        (machine_b_ct_new - machine_b_ct_old);
+        (machine_a_ct_new - max) +
+        (machine_b_ct_new - max);
 
     float swap_diff_energy;
     swap_diff_energy =
@@ -129,10 +133,14 @@ void ls_best_move_simple2_selection(pals_cpu_1pop_thread_arg *thread_instance, s
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
 
+    float max;
+    max = machine_a_ct_old;
+    if (machine_a_ct_old < machine_b_ct_old) max = machine_b_ct_old;
+
     float swap_diff_makespan;
     swap_diff_makespan =
-        (machine_a_ct_new - machine_a_ct_old) +
-        (machine_b_ct_new - machine_b_ct_old);
+        (machine_a_ct_new - max) +
+        (machine_b_ct_new - max);
 
     float swap_diff_energy;
     swap_diff_energy =

@@ -1,3 +1,10 @@
+rm -rf 512x16.test
+
+echo "MinMin"
+bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.B.u_c_hihi 512 16 2 1 1 1 1 1
+echo "MCT"
+bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.B.u_c_hihi 512 16 3 1 1 1 1 1
+
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16.ME"
 SOLUTIONS_BASE_DIR="512x16.test"
@@ -9,7 +16,7 @@ ITERATIONS=1
 PALS_ITERATIONS=900000000
 PALS_TIMEOUT=30
 
-PALS_POP_SIZE=50
+PALS_POP_SIZE=16
 #PALS_POP_SIZE=300
 
 VERIFICADOR="bin/verificador"
