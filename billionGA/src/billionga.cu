@@ -701,7 +701,7 @@ void cpu_model_update(int *gpu_prob_vector, int prob_vector_size,
 }
 
 __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
-    int *best_sample, int *worst_sample) {
+    int *best_sample, int *worst_sample, int max_value) {
 
     const int tid = threadIdx.x;
     const int bid = blockIdx.x;
@@ -743,7 +743,12 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
             delta = best_sample_current_bit_value - worst_sample_current_bit_value;
             
             int aux = gpu_prob_vector[prob_vector_position];
-            gpu_prob_vector[prob_vector_position] = aux + delta;
+            aux = aux + delta;
+            
+            if (aux < 0) aux = 0;
+            else if (aux > max_value) aux = max_value;
+            
+            gpu_prob_vector[prob_vector_position] = aux;
         }
     }
 }
@@ -813,7 +818,7 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     */
     kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
         state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
-        best_sample, worst_sample);
+        best_sample, worst_sample, state->population_size);
 
     #if defined(TIMMING)
         ccudaEventRecord(end, 0);
