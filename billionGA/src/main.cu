@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
     int prng_vector_size = atoi(argv[3]);
     unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
 
-    // === OpenMP   
+    // === OpenMP
     int nthreads = omp_get_max_threads(); //omp_get_num_threads();
     //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
             }
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
-            
+
             #if defined(DEBUG)
                 #pragma omp barrier
             #endif
@@ -136,14 +136,14 @@ int main(int argc, char **argv) {
                 }
                 #pragma omp barrier
             #endif
-            
+
             bga_model_update(&problem_state, th_id);
 
             if (th_id == 0) {
                 if (current_iteration % 1 == 0) {
-                    float aux;                   
+                    float aux;
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
-                    
+
                     fprintf(stdout, "Accumulated probability: %.4f (delta: %f)\n", aux, aux - current_acc_prob);
                     current_acc_prob = aux;
                 }
@@ -153,12 +153,12 @@ int main(int argc, char **argv) {
             //if (th_id == 0) bga_show_prob_vector_state(&problem_state);
             //#endif
 
-            #if !defined(DEBUG) && defined(INFO)
+            #if defined(INFO)
                 if (!(termination_criteria_eval(&term_state, &problem_state, current_iteration))) {
                     bga_get_part_accumulated_prob(&problem_state, th_id);
-                    
+
                     #pragma omp barrier
-                    if (th_id == 0) {                       
+                    if (th_id == 0) {
                         if (current_iteration % 100 == 0) {
 
                             fprintf(stdout, "=== ITERACION %d ===============\n", current_iteration);
@@ -179,13 +179,13 @@ int main(int argc, char **argv) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
             fprintf(stdout, "\n\n[FINAL] Accumulated probability: %ld\n", final_acc_prob);
             fprintf(stdout, "            Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
-            
+
         }
 
         // === Libero la memoria del Mersenne Twister.
         mtgp32_free(&mt_status);
     }
-    
+
     // === Libero la memoria del cGA.
     bga_free(&problem_state);
 

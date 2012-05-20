@@ -734,7 +734,7 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
         }
         __syncthreads();
 
-        prob_vector_position = block_starting_pos + tid;
+        prob_vector_position = tid; //block_starting_pos + tid;
 
         if (prob_vector_position < prob_vector_size) {
             best_sample_current_bit_value = (best_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
@@ -742,8 +742,9 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
 
             delta = 1; //best_sample_current_bit_value - worst_sample_current_bit_value;
             
-            int aux = gpu_prob_vector[prob_vector_position];
-            gpu_prob_vector[prob_vector_position] = aux + delta;
+            //int aux = gpu_prob_vector[prob_vector_position];
+            //gpu_prob_vector[prob_vector_position] = gpu_prob_vector[prob_vector_position] + delta;
+            gpu_prob_vector[prob_vector_position] = 0;
         }
     }
 }
