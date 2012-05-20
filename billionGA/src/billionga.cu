@@ -421,7 +421,7 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
 }
 
 void bga_compute_sample_full_fitness(struct bga_state *state) {
-    float result;
+    int result;
 
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         result = 0.0;
