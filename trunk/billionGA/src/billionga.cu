@@ -476,9 +476,9 @@ void bga_show_samples(struct bga_state *state) {
 
                 fprintf(stdout, "...\n");
             }
+            
+            fprintf(stdout, "[INFO] Prob. vector %d, sample %d >> fitness: %d\n", prob_vector_number, sample_number, state->samples_vector_fitness[sample_number][prob_vector_number]);
         }
-
-        fprintf(stdout, "[INFO] Sample %d fitness: %d\n", sample_number, state->samples_fitness[sample_number]);
     }
 
     #if defined(TIMMING)
@@ -770,7 +770,7 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
 
     int best_sample_index, worst_sample_index;
 
-    int fitness_sample_a, fitness_sample_b;
+    long fitness_sample_a, fitness_sample_b;
     #if defined(FULL_FITNESS_UPDATE)
         fitness_sample_a = state->samples_fitness[0];
         fitness_sample_b = state->samples_fitness[1];
@@ -778,6 +778,11 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     #if defined(PARTIAL_FITNESS_UPDATE)
         fitness_sample_a = state->samples_vector_fitness[0][prob_vector_number];
         fitness_sample_b = state->samples_vector_fitness[1][prob_vector_number];
+    #endif
+    
+    #if defined(DEBUG)
+        fprintf(stdout, "[INFO] prob. vector[%d] fitness_sample_a=%ld fitness_sample_a=%ld\n",
+            prob_vector_number, fitness_sample_a, fitness_sample_b);
     #endif
 
     if (fitness_sample_a >= fitness_sample_b) {
@@ -788,6 +793,11 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
         best_sample_index = 1;
         worst_sample_index = 0;
     }
+
+    #if defined(DEBUG)
+        fprintf(stdout, "[INFO] prob. vector[%d] best=%d, worst=%d\n",
+            prob_vector_number, best_sample_index, worst_sample_index);
+    #endif
 
     int *best_sample;
     int *worst_sample;
@@ -800,7 +810,8 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
     worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
 
-    cpu_model_update(state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+    cpu_model_update(state->gpu_prob_vectors[prob_vector_number], 
+        current_prob_vector_number_of_bits,
         best_sample, worst_sample, state->update_value);
 
     kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
