@@ -1,7 +1,7 @@
 #DEBUG = -DDEBUG -g -O0
 #ARCH = -arch=compute_11
 #ARCH = -arch=compute_13
-ARCH = -arch=compute_20
+#ARCH = -arch=compute_20
 VERB = -Xptxas=-v --ptxas-options=-v
 OMP = -O3 -Xcompiler -fopenmp -lgomp
 
@@ -16,13 +16,17 @@ NVCC_Marga = /home/santiago/cuda/bin/nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACRO
 	-L/home/santiago/cuda/fake-libs/ -D__STDC_CONSTANT_MACROS ${VERB}
 NVCC_CLu = /home/clusterusers/siturriaga/cuda/bin/nvcc ${DEBUG} ${ARCH} \
 	-D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS ${VERB}
-NVCC = nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS ${VERB}
+NVCC =  /usr/local/cuda/bin/nvcc ${DEBUG} ${ARCH} -D__STDC_FORMAT_MACROS -D__STDC_CONSTANT_MACROS ${VERB}
 
 all: clu
 
 marga: src/main.cu src/billionga.cu ${MTGP32_INC} 
 	$(NVCC_Marga) -o bin/billionga src/main.cu src/billionga.cu \
 	${MTGP32_SRC} ${CUDALINK} ${OMP}
+
+clf: src/main.cu src/billionga.cu ${MTGP32_INC}
+	$(NVCC) -o bin/billionga src/main.cu src/billionga.cu \
+        ${MTGP32_SRC} ${CUDALINK} ${OMP}
 
 clu: src/main.cu src/billionga.cu ${MTGP32_INC} 
 	$(NVCC_CLu) -o bin/billionga src/main.cu src/billionga.cu \
