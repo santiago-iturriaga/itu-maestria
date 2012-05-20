@@ -725,7 +725,8 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
 
     prob_vector_position = tid;
     if (prob_vector_position < prob_vector_size) {
-        gpu_prob_vector[prob_vector_position] = 0;
+        if (tid = 0) gpu_prob_vector[prob_vector_position] = loop_count;
+        else gpu_prob_vector[prob_vector_position] = 0;
     }
 
     for (int loop = 0; loop < loop_count; loop++) {
