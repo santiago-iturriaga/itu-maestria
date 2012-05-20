@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     // === GPU.
     int number_gpus = 0;
     cudaGetDeviceCount(&number_gpus);
-    if(number_gpus < 1)
+    if (number_gpus < 1)
     {
         fprintf(stderr, "[ERROR] No CUDA capable devices were detected.\n");
         exit(EXIT_FAILURE);
@@ -70,7 +70,8 @@ int main(int argc, char **argv) {
     //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] Number of threads %d.\n", nthreads);
     //#endif
-    assert(nthreads < 4);
+    //assert(nthreads <= 4);
+    assert(nthreads <= number_gpus);
 
     // === Inicialización del cGA
     struct bga_state problem_state;
