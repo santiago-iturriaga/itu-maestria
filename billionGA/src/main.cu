@@ -9,14 +9,6 @@
 #include "mtgp-1.1/mtgp32-cuda.h"
 #include "billionga.h"
 
-//Debe ser divisible entre 32 (8 y 4)... y 512, 128???
-//#define TEST_PROBLEM_SIZE 32
-//#define TEST_PROBLEM_SIZE 128
-//#define TEST_PROBLEM_SIZE 524288
-//#define TEST_PROBLEM_SIZE 1048576
-//#define TEST_PROBLEM_SIZE 2097152
-//#define TEST_PROBLEM_SIZE 899999744
-
 struct termination_criteria {
     int max_iteration_count;
 };
@@ -176,6 +168,7 @@ int main(int argc, char **argv) {
         #pragma omp barrier
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
+            fprintf(stdout, "*** FINAL *********************************************\n", current_iteration);
             fprintf(stdout, "                  Value: %ld\n", final_acc_prob);
             fprintf(stdout, "    Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
             fprintf(stdout, " Aprox. prob. bit > 50%% (%d): %ld\n", POPULATION_SIZE >> 1, aux1[0]+aux1[1]+aux1[2]+aux1[3]);
