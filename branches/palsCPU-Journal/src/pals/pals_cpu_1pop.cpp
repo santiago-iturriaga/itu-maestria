@@ -1047,71 +1047,53 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             }
                         }        // Termino el loop de TASK_A
 
-                        /*
-                        fprintf(stdout, "[DEBUG] Ultimo makespan conocido: %f\n", selected_solution->__makespan);
-                        fprintf(stdout, "[DEBUG] Ultimo energy conocido: %f\n", selected_solution->__total_energy_consumption);
-                        */
-                        
                         // Hago los cambios ======================================================================================
                         if ((best_delta_makespan < 0) || (best_delta_energy > 0)) {
                             if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
-                            {
-                                /*float old_a, old_b;
-                                old_a = get_machine_compute_time(selected_solution, machine_a);
-                                old_b = get_machine_compute_time(selected_solution, machine_b);*/
-                                
-                                // Intercambio las tareas!
-                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
-                                        best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-
+                            {                                
                                 swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
-                                /*float new_a, new_b;
-                                new_a = get_machine_compute_time(selected_solution, machine_a);
-                                new_b = get_machine_compute_time(selected_solution, machine_b);
-                              
-                                fprintf(stdout, "[DEBUG] Best SWAP delta makespan %f / delta energy %f\n", best_delta_makespan, best_delta_energy);
-                                fprintf(stdout, "[DEBUG] machine a from %f to %f\n", old_a, new_a);
-                                fprintf(stdout, "[DEBUG] machine b from %f to %f\n", old_b, new_b);*/
+                                refresh(selected_solution);
+                                
+                                if ((original_makespan > get_makespan(selected_solution)) ||
+                                    (original_energy > get_energy(selected_solution))) {
+
+                                    thread_instance->total_moves++;
+                                } else {
+                                    swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                                }
 
                                 thread_instance->total_swaps++;
                             }
                             else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                             {
-                                /*float old_a, old_b;
-                                old_a = get_machine_compute_time(selected_solution, machine_a);
-                                old_b = get_machine_compute_time(selected_solution, machine_b);*/
-
-                                // Muevo la tarea!
-                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
-                                        best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
-                                
                                 move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
-                                /*float new_a, new_b;
-                                new_a = get_machine_compute_time(selected_solution, machine_a);
-                                new_b = get_machine_compute_time(selected_solution, machine_b);
-                              
-                                fprintf(stdout, "[DEBUG] Best SWAP delta makespan %f / delta energy %f\n", best_delta_makespan, best_delta_energy);
-                                fprintf(stdout, "[DEBUG] machine a from %f to %f\n", old_a, new_a);
-                                fprintf(stdout, "[DEBUG] machine b from %f to %f\n", old_b, new_b);*/
+                                refresh(selected_solution);
+                                
+                                if ((original_makespan > get_makespan(selected_solution)) ||
+                                    (original_energy > get_energy(selected_solution))) {
 
-                                thread_instance->total_moves++;
+                                    thread_instance->total_moves++;
+                                } else {
+                                    move_task_to_machine_by_pos(selected_solution, machine_b_best_move_id, 
+                                        get_machine_tasks_count(selected_solution, machine_b_best_move_id)-1, machine_a);
+                                }
                             }
-                        } else {
-                            //fprintf(stdout, "[DEBUG] SKIIIIIIIIIIP!!!!\n");
                         }
                     } // Termino el loop con la iteracion del thread
 
-                    refresh(selected_solution);
+                    //refresh(selected_solution);
 
+                    /*
                     fprintf(stdout, "===================================================\n");
                     fprintf(stdout, "[DEBUG] makespan encontrado: %f\n", selected_solution->__makespan);
                     //fprintf(stdout, "[DEBUG] energy encontrado: %f\n", selected_solution->__total_energy_consumption);
                     fprintf(stdout, "[DEBUG] mejor makespan encontrado: %f\n", best_makespan_seen);
                     if (selected_solution->__makespan < best_makespan_seen) best_makespan_seen = selected_solution->__makespan;
                     fprintf(stdout, "===================================================\n");
-
+                    */
+                    
                     // Lo mejore. Intento obtener lock de la poblacion.
                     mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
