@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
             #pragma omp barrier
         #endif
 
-        long current_acc_prob;
+        long current_acc_prob = 0;
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
             if (th_id == 0) {
