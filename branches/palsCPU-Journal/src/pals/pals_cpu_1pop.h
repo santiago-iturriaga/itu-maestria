@@ -21,17 +21,17 @@
 #define ARCHIVER_ADHOC
 //#define ARCHIVER_AGA
 
-//#define INIT_MCT
+#define INIT_MCT
 //#define INIT_MINMIN
-#define INIT_PMINMIN
+//#define INIT_PMINMIN
 
 //#define MACH_SEL_SIMPLE
 #define MACH_SEL_COMPLEX
 
 //#define EVOL_GUIDE_SIMPLE
-//#define EVOL_GUIDE_SIMPLE2
+#define EVOL_GUIDE_SIMPLE2
 //#define EVOL_GUIDE_COMPLEX
-#define EVOL_GUIDE_MIX
+//#define EVOL_GUIDE_MIX
 
 // CONFIGURACION ==============================================
 

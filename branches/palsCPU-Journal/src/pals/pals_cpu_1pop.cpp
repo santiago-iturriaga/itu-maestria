@@ -1053,7 +1053,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             {                                
                                 swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
-                                /*
                                 refresh(selected_solution);
                                 
                                 if ((original_makespan > get_makespan(selected_solution)) ||
@@ -1062,7 +1061,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     thread_instance->total_moves++;
                                 } else {
                                     swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-                                }*/
+                                }
 
                                 thread_instance->total_swaps++;
                             }
@@ -1070,7 +1069,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             {
                                 move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
-                                /*
                                 refresh(selected_solution);
                                 
                                 if ((original_makespan > get_makespan(selected_solution)) ||
@@ -1081,12 +1079,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     move_task_to_machine_by_pos(selected_solution, machine_b_best_move_id, 
                                         get_machine_tasks_count(selected_solution, machine_b_best_move_id)-1, machine_a);
                                 }
-                                * */
                             }
                         }
                     } // Termino el loop con la iteracion del thread
 
-                    refresh(selected_solution);
+                    //refresh(selected_solution);
 
                     /*
                     fprintf(stdout, "===================================================\n");
