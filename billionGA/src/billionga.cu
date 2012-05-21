@@ -302,8 +302,6 @@ long bga_get_part_stats_prob(struct bga_state *state, int prob_vector_number, in
         state->gpu_int32_vector_sum[prob_vector_number],
         state->cpu_int32_vector_sum[prob_vector_number]);
 
-    fprintf(stdout, ">>>> %f\n", state->prob_vectors_acc_prob[prob_vector_number]);
-
     return state->prob_vectors_acc_prob[prob_vector_number];
 }
 
