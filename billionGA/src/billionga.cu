@@ -298,11 +298,12 @@ long bga_get_part_stats_prob(struct bga_state *state, int prob_vector_number, in
         state->gpu_int32_vector_sum[prob_vector_number],
         current_prob_vector_number_of_bits, op, value);
 
-    state->prob_vectors_acc_prob[prob_vector_number] = vector_sp_int_get(
+    long result;
+    result = vector_sp_int_get(
         state->gpu_int32_vector_sum[prob_vector_number],
         state->cpu_int32_vector_sum[prob_vector_number]);
 
-    return state->prob_vectors_acc_prob[prob_vector_number];
+    return result;
 }
 
 long bga_get_full_accumulated_prob(struct bga_state *state) {
