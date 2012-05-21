@@ -118,10 +118,10 @@ int main(int argc, char **argv) {
                     fprintf(stdout, "    Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
 
                     aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
-                    fprintf(stdout, " Aprox. prob. bit > 50%%: %ld\n", aux);
+                    fprintf(stdout, " Aprox. prob. bit > 50%% (%d): %ld\n", POPULATION_SIZE >> 1, aux);
                     
                     aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
-                    fprintf(stdout, " Aprox. prob. bit < 50%%: %ld\n", aux);
+                    fprintf(stdout, " Aprox. prob. bit < 50%% (%d): %ld\n", POPULATION_SIZE >> 1, aux);
 
                     current_acc_prob = aux;
                 }

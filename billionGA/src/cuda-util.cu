@@ -358,7 +358,7 @@ void vector_sum_int_free(long *gpu_partial_sum, long *cpu_partial_sum) {
 __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
     unsigned int size, int op, int value)
 {
-    __shared__ long sdata[VECTOR_SUM_SHARED_MEM];
+    __shared__ int sdata[VECTOR_SUM_SHARED_MEM];
 
     unsigned int tid = threadIdx.x;
 
@@ -374,20 +374,20 @@ __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
 
         unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
 
-        long mySum = 0;
+        int mySum = 0;
 
         if (i < size) {
             if (op > 0) {
                 if (gpu_input_data[i] > value) mySum = 1;
             } else if (op < 0) {
-                if (gpu_input_data[i] < value) mySum = 1;
+                if (gpu_input_data[i] < value) mySum = 0;
             }
 
             if (i + blockDim.x < size) {
                 if (op > 0) {
                     if (gpu_input_data[i + blockDim.x] > value) mySum += 1;
                 } else if (op < 0) {
-                    if (gpu_input_data[i + blockDim.x] < value) mySum += 1;
+                    if (gpu_input_data[i + blockDim.x] < value) mySum += 0;
                 }
             }
         } else {
@@ -405,7 +405,7 @@ __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
                 if (op > 0) {
                     if (sdata[tid + s] > value) mySum = mySum + 1;
                 } else if (op < 0) {
-                    if (sdata[tid + s] < value) mySum = mySum + 1;
+                    if (sdata[tid + s] < value) mySum = mySum + 0;
                 }
                 sdata[tid] = mySum;
             }
