@@ -104,18 +104,25 @@ int main(int argc, char **argv) {
             #pragma omp barrier
         #endif
 
-        float current_acc_prob;
+        long current_acc_prob;
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
                     fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                     
-                    float aux;
+                    long aux;
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
 
-                    fprintf(stdout, "Accumulated probability: %.4f (delta: %f)\n", aux, aux - current_acc_prob);
+                    fprintf(stdout, "                  Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
                     fprintf(stdout, "    Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
+
+                    aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
+                    fprintf(stdout, "Aprox. prob. bit > 50%%: %ld\n", aux);
+                    
+                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
+                    fprintf(stdout, "Aprox. prob. bit < 25%%: %ld\n", aux);
+
                     current_acc_prob = aux;
                 }
             }
