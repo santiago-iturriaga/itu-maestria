@@ -769,11 +769,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 int work_iteration_size = (int)floor((work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
                     (random * (work_thread_iterations - (work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
 
-                //int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
-                //    (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
-
-                //int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS) + 1;
-
                 while (work_do_iteration == 1)
                 {
                     work_do_iteration = 0;
@@ -870,27 +865,31 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                     task_y_pos = (task_y + task_y_offset) % machine_b_task_count;
                                     task_y_current = get_machine_task_id(selected_solution, machine_b, task_y_pos);
 
-                                    #ifdef EVOL_GUIDE_SIMPLE
-                                    ls_best_swap_simple_selection(thread_instance, selected_solution,
-                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
-                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
-                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
-                                        task_y_best_swap_pos);
-                                    #endif
-                                    #ifdef EVOL_GUIDE_SIMPLE2
-                                    ls_best_swap_simple2_selection(thread_instance, selected_solution,
-                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
-                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
-                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
-                                        task_y_best_swap_pos);
-                                    #endif
-                                    #ifdef EVOL_GUIDE_COMPLEX
-                                    ls_best_swap_complex_selection(thread_instance, selected_solution,
-                                        search_type, machine_a, machine_b, task_x_pos, task_x_current,
-                                        task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
-                                        task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
-                                        task_y_best_swap_pos);
-                                    #endif
+                                    //#ifdef EVOL_GUIDE_SIMPLE
+                                    if (thread_instance->thread_idx < 4) {
+                                        ls_best_swap_simple_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                            task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                            task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                            task_y_best_swap_pos);
+                                    } else if  (thread_instance->thread_idx < 8) {
+                                    //#endif
+                                    //#ifdef EVOL_GUIDE_SIMPLE2
+                                        ls_best_swap_simple2_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                            task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                            task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                            task_y_best_swap_pos);
+                                    //#endif
+                                    //#ifdef EVOL_GUIDE_COMPLEX
+                                    } else {
+                                        ls_best_swap_complex_selection(thread_instance, selected_solution,
+                                            search_type, machine_a, machine_b, task_x_pos, task_x_current,
+                                            task_y_pos, task_y_current, best_delta_makespan, best_delta_energy,
+                                            task_x_best_move_pos, machine_b_best_move_id, task_x_best_swap_pos,
+                                            task_y_best_swap_pos);
+                                    }
+                                    //#endif
                                 }
                             }
                             else if (mov_type == PALS_CPU_1POP_SEARCH_OP__MOVE)
@@ -922,24 +921,28 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                                     if (machine_b_current != machine_a)
                                     {
-                                        #ifdef EVOL_GUIDE_SIMPLE
-                                        ls_best_move_simple_selection(thread_instance, selected_solution,
-                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
-                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
-                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
-                                        #endif
-                                        #ifdef EVOL_GUIDE_SIMPLE2
-                                        ls_best_move_simple2_selection(thread_instance, selected_solution,
-                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
-                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
-                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
-                                        #endif
-                                        #ifdef EVOL_GUIDE_COMPLEX
-                                        ls_best_move_complex_selection(thread_instance, selected_solution,
-                                            search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
-                                            best_delta_makespan, best_delta_energy, task_x_best_move_pos,
-                                            machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
-                                        #endif
+                                        //#ifdef EVOL_GUIDE_SIMPLE
+                                        if (thread_instance->thread_idx < 4) {
+                                            ls_best_move_simple_selection(thread_instance, selected_solution,
+                                                search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                                best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                                machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        //#endif
+                                        //#ifdef EVOL_GUIDE_SIMPLE2
+                                        } else if  (thread_instance->thread_idx < 8) {
+                                            ls_best_move_simple2_selection(thread_instance, selected_solution,
+                                                search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                                best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                                machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        //#endif
+                                        //#ifdef EVOL_GUIDE_COMPLEX
+                                        } else {
+                                            ls_best_move_complex_selection(thread_instance, selected_solution,
+                                                search_type, machine_a, machine_b_current, task_x_pos, task_x_current,
+                                                best_delta_makespan, best_delta_energy, task_x_best_move_pos,
+                                                machine_b_best_move_id, task_x_best_swap_pos, task_y_best_swap_pos);
+                                        }
+                                        //#endif
                                         
                                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                                         // refresh(selected_solution);
