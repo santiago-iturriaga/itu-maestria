@@ -14,7 +14,7 @@ struct bga_state {
     int **gpu_prob_vectors;           // [VECTOR][BIT_PROBABILITY]
     int number_of_prob_vectors;
     long prob_vector_bit_count;
-    long last_prob_vector_bit_count;
+    long last_prob_vector_bit_count;    
     long *prob_vectors_acc_prob;       // [VECTOR]
     
     // Samples ============
@@ -48,6 +48,7 @@ void bga_model_update(struct bga_state *state, int prob_vector_number);
 void bga_free(struct bga_state *state);
 
 // Mostrar resultados.
+long bga_get_part_stats_prob(struct bga_state *state, int prob_vector_number, int op, int value);
 long bga_get_part_accumulated_prob(struct bga_state *state, int prob_vector_number);
 long bga_get_full_accumulated_prob(struct bga_state *state);
 

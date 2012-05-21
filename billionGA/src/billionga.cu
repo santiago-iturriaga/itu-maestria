@@ -286,6 +286,25 @@ long bga_get_part_accumulated_prob(struct bga_state *state, int prob_vector_numb
     return state->prob_vectors_acc_prob[prob_vector_number];
 }
 
+long bga_get_part_stats_prob(struct bga_state *state, int prob_vector_number, int op, int value) {
+    vector_sp_int_init(state->gpu_int32_vector_sum[prob_vector_number]);
+
+    int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
+    if (prob_vector_number + 1 == state->number_of_prob_vectors) {
+        current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
+    }
+
+    vector_sp_int(state->gpu_prob_vectors[prob_vector_number],
+        state->gpu_int32_vector_sum[prob_vector_number],
+        current_prob_vector_number_of_bits, op, value);
+
+    state->prob_vectors_acc_prob[prob_vector_number] = vector_sp_int_get(
+        state->gpu_int32_vector_sum[prob_vector_number],
+        state->cpu_int32_vector_sum[prob_vector_number]);
+
+    return state->prob_vectors_acc_prob[prob_vector_number];
+}
+
 long bga_get_full_accumulated_prob(struct bga_state *state) {
     long result = 0;
 

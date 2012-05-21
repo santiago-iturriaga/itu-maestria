@@ -352,3 +352,102 @@ void vector_sum_int_free(long *gpu_partial_sum, long *cpu_partial_sum) {
     ccudaFree(gpu_partial_sum);
     free(cpu_partial_sum);
 }
+
+// ==================================================================================
+
+__global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data, 
+    unsigned int size, int op, int value)
+{
+    __shared__ long sdata[VECTOR_SUM_SHARED_MEM];
+
+    unsigned int tid = threadIdx.x;
+    
+    unsigned int adds_per_loop = gridDim.x * blockDim.x * 2;
+    unsigned int loops_count = size / adds_per_loop;
+    if (size % adds_per_loop > 0) loops_count++;
+
+    unsigned int starting_position;
+    
+    for (unsigned int loop = 0; loop < loops_count; loop++) {
+        // Perform first level of reduction, reading from global memory, writing to shared memory
+        starting_position = adds_per_loop * loop;
+        
+        unsigned int i = starting_position + (blockIdx.x * (blockDim.x * 2) + threadIdx.x);
+
+        long mySum;
+        
+        if (i < size) {            
+            if ((op > 0) && (gpu_input_data[i] > value)) mySum = 1;
+            else if ((op < 0) && (gpu_input_data[i] < value)) mySum = 1;
+            else mySum = 0;
+            
+            if (i + blockDim.x < size) {
+                if ((op > 0) && (gpu_input_data[i + blockDim.x] > value)) mySum += 1;
+                else if ((op < 0) && (gpu_input_data[i + blockDim.x] < value)) mySum = 1;
+            }
+        } else {
+            mySum = 0;
+        }
+
+        sdata[tid] = mySum;
+        __syncthreads();
+
+        // do reduction in shared mem
+        for(unsigned int s = blockDim.x/2; s > 0; s >>= 1) 
+        {
+            if (tid < s) 
+            {
+                sdata[tid] = mySum = mySum + sdata[tid + s];
+                if ((op > 0) && (sdata[tid + s] > value)) sdata[tid] = mySum = mySum + 1;
+                else if ((op < 0) && (sdata[tid + s] < value)) sdata[tid] = mySum = mySum + 1;
+            }
+            __syncthreads();
+        }
+
+        // write result for this block to global mem 
+        if (tid == 0) gpu_output_data[blockIdx.x] += sdata[0];
+    
+        __syncthreads();
+    }
+}
+
+void vector_sp_int(int *gpu_input_data, long *gpu_output_data, unsigned int size, int op, int value) {
+    kern_vector_sp_int<<< VECTOR_SUM_BLOCKS, VECTOR_SUM_THREADS >>>
+        (gpu_input_data, gpu_output_data, size, op, value);
+}
+
+void vector_sp_int_alloc(long **gpu_partial_sum, long **cpu_partial_sum) {      
+    ccudaMalloc((void**)gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS);
+    *cpu_partial_sum = (long*)malloc(sizeof(long) * VECTOR_SUM_BLOCKS);
+}
+
+void vector_sp_int_init(long *gpu_partial_sum) {      
+    kern_vector_set_long<<< 1, VECTOR_SUM_BLOCKS >>>(
+        gpu_partial_sum, VECTOR_SUM_BLOCKS, 0);
+}
+
+long vector_sp_int_get(long *gpu_partial_sum, long *cpu_partial_sum) {   
+    long accumulated_sum = 0;
+    
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        accumulated_sum += cpu_partial_sum[i];
+    }
+    
+    return accumulated_sum;
+}
+
+void vector_sp_int_show(long *gpu_partial_sum, long *cpu_partial_sum) {   
+    ccudaMemcpy(cpu_partial_sum, gpu_partial_sum, sizeof(long) * VECTOR_SUM_BLOCKS, cudaMemcpyDeviceToHost);
+    fprintf(stdout, "[INFO] Sum vector: ");
+    for (int i = 0; i < VECTOR_SUM_BLOCKS; i++) {
+        fprintf(stdout, "%ld, ", cpu_partial_sum[i]);
+    }
+    
+    fprintf(stdout, "\n");
+}
+
+void vector_sp_int_free(long *gpu_partial_sum, long *cpu_partial_sum) {
+    ccudaFree(gpu_partial_sum);
+    free(cpu_partial_sum);
+}

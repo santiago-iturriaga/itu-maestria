@@ -53,6 +53,14 @@ void vector_sum_int_init(long *gpu_partial_sum);
 long vector_sum_int_get(long *gpu_partial_sum, long *cpu_partial_sum);
 void vector_sum_int_free(long *gpu_partial_sum, long *cpu_partial_sum);
 void vector_sum_int_show(long *gpu_partial_sum, long *cpu_partial_sum);
+
+void vector_sp_int(int *gpu_input_data, long *gpu_output_data, unsigned int size, int op, int value);
+void vector_sp_int_alloc(long **gpu_partial_sum, long **cpu_partial_sum);
+void vector_sp_int_init(long *gpu_partial_sum);
+long vector_sp_int_get(long *gpu_partial_sum, long *cpu_partial_sum);
+void vector_sp_int_free(long *gpu_partial_sum, long *cpu_partial_sum);
+void vector_sp_int_show(long *gpu_partial_sum, long *cpu_partial_sum);
+
 // -----------------------------------------------------------------
 
 inline void exception_maker(cudaError rc, const char * funcname)
