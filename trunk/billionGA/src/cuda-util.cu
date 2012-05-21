@@ -380,7 +380,7 @@ __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
             if (op > 0) {
                 if (gpu_input_data[i] > value) mySum = 1;
             } else if (op < 0) {
-                if (gpu_input_data[i] < value) mySum = 0;
+                if (gpu_input_data[i] < value) mySum = 1;
             }
 
             if (i + blockDim.x < size) {
@@ -402,12 +402,7 @@ __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
         {
             if (tid < s)
             {
-                if (op > 0) {
-                    if (sdata[tid + s] > value) mySum = mySum + 1;
-                } else if (op < 0) {
-                    if (sdata[tid + s] < value) mySum = mySum + 0;
-                }
-                sdata[tid] = mySum;
+                sdata[tid] = mySum = mySum + sdata[tid + s];
             }
             __syncthreads();
         }

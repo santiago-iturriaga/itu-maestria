@@ -123,6 +123,12 @@ int main(int argc, char **argv) {
                     aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
                     fprintf(stdout, " Aprox. prob. bit < 50%% (%d): %ld\n", POPULATION_SIZE >> 1, aux);
 
+                    aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE) * nthreads;
+                    fprintf(stdout, " Aprox. prob. bit > 100%% (%d): %ld\n", POPULATION_SIZE, aux);
+                    
+                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, 0) * nthreads;
+                    fprintf(stdout, " Aprox. prob. bit < 0%% (%d): %ld\n", 0, aux);
+
                     current_acc_prob = aux;
                 }
             }
