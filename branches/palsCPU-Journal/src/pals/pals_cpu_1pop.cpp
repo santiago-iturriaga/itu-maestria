@@ -532,7 +532,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
 
-    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * (thread_instance->thread_idx+1); // * ((2 * (thread_instance->thread_idx >> 1)) + 1);
+    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS; 
+    /*float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS + (thread_instance->thread_idx * 2);
+    float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * ((2 * (thread_instance->thread_idx >> 1)) + 1);*/
 
     struct solution *selected_solution = NULL;
     int current_sol_pos = -1;
@@ -595,73 +597,107 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             timming_start(ts_mct);
             // Timming -----------------------------------------------------
 
-            //if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
-            if (thread_instance->thread_idx == 0)
-            {
-                pthread_mutex_lock(thread_instance->population_mutex);
-
-                thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
-
-                pthread_mutex_unlock(thread_instance->population_mutex);
-
-                // Inicializo el individuo que me toca.
-                init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
-                
-                /*#ifdef INIT_MCT
-                 * 
-                double random;
-                rand_generate(thread_instance, random);
-
-                int random_task = (int)floor(random * thread_instance->etc->tasks_count);
-                
-                compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
-                #endif
-                #ifdef INIT_MINMIN
-                compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
-                #endif*/
-                
-                compute_pminmin(thread_instance->etc, 
-                    &(thread_instance->population[thread_instance->thread_idx]), 
-                    thread_instance->count_threads);
-
-                pthread_mutex_lock(thread_instance->population_mutex);
-
-                #ifndef ARCHVIER_ADHOC
-                archivers_adhoc(thread_instance, thread_instance->thread_idx);
-                #endif
-                #ifndef ARCHIVER_AGA
-                archivers_aga(thread_instance, thread_instance->thread_idx);
-                #endif
-
-                if (DEBUG_DEV)
+            #if defined(INIT_PMINMIN)
+                if (thread_instance->thread_idx == 0)
                 {
-                    fprintf(stdout, "[DEBUG] Population\n");
-                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                    // Inicializo el individuo que me toca.
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+                                        
+                    compute_pminmin(thread_instance->etc, 
+                        &(thread_instance->population[thread_instance->thread_idx]), 
+                        thread_instance->count_threads);
 
-                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    #ifndef ARCHVIER_ADHOC
+                    archivers_adhoc(thread_instance, thread_instance->thread_idx);
+                    #endif
+                    #ifndef ARCHIVER_AGA
+                    archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #endif
+
+                    if (DEBUG_DEV)
                     {
-                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                            thread_instance->population[i].initialized,
-                            thread_instance->population[i].status);
+                        fprintf(stdout, "[DEBUG] Population\n");
+                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                        for (int i = 0; i < thread_instance->population_max_size; i++)
+                        {
+                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                                thread_instance->population[i].initialized,
+                                thread_instance->population[i].status);
+                        }
                     }
+
+                    if (DEBUG)
+                    {
+                        fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
+                            thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                            get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                    }
+
+                    // Timming -----------------------------------------------------
+                    timming_end(">> Random MCT Time", ts_mct);
+                    // Timming -----------------------------------------------------
+
+                    if (DEBUG_DEV) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
                 }
-
-                pthread_mutex_unlock(thread_instance->population_mutex);
-
-                if (DEBUG)
+            #else
+                if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
                 {
-                    fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
-                        thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
-                        get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                    pthread_mutex_lock(thread_instance->population_mutex);
+                        thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+
+                    // Inicializo el individuo que me toca.
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+                    
+                    #ifdef INIT_MCT
+                        rand_generate(thread_instance, random);
+                        int random_task = (int)floor(random * thread_instance->etc->tasks_count);                   
+                        compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
+                    #endif
+                    #ifdef INIT_MINMIN
+                        compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
+                    #endif
+
+                    pthread_mutex_lock(thread_instance->population_mutex);
+
+                    #ifndef ARCHVIER_ADHOC
+                    archivers_adhoc(thread_instance, thread_instance->thread_idx);
+                    #endif
+                    #ifndef ARCHIVER_AGA
+                    archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #endif
+
+                    if (DEBUG_DEV)
+                    {
+                        fprintf(stdout, "[DEBUG] Population\n");
+                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                        for (int i = 0; i < thread_instance->population_max_size; i++)
+                        {
+                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                                thread_instance->population[i].initialized,
+                                thread_instance->population[i].status);
+                        }
+                    }
+
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+
+                    if (DEBUG)
+                    {
+                        fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
+                            thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                            get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                    }
+
+                    // Timming -----------------------------------------------------
+                    timming_end(">> Random MCT Time", ts_mct);
+                    // Timming -----------------------------------------------------
+
+                    if (DEBUG_DEV) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
                 }
-
-                // Timming -----------------------------------------------------
-                timming_end(">> Random MCT Time", ts_mct);
-                // Timming -----------------------------------------------------
-
-                if (DEBUG_DEV) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
-            }
-
+            #endif
+            
             // Espero a que los demas hilos terminen.
             rc = pthread_barrier_wait(thread_instance->sync_barrier);
             if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
@@ -674,9 +710,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             // Comienza la bsqueda.
             pthread_mutex_lock(thread_instance->population_mutex);
-
-            thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
-
+                thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
             pthread_mutex_unlock(thread_instance->population_mutex);
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
