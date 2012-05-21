@@ -387,7 +387,7 @@ __global__ void kern_vector_sp_int(int *gpu_input_data, long *gpu_output_data,
                 if (op > 0) {
                     if (gpu_input_data[i + blockDim.x] > value) mySum += 1;
                 } else if (op < 0) {
-                    if (gpu_input_data[i + blockDim.x] < value) mySum += 0;
+                    if (gpu_input_data[i + blockDim.x] < value) mySum += 1;
                 }
             }
         } else {
