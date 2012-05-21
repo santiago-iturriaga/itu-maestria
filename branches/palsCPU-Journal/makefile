@@ -4,7 +4,7 @@ LIBS=-lpthread -lrt
 #-mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
 
-all: pals-opt verificador fp
+all: pals-gdb verificador fp
 
 fp: fp_2obj.cpp
 	$(CXX) fp_2obj.cpp -o bin/fp_2obj

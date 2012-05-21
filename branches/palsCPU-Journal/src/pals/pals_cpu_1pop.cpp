@@ -521,6 +521,10 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     float work_thread_iterations = PALS_CPU_1POP_WORK__THREAD_ITERATIONS * (thread_instance->thread_idx+1); // * ((2 * (thread_instance->thread_idx >> 1)) + 1);
 
+    struct solution *selected_solution = NULL;
+    int current_sol_pos = -1;
+    int current_sol_index = -1;
+
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
         (thread_instance->total_iterations < thread_instance->max_iterations) &&
@@ -627,8 +631,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
             if (selected_solution_pos == -1)
-            {
+            {               
+                // ===========================================================================================
                 pthread_mutex_lock(thread_instance->population_mutex);
+
+                selected_solution = NULL;
+                current_sol_pos = -1;
+                current_sol_index = -1;
 
                 int candidate_to_del_pos = -1;
                 
@@ -651,21 +660,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
                 }
 
-                pthread_mutex_unlock(thread_instance->population_mutex);
-            }
-
-            // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
-            if (selected_solution_pos == -1)
-            {
-                // No se que hacer... PANICO! PANICO!... listo termino...
-                fprintf(stdout, "[ERROR] Hilo finalizado! PANIC!!!\n");
-
-                terminate = 1;
-                thread_instance->total_population_full++;
-            }
-            else
-            {
-                struct solution *selected_solution;
+                //pthread_mutex_unlock(thread_instance->population_mutex);
+                
                 selected_solution = &(thread_instance->population[selected_solution_pos]);
 
                 // Si es necesario inicializo el individuo.
@@ -676,10 +672,8 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 }
 
                 // Sorteo la solucion con la que me toca trabajar  =====================================================
-                
                 rand_generate(thread_instance, random);
-
-                pthread_mutex_lock(thread_instance->population_mutex);
+                
                 thread_instance->global_total_iterations[0] += local_iteration_count;
                 local_iteration_count = 0;
 
@@ -700,9 +694,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     }
                 }
 
-                int current_sol_pos = -1;
-                int current_sol_index = -1;
-
                 for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
                 {
                     if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
@@ -721,7 +712,20 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
+                // ===========================================================================================
+            }
 
+            // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
+            if (selected_solution_pos == -1)
+            {
+                // No se que hacer... PANICO! PANICO!... listo termino...
+                fprintf(stdout, "[ERROR] Hilo finalizado! PANIC!!!\n");
+
+                terminate = 1;
+                thread_instance->total_population_full++;
+            }
+            else
+            {
                 // Determino la estrategia de busqueda del hilo  =====================================================
                 if (DEBUG_DEV)
                 {
@@ -1007,17 +1011,17 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     fprintf(stdout, "[DEBUG] energy encontrado: %f\n", selected_solution->__total_energy_consumption);
                     fprintf(stdout, "===================================================\n");*/
 
-                    if ((original_makespan > get_makespan(selected_solution)) ||
-                        (original_energy > get_energy(selected_solution)))
+                    // Lo mejore. Intento obtener lock de la poblacion.
+                    int mutex_locked;
+                    mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
+
+                    if (mutex_locked == 0)
                     {
-                        int mutex_locked;
-                        int new_solution_eval = 0;
-
-                        // Lo mejore. Intento obtener lock de la poblacion.
-                        mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
-
-                        if (mutex_locked == 0)
+                        if ((original_makespan > get_makespan(selected_solution)) ||
+                            (original_energy > get_energy(selected_solution)))
                         {
+                            int new_solution_eval = 0;
+
                             // Chequeo si la nueva solucion es no-dominada.
                             #ifdef ARCHIVER_ADHOC
                             new_solution_eval = archivers_adhoc(thread_instance, selected_solution_pos);
@@ -1025,8 +1029,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             #ifdef ARCHIVER_AGA
                             new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
                             #endif
-
-                            pthread_mutex_unlock(thread_instance->population_mutex);
 
                             if (new_solution_eval == 1)
                             {
@@ -1062,23 +1064,105 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         }
                         else
                         {
-                            // Algun otro thread esta trabajando sobre la poblacion.
-                            // Intento hacer otro loop de trabajo y vuelvo a probar.
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
-
-                            rand_generate(thread_instance, random);
-                            //random = 1;
-
-                            work_do_iteration = 1;
-                            work_iteration_size = (int)floor(random * (work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR)) + 1;
-
-                            thread_instance->total_re_iterations++;
+                            // No lo pude mejorar.
+                            thread_instance->total_soluciones_no_evolucionadas++;
                         }
+
+                        // ===========================================================================================
+                        if (selected_solution_pos == -1)
+                        {
+                            selected_solution = NULL;
+                            current_sol_pos = -1;
+                            current_sol_index = -1;
+
+                            int candidate_to_del_pos = -1;
+                            
+                            for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
+                            {
+                                if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+                                {
+                                    thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
+                                    selected_solution_pos = i;
+
+                                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                                    
+                                } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
+                                    candidate_to_del_pos = i;
+                                }
+                            }
+
+                            if ((selected_solution_pos == -1)&&(candidate_to_del_pos != -1)) {
+                                selected_solution_pos = candidate_to_del_pos;
+                                thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                            }
+
+                            //pthread_mutex_unlock(thread_instance->population_mutex);
+                            
+                            selected_solution = &(thread_instance->population[selected_solution_pos]);
+
+                            // Si es necesario inicializo el individuo.
+                            if (selected_solution->initialized == 0)
+                            {
+                                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
+                                init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
+                            }
+
+                            // Sorteo la solucion con la que me toca trabajar  =====================================================
+                            rand_generate(thread_instance, random);
+                            
+                            thread_instance->global_total_iterations[0] += local_iteration_count;
+                            local_iteration_count = 0;
+
+                            int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
+
+                            if (DEBUG_DEV)
+                            {
+                                fprintf(stdout, "[DEBUG] Random selection\n");
+                                fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                                fprintf(stdout, "        Random          : %f\n", random);
+                                fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+
+                                for (int i = 0; i < thread_instance->population_max_size; i++)
+                                {
+                                    fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                                        thread_instance->population[i].initialized,
+                                        thread_instance->population[i].status);
+                                }
+                            }
+
+                            for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
+                            {
+                                if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
+                                {
+                                    current_sol_index++;
+
+                                    if (current_sol_index == random_sol_index)
+                                    {
+                                        current_sol_pos = i;
+                                    }
+                                }
+                            }
+
+                            // Clono la solucion elegida =====================================================
+                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                            clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
+                        }
+                        // ===========================================================================================                        
+                        pthread_mutex_unlock(thread_instance->population_mutex);
                     }
                     else
                     {
-                        // No lo pude mejorar.
-                        thread_instance->total_soluciones_no_evolucionadas++;
+                        // Algun otro thread esta trabajando sobre la poblacion.
+                        // Intento hacer otro loop de trabajo y vuelvo a probar.
+                        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
+
+                        rand_generate(thread_instance, random);
+                        //random = 1;
+
+                        work_do_iteration = 1;
+                        work_iteration_size = (int)floor(random * (work_thread_iterations / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR)) + 1;
+
+                        thread_instance->total_re_iterations++;
                     }
                 }
             }
