@@ -309,6 +309,7 @@ long bga_get_full_accumulated_prob(struct bga_state *state) {
     long result = 0;
 
     for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
+        fprintf(stdout, "bga_get_full_accumulated_prob %d = %ld\n", prob_vector_number, state->prob_vectors_acc_prob[prob_vector_number]);
         result += state->prob_vectors_acc_prob[prob_vector_number];
     }
 
