@@ -120,8 +120,8 @@ int main(int argc, char **argv) {
                     aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
                     fprintf(stdout, " Aprox. prob. bit > 50%%: %ld\n", aux);
                     
-                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
-                    fprintf(stdout, " Aprox. prob. bit < 25%%: %ld\n", aux);
+                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
+                    fprintf(stdout, " Aprox. prob. bit < 50%%: %ld\n", aux);
 
                     current_acc_prob = aux;
                 }
