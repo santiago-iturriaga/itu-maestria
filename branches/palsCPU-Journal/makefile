@@ -21,6 +21,7 @@ pals-gdb: src/main.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
@@ -43,6 +44,7 @@ pals-gdb: src/main.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
@@ -67,6 +69,7 @@ pals-opt: src/main.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
@@ -89,6 +92,7 @@ pals-opt: src/main.cpp \
 		src/utils.cpp \
 		src/basic/mct.cpp \
 		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
