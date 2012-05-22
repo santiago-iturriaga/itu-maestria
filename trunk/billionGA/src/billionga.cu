@@ -654,9 +654,9 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             #endif
         }
 
-        #if defined(DEBUG)
+        /*#if defined(DEBUG)
             fprintf(stdout, "(%d)\n", total_loops);
-        #endif
+        #endif*/
         #if defined(TIMMING)
             ccudaEventRecord(end, 0);
             ccudaEventSynchronize(end);
