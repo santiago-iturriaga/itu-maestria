@@ -310,7 +310,6 @@ long bga_get_full_accumulated_prob(struct bga_state *state) {
     long result = 0;
 
     for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
-        fprintf(stdout, "bga_get_full_accumulated_prob %d = %ld\n", prob_vector_number, state->prob_vectors_acc_prob[prob_vector_number]);
         result += state->prob_vectors_acc_prob[prob_vector_number];
     }
 
@@ -833,10 +832,6 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
     worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
 
-    /*cpu_model_update(state->gpu_prob_vectors[prob_vector_number], 
-        current_prob_vector_number_of_bits,
-        best_sample, worst_sample);
-    */
     kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
         state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
         best_sample, worst_sample, state->population_size);
