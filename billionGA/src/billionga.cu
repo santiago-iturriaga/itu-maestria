@@ -630,6 +630,10 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 prng_starting_pos = thread_loop_size * inner_loop;
                 prob_vector_starting_pos = (mt_status->numbers_per_gen * loop) + prng_starting_pos;
 
+                fprintf(stdout, "[DEBUG] Randomizating from %d to %d (with prng from %d to %d)\n", 
+                    prob_vector_starting_pos, prob_vector_starting_pos + thread_loop_size,
+                    prng_starting_pos, prng_starting_pos + thread_loop_size);
+
                 // Sampleo el vector de prob. con los números aleatorios generados.
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                     state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits, prob_vector_starting_pos, 
