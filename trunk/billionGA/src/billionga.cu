@@ -16,11 +16,10 @@
 #define MAX_FITNESS_BITS_TO_CONSIDER    1048576
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
-#define SAMPLE_PROB_VECTOR_THREADS   256
-#define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 5)
+#define SAMPLE_PROB_VECTOR_THREADS   768
 
 #define UPDATE_PROB_VECTOR_BLOCKS    128
-#define UPDATE_PROB_VECTOR_THREADS   256
+#define UPDATE_PROB_VECTOR_THREADS   768
 #define UPDATE_PROB_VECTOR_SHMEM     (UPDATE_PROB_VECTOR_THREADS >> 5)
 
 // Paso 1 del algoritmo.
@@ -538,27 +537,30 @@ __global__ void kern_sample_prob_vector(
     prng_position = prng_vector_starting_pos + block_starting_pos;
     prob_vector_position = prob_vector_starting_pos + block_starting_pos;
 
-    if (tid < SAMPLE_PROB_VECTOR_THREADS) {
-        if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
-            if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
-            }
+    int temp = ((1 << 5)-1);
+
+    if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
+	//if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+        if ((float)(gpu_prob_vector[prob_vector_position] / population_size) + 1 >= prng_vector[prng_position]) {
+        	current_block_sample[tid] = 1 << (tid & temp);
         }
     }
 
     __syncthreads();
 
-    if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
-        int aux = current_block_sample[tid << 5];
+    int tid_32 = tid << 5;
 
-        #pragma unroll
+    if (tid_32 < SAMPLE_PROB_VECTOR_THREADS) {
+        int aux = current_block_sample[tid_32];
+
+        #pragma unroll 32
         for (int i = 1; i < 32; i++) {
-            aux = aux | current_block_sample[(tid << 5)+i];
-        }
+            aux = aux | current_block_sample[(tid_32) + i];
+       }
 
-        if ((prob_vector_position + (tid << 5)) < prob_vector_size) {
-            gpu_sample[(prob_vector_position >> 5) + tid] = aux;
-        }
+       if ((prob_vector_position + (tid_32)) < prob_vector_size) {
+           gpu_sample[(prob_vector_position >> 5) + tid] = aux;
+       }
     }
 }
 
