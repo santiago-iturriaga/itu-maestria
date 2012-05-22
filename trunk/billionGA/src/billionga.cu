@@ -510,60 +510,48 @@ void bga_show_samples(struct bga_state *state) {
     #endif
 }
 
-__global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_size,
-    int prob_vector_starting_pos, float *prng_vector, int prng_vector_size, int *gpu_sample,
-    int population_size) {
+__global__ void kern_sample_prob_vector(
+    int *gpu_prob_vector, int prob_vector_size, int prob_vector_starting_pos, 
+    float *prng_vector, int prng_vector_size, int prng_vector_starting_pos,
+    int *gpu_sample, int population_size) {
 
     const int tid = threadIdx.x;
     const int bid = blockIdx.x;
-    const int samples_per_loop = gridDim.x * blockDim.x;
-
-    int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
-    if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
-
-    int loops_count = max_samples_doable / samples_per_loop;
-    if (max_samples_doable % samples_per_loop > 0) loops_count++;
 
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_THREADS];
 
     int prob_vector_position;
     int prng_position;
+    
     int block_starting_pos;
 
-    for (int loop = 0; loop < loops_count; loop++) {
-        // 0 por defecto.
-        current_block_sample[tid] = 0;
+    // 0 por defecto.
+    current_block_sample[tid] = 0;
 
-        // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
-        block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
-        prng_position = block_starting_pos + tid;
-        prob_vector_position = prob_vector_starting_pos + prng_position;
+    // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
+    block_starting_pos = (bid * blockDim.x) + tid;
+    prng_position = prng_vector_starting_pos + block_starting_pos;
+    prob_vector_position = prob_vector_starting_pos + block_starting_pos;
 
-        if (prng_position < max_samples_doable) {
-            if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-                // 1
-                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
-            }
+    if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
+        if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+            current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
+        }
+    }
+
+    __syncthreads();
+
+    if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
+        int aux = current_block_sample[tid << 5];
+
+        #pragma unroll
+        for (int i = 1; i < 32; i++) {
+            aux = aux | current_block_sample[(tid << 5)+i];
         }
 
-        __syncthreads();
-
-        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
-            int aux = current_block_sample[tid << 5];
-
-            #pragma unroll
-            for (int i = 1; i < 32; i++) {
-                aux = aux | current_block_sample[(tid << 5)+i];
-            }
-
-            int sample_pos = prob_vector_starting_pos + block_starting_pos;
-
-            if ((sample_pos + (tid << 5)) < prob_vector_size) {
-                gpu_sample[(sample_pos >> 5) + tid] = aux;
-            }
+        if ((prob_vector_position + (tid << 5)) < prob_vector_size) {
+            gpu_sample[(prob_vector_position >> 5) + tid] = aux;
         }
-
-        __syncthreads();
     }
 }
 
@@ -600,13 +588,17 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
-        int total_loops;
-        total_loops = current_prob_vector_number_of_bits / mt_status->numbers_per_gen;
-        if (current_prob_vector_number_of_bits % mt_status->numbers_per_gen > 0) total_loops++;
+        int prng_loop_size;
+        prng_loop_size = current_prob_vector_number_of_bits / mt_status->numbers_per_gen;
+        if (current_prob_vector_number_of_bits % mt_status->numbers_per_gen > 0) prng_loop_size++;
+
+        int thread_count = SAMPLE_PROB_VECTOR_BLOCKS * SAMPLE_PROB_VECTOR_THREADS;
+        int thread_loop_size = mt_status->numbers_per_gen / thread_count;
+        if (mt_status->numbers_per_gen % thread_count > 0) thread_loop_size++;
 
         int prob_vector_starting_pos;
 
-        for (int loop = 0; loop < total_loops; loop++) {
+        for (int loop = 0; loop < prng_loop_size; loop++) {
             prob_vector_starting_pos = mt_status->numbers_per_gen * loop;
 
             // Genero números aleatorios.
@@ -633,11 +625,18 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 ccudaEventRecord(start_inner, 0);
             #endif
 
-            // Sampleo el vector de prob. con los números aleatorios generados.
-            kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
-                state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
-                prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
-                state->gpu_samples[sample_number][prob_vector_number], state->population_size);
+            int prng_starting_pos;
+
+            for (int inner_loop = 0; inner_loop < thread_loop_size; inner_loop++) {
+                prng_starting_pos = thread_loop_size * inner_loop;
+
+                // Sampleo el vector de prob. con los números aleatorios generados.
+                kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
+                    state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+                    prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
+                    prng_starting_pos, state->gpu_samples[sample_number][prob_vector_number], 
+                    state->population_size);
+            }
 
             #if defined(TIMMING)
                 ccudaEventRecord(end_inner, 0);
