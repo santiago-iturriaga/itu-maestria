@@ -627,7 +627,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             #endif
 
             for (int inner_loop = 0; inner_loop < thread_loop_size; inner_loop++) {
-                prng_starting_pos = thread_loop_size * inner_loop;
+                prng_starting_pos = thread_count * inner_loop;
                 prob_vector_starting_pos = (mt_status->numbers_per_gen * loop) + prng_starting_pos;
 
                 fprintf(stdout, "[DEBUG] Randomizating from %d to %d (with prng from %d to %d)\n", 
