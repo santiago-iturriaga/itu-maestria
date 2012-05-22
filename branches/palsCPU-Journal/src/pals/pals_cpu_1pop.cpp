@@ -1052,24 +1052,22 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                             {                                
                                 swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-
+/*
                                 refresh(selected_solution);
                                 
                                 if ((original_makespan > get_makespan(selected_solution)) ||
                                     (original_energy > get_energy(selected_solution))) {
 
-                                    thread_instance->total_moves++;
+			            thread_instance->total_swaps++;
                                 } else {
                                     swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
-                                }
-
-                                thread_instance->total_swaps++;
+                                }*/
                             }
                             else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                             {
                                 move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
-                                refresh(selected_solution);
+                                /*refresh(selected_solution);
                                 
                                 if ((original_makespan > get_makespan(selected_solution)) ||
                                     (original_energy > get_energy(selected_solution))) {
@@ -1078,29 +1076,20 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 } else {
                                     move_task_to_machine_by_pos(selected_solution, machine_b_best_move_id, 
                                         get_machine_tasks_count(selected_solution, machine_b_best_move_id)-1, machine_a);
-                                }
+                                }*/
                             }
                         }
                     } // Termino el loop con la iteracion del thread
 
                     refresh(selected_solution);
 
-                    /*
-                    fprintf(stdout, "===================================================\n");
-                    fprintf(stdout, "[DEBUG] makespan encontrado: %f\n", selected_solution->__makespan);
-                    //fprintf(stdout, "[DEBUG] energy encontrado: %f\n", selected_solution->__total_energy_consumption);
-                    fprintf(stdout, "[DEBUG] mejor makespan encontrado: %f\n", best_makespan_seen);
-                    if (selected_solution->__makespan < best_makespan_seen) best_makespan_seen = selected_solution->__makespan;
-                    fprintf(stdout, "===================================================\n");
-                    */
-                    
                     // Lo mejore. Intento obtener lock de la poblacion.
                     mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
                     if (mutex_locked == 0)
                     {
                         if ((original_makespan > get_makespan(selected_solution)) ||
-                            (original_energy > get_energy(selected_solution))) {
+                            (original_energy > get_energy(selected_solution)) {
                         {
                             new_solution_eval = 0;
 
