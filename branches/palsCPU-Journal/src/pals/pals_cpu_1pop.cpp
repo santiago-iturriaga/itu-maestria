@@ -1089,7 +1089,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if (mutex_locked == 0)
                     {
                         if ((original_makespan > get_makespan(selected_solution)) ||
-                            (original_energy > get_energy(selected_solution)) {
+                            (original_energy > get_energy(selected_solution))) 
                         {
                             new_solution_eval = 0;
 
