@@ -1,6 +1,6 @@
 #define INFO
 #define DEBUG
-//#define TIMMING
+#define TIMMING
 
 //#define POPULATION_SIZE   512
 //#define POPULATION_SIZE   1024
@@ -13,6 +13,6 @@
 
 #define NUMBER_OF_SAMPLES   2
 
-#define SHOW_UPDATE_EVERY   100
+#define SHOW_UPDATE_EVERY   1
 
 #define INIT_PROB_VECTOR_VALUE  POPULATION_SIZE >> 1
