@@ -533,9 +533,11 @@ __global__ void kern_sample_prob_vector(
     prng_position = prng_vector_starting_pos + block_starting_pos;
     prob_vector_position = prob_vector_starting_pos + block_starting_pos;
 
-    if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
-        if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-            current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
+    if (tid < SAMPLE_PROB_VECTOR_THREADS) {
+        if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
+            if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
+            }
         }
     }
 
@@ -597,10 +599,9 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
         if (mt_status->numbers_per_gen % thread_count > 0) thread_loop_size++;
 
         int prob_vector_starting_pos;
-
+        int prng_starting_pos;
+        
         for (int loop = 0; loop < prng_loop_size; loop++) {
-            prob_vector_starting_pos = mt_status->numbers_per_gen * loop;
-
             // Genero números aleatorios.
             #if defined(TIMMING)
                 fprintf(stdout, "[TIME] Generate mtgp32_generate_float\n", gputime);
@@ -625,17 +626,15 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 ccudaEventRecord(start_inner, 0);
             #endif
 
-            int prng_starting_pos;
-
             for (int inner_loop = 0; inner_loop < thread_loop_size; inner_loop++) {
                 prng_starting_pos = thread_loop_size * inner_loop;
+                prob_vector_starting_pos = (mt_status->numbers_per_gen * loop) + prng_starting_pos;
 
                 // Sampleo el vector de prob. con los números aleatorios generados.
                 kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
-                    state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
-                    prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
-                    prng_starting_pos, state->gpu_samples[sample_number][prob_vector_number], 
-                    state->population_size);
+                    state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits, prob_vector_starting_pos, 
+                    (float*)mt_status->d_data, mt_status->numbers_per_gen, prng_starting_pos, 
+                    state->gpu_samples[sample_number][prob_vector_number], state->population_size);
             }
 
             #if defined(TIMMING)
