@@ -12,6 +12,9 @@
 #define SHOW_PROB_VECTOR_BITS   128
 #define SHOW_SAMPLE_BITS        128
 
+// 1048576 == 2^20
+#define MAX_FITNESS_BITS_TO_CONSIDER    1048576
+
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
 #define SAMPLE_PROB_VECTOR_THREADS   256
 #define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 5)
@@ -414,6 +417,8 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
         if (prob_vector_number + 1 == state->number_of_prob_vectors) {
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
+
+        if (current_prob_vector_number_of_bits > MAX_FITNESS_BITS_TO_CONSIDER) current_prob_vector_number_of_bits = MAX_FITNESS_BITS_TO_CONSIDER;
 
         vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number],
             state->gpu_bit_vector_sum[prob_vector_number], current_prob_vector_number_of_bits);

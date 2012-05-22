@@ -1,5 +1,5 @@
-//#define INFO
-//#define DEBUG
+#define INFO
+#define DEBUG
 //#define TIMMING
 
 //#define POPULATION_SIZE   512
