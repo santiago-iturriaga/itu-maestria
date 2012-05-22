@@ -21,35 +21,33 @@
 //#define ARCHIVER_ADHOC
 #define ARCHIVER_AGA
 
-//#define INIT_MCT
+#define INIT_MCT
 //#define INIT_MINMIN
-#define INIT_PMINMIN
+//#define INIT_PMINMIN
 
 //#define MACH_SEL_SIMPLE
 #define MACH_SEL_COMPLEX
 
-//#define EVOL_GUIDE_SIMPLE
-#define EVOL_GUIDE_SIMPLE2
+#define EVOL_GUIDE_SIMPLE
+//#define EVOL_GUIDE_SIMPLE2
 //#define EVOL_GUIDE_COMPLEX
 //#define EVOL_GUIDE_MIX
 
 // CONFIGURACION ==============================================
 
-/*<<<<<<< .mine
-#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       50
-#define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   2
-=======*/
+//#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       50
+//#define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   2
+
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       8
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   2
 
-/*<<<<<<< .mine
 #define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      48
 #define PALS_CPU_1POP_WORK__DST_TASK_NHOOD      8
 #define PALS_CPU_1POP_WORK__DST_MACH_NHOOD      8
-=======*/
-#define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      12
-#define PALS_CPU_1POP_WORK__DST_TASK_NHOOD      12
-#define PALS_CPU_1POP_WORK__DST_MACH_NHOOD      8
+
+//#define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      12
+//#define PALS_CPU_1POP_WORK__DST_TASK_NHOOD      12
+//#define PALS_CPU_1POP_WORK__DST_MACH_NHOOD      8
 
 #define PALS_CPU_1POP_SEARCH_OP__SWAP           0
 #define PALS_CPU_1POP_SEARCH_OP__MOVE           1
