@@ -99,7 +99,6 @@ int main(int argc, char **argv) {
         long current_acc_prob = 0;
 
         fprintf(stdout, "iter,avg. prob.,abs. improv.,gt 50,lt 50,gt 75,lt 25\n");
-
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
