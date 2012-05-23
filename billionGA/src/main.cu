@@ -111,7 +111,8 @@ int main(int argc, char **argv) {
                     //fprintf(stdout, "                   Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
                     //fprintf(stdout, "     Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
 
-                    fprintf(stdout, "%d,%.4f,%ld,", current_iteration, aux, aux - current_acc_prob);
+                    fprintf(stdout, "%d,%.4f,%ld,", current_iteration, 
+                        (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads), aux - current_acc_prob);
 
                     current_acc_prob = aux;
 
