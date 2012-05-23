@@ -13,7 +13,7 @@
 #define SHOW_SAMPLE_BITS        128
 
 // 1048576 == 2^20
-#define MAX_FITNESS_BITS_TO_CONSIDER    1048576
+//#define MAX_FITNESS_BITS_TO_CONSIDER    1048576
 
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
 #define SAMPLE_PROB_VECTOR_THREADS   768
@@ -417,7 +417,7 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
-        if (current_prob_vector_number_of_bits > MAX_FITNESS_BITS_TO_CONSIDER) current_prob_vector_number_of_bits = MAX_FITNESS_BITS_TO_CONSIDER;
+        //if (current_prob_vector_number_of_bits > MAX_FITNESS_BITS_TO_CONSIDER) current_prob_vector_number_of_bits = MAX_FITNESS_BITS_TO_CONSIDER;
 
         vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number],
             state->gpu_bit_vector_sum[prob_vector_number], current_prob_vector_number_of_bits);
@@ -766,15 +766,14 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
         best_sample_current_bit_value = (best_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
         worst_sample_current_bit_value = (worst_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
 
-        delta = best_sample_current_bit_value - worst_sample_current_bit_value;
+        delta = (best_sample_current_bit_value - worst_sample_current_bit_value) * DELTA;
 
         int aux = gpu_prob_vector[prob_vector_position];
         aux = aux + delta;
 
-        if (aux < 0) aux = 0;
-        else if (aux > max_value) aux = max_value;
-
-        gpu_prob_vector[prob_vector_position] = aux;
+        if ((aux > MIN_PVALUE) && (aux < MAX_PVALUE)) {
+            gpu_prob_vector[prob_vector_position] = aux;
+        }
     }
 }
 
