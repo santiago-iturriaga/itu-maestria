@@ -98,30 +98,42 @@ int main(int argc, char **argv) {
 
         long current_acc_prob = 0;
 
+        fprintf(stdout, "iter,avg. prob.,abs. improv.,gt 50,lt 50,gt 75,lt 25\n");
+
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                    fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+                    //fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
                     
                     long aux;
                     aux = bga_get_part_accumulated_prob(&problem_state, th_id);
 
-                    fprintf(stdout, "                   Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
-                    fprintf(stdout, "     Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
+                    //fprintf(stdout, "                   Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
+                    //fprintf(stdout, "     Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
+
+                    fprintf(stdout, "%d,%.4f,%ld,", current_iteration, aux, aux - current_acc_prob);
 
                     current_acc_prob = aux;
 
                     aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
-                    fprintf(stdout, "  Aprox. prob. bit > 50%%: %ld\n", aux);
+                    //fprintf(stdout, "  Aprox. prob. bit > 50%%: %ld\n", aux);
+                    
+                    fprintf(stdout, "%ld,", aux);
                     
                     aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
-                    fprintf(stdout, "  Aprox. prob. bit < 50%%: %ld\n", aux);
+                    //fprintf(stdout, "  Aprox. prob. bit < 50%%: %ld\n", aux);
+
+                    fprintf(stdout, "%ld,", aux);
 
                     aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
-                    fprintf(stdout, "  Aprox. prob. bit > 75%%: %ld\n", aux);
+                    //fprintf(stdout, "  Aprox. prob. bit > 75%%: %ld\n", aux);
+                    
+                    fprintf(stdout, "%ld,", aux);
                     
                     aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
-                    fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux);
+                    //fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux);
+                    
+                    fprintf(stdout, "%ld\n", aux);
                 }
             }
 
@@ -168,14 +180,20 @@ int main(int argc, char **argv) {
         #pragma omp barrier
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
-            fprintf(stdout, "*******************************************************\n", current_iteration);
+            /*fprintf(stdout, "*******************************************************\n", current_iteration);
             fprintf(stdout, "*** FINAL *********************************************\n", current_iteration);
             fprintf(stdout, "                   Value: %ld\n", final_acc_prob);
             fprintf(stdout, "     Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
             fprintf(stdout, "  Aprox. prob. bit > 50%%: %ld\n", aux1[0]+aux1[1]+aux1[2]+aux1[3]);
             fprintf(stdout, "  Aprox. prob. bit < 50%%: %ld\n", aux2[0]+aux2[1]+aux2[2]+aux2[3]);
             fprintf(stdout, "  Aprox. prob. bit > 75%%: %ld\n", aux3[0]+aux3[1]+aux3[2]+aux3[3]);
-            fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux4[0]+aux4[1]+aux4[2]+aux4[3]);
+            fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux4[0]+aux4[1]+aux4[2]+aux4[3]);*/
+            
+            fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration, 
+                (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum, 
+                final_acc_prob - current_acc_prob, aux1[0]+aux1[1]+aux1[2]+aux1[3],
+                aux2[0]+aux2[1]+aux2[2]+aux2[3], aux3[0]+aux3[1]+aux3[2]+aux3[3],
+                aux4[0]+aux4[1]+aux4[2]+aux4[3]);
         }
 
         // === Libero la memoria del Mersenne Twister.
