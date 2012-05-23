@@ -12,9 +12,6 @@
 #define SHOW_PROB_VECTOR_BITS   128
 #define SHOW_SAMPLE_BITS        128
 
-// 1048576 == 2^20
-//#define MAX_FITNESS_BITS_TO_CONSIDER    1048576
-
 #define SAMPLE_PROB_VECTOR_BLOCKS    128
 #define SAMPLE_PROB_VECTOR_THREADS   768
 
@@ -417,8 +414,6 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
-        //if (current_prob_vector_number_of_bits > MAX_FITNESS_BITS_TO_CONSIDER) current_prob_vector_number_of_bits = MAX_FITNESS_BITS_TO_CONSIDER;
-
         vector_sum_bit(state->gpu_samples[sample_number][prob_vector_number],
             state->gpu_bit_vector_sum[prob_vector_number], current_prob_vector_number_of_bits);
 
@@ -514,6 +509,8 @@ void bga_show_samples(struct bga_state *state) {
     #endif
 }
 
+// ===============================================================================
+#if defined(CPU_LOOP)
 __global__ void kern_sample_prob_vector(
     int *gpu_prob_vector, int prob_vector_size, int prob_vector_starting_pos,
     float *prng_vector, int prng_vector_size, int prng_vector_starting_pos,
@@ -563,6 +560,65 @@ __global__ void kern_sample_prob_vector(
        }
     }
 }
+#endif
+// ===============================================================================
+#if defined(GPU_LOOP)
+__global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_size,
+    int prob_vector_starting_pos, float *prng_vector, int prng_vector_size, int *gpu_sample,
+    int population_size) {
+
+    const int tid = threadIdx.x;
+    const int bid = blockIdx.x;
+    const int samples_per_loop = gridDim.x * blockDim.x;
+
+    int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
+    if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
+
+    int loops_count = max_samples_doable / samples_per_loop;
+    if (max_samples_doable % samples_per_loop > 0) loops_count++;
+
+    __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_THREADS];
+
+    int prob_vector_position;
+    int prng_position;
+    int block_starting_pos;
+
+    for (int loop = 0; loop < loops_count; loop++) {
+        // 0 por defecto.
+        current_block_sample[tid] = 0;
+
+        // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
+        block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
+        prng_position = block_starting_pos + tid;
+        prob_vector_position = prob_vector_starting_pos + prng_position;
+
+        if (prng_position < max_samples_doable) {
+            if ((float)(gpu_prob_vector[prob_vector_position] / population_size) + 1 >= prng_vector[prng_position]) {
+                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
+            }
+        }
+
+        __syncthreads();
+
+        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
+            int aux = current_block_sample[tid << 5];
+
+            #pragma unroll
+            for (int i = 1; i < 32; i++) {
+                aux = aux | current_block_sample[(tid << 5)+i];
+            }
+
+            int sample_pos = prob_vector_starting_pos + block_starting_pos;
+
+            if ((sample_pos + (tid << 5)) < prob_vector_size) {
+                gpu_sample[(sample_pos >> 5) + tid] = aux;
+            }
+        }
+
+        __syncthreads();
+    }
+}
+#endif
 
 // Paso 2 del algoritmo.
 void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, int prob_vector_number) {
@@ -634,6 +690,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 ccudaEventRecord(start_inner, 0);
             #endif
             
+            #if defined(CPU_LOOP)
             temp = mt_status->numbers_per_gen * loop;
 
             for (int inner_loop = 0; inner_loop < thread_loop_size; inner_loop++) {
@@ -646,6 +703,14 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                     (float*)mt_status->d_data, mt_status->numbers_per_gen, prng_starting_pos,
                     state->gpu_samples[sample_number][prob_vector_number], state->population_size);
             }
+            #endif
+            #if defined(GPU_LOOP)
+            // Sampleo el vector de prob. con los números aleatorios generados.
+            kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
+                state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+                prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
+                state->gpu_samples[sample_number][prob_vector_number], state->population_size);
+            #endif
 
             #if defined(TIMMING)
                 ccudaEventRecord(end_inner, 0);
@@ -728,6 +793,7 @@ void cpu_model_update(int *gpu_prob_vector, int prob_vector_size,
     free(worst_sample);
 }
 
+#if defined(CPU_LOOP)
 __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
     int prob_vector_starting_pos, int *best_sample, int *worst_sample, int max_value) {
 
@@ -776,6 +842,61 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
         }
     }
 }
+#endif
+#if defined(GPU_LOOP)
+__global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
+    int *best_sample, int *worst_sample, int max_value) {
+
+    const int tid = threadIdx.x;
+    const int bid = blockIdx.x;
+
+    __shared__ int best_sample_part[UPDATE_PROB_VECTOR_SHMEM];
+    __shared__ int worst_sample_part[UPDATE_PROB_VECTOR_SHMEM];
+
+    int loop_size = gridDim.x * blockDim.x;
+    int loop_count = prob_vector_size / loop_size;
+    if (prob_vector_size % loop_size > 0) loop_count++;
+
+    int prob_vector_position;
+    int block_starting_pos;
+
+    const int tid_int = tid >> 5;
+    const int tid_bit = tid & ((1 << 5)-1);
+
+    int best_sample_current_bit_value;
+    int worst_sample_current_bit_value;
+    int delta;
+
+    for (int loop = 0; loop < loop_count; loop++) {
+        block_starting_pos = (loop_size * loop) + (bid * blockDim.x);
+
+        if (tid < UPDATE_PROB_VECTOR_SHMEM) {
+            if ((block_starting_pos + (tid << 5)) < prob_vector_size) {
+                best_sample_part[tid] = best_sample[(block_starting_pos >> 5) + tid];
+                worst_sample_part[tid] = worst_sample[(block_starting_pos >> 5) + tid];
+            }
+        }
+        __syncthreads();
+
+        prob_vector_position = block_starting_pos + tid;
+
+        if (prob_vector_position < prob_vector_size) {
+            best_sample_current_bit_value = (best_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
+            worst_sample_current_bit_value = (worst_sample_part[tid_int] & (1 << tid_bit)) >> tid_bit;
+
+            delta = best_sample_current_bit_value - worst_sample_current_bit_value;
+            
+            int aux = gpu_prob_vector[prob_vector_position];
+            aux = aux + delta;
+            
+            if (aux < 0) aux = 0;
+            else if (aux > max_value) aux = max_value;
+            
+            gpu_prob_vector[prob_vector_position] = aux;
+        }
+    }
+}
+#endif 
 
 // Paso 4 y 5 del algoritmo.
 void bga_model_update(struct bga_state *state, int prob_vector_number) {
@@ -836,6 +957,7 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
     best_sample = state->gpu_samples[best_sample_index][prob_vector_number];
     worst_sample = state->gpu_samples[worst_sample_index][prob_vector_number];
 
+    #if defined(CPU_LOOP)
     int threads_count = UPDATE_PROB_VECTOR_BLOCKS * UPDATE_PROB_VECTOR_THREADS;
     int threads_loop_count = current_prob_vector_number_of_bits / threads_count;
     if (current_prob_vector_number_of_bits % threads_count > 0) threads_loop_count++;
@@ -847,6 +969,12 @@ void bga_model_update(struct bga_state *state, int prob_vector_number) {
             state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
             starting_pos, best_sample, worst_sample, state->population_size);
     }
+    #endif
+    #if defined(GPU_LOOP)
+    kern_model_update <<< UPDATE_PROB_VECTOR_BLOCKS, UPDATE_PROB_VECTOR_THREADS >>>(
+        state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
+        best_sample, worst_sample, state->population_size);
+    #endif
 
     #if defined(TIMMING)
         ccudaEventRecord(end, 0);

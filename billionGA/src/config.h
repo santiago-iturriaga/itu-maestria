@@ -10,6 +10,9 @@
 #define MIN_PVALUE      100
 #define MAX_PVALUE      924
 
+//#define CPU_LOOP
+#define GPU_LOOP
+
 // The full fitness update model updates the probability vector according
 // to the total sample fitness, but requires an extra barrier to sync the threads.
 //#define FULL_FITNESS_UPDATE
