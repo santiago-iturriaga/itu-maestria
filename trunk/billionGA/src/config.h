@@ -2,11 +2,10 @@
 //#define DEBUG
 //#define TIMMING
 
-#define POPULATION_SIZE   1024
-
-#define DELTA           2
-#define MIN_PVALUE      100
-#define MAX_PVALUE      924
+#define POPULATION_SIZE     1024
+#define DELTA               2
+#define MIN_PVALUE          100
+#define MAX_PVALUE          924
 
 //#define CPU_LOOP
 #define GPU_LOOP
@@ -18,6 +17,6 @@
 
 #define NUMBER_OF_SAMPLES   2
 
-#define SHOW_UPDATE_EVERY   1
+#define SHOW_UPDATE_EVERY   10000
 
 #define INIT_PROB_VECTOR_VALUE  POPULATION_SIZE >> 1
