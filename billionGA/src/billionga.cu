@@ -537,8 +537,8 @@ __global__ void kern_sample_prob_vector(
     int temp = ((1 << 5)-1);
 
     if ((prng_position < prng_vector_size) && (prob_vector_position < prob_vector_size)) {
-        //if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-        if ((float)(gpu_prob_vector[prob_vector_position] / population_size) + 1 >= prng_vector[prng_position]) {
+        if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+        //if ((float)(gpu_prob_vector[prob_vector_position] / population_size) + 1 >= prng_vector[prng_position]) {
             current_block_sample[tid] = 1 << (tid & temp);
         }
     }
