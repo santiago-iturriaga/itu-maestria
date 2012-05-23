@@ -153,6 +153,7 @@ set queue quick_jobs resources_min.nodect = 1
 set queue quick_jobs resources_default.ncpus = 1
 set queue quick_jobs acl_group_enable = True
 set queue quick_jobs acl_groups = clusterusers
+set queue quick_jobs acl_groups += clusterexternos
 set queue quick_jobs acl_logic_or = True
 set queue quick_jobs acl_group_sloppy = True
 set queue quick_jobs kill_delay = 30
