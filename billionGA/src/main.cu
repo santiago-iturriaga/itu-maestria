@@ -42,6 +42,8 @@ int main(int argc, char **argv) {
     struct termination_criteria term_state;
     termination_criteria_init(&term_state, max_iteration_count);
 
+    fprintf(stdout, "[INFO] Cantidad de iteraciones %d.\n", max_iteration_count);
+
     // === GPU.
     int number_gpus = 0;
     cudaGetDeviceCount(&number_gpus);
