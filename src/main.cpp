@@ -24,6 +24,7 @@
 
 #include "basic/mct.h"
 #include "basic/minmin.h"
+#include "basic/pminmin.h"
 
 #include "pals/pals_serial.h"
 #include "pals/pals_cpu_2pop.h"
@@ -105,6 +106,18 @@ int main(int argc, char** argv)
 		free_solution(current_solution);
 		free(current_solution);
 		
+    } else if (input.algorithm == pMINMIN) {
+        struct solution *current_solution = create_empty_solution(&etc, &energy);
+        compute_pminmin(&etc, current_solution, input.thread_count);
+        
+        if (!OUTPUT_SOLUTION) {
+            fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
+        } else {
+            show_solution(current_solution);
+        }
+        
+        free_solution(current_solution);
+        free(current_solution);
 	} 
 	
 	// Timming -----------------------------------------------------

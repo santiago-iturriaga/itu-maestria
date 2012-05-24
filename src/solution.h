@@ -10,13 +10,15 @@
 #ifndef SOLUTION_H_
 #define SOLUTION_H_
 
-#define SOLUTION__TASK_NOT_ASSIGNED -1
+#define SOLUTION__MAKESPAN_OBJ  0
+#define SOLUTION__ENERGY_OBJ    1
 
+#define SOLUTION__STATUS_TO_DEL     -2
 #define SOLUTION__STATUS_NOT_READY  -1
 #define SOLUTION__STATUS_EMPTY      0
 #define SOLUTION__STATUS_NEW        1
 #define SOLUTION__STATUS_READY      2
-#define SOLUTION__STATUS_TO_DEL     3
+#define SOLUTION__TASK_NOT_ASSIGNED -1
 
 struct solution {
     struct etc_matrix *etc;
@@ -56,6 +58,7 @@ void refresh_makespan(struct solution *s);
 void refresh_compute_time(struct solution *s);
 void refresh_energy(struct solution *s);
 void refresh_best_worst_energy(struct solution *s);
+void refresh(struct solution *s);
 
 int get_task_assigned_machine_id(struct solution *s, int task_id);
 int get_machine_tasks_count(struct solution *s, int machine_id);
@@ -65,6 +68,7 @@ int get_machine_task_pos(struct solution *s, int machine_id, int task_id);
 float get_machine_compute_time(struct solution *s, int machine_id);
 float get_makespan(struct solution *s);
 float get_energy(struct solution *s);
+float get_objective(struct solution *s, int obj_index);
 
 int get_worst_ct_machine_id(struct solution *s);
 int get_best_ct_machine_id(struct solution *s);

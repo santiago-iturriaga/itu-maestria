@@ -12,10 +12,12 @@
 #include "../utils.h"
 #include "../basic/mct.h"
 #include "../basic/minmin.h"
+#include "../basic/pminmin.h"
 #include "../random/cpu_rand.h"
 #include "../random/cpu_drand48.h"
 #include "../random/cpu_mt.h"
 
+#include "archivers/aga.h"
 #include "pals_cpu_1pop.h"
 
 void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
@@ -48,385 +50,7 @@ void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
     assert(cantidad == *(instance->population_count));
 }
 
-
-void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
-{
-    // ==============================================================================
-    // PALS aleatorio por tarea.
-    // ==============================================================================
-
-    // Timming -----------------------------------------------------
-    timespec ts_init;
-    timming_start(ts_init);
-    // Timming -----------------------------------------------------
-
-    timespec ts_total_time_start;
-    clock_gettime(CLOCK_REALTIME, &ts_total_time_start);
-
-    // Inicializo la memoria y los hilos de ejecucin.
-    struct pals_cpu_1pop_instance instance;
-    pals_cpu_1pop_init(input, etc, energy, input.seed, instance);
-
-    // Timming -----------------------------------------------------
-    timming_end(">> pals_cpu_1pop_init", ts_init);
-    // Timming -----------------------------------------------------
-
-    // Bloqueo la ejecucin hasta que terminen todos los hilos.
-    for(int i = 0; i < instance.count_threads; i++)
-    {
-        if(pthread_join(instance.threads[i], NULL))
-        {
-            printf("Could not join thread %d\n", i);
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            if (DEBUG) printf("[DEBUG] thread %d <OK>\n", i);
-        }
-    }
-
-    timespec ts_total_time_end;
-    clock_gettime(CLOCK_REALTIME, &ts_total_time_end);
-
-    // Timming -----------------------------------------------------
-    timespec ts_finalize;
-    timming_start(ts_finalize);
-    // Timming -----------------------------------------------------
-
-    // ===========> DEBUG
-    int total_iterations = 0;
-    int total_makespan_greedy_searches = 0;
-    int total_energy_greedy_searches = 0;
-    int total_random_greedy_searches = 0;
-    int total_success_makespan_greedy_searches = 0;
-    int total_success_energy_greedy_searches = 0;
-    int total_success_random_greedy_searches = 0;
-    int total_swaps = 0;
-    int total_moves = 0;
-    int total_population_full = 0;
-    int total_soluciones_no_evolucionadas = 0;
-    int total_soluciones_evolucionadas_dominadas = 0;
-    int total_re_iterations = 0;
-    double elapsed_total_time = 0.0;
-    double elapsed_last_found = 0.0;
-
-    timespec ts_last_found = instance.threads_args[0].ts_last_found;
-
-    for (int i = 0; i < instance.count_threads; i++)
-    {
-        total_iterations += instance.threads_args[i].total_iterations;
-        total_makespan_greedy_searches += instance.threads_args[i].total_makespan_greedy_searches;
-        total_energy_greedy_searches += instance.threads_args[i].total_energy_greedy_searches;
-        total_random_greedy_searches += instance.threads_args[i].total_random_greedy_searches;
-        total_success_makespan_greedy_searches += instance.threads_args[i].total_success_makespan_greedy_searches;
-        total_success_energy_greedy_searches += instance.threads_args[i].total_success_energy_greedy_searches;
-        total_success_random_greedy_searches += instance.threads_args[i].total_success_random_greedy_searches;
-        total_swaps += instance.threads_args[i].total_swaps;
-        total_moves += instance.threads_args[i].total_moves;
-        total_population_full += instance.threads_args[i].total_population_full;
-        total_soluciones_no_evolucionadas += instance.threads_args[i].total_soluciones_no_evolucionadas;
-        total_soluciones_evolucionadas_dominadas += instance.threads_args[i].total_soluciones_evolucionadas_dominadas;
-        total_re_iterations += instance.threads_args[i].total_re_iterations;
-
-        if ((instance.threads_args[i].ts_last_found.tv_sec > ts_last_found.tv_sec) ||
-            ((instance.threads_args[i].ts_last_found.tv_sec == ts_last_found.tv_sec) &&
-            (instance.threads_args[i].ts_last_found.tv_nsec > ts_last_found.tv_nsec)))
-        {
-
-            ts_last_found = instance.threads_args[i].ts_last_found;
-        }
-    }
-
-    elapsed_total_time = ((ts_total_time_end.tv_sec - ts_total_time_start.tv_sec) * 1000000.0) +
-        ((ts_total_time_end.tv_nsec - ts_total_time_start.tv_nsec) / 1000.0);
-
-    elapsed_last_found = ((ts_last_found.tv_sec - ts_total_time_start.tv_sec) * 1000000.0) +
-        ((ts_last_found.tv_nsec - ts_total_time_start.tv_nsec) / 1000.0);
-
-    if (!OUTPUT_SOLUTION)
-    {
-        fprintf(stdout, "[INFO] Cantidad de iteraciones             : %d\n", total_iterations);
-        fprintf(stdout, "[INFO] Total de makespan searches          : %d (%d = %.1f)\n",
-            total_makespan_greedy_searches, total_success_makespan_greedy_searches,
-            (total_success_makespan_greedy_searches * 100.0 / total_makespan_greedy_searches));
-        fprintf(stdout, "[INFO] Total de energy searches            : %d (%d = %.1f)\n",
-            total_energy_greedy_searches, total_success_energy_greedy_searches,
-            (total_success_energy_greedy_searches * 100.0 / total_energy_greedy_searches));
-        fprintf(stdout, "[INFO] Total de random searches            : %d (%d = %.1f)\n",
-            total_random_greedy_searches, total_success_random_greedy_searches,
-            (total_success_random_greedy_searches * 100.0 / total_random_greedy_searches));
-        fprintf(stdout, "[INFO] Total de swaps                      : %d\n", total_swaps);
-        fprintf(stdout, "[INFO] Total de moves                      : %d\n", total_moves);
-        fprintf(stdout, "[INFO] Total poblacion llena               : %d\n", total_population_full);
-        fprintf(stdout, "[INFO] Cantidad de soluciones              : %d\n", instance.population_count);
-        fprintf(stdout, "[INFO] Cantidad de soluciones no mejoradas : %d\n", total_soluciones_no_evolucionadas);
-        fprintf(stdout, "[INFO] Cantidad de soluciones dominadas    : %d\n", total_soluciones_evolucionadas_dominadas);
-        fprintf(stdout, "[INFO] Cantidad de re-trabajos             : %d\n", total_re_iterations);
-        fprintf(stdout, "[INFO] Total execution time                : %.0f\n", elapsed_total_time);
-        fprintf(stdout, "[INFO] Last solution found                 : %.0f\n", elapsed_last_found);
-
-        if (DEBUG_DEV)
-        {
-            for (int i = 0; i < instance.population_max_size; i++)
-            {
-                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-                {
-                    validate_solution(&(instance.population[i]));
-                }
-            }
-        }
-    }
-    // <=========== DEBUG
-
-    if (DEBUG)
-    {
-        fprintf(stdout, "== Population =================================================\n");
-        for (int i = 0; i < instance.population_max_size; i++)
-        {
-            if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-            {
-                fprintf(stdout, "Solucion %d: %f %f\n", i, get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
-            }
-        }
-    }
-    else
-    {
-        if (!OUTPUT_SOLUTION)
-        {
-            fprintf(stdout, "== Population =================================================\n");
-            for (int i = 0; i < instance.population_max_size; i++)
-            {
-                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-                {
-                    fprintf(stdout, "%f %f\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
-                }
-            }
-        }
-        else
-        {
-            fprintf(stdout, "%d\n", instance.population_count);
-            for (int i = 0; i < instance.population_max_size; i++)
-            {
-                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-                {
-                    for (int task = 0; task < etc->tasks_count; task++)
-                    {
-                        fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
-                    }
-                }
-            }
-
-            fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
-            fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
-            fprintf(stderr, "LAST_FOUND_TIME|%.0f\n", elapsed_last_found);
-            fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
-            fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
-            fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
-            fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
-            fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_success_random_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
-            fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
-            fprintf(stderr, "TOTAL_SOLS_NO_EVOLUCIONADAS|%d\n", total_soluciones_no_evolucionadas);
-            fprintf(stderr, "TOTAL_SOLS_DOMINADAS|%d\n", total_soluciones_evolucionadas_dominadas);
-            fprintf(stderr, "TOTAL_RE_TRABAJO|%d\n", total_re_iterations);
-        }
-    }
-
-    // Libero la memoria del dispositivo.
-    pals_cpu_1pop_finalize(instance);
-
-    // Timming -----------------------------------------------------
-    timming_end(">> pals_cpu_1pop_finalize", ts_finalize);
-    // Timming -----------------------------------------------------
-}
-
-
-void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
-int seed, struct pals_cpu_1pop_instance &empty_instance)
-{
-
-    // Asignacin del paralelismo del algoritmo.
-    empty_instance.count_threads = input.thread_count;
-
-    if (!OUTPUT_SOLUTION)
-    {
-        fprintf(stdout, "[INFO] == Input arguments =====================================\n");
-        fprintf(stdout, "       Seed                                    : %d\n", seed);
-        fprintf(stdout, "       Number of tasks                         : %d\n", etc->tasks_count);
-        fprintf(stdout, "       Number of machines                      : %d\n", etc->machines_count);
-        fprintf(stdout, "       Number of threads                       : %d\n", empty_instance.count_threads);
-        fprintf(stdout, "       Population size                         : %d\n", input.population_size);
-        fprintf(stdout, "[INFO] == Configuration constants =============================\n");
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT                      : %d\n", input.max_time_secs);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__ITERATIONS                   : %d\n", input.max_iterations);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN           : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY             : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST  : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST    : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST);
-        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST   : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS            : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR        : %d\n", PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
-        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_MACH_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
-        fprintf(stdout, "[INFO] ========================================================\n");
-    }
-
-    // =========================================================================
-    // Pido la memoria e inicializo la solucin de partida.
-
-    empty_instance.etc = etc;
-    empty_instance.energy = energy;
-
-    empty_instance.population_max_size = input.population_size;
-    empty_instance.population_count = 0;
-    empty_instance.best_makespan_solution = -1;
-    empty_instance.best_energy_solution = -1;
-    empty_instance.global_total_iterations = 0;
-
-    // Population.
-    empty_instance.population = (struct solution*)malloc(sizeof(struct solution) * empty_instance.population_max_size);
-    if (empty_instance.population == NULL)
-    {
-        fprintf(stderr, "[ERROR] Solicitando memoria para population.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    for (int i = 0; i < empty_instance.population_max_size; i++)
-    {
-        empty_instance.population[i].status = SOLUTION__STATUS_EMPTY;
-        empty_instance.population[i].initialized = 0;
-    }
-
-    // =========================================================================
-    // Pedido de memoria para la generacin de numeros aleatorios.
-
-    timespec ts_1;
-    timming_start(ts_1);
-
-    srand(seed);
-    long int random_seed;
-
-    #ifdef CPU_MERSENNE_TWISTER
-    empty_instance.random_states = (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
-    #endif
-    #ifdef CPU_RAND
-    empty_instance.random_states = (struct cpu_rand_state*)malloc(sizeof(struct cpu_rand_state) * empty_instance.count_threads);
-    #endif
-    #ifdef CPU_DRAND48
-    empty_instance.random_states = (struct cpu_drand48_state*)malloc(sizeof(struct cpu_drand48_state) * empty_instance.count_threads);
-    #endif
-
-    for (int i = 0; i < empty_instance.count_threads; i++)
-    {
-        random_seed = rand();
-
-        #ifdef CPU_MERSENNE_TWISTER
-        cpu_mt_init(random_seed, empty_instance.random_states[i]);
-        #endif
-        #ifdef CPU_RAND
-        cpu_rand_init(random_seed, empty_instance.random_states[i]);
-        #endif
-        #ifdef CPU_DRAND48
-        cpu_drand48_init(random_seed, empty_instance.random_states[i]);
-        #endif
-    }
-
-    timming_end(".. cpu_rand_buffers", ts_1);
-
-    // =========================================================================
-    // Creo e inicializo los threads y los mecanismos de sincronizacin del sistema.
-
-    timespec ts_threads;
-    timming_start(ts_threads);
-
-    if (pthread_mutex_init(&(empty_instance.population_mutex), NULL))
-    {
-        printf("Could not create a population mutex\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (pthread_barrier_init(&(empty_instance.sync_barrier), NULL, empty_instance.count_threads))
-    {
-        printf("Could not create a sync barrier\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Creo los hilos.
-    empty_instance.threads = (pthread_t*)
-        malloc(sizeof(pthread_t) * empty_instance.count_threads);
-
-    empty_instance.threads_args = (struct pals_cpu_1pop_thread_arg*)
-        malloc(sizeof(struct pals_cpu_1pop_thread_arg) * empty_instance.count_threads);
-
-    empty_instance.work_type = PALS_CPU_1POP_WORK__INIT;
-
-    timespec ts_start;
-    clock_gettime(CLOCK_REALTIME, &ts_start);
-
-    for (int i = 0; i < empty_instance.count_threads; i++)
-    {
-        empty_instance.threads_args[i].thread_idx = i;
-        empty_instance.threads_args[i].count_threads = empty_instance.count_threads;
-
-        empty_instance.threads_args[i].etc = empty_instance.etc;
-        empty_instance.threads_args[i].energy = empty_instance.energy;
-        
-        empty_instance.threads_args[i].max_iterations = input.max_iterations;
-        empty_instance.threads_args[i].max_time_secs = input.max_time_secs;
-
-        empty_instance.threads_args[i].population = empty_instance.population;
-        empty_instance.threads_args[i].population_count = &(empty_instance.population_count);
-        empty_instance.threads_args[i].population_max_size = empty_instance.population_max_size;
-        empty_instance.threads_args[i].best_makespan_solution = &(empty_instance.best_makespan_solution);
-        empty_instance.threads_args[i].best_energy_solution = &(empty_instance.best_energy_solution);
-
-        empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
-        empty_instance.threads_args[i].global_total_iterations = &(empty_instance.global_total_iterations);
-
-        empty_instance.threads_args[i].population_mutex = &(empty_instance.population_mutex);
-        empty_instance.threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
-
-        empty_instance.threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
-        empty_instance.threads_args[i].ts_start = ts_start;
-
-        if (pthread_create(&(empty_instance.threads[i]), NULL, pals_cpu_1pop_thread,  (void*) &(empty_instance.threads_args[i])))
-        {
-            printf("Could not create slave thread %d\n", i);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    timming_end(".. thread creation", ts_threads);
-}
-
-
-void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
-{
-    for (int i = 0; i < instance.population_max_size; i++)
-    {
-        if (instance.population[i].initialized == 1)
-        {
-            free_solution(&(instance.population[i]));
-        }
-    }
-
-    free(instance.population);
-    free(instance.random_states);
-    free(instance.threads);
-    free(instance.threads_args);
-
-    pthread_mutex_destroy(&(instance.population_mutex));
-    pthread_barrier_destroy(&(instance.sync_barrier));
-}
-
-
-int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
+int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
     if (DEBUG_DEV) fprintf(stdout, "========================================================\n");
     double random = 0.0;
@@ -643,6 +267,403 @@ int pals_cpu_1pop_eval_new_solution(struct pals_cpu_1pop_thread_arg *instance, i
     }
 }
 
+void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
+{
+    // ==============================================================================
+    // PALS aleatorio por tarea.
+    // ==============================================================================
+
+    // Timming -----------------------------------------------------
+    timespec ts_init;
+    timming_start(ts_init);
+    // Timming -----------------------------------------------------
+
+    timespec ts_total_time_start;
+    clock_gettime(CLOCK_REALTIME, &ts_total_time_start);
+
+    // Inicializo la memoria y los hilos de ejecucin.
+    struct pals_cpu_1pop_instance instance;
+    pals_cpu_1pop_init(input, etc, energy, input.seed, instance);
+
+    // Timming -----------------------------------------------------
+    timming_end(">> pals_cpu_1pop_init", ts_init);
+    // Timming -----------------------------------------------------
+
+    // Bloqueo la ejecucin hasta que terminen todos los hilos.
+    for(int i = 0; i < instance.count_threads; i++)
+    {
+        if(pthread_join(instance.threads[i], NULL))
+        {
+            printf("Could not join thread %d\n", i);
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            if (DEBUG) printf("[DEBUG] thread %d <OK>\n", i);
+        }
+    }
+
+    timespec ts_total_time_end;
+    clock_gettime(CLOCK_REALTIME, &ts_total_time_end);
+
+    // Timming -----------------------------------------------------
+    timespec ts_finalize;
+    timming_start(ts_finalize);
+    // Timming -----------------------------------------------------
+
+    // Todos los individuos que estaban para borrar al final no se borran.
+    for (int i = 0; i < instance.population_max_size; i++)
+    {
+        if (instance.population[i].status == SOLUTION__STATUS_TO_DEL)
+        {
+            instance.population[i].status = SOLUTION__STATUS_READY;
+        }
+    }
+    // ===========> DEBUG
+    int total_iterations = 0;
+    int total_makespan_greedy_searches = 0;
+    int total_energy_greedy_searches = 0;
+    int total_random_greedy_searches = 0;
+    int total_success_makespan_greedy_searches = 0;
+    int total_success_energy_greedy_searches = 0;
+    int total_success_random_greedy_searches = 0;
+    int total_swaps = 0;
+    int total_moves = 0;
+    int total_population_full = 0;
+    int total_soluciones_no_evolucionadas = 0;
+    int total_soluciones_evolucionadas_dominadas = 0;
+    int total_re_iterations = 0;
+    double elapsed_total_time = 0.0;
+    double elapsed_last_found = 0.0;
+
+    timespec ts_last_found = instance.threads_args[0].ts_last_found;
+
+    for (int i = 0; i < instance.count_threads; i++)
+    {
+        total_iterations += instance.threads_args[i].total_iterations;
+        total_makespan_greedy_searches += instance.threads_args[i].total_makespan_greedy_searches;
+        total_energy_greedy_searches += instance.threads_args[i].total_energy_greedy_searches;
+        total_random_greedy_searches += instance.threads_args[i].total_random_greedy_searches;
+        total_success_makespan_greedy_searches += instance.threads_args[i].total_success_makespan_greedy_searches;
+        total_success_energy_greedy_searches += instance.threads_args[i].total_success_energy_greedy_searches;
+        total_success_random_greedy_searches += instance.threads_args[i].total_success_random_greedy_searches;
+        total_swaps += instance.threads_args[i].total_swaps;
+        total_moves += instance.threads_args[i].total_moves;
+        total_population_full += instance.threads_args[i].total_population_full;
+        total_soluciones_no_evolucionadas += instance.threads_args[i].total_soluciones_no_evolucionadas;
+        total_soluciones_evolucionadas_dominadas += instance.threads_args[i].total_soluciones_evolucionadas_dominadas;
+        total_re_iterations += instance.threads_args[i].total_re_iterations;
+
+        if ((instance.threads_args[i].ts_last_found.tv_sec > ts_last_found.tv_sec) ||
+            ((instance.threads_args[i].ts_last_found.tv_sec == ts_last_found.tv_sec) &&
+            (instance.threads_args[i].ts_last_found.tv_nsec > ts_last_found.tv_nsec)))
+        {
+
+            ts_last_found = instance.threads_args[i].ts_last_found;
+        }
+    }
+
+    elapsed_total_time = ((ts_total_time_end.tv_sec - ts_total_time_start.tv_sec) * 1000000.0) +
+        ((ts_total_time_end.tv_nsec - ts_total_time_start.tv_nsec) / 1000.0);
+
+    elapsed_last_found = ((ts_last_found.tv_sec - ts_total_time_start.tv_sec) * 1000000.0) +
+        ((ts_last_found.tv_nsec - ts_total_time_start.tv_nsec) / 1000.0);
+
+    if (!OUTPUT_SOLUTION)
+    {
+        fprintf(stdout, "[INFO] Cantidad de iteraciones             : %d\n", total_iterations);
+        fprintf(stdout, "[INFO] Total de makespan searches          : %d (%d = %.1f)\n",
+            total_makespan_greedy_searches, total_success_makespan_greedy_searches,
+            (total_success_makespan_greedy_searches * 100.0 / total_makespan_greedy_searches));
+        fprintf(stdout, "[INFO] Total de energy searches            : %d (%d = %.1f)\n",
+            total_energy_greedy_searches, total_success_energy_greedy_searches,
+            (total_success_energy_greedy_searches * 100.0 / total_energy_greedy_searches));
+        fprintf(stdout, "[INFO] Total de random searches            : %d (%d = %.1f)\n",
+            total_random_greedy_searches, total_success_random_greedy_searches,
+            (total_success_random_greedy_searches * 100.0 / total_random_greedy_searches));
+        fprintf(stdout, "[INFO] Total de swaps                      : %d\n", total_swaps);
+        fprintf(stdout, "[INFO] Total de moves                      : %d\n", total_moves);
+        fprintf(stdout, "[INFO] Total poblacion llena               : %d\n", total_population_full);
+        fprintf(stdout, "[INFO] Cantidad de soluciones              : %d\n", instance.population_count);
+        fprintf(stdout, "[INFO] Cantidad de soluciones no mejoradas : %d\n", total_soluciones_no_evolucionadas);
+        fprintf(stdout, "[INFO] Cantidad de soluciones dominadas    : %d\n", total_soluciones_evolucionadas_dominadas);
+        fprintf(stdout, "[INFO] Cantidad de re-trabajos             : %d\n", total_re_iterations);
+        fprintf(stdout, "[INFO] Total execution time                : %.0f\n", elapsed_total_time);
+        fprintf(stdout, "[INFO] Last solution found                 : %.0f\n", elapsed_last_found);
+
+        fprintf(stdout, "== Threads ====================================================\n");
+        for (int i = 0; i < instance.count_threads; i++)
+        {
+            fprintf(stdout, "Thread[%d] >> Iterations = %d >> Last found %d\n", i, instance.threads_args[i].total_iterations,
+                instance.threads_args[i].iter_last_found);
+        }
+        if (DEBUG_DEV)
+        {
+            for (int i = 0; i < instance.population_max_size; i++)
+            {
+                if (instance.population[i].status == SOLUTION__STATUS_READY)
+                {
+                    validate_solution(&(instance.population[i]));
+                }
+            }
+        }
+    }
+    // <=========== DEBUG
+
+    if (DEBUG)
+    {
+        fprintf(stdout, "== Population =================================================\n");
+        for (int i = 0; i < instance.population_max_size; i++)
+        {
+            if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
+            {
+                fprintf(stdout, "Solucion %d: %f %f\n", i, get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
+            }
+        }
+    }
+    else
+    {
+        if (!OUTPUT_SOLUTION)
+        {
+            fprintf(stdout, "== Population =================================================\n");
+            for (int i = 0; i < instance.population_max_size; i++)
+            {
+                    fprintf(stdout, "%f %f (%d)\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])),
+                        instance.population[i].status);
+            }
+        }
+        else
+        {
+            fprintf(stdout, "%d\n", instance.population_count);
+            for (int i = 0; i < instance.population_max_size; i++)
+            {
+                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
+                {
+                    for (int task = 0; task < etc->tasks_count; task++)
+                    {
+                        fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
+                    }
+                }
+            }
+
+            fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
+            fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
+            fprintf(stderr, "LAST_FOUND_TIME|%.0f\n", elapsed_last_found);
+            fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
+            fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
+            fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
+            fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
+            fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_success_random_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
+            fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
+            fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
+            fprintf(stderr, "TOTAL_SOLS_NO_EVOLUCIONADAS|%d\n", total_soluciones_no_evolucionadas);
+            fprintf(stderr, "TOTAL_SOLS_DOMINADAS|%d\n", total_soluciones_evolucionadas_dominadas);
+            fprintf(stderr, "TOTAL_RE_TRABAJO|%d\n", total_re_iterations);
+        }
+    }
+
+    // Libero la memoria del dispositivo.
+    pals_cpu_1pop_finalize(instance);
+
+    // Timming -----------------------------------------------------
+    timming_end(">> pals_cpu_1pop_finalize", ts_finalize);
+    // Timming -----------------------------------------------------
+}
+
+
+void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
+int seed, struct pals_cpu_1pop_instance &empty_instance)
+{
+
+    // Asignacin del paralelismo del algoritmo.
+    empty_instance.count_threads = input.thread_count;
+
+    if (!OUTPUT_SOLUTION)
+    {
+        fprintf(stdout, "[INFO] == Input arguments =====================================\n");
+        fprintf(stdout, "       Seed                                    : %d\n", seed);
+        fprintf(stdout, "       Number of tasks                         : %d\n", etc->tasks_count);
+        fprintf(stdout, "       Number of machines                      : %d\n", etc->machines_count);
+        fprintf(stdout, "       Number of threads                       : %d\n", empty_instance.count_threads);
+        fprintf(stdout, "       Population size                         : %d\n", input.population_size);
+        fprintf(stdout, "[INFO] == Configuration constants =============================\n");
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__TIMEOUT                      : %d\n", input.max_time_secs);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__ITERATIONS                   : %d\n", input.max_iterations);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__SWAP);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE            : %f\n", PALS_CPU_1POP_SEARCH_OP_BALANCE__MOVE);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN           : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH_BALANCE__ENERGY             : %f\n", PALS_CPU_1POP_SEARCH_BALANCE__ENERGY);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST  : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST : %f\n", PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST    : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST);
+        fprintf(stdout, "       PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST   : %f\n", PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_ITERATIONS            : %d\n", PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR        : %d\n", PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__SRC_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__SRC_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_TASK_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_TASK_NHOOD);
+        fprintf(stdout, "       PALS_CPU_1POP_WORK__DST_MACH_NHOOD               : %d\n", PALS_CPU_1POP_WORK__DST_MACH_NHOOD);
+        fprintf(stdout, "[INFO] ========================================================\n");
+    }
+
+    assert(input.population_size > empty_instance.count_threads);
+
+    // =========================================================================
+    // Pido la memoria e inicializo la solucin de partida.
+
+    empty_instance.etc = etc;
+    empty_instance.energy = energy;
+
+    empty_instance.population_max_size = input.population_size;
+    empty_instance.population_count = 0;
+    empty_instance.best_makespan_solution = -1;
+    empty_instance.best_energy_solution = -1;
+    empty_instance.global_total_iterations = 0;
+
+    // Population.
+    empty_instance.population = (struct solution*)malloc(sizeof(struct solution) * empty_instance.population_max_size);
+    if (empty_instance.population == NULL)
+    {
+        fprintf(stderr, "[ERROR] Solicitando memoria para population.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < empty_instance.population_max_size; i++)
+    {
+        empty_instance.population[i].status = SOLUTION__STATUS_EMPTY;
+        empty_instance.population[i].initialized = 0;
+    }
+
+    if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using AGA archiever\n");
+    empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
+    archivers_aga_init(&empty_instance);
+
+    // =========================================================================
+    // Pedido de memoria para la generacin de numeros aleatorios.
+
+    timespec ts_1;
+    timming_start(ts_1);
+
+    srand(seed);
+    long int random_seed;
+
+    #ifdef CPU_MERSENNE_TWISTER
+    empty_instance.random_states = (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
+    #endif
+    #ifdef CPU_RAND
+    empty_instance.random_states = (struct cpu_rand_state*)malloc(sizeof(struct cpu_rand_state) * empty_instance.count_threads);
+    #endif
+    #ifdef CPU_DRAND48
+    empty_instance.random_states = (struct cpu_drand48_state*)malloc(sizeof(struct cpu_drand48_state) * empty_instance.count_threads);
+    #endif
+
+    for (int i = 0; i < empty_instance.count_threads; i++)
+    {
+        random_seed = rand();
+
+        #ifdef CPU_MERSENNE_TWISTER
+        cpu_mt_init(random_seed, empty_instance.random_states[i]);
+        #endif
+        #ifdef CPU_RAND
+        cpu_rand_init(random_seed, empty_instance.random_states[i]);
+        #endif
+        #ifdef CPU_DRAND48
+        cpu_drand48_init(random_seed, empty_instance.random_states[i]);
+        #endif
+    }
+
+    timming_end(".. cpu_rand_buffers", ts_1);
+
+    // =========================================================================
+    // Creo e inicializo los threads y los mecanismos de sincronizacin del sistema.
+
+    timespec ts_threads;
+    timming_start(ts_threads);
+
+    if (pthread_mutex_init(&(empty_instance.population_mutex), NULL))
+    {
+        printf("Could not create a population mutex\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pthread_barrier_init(&(empty_instance.sync_barrier), NULL, empty_instance.count_threads))
+    {
+        printf("Could not create a sync barrier\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Creo los hilos.
+    empty_instance.threads = (pthread_t*)
+        malloc(sizeof(pthread_t) * empty_instance.count_threads);
+
+    empty_instance.threads_args = (struct pals_cpu_1pop_thread_arg*)
+        malloc(sizeof(struct pals_cpu_1pop_thread_arg) * empty_instance.count_threads);
+
+    empty_instance.work_type = PALS_CPU_1POP_WORK__INIT;
+
+    timespec ts_start;
+    clock_gettime(CLOCK_REALTIME, &ts_start);
+
+    for (int i = 0; i < empty_instance.count_threads; i++)
+    {
+        empty_instance.threads_args[i].thread_idx = i;
+        empty_instance.threads_args[i].count_threads = empty_instance.count_threads;
+
+        empty_instance.threads_args[i].etc = empty_instance.etc;
+        empty_instance.threads_args[i].energy = empty_instance.energy;
+        
+        empty_instance.threads_args[i].max_iterations = input.max_iterations;
+        empty_instance.threads_args[i].max_time_secs = input.max_time_secs;
+
+        empty_instance.threads_args[i].population = empty_instance.population;
+        empty_instance.threads_args[i].population_count = &(empty_instance.population_count);
+        empty_instance.threads_args[i].population_max_size = empty_instance.population_max_size;
+        empty_instance.threads_args[i].best_makespan_solution = &(empty_instance.best_makespan_solution);
+        empty_instance.threads_args[i].best_energy_solution = &(empty_instance.best_energy_solution);
+
+        empty_instance.threads_args[i].archiver_state = empty_instance.archiver_state;
+        empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
+        empty_instance.threads_args[i].global_total_iterations = &(empty_instance.global_total_iterations);
+
+        empty_instance.threads_args[i].population_mutex = &(empty_instance.population_mutex);
+        empty_instance.threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
+
+        empty_instance.threads_args[i].thread_random_state = &(empty_instance.random_states[i]);
+        empty_instance.threads_args[i].ts_start = ts_start;
+
+        if (pthread_create(&(empty_instance.threads[i]), NULL, pals_cpu_1pop_thread,  (void*) &(empty_instance.threads_args[i])))
+        {
+            printf("Could not create slave thread %d\n", i);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    timming_end(".. thread creation", ts_threads);
+}
+
+
+void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
+{
+    for (int i = 0; i < instance.population_max_size; i++)
+    {
+        if (instance.population[i].initialized == 1)
+        {
+            free_solution(&(instance.population[i]));
+        }
+    }
+
+    free(instance.population);
+    free(instance.random_states);
+    free(instance.threads);
+    free(instance.threads_args);
+
+    archivers_aga_free(&instance);
+
+    pthread_mutex_destroy(&(instance.population_mutex));
+    pthread_barrier_destroy(&(instance.sync_barrier));
+}
+
 
 void* pals_cpu_1pop_thread(void *thread_arg)
 {
@@ -664,6 +685,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
     thread_instance->total_soluciones_no_evolucionadas = 0;
     thread_instance->total_soluciones_evolucionadas_dominadas = 0;
     thread_instance->total_re_iterations = 0;
+    thread_instance->iter_last_found = 0;
 
     int terminate = 0;
     int work_type = -1;
@@ -703,9 +725,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
             {
                 pthread_mutex_lock(thread_instance->population_mutex);
-
                     thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
-
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
                 // Inicializo el individuo que me toca.
@@ -728,20 +748,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 pthread_mutex_lock(thread_instance->population_mutex);
 
-                    pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
+                //pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
+                archivers_aga(thread_instance, thread_instance->thread_idx);
 
-                    if (DEBUG_DEV)
+                if (DEBUG_DEV)
+                {
+                    fprintf(stdout, "[DEBUG] Population\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
                     {
-                        fprintf(stdout, "[DEBUG] Population\n");
-                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-
-                        for (int i = 0; i < thread_instance->population_max_size; i++)
-                        {
-                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                                thread_instance->population[i].initialized,
-                                thread_instance->population[i].status);
-                        }
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
                     }
+                }
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
@@ -781,6 +802,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             double random = 0.0; // Variable random multi-proposito :)
 
             // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
+            int candidate_to_del_pos = -1;
             if (selected_solution_pos == -1) {
                 pthread_mutex_lock(thread_instance->population_mutex);
 
@@ -792,9 +814,15 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             selected_solution_pos = i;
 
                             if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                        } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
+                            candidate_to_del_pos = i;
                         }
                     }
 
+                    if ((selected_solution_pos == -1)&&(candidate_to_del_pos != -1)) {
+                        selected_solution_pos = candidate_to_del_pos;
+                        thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                    }
                 pthread_mutex_unlock(thread_instance->population_mutex);
             }
 
@@ -803,7 +831,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             {
                 // No se que hacer... panico! termino!
                 fprintf(stdout, "[ERROR] Hilo finalizado.");
-                fprintf(stderr, "[ERROR] Hilo finalizado.");
 
                 terminate = 1;
                 thread_instance->total_population_full++;
@@ -933,8 +960,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) + 
                     (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
-
-                //int work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS);
 
                 while (work_do_iteration == 1) {
                     work_do_iteration = 0;
@@ -1594,7 +1619,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     if ((original_makespan > get_makespan(selected_solution)) ||
                         (original_energy > get_energy(selected_solution)))
                     {
-                        refresh_energy(selected_solution);
+                        //refresh_energy(selected_solution);
                         
                         int mutex_locked;
                         int new_solution_eval = 0;
@@ -1604,13 +1629,15 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         if (mutex_locked == 0) {                           
                             // Chequeo si la nueva solucion es no-dominada.
-                            new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
+                            //new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
+                            new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
 
                             pthread_mutex_unlock(thread_instance->population_mutex);
 
                             if (new_solution_eval == 1)
                             {
                                 thread_instance->ts_last_found = ts_current;
+                                thread_instance->iter_last_found = thread_instance->total_iterations;
 
                                 if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
                                 {
@@ -1667,6 +1694,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
         }
 
         clock_gettime(CLOCK_REALTIME, &ts_current);
+    }
+
+    if (selected_solution_pos != -1) {
+        if (thread_instance->population[selected_solution_pos].status == SOLUTION__STATUS_NOT_READY) {
+            thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_EMPTY;
+        }
     }
 
     if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
