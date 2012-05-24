@@ -12,6 +12,7 @@
 #define PALS_1POP 1
 #define    MINMIN 2
 #define       MCT 3
+#define   pMINMIN 4
 
 struct params {
     char *scenario_path;

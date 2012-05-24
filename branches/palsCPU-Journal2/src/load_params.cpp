@@ -30,6 +30,8 @@ int load_params(int argc, char **argv, struct params *input) {
                 fprintf(stdout, " (MinMin)\n");
             } else if (input->algorithm == MCT) {
                 fprintf(stdout, " (MCT)\n");
+            } else if (input->algorithm == pMINMIN) {
+                fprintf(stdout, " (pMINMIN)\n");
             }
         }
 
@@ -49,7 +51,7 @@ int load_params(int argc, char **argv, struct params *input) {
         input->population_size = atoi(argv[10]);
         if (DEBUG) fprintf(stdout, "[PARAMS] Population size: %d\n", input->population_size);
 
-        if ((input->algorithm < 0)||(input->algorithm > 3)) {
+        if ((input->algorithm < 0)||(input->algorithm > 4)) {
             fprintf(stderr, "[ERROR] Invalid algorithm.\n");
             return EXIT_FAILURE;
         }
@@ -63,6 +65,7 @@ int load_params(int argc, char **argv, struct params *input) {
         fprintf(stdout, "           1 PALS 1-population\n");
         fprintf(stdout, "           2 MinMin\n");
         fprintf(stdout, "           3 MCT\n");
+        fprintf(stdout, "           4 pMinMin\n");
         
         fprintf(stdout, "\n");
 

@@ -21,6 +21,12 @@ void init_etc_matrix(struct params *input, struct etc_matrix *etc) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el etc_matrix->data.\n");
         exit(EXIT_FAILURE);
     }
+    etc->shifts = -1;
+    int aux_tasks = etc->tasks_count;
+    while(aux_tasks > 0) {
+        aux_tasks = aux_tasks >> 1;
+        etc->shifts++;
+    }
 }
 
 void free_etc_matrix(struct etc_matrix *etc) {
@@ -28,12 +34,13 @@ void free_etc_matrix(struct etc_matrix *etc) {
 }
 
 int get_etc_coord(struct etc_matrix *etc, int machine, int task) {
-    assert(machine < etc->machines_count);
+    /*assert(machine < etc->machines_count);
     assert(machine >= 0);
     assert(task < etc->tasks_count);
-    assert(task >= 0);
+    assert(task >= 0);*/
 
-    return (machine * etc->tasks_count) + task;
+    return (machine << etc->shifts) + task;
+    //return (machine * etc->tasks_count) + task;
 }
 
 void set_etc_value(struct etc_matrix *etc, int machine, int task, float value) {

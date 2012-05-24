@@ -16,6 +16,12 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
+#define ARCHIVER_AGA
+
+//#define INIT_MCT
+//#define INIT_MINMIN
+#define INIT_pMINMIN
+
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       650
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   14
 
@@ -60,6 +66,8 @@ struct pals_cpu_1pop_instance {
     int best_makespan_solution;
     int best_energy_solution;
 
+    struct aga_state *archiver_state;
+
     int work_type;
     int global_total_iterations;
 
@@ -101,6 +109,8 @@ struct pals_cpu_1pop_thread_arg {
     int *best_makespan_solution;
     int *best_energy_solution;
 
+    struct aga_state *archiver_state;
+
     int count_threads;
     
     int *work_type;
@@ -134,6 +144,7 @@ struct pals_cpu_1pop_thread_arg {
     int total_soluciones_evolucionadas_dominadas;
     int total_re_iterations;
     int total_population_full;
+    int iter_last_found;
 
     timespec ts_start;
     timespec ts_last_found;
