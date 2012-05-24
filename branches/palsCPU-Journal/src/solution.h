@@ -51,20 +51,15 @@ void init_empty_solution(struct etc_matrix *etc, struct energy_matrix *energy, s
 void clone_solution(struct solution *dst, struct solution *src, int clone_status);
 void free_solution(struct solution *s);
 
-// ATENTION! this method does not update the objectives. One must execute the refresh methods
-//           after invoking this method.
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id);
-
 void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_src_pos, int machine_dst);
 void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int machine_b, int task_b_pos);
 
-float get_objective(struct solution *s, int obj_index);
-
-void refresh(struct solution *s);
 void refresh_makespan(struct solution *s);
 void refresh_compute_time(struct solution *s);
 void refresh_energy(struct solution *s);
 void refresh_best_worst_energy(struct solution *s);
+void refresh(struct solution *s);
 
 int get_task_assigned_machine_id(struct solution *s, int task_id);
 int get_machine_tasks_count(struct solution *s, int machine_id);
@@ -74,6 +69,7 @@ int get_machine_task_pos(struct solution *s, int machine_id, int task_id);
 float get_machine_compute_time(struct solution *s, int machine_id);
 float get_makespan(struct solution *s);
 float get_energy(struct solution *s);
+float get_objective(struct solution *s, int obj_index);
 
 int get_worst_ct_machine_id(struct solution *s);
 int get_best_ct_machine_id(struct solution *s);

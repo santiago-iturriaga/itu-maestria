@@ -134,9 +134,7 @@ void ls_best_swap_complex_selection(pals_cpu_1pop_thread_arg *thread_instance, s
             ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
             ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));
 
-        if ((swap_diff_energy > best_delta_energy) &&
-            (machine_a_ct_new <= current_makespan) &&
-            (machine_b_ct_new <= current_makespan))
+        if (swap_diff_energy > best_delta_energy)
         {
             //printf("6\n");
             best_delta_energy = swap_diff_energy;

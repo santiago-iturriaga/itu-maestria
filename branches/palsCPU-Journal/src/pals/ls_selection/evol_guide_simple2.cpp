@@ -23,7 +23,7 @@ void ls_best_swap_simple2_selection(pals_cpu_1pop_thread_arg *thread_instance, s
     double machine_b_ct_old, machine_b_ct_new;
 
     float current_makespan = get_makespan(selected_solution);
-    //float current_energy = get_energy(selected_solution);
+    float current_energy = get_energy(selected_solution);
 
     // Maquina 1.
     machine_a_ct_old = get_machine_compute_time(selected_solution, machine_a);
@@ -70,28 +70,33 @@ void ls_best_swap_simple2_selection(pals_cpu_1pop_thread_arg *thread_instance, s
     if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
         ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
     {
-        if (swap_diff_makespan < best_delta_makespan)
+        if ((machine_b_ct_new < current_makespan) && (machine_a_ct_new < current_makespan))
         {
-            best_delta_makespan = swap_diff_makespan;
-            best_delta_energy = swap_diff_energy;
-            task_x_best_swap_pos = task_x_pos;
-            task_y_best_swap_pos = task_y_pos;
-            task_x_best_move_pos = -1;
-            machine_b_best_move_id = -1;
+            if (swap_diff_makespan < best_delta_makespan)
+            {
+                best_delta_makespan = swap_diff_makespan;
+                best_delta_energy = swap_diff_energy;
+                task_x_best_swap_pos = task_x_pos;
+                task_y_best_swap_pos = task_y_pos;
+                task_x_best_move_pos = -1;
+                machine_b_best_move_id = -1;
+            }
         }
     }
 
     if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
         ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
     {
-        if (swap_diff_energy > best_delta_energy)
-        {
-            best_delta_makespan = swap_diff_energy;
-            best_delta_energy = swap_diff_energy;
-            task_x_best_swap_pos = task_x_pos;
-            task_y_best_swap_pos = task_y_pos;
-            task_x_best_move_pos = -1;
-            machine_b_best_move_id = -1;
+        if (swap_diff_energy > 0) {
+            if (swap_diff_energy > best_delta_energy)
+            {
+                best_delta_makespan = swap_diff_energy;
+                best_delta_energy = swap_diff_energy;
+                task_x_best_swap_pos = task_x_pos;
+                task_y_best_swap_pos = task_y_pos;
+                task_x_best_move_pos = -1;
+                machine_b_best_move_id = -1;
+            }
         }
     }
 }
@@ -152,28 +157,32 @@ void ls_best_move_simple2_selection(pals_cpu_1pop_thread_arg *thread_instance, s
     if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
         ((random < 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
     {
-        if (swap_diff_makespan < best_delta_makespan)
-        {
-            best_delta_makespan = swap_diff_makespan;
-            best_delta_energy = swap_diff_energy;
-            task_x_best_swap_pos = -1;
-            task_y_best_swap_pos = -1;
-            task_x_best_move_pos = task_x_pos;
-            machine_b_best_move_id = machine_b_current;
+        if ((machine_b_ct_new < current_makespan) && (machine_a_ct_new < current_makespan)) {
+            if (swap_diff_makespan < best_delta_makespan)
+            {
+                best_delta_makespan = swap_diff_makespan;
+                best_delta_energy = swap_diff_energy;
+                task_x_best_swap_pos = -1;
+                task_y_best_swap_pos = -1;
+                task_x_best_move_pos = task_x_pos;
+                machine_b_best_move_id = machine_b_current;
+            }
         }
     }
 
     if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
         ((random >= 0.5) && (search_type == PALS_CPU_1POP_SEARCH__RANDOM_GREEDY)))
     {
-        if (swap_diff_energy > best_delta_energy)
-        {
-            best_delta_makespan = swap_diff_makespan;
-            best_delta_energy = swap_diff_energy;
-            task_x_best_swap_pos = -1;
-            task_y_best_swap_pos = -1;
-            task_x_best_move_pos = task_x_pos;
-            machine_b_best_move_id = machine_b_current;
+        if (swap_diff_energy > 0) {
+            if (swap_diff_energy > best_delta_energy)
+            {
+                best_delta_makespan = swap_diff_makespan;
+                best_delta_energy = swap_diff_energy;
+                task_x_best_swap_pos = -1;
+                task_y_best_swap_pos = -1;
+                task_x_best_move_pos = task_x_pos;
+                machine_b_best_move_id = machine_b_current;
+            }
         }
     }
 }

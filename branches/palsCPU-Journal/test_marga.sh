@@ -1,5 +1,7 @@
 set -x
 rm -rf 512x16.test
+rm bin/pals_cpu
+make
 
 echo "MinMin"
 bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.B.u_c_hihi 512 16 2 1 1 1 1 1
@@ -15,7 +17,8 @@ THREADS=4
 
 ITERATIONS=1
 PALS_ITERATIONS=100000000
-PALS_TIMEOUT=30
+#PALS_TIMEOUT=30
+PALS_TIMEOUT=90
 
 PALS_POP_SIZE=6
 #PALS_POP_SIZE=16

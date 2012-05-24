@@ -51,11 +51,6 @@ void ls_best_swap_simple_selection(pals_cpu_1pop_thread_arg *thread_instance, so
     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
     #endif
 
-    /*float swap_diff_energy;
-    swap_diff_energy =
-        ((machine_a_ct_old - machine_a_ct_new) * (machine_a_energy_max - machine_a_energy_idle)) +
-        ((machine_b_ct_old - machine_b_ct_new) * (machine_b_energy_max - machine_b_energy_idle));*/
-
     float swap_diff_energy;
     swap_diff_energy =
         ((machine_a_ct_old - machine_a_ct_new) * machine_a_energy_max) +
