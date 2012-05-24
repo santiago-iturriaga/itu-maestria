@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
         long current_acc_prob = 0;
 
-        fprintf(stdout, "iter,avg. prob.,abs. improv.,gt 50,lt 50,gt 75,lt 25\n");
+        fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 50,lt 50,gt 75,lt 25\n");
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
@@ -112,8 +112,8 @@ int main(int argc, char **argv) {
                     //fprintf(stdout, "                   Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
                     //fprintf(stdout, "     Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
 
-                    fprintf(stdout, "%d,%.4f,%ld,", current_iteration, 
-                        (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads), aux - current_acc_prob);
+                    fprintf(stdout, "%d,%.4f;%ld,%ld,", current_iteration, 
+                        (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads), aux, aux - current_acc_prob);
 
                     current_acc_prob = aux;
 
@@ -166,14 +166,16 @@ int main(int argc, char **argv) {
 
             bga_model_update(&problem_state, th_id);
         }
-
-        bga_get_part_accumulated_prob(&problem_state, th_id);
+       
+        long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
         
-        long aux1[4], aux2[4], aux3[4], aux4[4];
+        aux0[0] = aux0[0] = aux0[0] = aux0[0] = 0;
         aux1[0] = aux2[0] = aux3[0] = aux4[0] = 0;
         aux1[1] = aux2[1] = aux3[1] = aux4[1] = 0;
         aux1[2] = aux2[2] = aux3[2] = aux4[2] = 0;
         aux1[3] = aux2[3] = aux3[3] = aux4[3] = 0;
+        
+        aux0[th_id] = bga_get_part_accumulated_prob(&problem_state, th_id);
         aux1[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1);
         aux2[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1);
         aux3[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2));
@@ -192,9 +194,11 @@ int main(int argc, char **argv) {
             fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux4[0]+aux4[1]+aux4[2]+aux4[3]);*/
             
             fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration, 
-                (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum, 
-                0, aux1[0]+aux1[1]+aux1[2]+aux1[3],
-                aux2[0]+aux2[1]+aux2[2]+aux2[3], aux3[0]+aux3[1]+aux3[2]+aux3[3],
+                (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
+                aux0[0]+aux0[1]+aux0[2]+aux0[3],
+                aux1[0]+aux1[1]+aux1[2]+aux1[3],
+                aux2[0]+aux2[1]+aux2[2]+aux2[3], 
+                aux3[0]+aux3[1]+aux3[2]+aux3[3],
                 aux4[0]+aux4[1]+aux4[2]+aux4[3]);
         }
 

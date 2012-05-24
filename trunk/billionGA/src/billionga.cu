@@ -31,9 +31,12 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
 
     //#if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] === Initializing Billion GA ====================\n");
-        fprintf(stdout, "[INFO] Problem size   : %ld\n", number_of_bits);
-        fprintf(stdout, "[INFO] Population size: %d\n", state->population_size);
-        fprintf(stdout, "[INFO] Num. of vectors: %d\n", state->number_of_prob_vectors);
+        fprintf(stdout, "[INFO] Problem size    : %ld\n", number_of_bits);
+        fprintf(stdout, "[INFO] Population size : %d\n", state->population_size);
+        fprintf(stdout, "[INFO] Num. of vectors : %d\n", state->number_of_prob_vectors);
+        fprintf(stdout, "[INFO] Delta           : %d\n", DELTA);
+        fprintf(stdout, "[INFO] Prob. min. value: %d\n", MIN_PVALUE);
+        fprintf(stdout, "[INFO] Prob. max. value: %d\n", MAX_PVALUE);
     //#endif
 
     // === Pido la memoria =============================================================
