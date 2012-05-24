@@ -8,8 +8,8 @@
 #define CPU_MERSENNE_TWISTER
 
 #define OUTPUT_SOLUTION 0
-#define DEBUG           0
-#define DEBUG_DEV       0
-#define TIMMING         0
+//#define DEBUG
+//#define DEBUG_DEV
+//#define TIMMING
 
 #endif //CONFIG_H_

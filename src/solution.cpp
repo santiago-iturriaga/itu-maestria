@@ -106,32 +106,34 @@ void clone_solution(struct solution *dst, struct solution *src, int clone_status
         dst->status = src->status;
     }
 
-    memcpy(dst->__task_assignment, src->__task_assignment, sizeof(int) * src->etc->tasks_count);
+    int **src_machine_assignment = src->__machine_assignment;
+    int **dst_machine_assignment = dst->__machine_assignment;
+    struct etc_matrix *etc = src->etc;
+    
+    int tasks_int_size = sizeof(int) * etc->tasks_count;
+    int machines_int_size = sizeof(float) * etc->machines_count;
+    int machines_float_size = sizeof(float) * etc->machines_count;
+
+    memcpy(dst->__task_assignment, src->__task_assignment, tasks_int_size);
     for (int machine = 0; machine < src->etc->machines_count; machine++) {
-        memcpy(dst->__machine_assignment[machine], src->__machine_assignment[machine], sizeof(int) * src->etc->tasks_count);
+        memcpy(dst_machine_assignment[machine], src_machine_assignment[machine], tasks_int_size);
     }
-    memcpy(dst->__machine_assignment_count, src->__machine_assignment_count, sizeof(int) * src->etc->machines_count);
+    memcpy(dst->__machine_assignment_count, src->__machine_assignment_count, machines_int_size);
 
     // Makespan
-    memcpy(dst->__machine_compute_time, src->__machine_compute_time, sizeof(float) * src->etc->machines_count);
+    memcpy(dst->__machine_compute_time, src->__machine_compute_time, machines_float_size);
     dst->__worst_ct_machine_id = src->__worst_ct_machine_id;
     dst->__best_ct_machine_id = src->__best_ct_machine_id;
     dst->__makespan = src->__makespan;
 
     // Energy
-    memcpy(dst->__machine_energy_consumption, src->__machine_energy_consumption, sizeof(float) * src->etc->machines_count);
+    memcpy(dst->__machine_energy_consumption, src->__machine_energy_consumption, machines_float_size);
     dst->__worst_energy_machine_id = src->__worst_energy_machine_id;
     dst->__best_energy_machine_id = src->__best_energy_machine_id;
     dst->__total_energy_consumption = src->__total_energy_consumption;
 }
 
 void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
-    assert(machine_id < s->etc->machines_count);
-    assert(machine_id >= 0);
-    assert(task_id < s->etc->tasks_count);
-    assert(task_id >= 0);
-    assert(s->__task_assignment[task_id] == SOLUTION__TASK_NOT_ASSIGNED);
-
     // Actualizo el makespan.
     s->__machine_compute_time[machine_id] += get_etc_value(s->etc, machine_id, task_id);
 
@@ -144,42 +146,27 @@ void assign_task_to_machine(struct solution *s, int machine_id, int task_id) {
 }
 
 void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_src_pos, int machine_dst) {
-    assert(machine_src != machine_dst);
-    assert(machine_src < s->etc->machines_count);
-    assert(machine_src >= 0);
-    assert(machine_dst < s->etc->machines_count);
-    assert(machine_dst >= 0);
-    assert(task_src_pos >= 0);
-    assert(s->__machine_assignment_count[machine_src] > task_src_pos);
-
-    if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] Move task sol. %ld: from (%d, %d=%d) to (%d)\n",
-            (long)s, machine_src, task_src_pos, s->__machine_assignment[machine_src][task_src_pos], machine_dst);
-
-        /*
-        fprintf(stdout, "        Maquina %d >> ", machine_src);
-        for (int i = 0; i < s->__machine_assignment_count[machine_src]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_src][i]);
-        }
-        fprintf(stdout, "\n        Maquina %d >> ", machine_dst);
-        for (int i = 0; i < s->__machine_assignment_count[machine_dst]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_dst][i]);
-        }
-        fprintf(stdout, "\n");*/
-    }
-
     int recompute_makespan = 0;
     int recompute_energy = 0;
 
     int task_src_id;
     task_src_id = get_machine_task_id(s, machine_src, task_src_pos);
 
+    #if defined(DEBUG)
     assert(s->__task_assignment[task_src_id] != SOLUTION__TASK_NOT_ASSIGNED);
     assert(s->__task_assignment[task_src_id] != machine_dst);
+    #endif
+
+    struct etc_matrix *etc = s->etc;
+    struct energy_matrix *energy = s->energy;
+    int **machine_assignment = s->__machine_assignment;
+    int *machine_assignment_count = s->__machine_assignment_count;
+    float *machine_compute_time = s->__machine_compute_time;
+    float *machine_energy_consumption = s->__machine_energy_consumption;
 
     // Actualizo los compute time.
-    s->__machine_compute_time[machine_dst] += get_etc_value(s->etc, machine_dst, task_src_id);
-    s->__machine_compute_time[machine_src] -= get_etc_value(s->etc, machine_src, task_src_id);
+    machine_compute_time[machine_dst] += get_etc_value(etc, machine_dst, task_src_id);
+    machine_compute_time[machine_src] -= get_etc_value(etc, machine_src, task_src_id);
     
     if ((machine_src == s->__worst_ct_machine_id) ||
         (machine_dst == s->__best_ct_machine_id)) {
@@ -188,14 +175,14 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
         recompute_energy = 1;
         
     } else {       
-        if (s->__machine_compute_time[machine_dst] > s->__makespan) {
-            s->__makespan = s->__machine_compute_time[machine_dst];
+        if (machine_compute_time[machine_dst] > s->__makespan) {
+            s->__makespan = machine_compute_time[machine_dst];
             s->__worst_ct_machine_id = machine_dst;
 
             recompute_energy = 1;
         }
 
-        if (s->__machine_compute_time[machine_src] < s->__machine_compute_time[s->__best_ct_machine_id]) {
+        if (machine_compute_time[machine_src] < machine_compute_time[s->__best_ct_machine_id]) {
             s->__best_ct_machine_id = machine_src;
         }
     }
@@ -205,33 +192,33 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
         if (recompute_makespan == 0) {
             
             // Máquina destino.
-            float machine_dst_old_energy = s->__machine_energy_consumption[machine_dst];
-            float machine_dst_new_energy = (s->__machine_compute_time[machine_dst] * get_energy_max_value(s->energy, machine_dst))
-                + ((s->__makespan - s->__machine_compute_time[machine_dst]) * get_energy_idle_value(s->energy, machine_dst));
+            float machine_dst_old_energy = machine_energy_consumption[machine_dst];
+            float machine_dst_new_energy = (machine_compute_time[machine_dst] * get_energy_max_value(energy, machine_dst))
+                + ((s->__makespan - machine_compute_time[machine_dst]) * get_energy_idle_value(energy, machine_dst));
 
-            s->__machine_energy_consumption[machine_dst] = machine_dst_new_energy;
+            machine_energy_consumption[machine_dst] = machine_dst_new_energy;
             s->__total_energy_consumption = s->__total_energy_consumption - machine_dst_old_energy + machine_dst_new_energy;
 
             // Máquina origen.
-            float machine_src_old_energy = s->__machine_energy_consumption[machine_src];
-            float machine_src_new_energy = (s->__machine_compute_time[machine_src] * get_energy_max_value(s->energy, machine_src))
-                + ((s->__makespan - s->__machine_compute_time[machine_src]) * get_energy_idle_value(s->energy, machine_src));
+            float machine_src_old_energy = machine_energy_consumption[machine_src];
+            float machine_src_new_energy = (machine_compute_time[machine_src] * get_energy_max_value(energy, machine_src))
+                + ((s->__makespan - machine_compute_time[machine_src]) * get_energy_idle_value(energy, machine_src));
 
-            s->__machine_energy_consumption[machine_src] = machine_src_new_energy;
+            machine_energy_consumption[machine_src] = machine_src_new_energy;
             s->__total_energy_consumption = s->__total_energy_consumption - machine_src_old_energy + machine_src_new_energy;
             
             if ((machine_src == s->__worst_energy_machine_id) ||
                 (machine_dst == s->__best_energy_machine_id)) {   
                         
                 refresh_best_worst_energy(s);
-
+                
             } else {               
                
-                if (machine_dst_new_energy > s->__machine_energy_consumption[s->__worst_energy_machine_id]) {
+                if (machine_dst_new_energy > machine_energy_consumption[s->__worst_energy_machine_id]) {
                     s->__worst_energy_machine_id = machine_dst;
                 }
               
-                if (machine_src_new_energy < s->__machine_energy_consumption[s->__best_energy_machine_id]) {
+                if (machine_src_new_energy < machine_energy_consumption[s->__best_energy_machine_id]) {
                     s->__best_energy_machine_id = machine_src;
                 }
             }
@@ -241,14 +228,14 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
     }
 
     // Quito la task a la máquina origen.
-    int machine_src_task_count = s->__machine_assignment_count[machine_src];
-    int machine_dst_task_count = s->__machine_assignment_count[machine_dst];
+    int machine_src_task_count = machine_assignment_count[machine_src];
+    int machine_dst_task_count = machine_assignment_count[machine_dst];
 
     if (task_src_pos + 1 == machine_src_task_count) {
         // Es la última...
     } else {
-        s->__machine_assignment[machine_src][task_src_pos] =
-            s->__machine_assignment[machine_src][machine_src_task_count-1];
+        machine_assignment[machine_src][task_src_pos] =
+            machine_assignment[machine_src][machine_src_task_count-1];
     }
 
     s->__machine_assignment_count[machine_src]--;
@@ -257,7 +244,7 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
     s->__task_assignment[task_src_id] = machine_dst;
 
     //int current_machine_task_count = s->__machine_assignment_count[machine_id];
-    s->__machine_assignment[machine_dst][machine_dst_task_count] = task_src_id;
+    machine_assignment[machine_dst][machine_dst_task_count] = task_src_id;
     s->__machine_assignment_count[machine_dst] = machine_dst_task_count + 1;
 
     // Si es necesario recalculo el makespan o la energía de la solución.
@@ -266,37 +253,10 @@ void move_task_to_machine_by_pos(struct solution *s, int machine_src, int task_s
 }
 
 void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int machine_b, int task_b_pos) {
-    assert(machine_a != machine_b);
-    assert(machine_a < s->etc->machines_count);
-    assert(machine_a >= 0);
-    assert(machine_b < s->etc->machines_count);
-    assert(machine_b >= 0);
-    assert(task_a_pos >= 0);
-    assert(task_b_pos >= 0);
-
-    if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] >>>> Pre Move task sol. %ld: (%d, %d=%d) with (%d, %d=%d)\n", (long)s,
-            machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
-            machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
-
-        fprintf(stdout, "        Maquina %d (%d) (%f) >> ",
-            machine_a, s->__machine_assignment_count[machine_a], s->__machine_compute_time[machine_a]);
-
-        for (int i = 0; i < s->__machine_assignment_count[machine_a]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_a][i]);
-        }
-
-        fprintf(stdout, "\n        Maquina %d (%d) (%f) >> ",
-            machine_b, s->__machine_assignment_count[machine_b], s->__machine_compute_time[machine_b]);
-
-        for (int i = 0; i < s->__machine_assignment_count[machine_b]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_b][i]);
-        }
-        fprintf(stdout, "\n");
-    }
-
+    #if defined(DEBUG)
     assert(s->__machine_assignment_count[machine_a] > task_a_pos);
     assert(s->__machine_assignment_count[machine_b] > task_b_pos);
+    #endif
 
     int recompute_makespan = 0;
     int recompute_energy = 0;
@@ -308,20 +268,23 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     int task_a_id = get_machine_task_id(s, machine_a, task_a_pos);
     int task_b_id = get_machine_task_id(s, machine_b, task_b_pos);
 
+    #if defined(DEBUG)
     assert(s->__task_assignment[task_a_id] != SOLUTION__TASK_NOT_ASSIGNED);
     assert(s->__task_assignment[task_b_id] != SOLUTION__TASK_NOT_ASSIGNED);
+    #endif
 
-    //float machine_a_ct = s->__machine_compute_time[machine_a_id];
-    //float machine_b_ct = s->__machine_compute_time[machine_b_id];
+    struct etc_matrix *etc = s->etc;
+    struct energy_matrix *energy = s->energy;
+    float *machine_compute_time = s->__machine_compute_time;
 
-    s->__machine_compute_time[machine_a_id] += get_etc_value(s->etc, machine_a_id, task_b_id);
-    s->__machine_compute_time[machine_a_id] -= get_etc_value(s->etc, machine_a_id, task_a_id);
+    machine_compute_time[machine_a_id] += get_etc_value(etc, machine_a_id, task_b_id);
+    machine_compute_time[machine_a_id] -= get_etc_value(etc, machine_a_id, task_a_id);
 
-    s->__machine_compute_time[machine_b_id] += get_etc_value(s->etc, machine_b_id, task_a_id);
-    s->__machine_compute_time[machine_b_id] -= get_etc_value(s->etc, machine_b_id, task_b_id);
+    machine_compute_time[machine_b_id] += get_etc_value(etc, machine_b_id, task_a_id);
+    machine_compute_time[machine_b_id] -= get_etc_value(etc, machine_b_id, task_b_id);
 
-    float machine_a_ct_new = s->__machine_compute_time[machine_a_id];
-    float machine_b_ct_new = s->__machine_compute_time[machine_b_id];
+    float machine_a_ct_new = machine_compute_time[machine_a_id];
+    float machine_b_ct_new = machine_compute_time[machine_b_id];
 
     if ((machine_a_id == s->__worst_ct_machine_id) ||
         (machine_b_id == s->__worst_ct_machine_id) ||
@@ -343,8 +306,8 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
             recompute_energy = 1;
         }
         
-        if (machine_a_ct_new < s->__machine_compute_time[s->__best_ct_machine_id] || 
-            machine_b_ct_new < s->__machine_compute_time[s->__best_ct_machine_id]) {
+        if (machine_a_ct_new < machine_compute_time[s->__best_ct_machine_id] || 
+            machine_b_ct_new < machine_compute_time[s->__best_ct_machine_id]) {
             
             if (machine_a_ct_new < machine_b_ct_new) {
                 s->__best_ct_machine_id = machine_a_id;
@@ -354,23 +317,26 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
         }
     }
 
+    int **machine_assignment = s->__machine_assignment;
+    float *machine_energy_consumption = s->__machine_energy_consumption;
+
     // Calculo la energía.
     if (recompute_energy == 0) {
         if (recompute_makespan == 0) {
             // Máquina a.
-            float machine_a_old_energy = s->__machine_energy_consumption[machine_a_id];
-            float machine_a_new_energy = (s->__machine_compute_time[machine_a_id] * get_energy_max_value(s->energy, machine_a_id))
-                + ((s->__makespan - s->__machine_compute_time[machine_a_id]) * get_energy_idle_value(s->energy, machine_a_id));
+            float machine_a_old_energy = machine_energy_consumption[machine_a_id];
+            float machine_a_new_energy = (machine_compute_time[machine_a_id] * get_energy_max_value(energy, machine_a_id))
+                + ((s->__makespan - machine_compute_time[machine_a_id]) * get_energy_idle_value(energy, machine_a_id));
 
-            s->__machine_energy_consumption[machine_a_id] = machine_a_new_energy;
+            machine_energy_consumption[machine_a_id] = machine_a_new_energy;
             s->__total_energy_consumption = s->__total_energy_consumption - machine_a_old_energy + machine_a_new_energy;
             
             // Máquina b.
-            float machine_b_old_energy = s->__machine_energy_consumption[machine_b_id];
-            float machine_b_new_energy = (s->__machine_compute_time[machine_b_id] * get_energy_max_value(s->energy, machine_b_id))
-                + ((s->__makespan - s->__machine_compute_time[machine_b_id]) * get_energy_idle_value(s->energy, machine_b_id));
+            float machine_b_old_energy = machine_energy_consumption[machine_b_id];
+            float machine_b_new_energy = (machine_compute_time[machine_b_id] * get_energy_max_value(energy, machine_b_id))
+                + ((s->__makespan - machine_compute_time[machine_b_id]) * get_energy_idle_value(energy, machine_b_id));
 
-            s->__machine_energy_consumption[machine_b_id] = machine_b_new_energy;
+            machine_energy_consumption[machine_b_id] = machine_b_new_energy;
             s->__total_energy_consumption = s->__total_energy_consumption - machine_b_old_energy + machine_b_new_energy;
             
             if ((machine_a_id == s->__worst_energy_machine_id) ||
@@ -380,15 +346,15 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
                     
                 refresh_best_worst_energy(s);
             } else {
-                if (machine_a_new_energy > s->__machine_energy_consumption[s->__worst_energy_machine_id]) {
+                if (machine_a_new_energy > machine_energy_consumption[s->__worst_energy_machine_id]) {
                     s->__worst_energy_machine_id = machine_a_id;
-                } else if (machine_a_new_energy < s->__machine_energy_consumption[s->__best_energy_machine_id]) {
+                } else if (machine_a_new_energy < machine_energy_consumption[s->__best_energy_machine_id]) {
                     s->__best_energy_machine_id = machine_a_id;
                 }
 
-                if (machine_b_new_energy > s->__machine_energy_consumption[s->__worst_energy_machine_id]) {
+                if (machine_b_new_energy > machine_energy_consumption[s->__worst_energy_machine_id]) {
                     s->__worst_energy_machine_id = machine_b_id;
-                } else if (machine_b_new_energy < s->__machine_energy_consumption[s->__best_energy_machine_id]) {
+                } else if (machine_b_new_energy < machine_energy_consumption[s->__best_energy_machine_id]) {
                     s->__best_energy_machine_id = machine_b_id;
                 }
             }
@@ -398,8 +364,8 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     }
 
     // Asigno las tareas.
-    s->__machine_assignment[machine_a_id][task_a_pos] = task_b_id;
-    s->__machine_assignment[machine_b_id][task_b_pos] = task_a_id;
+    machine_assignment[machine_a_id][task_a_pos] = task_b_id;
+    machine_assignment[machine_b_id][task_b_pos] = task_a_id;
 
     s->__task_assignment[task_a_id] = machine_b_id;
     s->__task_assignment[task_b_id] = machine_a_id;
@@ -407,33 +373,9 @@ void swap_tasks_by_pos(struct solution *s, int machine_a, int task_a_pos, int ma
     // Si es necesario recalculo el makespan o la energía de la solución.
     if (recompute_makespan == 1) refresh_makespan(s);
     if (recompute_energy == 1) refresh_energy(s);
-
-    if (DEBUG_DEV) {
-        fprintf(stdout, "[DEBUG] >>>> Post Move task sol. %ld: (%d, %d=%d) with (%d, %d=%d)\n", (long)s,
-            machine_a, task_a_pos, s->__machine_assignment[machine_a][task_a_pos],
-            machine_b, task_b_pos, s->__machine_assignment[machine_b][task_b_pos]);
-
-        fprintf(stdout, "        Maquina %d (%d) (%f) >> ",
-            machine_a, s->__machine_assignment_count[machine_a], s->__machine_compute_time[machine_a]);
-
-        for (int i = 0; i < s->__machine_assignment_count[machine_a]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_a][i]);
-        }
-
-        fprintf(stdout, "\n        Maquina %d (%d) (%f) >> ",
-            machine_b, s->__machine_assignment_count[machine_b], s->__machine_compute_time[machine_b]);
-
-        for (int i = 0; i < s->__machine_assignment_count[machine_b]; i++) {
-            fprintf(stdout, "%d ", s->__machine_assignment[machine_b][i]);
-        }
-        fprintf(stdout, "\n");
-    }
 }
 
 float get_machine_compute_time(struct solution *s, int machine_id) {
-    assert(machine_id < s->etc->machines_count);
-    assert(machine_id >= 0);
-
     return s->__machine_compute_time[machine_id];
 }
 
@@ -466,17 +408,21 @@ void refresh_energy(struct solution *s) {
     s->__best_energy_machine_id = 0;
     s->__total_energy_consumption = 0.0;
 
+    struct energy_matrix *energy = s->energy;
+    float *machine_compute_time = s->__machine_compute_time;
+    float *machine_energy_consumption = s->__machine_energy_consumption;
+
     for (int i = 0; i < s->etc->machines_count; i++) {
-        s->__machine_energy_consumption[i] = (s->__machine_compute_time[i] * get_energy_max_value(s->energy, i))
-            + ((s->__makespan - s->__machine_compute_time[i]) * get_energy_idle_value(s->energy, i));
+        machine_energy_consumption[i] = (machine_compute_time[i] * get_energy_max_value(energy, i))
+            + ((s->__makespan - machine_compute_time[i]) * get_energy_idle_value(energy, i));
 
-        s->__total_energy_consumption += s->__machine_energy_consumption[i];
+        s->__total_energy_consumption += machine_energy_consumption[i];
 
-        if (s->__machine_energy_consumption[i] > s->__machine_energy_consumption[s->__worst_energy_machine_id]) {
+        if (machine_energy_consumption[i] > machine_energy_consumption[s->__worst_energy_machine_id]) {
             s->__worst_energy_machine_id = i;
         }
         
-        if (s->__machine_energy_consumption[i] < s->__machine_energy_consumption[s->__best_energy_machine_id]) {
+        if (machine_energy_consumption[i] < machine_energy_consumption[s->__best_energy_machine_id]) {
             s->__best_energy_machine_id = i;
         }
     }
@@ -486,53 +432,61 @@ void refresh_best_worst_energy(struct solution *s) {
     s->__worst_energy_machine_id = 0;
     s->__best_energy_machine_id = 0;
 
-    for (int i = 1; i < s->etc->machines_count; i++) {
-        if (s->__machine_energy_consumption[i] > s->__machine_energy_consumption[s->__worst_energy_machine_id]) {
+    struct etc_matrix *etc = s->etc;
+    float *machine_energy_consumption = s->__machine_energy_consumption;
+
+    for (int i = 1; i < etc->machines_count; i++) {
+        if (machine_energy_consumption[i] > machine_energy_consumption[s->__worst_energy_machine_id]) {
             s->__worst_energy_machine_id = i;
         }
         
-        if (s->__machine_energy_consumption[i] < s->__machine_energy_consumption[s->__best_energy_machine_id]) {
+        if (machine_energy_consumption[i] < machine_energy_consumption[s->__best_energy_machine_id]) {
             s->__best_energy_machine_id = i;
         }
     }
 }
 
 void refresh_makespan(struct solution *s) {
+    float *machine_compute_time = s->__machine_compute_time;
+    
     s->__best_ct_machine_id = 0;
     s->__worst_ct_machine_id = 0;
-    s->__makespan = s->__machine_compute_time[0];
+    s->__makespan = machine_compute_time[0];
 
     for (int i = 1; i < s->etc->machines_count; i++) {
-        if (s->__machine_compute_time[i] > s->__makespan) {
+        if (machine_compute_time[i] > s->__makespan) {
             s->__worst_ct_machine_id = i;
-            s->__makespan = s->__machine_compute_time[i];
-            
-        } else if (s->__machine_compute_time[i] < s->__machine_compute_time[s->__best_ct_machine_id]) {
+            s->__makespan = machine_compute_time[i];
+        } else if (machine_compute_time[i] < machine_compute_time[s->__best_ct_machine_id]) {
             s->__best_ct_machine_id = i;
-            
         }
     }
 }
 
 void refresh_compute_time(struct solution *s) {
+    struct etc_matrix *etc = s->etc;
+    int **machine_assignment = s->__machine_assignment;
+    int *machine_assignment_count = s->__machine_assignment_count;
+    float *machine_compute_time = s->__machine_compute_time;
+
     s->__best_ct_machine_id = 0;
     s->__worst_ct_machine_id = 0;
-    s->__makespan = s->__machine_compute_time[0];
+    s->__makespan = machine_compute_time[0];
 
-    for (int i = 0; i < s->etc->machines_count; i++) {
+    for (int i = 0; i < etc->machines_count; i++) {
         float current_ct = 0.0;
         
-        for (int j = 0; j < s->__machine_assignment_count[j]; j++) {
-            current_ct += get_etc_value(s->etc, i, s->__machine_assignment[i][j]);
+        for (int j = 0; j < machine_assignment_count[j]; j++) {
+            current_ct += get_etc_value(etc, i, machine_assignment[i][j]);
         }
         
-        s->__machine_compute_time[i] = current_ct;
+        machine_compute_time[i] = current_ct;
         
-        if (s->__machine_compute_time[i] > s->__makespan) {
+        if (machine_compute_time[i] > s->__makespan) {
             s->__worst_ct_machine_id = i;
-            s->__makespan = s->__machine_compute_time[i];
+            s->__makespan = machine_compute_time[i];
             
-        } else if (s->__machine_compute_time[i] < s->__machine_compute_time[s->__best_ct_machine_id]) {
+        } else if (machine_compute_time[i] < machine_compute_time[s->__best_ct_machine_id]) {
             s->__best_ct_machine_id = i;
             
         }
@@ -554,54 +508,62 @@ float get_objective(struct solution *s, int obj_index) {
     }
 }
 int get_task_assigned_machine_id(struct solution *s, int task_id) {
+    #if defined(DEBUG)
     assert(task_id < s->etc->tasks_count);
     assert(task_id >= 0);
-
+    #endif
+    
     return s->__task_assignment[task_id];
 }
 
 int get_machine_tasks_count(struct solution *s, int machine_id) {
+    #if defined(DEBUG)
     assert(machine_id < s->etc->machines_count);
     assert(machine_id >= 0);
+    #endif
 
     return s->__machine_assignment_count[machine_id];
 }
 
 int get_machine_task_id(struct solution *s, int machine_id, int task_position) {
+    #if defined(DEBUG)
     assert(machine_id < s->etc->machines_count);
     assert(machine_id >= 0);
     assert(task_position >= 0);
-
     assert(s->__machine_assignment_count[machine_id] > task_position);
+    #endif
 
     return s->__machine_assignment[machine_id][task_position];
 }
 
 int get_machine_task_pos(struct solution *s, int machine_id, int task_id) {
+    #if defined(DEBUG)
     assert(machine_id < s->etc->machines_count);
     assert(machine_id >= 0);
     assert(task_id < s->etc->tasks_count);
     assert(task_id >= 0);
     assert(s->__task_assignment[task_id] == machine_id);
+    #endif
 
+    int **machine_assignment = s->__machine_assignment;
+    int *machine_assignment_count = s->__machine_assignment_count;
+    
     int i = 0;
 
-    if (s->__machine_assignment_count[machine_id] > 0) {
-        for (; (i < s->__machine_assignment_count[machine_id])
-            && (s->__machine_assignment[machine_id][i] != task_id); i++) {
+    if (machine_assignment_count[machine_id] > 0) {
+        for (; (i < machine_assignment_count[machine_id])
+            && (machine_assignment[machine_id][i] != task_id); i++) {
         }
 
-        if (i < s->__machine_assignment_count[machine_id]) {
+        if (i < machine_assignment_count[machine_id]) {
             return i;
         } else {
             fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n", task_id, machine_id);
             assert(0);
-            //return -1;
         }
     } else {
         fprintf(stdout, "[ERROR] La tarea %d no se encuentra en la máquina %d\n", task_id, machine_id);
         assert(0);
-        //return -1;
     }
 }
 

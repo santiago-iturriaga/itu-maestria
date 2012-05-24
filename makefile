@@ -26,9 +26,7 @@ pals-gdb: src/main.cpp \
         src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
         src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_2pop.cpp \
-		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp 
+		src/pals/pals_cpu_1pop.cpp 
 	$(CX) -g src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
@@ -43,10 +41,8 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp $(LIBS) \
-			-o bin/$(OUTPUT_BIN) 
+		$(LIBS) -o bin/$(OUTPUT_BIN) 
 
 pals-opt: src/main.cpp \
 		src/load_params.cpp \
@@ -62,9 +58,7 @@ pals-opt: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_2pop.cpp \
-		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp 
+		src/pals/pals_cpu_1pop.cpp 
 	$(CX) -O3 src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
@@ -79,10 +73,8 @@ pals-opt: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_2pop.cpp \
 		src/pals/pals_cpu_1pop.cpp \
-		src/pals/pals_serial.cpp $(LIBS) \
-			-o bin/$(OUTPUT_BIN)
+		$(LIBS) -o bin/$(OUTPUT_BIN)
 
 clean:
 	rm bin/$(OUTPUT_BIN)
