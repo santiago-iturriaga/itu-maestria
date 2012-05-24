@@ -437,10 +437,8 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
     fprintf(stdout, "== Population =================================================\n");
     for (int i = 0; i < instance.population_max_size; i++)
     {
-        if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-        {
-            fprintf(stdout, "Solucion %d: %f %f\n", i, get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
-        }
+        fprintf(stdout, "%f %f (%d)\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])),
+            instance.population[i].status);
     }
     #else
     if (!OUTPUT_SOLUTION)
@@ -745,63 +743,105 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             timming_start(ts_mct);
             // Timming -----------------------------------------------------
 
-            if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
-            {
-                pthread_mutex_lock(thread_instance->population_mutex);
-                    thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
-                pthread_mutex_unlock(thread_instance->population_mutex);
-
-                // Inicializo el individuo que me toca.
-                init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
-
-                #ifdef CPU_MERSENNE_TWISTER
-                double random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                #endif
-                #ifdef CPU_RAND
-                double random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                #endif
-                #ifdef CPU_DRAND48
-                double random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                #endif
-
-                int random_task = (int)floor(random * thread_instance->etc->tasks_count);
-                compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
-
-                //compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
-
-                pthread_mutex_lock(thread_instance->population_mutex);
-
-                //pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
-                archivers_aga(thread_instance, thread_instance->thread_idx);
-
-                #if defined(DEBUG_DEV)
-                fprintf(stdout, "[DEBUG] Population\n");
-                fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-
-                for (int i = 0; i < thread_instance->population_max_size; i++)
+            #if defined(INIT_PMINMIN)
+                if (thread_instance->thread_idx == 0)
                 {
-                    fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                        thread_instance->population[i].initialized,
-                        thread_instance->population[i].status);
+                    #if defined(DEBUG)
+                    printf("[DEBUG] Usando pMin-Min\n");
+                    #endif
+                    
+                    // Inicializo el individuo que me toca.
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+
+                    compute_pminmin(thread_instance->etc,
+                        &(thread_instance->population[thread_instance->thread_idx]),
+                        thread_instance->count_threads);
+
+                    archivers_aga(thread_instance, thread_instance->thread_idx);
+
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Population\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    {
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
+                    }
+                    #endif
+
+                    #if defined(DEBUG)
+                    fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
+                        thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                        get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                    #endif
+
+                    // Timming -----------------------------------------------------
+                    timming_end(">> Random MCT Time", ts_mct);
+                    // Timming -----------------------------------------------------
+
+                    #if defined(DEBUG_DEV) 
+                    validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
+                    #endif
                 }
-                #endif
+            #else
+                if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
+                {
+                    pthread_mutex_lock(thread_instance->population_mutex);
+                        thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
+                    pthread_mutex_unlock(thread_instance->population_mutex);
 
-                pthread_mutex_unlock(thread_instance->population_mutex);
+                    // Inicializo el individuo que me toca.
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
 
-                #if defined(DEBUG)
-                fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
-                    thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
-                    get_energy(&(thread_instance->population[thread_instance->thread_idx])));
-                #endif
+                    #ifdef CPU_MERSENNE_TWISTER
+                    double random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                    #endif
+                    #ifdef CPU_RAND
+                    double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                    #endif
+                    #ifdef CPU_DRAND48
+                    double random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                    #endif
 
-                // Timming -----------------------------------------------------
-                timming_end(">> Random MCT Time", ts_mct);
-                // Timming -----------------------------------------------------
+                    int random_task = (int)floor(random * thread_instance->etc->tasks_count);
+                    compute_custom_mct(&(thread_instance->population[thread_instance->thread_idx]), random_task);
 
-                #if defined(DEBUG_DEV)
-                validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
-                #endif
-            }
+                    pthread_mutex_lock(thread_instance->population_mutex);
+
+                    //pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
+                    archivers_aga(thread_instance, thread_instance->thread_idx);
+
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Population\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    {
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
+                    }
+                    #endif
+
+                    pthread_mutex_unlock(thread_instance->population_mutex);
+
+                    #if defined(DEBUG)
+                    fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
+                        thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                        get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                    #endif
+
+                    // Timming -----------------------------------------------------
+                    timming_end(">> Random MCT Time", ts_mct);
+                    // Timming -----------------------------------------------------
+
+                    #if defined(DEBUG_DEV)
+                    validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
+                    #endif
+                }
+            #endif
 
             // Espero a que los demas hilos terminen.
             rc = pthread_barrier_wait(thread_instance->sync_barrier);
