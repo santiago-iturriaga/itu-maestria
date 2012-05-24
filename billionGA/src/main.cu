@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
             
             fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration, 
                 (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
-                aux0[0]+aux0[1]+aux0[2]+aux0[3],
+                final_acc_prob,
                 aux1[0]+aux1[1]+aux1[2]+aux1[3],
                 aux2[0]+aux2[1]+aux2[2]+aux2[3], 
                 aux3[0]+aux3[1]+aux3[2]+aux3[3],
