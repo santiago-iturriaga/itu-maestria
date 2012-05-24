@@ -14,5 +14,5 @@ export OMP_NUM_THREADS=2
 
 #bin/billionga 1048576 2000000 524288 0
 #time (bin/billionga 1048576 2000000 524288 0 > out.txt) &> out.time
-time (bin/billionga 8388608 2000000 4194304 0 > out.txt) &> out.time
 
+time (bin/billionga 8388608 1000000 4194304 0 > out.txt) &> out.time
