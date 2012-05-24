@@ -63,15 +63,15 @@ void init_genrand64(struct cpu_mt_state &state, unsigned long long seed)
     state.mt[0] = seed;
     for (state.mti=1; state.mti<NN; state.mti++) 
         state.mt[state.mti] =  (6364136223846793005ULL * 
-			(state.mt[state.mti-1] ^ (state.mt[state.mti-1] >> 62)) + state.mti);
+            (state.mt[state.mti-1] ^ (state.mt[state.mti-1] >> 62)) + state.mti);
 }
 
 /* initialize by an array with array-length */
 /* init_key is the array for initializing keys */
 /* key_length is its length */
 void init_by_array64(struct cpu_mt_state &state, 
-			unsigned long long init_key[],
-		    unsigned long long key_length)
+            unsigned long long init_key[],
+            unsigned long long key_length)
 {
     unsigned long long i, j, k;
     
@@ -158,7 +158,7 @@ double genrand64_real3(struct cpu_mt_state &state)
     return ((genrand64_int64(state) >> 12) + 0.5) * (1.0/4503599627370496.0);
 }
 
-void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state) {	
+void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state) { 
     //unsigned long long init[4]={0x12345ULL, 0x23456ULL, 0x34567ULL, 0x45678ULL}, length=4;
     //init_by_array64(empty_state, init, length);
     
@@ -167,9 +167,9 @@ void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state) {
 }
 
 double cpu_mt_generate(struct cpu_mt_state &state) {
-	return genrand64_real2(state);
+    return genrand64_real2(state);
 }
 
 void cpu_mt_free(struct cpu_mt_state &state) {
-	
+    
 }

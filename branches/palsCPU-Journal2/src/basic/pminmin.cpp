@@ -68,10 +68,6 @@ void* compute_pminmin_thread(void *data) {
     
     int nt = t_f - t_i;
 
-    /*#ifdef DEBUG 
-    fprintf(stdout, "[DEBUG] calculando PMinMin...i thread de %d a %d, NT=%d\n", t_i, t_f, nt);
-    #endif*/
-
     int assigned_tasks[nt];
     for (int i = t_i; i < t_f; i++) {
         assigned_tasks[i-t_i] = 0;
@@ -127,14 +123,8 @@ void* compute_pminmin_thread(void *data) {
         assigned_tasks[best_task-t_i] = 1;
 
         assign_task_to_machine(sol, best_machine, best_task);
-        //sol->__task_assignment[best_task] = best_machine;
-
-        /*#ifdef DEBUG 
-        fprintf(stdout, "[DEBUG] best_machine: %d, best_task: %d.\n", best_machine, best_task);
-        #endif*/
 
         machine_compute_time[best_machine] = best_cost;
-            //solution_l->machine_compute_time[best_machine] + get_etc_value(etc, best_machine, best_task);
     }
     
     free(machine_compute_time);

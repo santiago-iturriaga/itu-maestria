@@ -11,9 +11,9 @@
 #define ETC_MATRIX_H_
 
 struct etc_matrix {
-	int tasks_count;
-	int machines_count;
-	float* data;
+    int tasks_count;
+    int machines_count;
+    float* data;
     int shifts;
 };
 

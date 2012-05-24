@@ -27,9 +27,11 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
         }
     }
     
-    if (DEBUG) fprintf(stdout, "[PARAMS] tasks   : %d\n", input->tasks_count);
-    if (DEBUG) fprintf(stdout, "[PARAMS] machines: %d\n", input->machines_count);
-    if (DEBUG) fprintf(stdout, "[PARAMS] unknown : %d\n", unknown_param);
+    #if defined(DEBUG)
+    fprintf(stdout, "[PARAMS] tasks   : %d\n", input->tasks_count);
+    fprintf(stdout, "[PARAMS] machines: %d\n", input->machines_count);
+    fprintf(stdout, "[PARAMS] unknown : %d\n", unknown_param);
+    #endif
 
     init_etc_matrix(input, etc);
     init_energy_matrix(input, energy);
@@ -63,8 +65,6 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
             if (fscanf(workload_file, "%f", &value) != 1) {
                 fprintf(stderr, "[ERROR] Leyendo dato de workload de la tarea %d para la máquina %d.\n", task, machine);
                 return EXIT_FAILURE;
-            } else {
-                //if (DEBUG) fprintf(stdout, "%f\n", value);
             }
 
             set_etc_value(etc, machine, task,

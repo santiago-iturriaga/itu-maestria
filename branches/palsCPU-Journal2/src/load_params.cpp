@@ -7,49 +7,69 @@
 int load_params(int argc, char **argv, struct params *input) {
     if (argc >= 11) {
         input->scenario_path = argv[1];
-        if (DEBUG) fprintf(stdout, "[PARAMS] scenario path: %s\n", input->scenario_path);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] scenario path: %s\n", input->scenario_path);
+        #endif
 
         input->workload_path = argv[2];
-        if (DEBUG) fprintf(stdout, "[PARAMS] workload path: %s\n", input->workload_path);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] workload path: %s\n", input->workload_path);
+        #endif
 
         input->tasks_count = atoi(argv[3]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
+        #endif
         
         input->machines_count = atoi(argv[4]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
+        #endif
 
         input->algorithm = atoi(argv[5]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
+        #endif
 
-        if (DEBUG) {
-            if (input->algorithm == PALS_2POP) {
-                fprintf(stdout, " (PALS 2-populations)\n");
-            } else if (input->algorithm == PALS_1POP) {
-                fprintf(stdout, " (PALS 1-population)\n");
-            } else if (input->algorithm == MINMIN) {
-                fprintf(stdout, " (MinMin)\n");
-            } else if (input->algorithm == MCT) {
-                fprintf(stdout, " (MCT)\n");
-            } else if (input->algorithm == pMINMIN) {
-                fprintf(stdout, " (pMINMIN)\n");
-            }
+        #if defined(DEBUG)
+        if (input->algorithm == PALS_2POP) {
+            fprintf(stdout, " (PALS 2-populations)\n");
+        } else if (input->algorithm == PALS_1POP) {
+            fprintf(stdout, " (PALS 1-population)\n");
+        } else if (input->algorithm == MINMIN) {
+            fprintf(stdout, " (MinMin)\n");
+        } else if (input->algorithm == MCT) {
+            fprintf(stdout, " (MCT)\n");
+        } else if (input->algorithm == pMINMIN) {
+            fprintf(stdout, " (pMINMIN)\n");
         }
+        #endif
 
         input->thread_count = atoi(argv[6]);
         //if (input->thread_count < 2) input->thread_count = 2; 
-        if (DEBUG) fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
+        #endif
 
         input->seed = atoi(argv[7]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
+        #endif
 
         input->max_time_secs = atoi(argv[8]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] Max. time (secs.): %d\n", input->max_time_secs);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] Max. time (secs.): %d\n", input->max_time_secs);
+        #endif
         
         input->max_iterations = atoi(argv[9]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] Max. iterations: %d\n", input->max_iterations);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] Max. iterations: %d\n", input->max_iterations);
+        #endif
 
         input->population_size = atoi(argv[10]);
-        if (DEBUG) fprintf(stdout, "[PARAMS] Population size: %d\n", input->population_size);
+        #if defined(DEBUG) 
+        fprintf(stdout, "[PARAMS] Population size: %d\n", input->population_size);
+        #endif
 
         if ((input->algorithm < 0)||(input->algorithm > 4)) {
             fprintf(stderr, "[ERROR] Invalid algorithm.\n");

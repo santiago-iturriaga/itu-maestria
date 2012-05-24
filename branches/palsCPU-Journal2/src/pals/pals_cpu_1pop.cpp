@@ -52,7 +52,9 @@ void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
 
 int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_solution_pos)
 {
-    if (DEBUG_DEV) fprintf(stdout, "========================================================\n");
+    #if defined(DEBUG_DEV)
+    fprintf(stdout, "========================================================\n");
+    #endif
     double random = 0.0;
 
     float makespan_new, energy_new;
@@ -65,31 +67,30 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     float best_energy_value = get_energy(&(instance->population[*(instance->best_energy_solution)]));
     float best_makespan_value = get_makespan(&(instance->population[*(instance->best_makespan_solution)]));
 
-    if (DEBUG_DEV)
+    #if defined(DEBUG_DEV)
+    fprintf(stdout, "[DEBUG] Population\n");
+    fprintf(stdout, "        Population_count: %d\n", *(instance->population_count));
+    fprintf(stdout, "        Solution to eval: %d\n", new_solution_pos);
+    fprintf(stdout, "        Makespan        : %f\n", makespan_new);
+    fprintf(stdout, "        Energy          : %f\n", energy_new);
+    fprintf(stdout, "        Best makespan   : %f (%d)\n", best_makespan_value, *(instance->best_makespan_solution));
+    fprintf(stdout, "        Best energy     : %f (%d)\n", best_energy_value, *(instance->best_energy_solution));
+
+    for (int i = 0; i < instance->population_max_size; i++)
     {
-        fprintf(stdout, "[DEBUG] Population\n");
-        fprintf(stdout, "        Population_count: %d\n", *(instance->population_count));
-        fprintf(stdout, "        Solution to eval: %d\n", new_solution_pos);
-        fprintf(stdout, "        Makespan        : %f\n", makespan_new);
-        fprintf(stdout, "        Energy          : %f\n", energy_new);
-        fprintf(stdout, "        Best makespan   : %f (%d)\n", best_makespan_value, *(instance->best_makespan_solution));
-        fprintf(stdout, "        Best energy     : %f (%d)\n", best_energy_value, *(instance->best_energy_solution));
-
-        for (int i = 0; i < instance->population_max_size; i++)
-        {
-            float makespan, energy;
-            makespan = 0;
-            energy = 0;
-            if (instance->population[i].status == 2) {
-                makespan = get_makespan(&(instance->population[i]));
-                energy = get_energy(&(instance->population[i]));
-            }
-
-            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d makespan=%f energy=%f\n", i,
-                instance->population[i].initialized, instance->population[i].status,
-                makespan, energy);
+        float makespan, energy;
+        makespan = 0;
+        energy = 0;
+        if (instance->population[i].status == 2) {
+            makespan = get_makespan(&(instance->population[i]));
+            energy = get_energy(&(instance->population[i]));
         }
+
+        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d makespan=%f energy=%f\n", i,
+            instance->population[i].initialized, instance->population[i].status,
+            makespan, energy);
     }
+    #endif
 
     int candidato_reemplazo = -1;
     int solutions_deleted = 0;
@@ -110,14 +111,18 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
             makespan = get_makespan(&(instance->population[s_pos]));
             energy = get_energy(&(instance->population[s_pos]));
 
-            if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+            #if defined(DEBUG_DEV)
+            fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", s_pos, makespan, makespan_new, energy, energy_new);
+            #endif
 
             if ((makespan <= makespan_new) && (energy <= energy_new))
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Individual %d is dominated by %d\n", new_solution_pos, s_pos);
+                #endif
             }
             else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
@@ -126,11 +131,15 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Removed individual %d because %d is better\n", s_pos, new_solution_pos);
+                #endif
             }
             else
             {
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] No definido\n");
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] No definido\n");
+                #endif
 
                 if ((instance->population_count[0] + instance->count_threads) >= instance->population_max_size) {
                     // Ninguna de las dos soluciones es dominada por la otra.
@@ -155,13 +164,13 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                             diff_makespan_individuo_actual = makespan - makespan_new;
                             diff_energy_individuo_actual = makespan - energy_new;
 
-                            if (DEBUG_DEV) {
+                            #if defined(DEBUG_DEV)
                                 fprintf(stdout, "[ND] Evaluo candidato contra:\n");
                                 fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f (%f , %f)\n", get_makespan(&(instance->population[candidato_reemplazo])),
                                     get_makespan(&(instance->population[s_pos])),diff_makespan_candidato_actual, diff_makespan_individuo_actual);
                                 fprintf(stdout, "[DEBUG] Energy vs: %f vs %f (%f , %f)\n", get_energy(&(instance->population[candidato_reemplazo])),
                                     get_energy(&(instance->population[s_pos])),diff_energy_candidato_actual, diff_energy_individuo_actual);
-                            }
+                            #endif
 
                             if (diff_makespan_individuo_actual > diff_makespan_candidato_actual) {
                                 candidato_reemplazo = s_pos;
@@ -174,7 +183,9 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                             } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) &&
                                 (diff_energy_individuo_actual == diff_energy_candidato_actual)) {
 
-                                if (DEBUG_DEV) fprintf(stdout, "[ND] Sorteo un candidato.\n");
+                                #if defined(DEBUG_DEV)
+                                fprintf(stdout, "[ND] Sorteo un candidato.\n");
+                                #endif
 
                                 #ifdef CPU_MERSENNE_TWISTER
                                 random = cpu_mt_generate(*(instance->thread_random_state));
@@ -207,27 +218,33 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
             if (energy_new < best_energy_value) {
                 *(instance->best_energy_solution) = new_solution_pos;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
+                #endif
             }
             if (makespan_new < best_makespan_value) {
                 *(instance->best_makespan_solution) = new_solution_pos;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
+                #endif
             }
 
-            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            #if defined(DEBUG_DEV)
+            fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            #endif
             return 1;
         }
         else
         {
             if (candidato_reemplazo != -1) {
-                if (DEBUG_DEV) {
-                    fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
-                    fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f\n", get_makespan(&(instance->population[candidato_reemplazo])),
-                        get_makespan(&(instance->population[new_solution_pos])));
-                    fprintf(stdout, "[DEBUG] Energy vs: %f vs %f\n", get_energy(&(instance->population[candidato_reemplazo])),
-                        get_energy(&(instance->population[new_solution_pos])));
-                }
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Reemplazo por el individuo %d\n", candidato_reemplazo);
+                fprintf(stdout, "[DEBUG] Makespan vs: %f vs %f\n", get_makespan(&(instance->population[candidato_reemplazo])),
+                    get_makespan(&(instance->population[new_solution_pos])));
+                fprintf(stdout, "[DEBUG] Energy vs: %f vs %f\n", get_energy(&(instance->population[candidato_reemplazo])),
+                    get_energy(&(instance->population[new_solution_pos])));
+                #endif
 
                 instance->population[new_solution_pos].status = SOLUTION__STATUS_READY;
                 instance->population[candidato_reemplazo].status = SOLUTION__STATUS_EMPTY;
@@ -235,25 +252,28 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                 if (energy_new < best_energy_value) {
                     *(instance->best_energy_solution) = new_solution_pos;
 
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
-                } /*else {
-                    assert(candidato_reemplazo != *(instance->best_energy_solution));
-                }*/
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] New best energy solution %d\n", new_solution_pos);
+                    #endif
+                }
+
                 if (makespan_new < best_makespan_value) {
                     *(instance->best_makespan_solution) = new_solution_pos;
 
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
-                } /*else {
-                    assert(candidato_reemplazo != *(instance->best_makespan_solution));
-                }*/
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] New best makespan solution %d\n", new_solution_pos);
+                    #endif
+                }
 
                 return 1;
             } else {
                 instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
                 instance->total_population_full++;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
-                        new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Discarded invidiual %d because there is no space left (threads=%d, count=%d, max=%d)\n",
+                    new_solution_pos, instance->count_threads, instance->population_count[0], instance->population_max_size);
+                #endif
                 return -1;
             }
         }
@@ -262,7 +282,9 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     {
         instance->population[new_solution_pos].status = SOLUTION__STATUS_EMPTY;
 
-        if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
+        #if defined(DEBUG_DEV)
+        fprintf(stdout, "[DEBUG] Discarded invidiual %d because is dominated\n", new_solution_pos);
+        #endif
         return 0;
     }
 }
@@ -299,7 +321,9 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
         }
         else
         {
-            if (DEBUG) printf("[DEBUG] thread %d <OK>\n", i);
+            #if defined(DEBUG)
+            printf("[DEBUG] thread %d <OK>\n", i);
+            #endif
         }
     }
 
@@ -397,8 +421,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
             fprintf(stdout, "Thread[%d] >> Iterations = %d >> Last found %d\n", i, instance.threads_args[i].total_iterations,
                 instance.threads_args[i].iter_last_found);
         }
-        if (DEBUG_DEV)
-        {
+        /*#if defined(DEBUG_DEV)*/
             for (int i = 0; i < instance.population_max_size; i++)
             {
                 if (instance.population[i].status == SOLUTION__STATUS_READY)
@@ -406,63 +429,60 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
                     validate_solution(&(instance.population[i]));
                 }
             }
-        }
+        //#endif
     }
     // <=========== DEBUG
 
-    if (DEBUG)
+    #if defined(DEBUG)
+    fprintf(stdout, "== Population =================================================\n");
+    for (int i = 0; i < instance.population_max_size; i++)
+    {
+        if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
+        {
+            fprintf(stdout, "Solucion %d: %f %f\n", i, get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
+        }
+    }
+    #else
+    if (!OUTPUT_SOLUTION)
     {
         fprintf(stdout, "== Population =================================================\n");
         for (int i = 0; i < instance.population_max_size; i++)
         {
-            if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
-            {
-                fprintf(stdout, "Solucion %d: %f %f\n", i, get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])));
-            }
+                fprintf(stdout, "%f %f (%d)\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])),
+                    instance.population[i].status);
         }
     }
     else
     {
-        if (!OUTPUT_SOLUTION)
+        fprintf(stdout, "%d\n", instance.population_count);
+        for (int i = 0; i < instance.population_max_size; i++)
         {
-            fprintf(stdout, "== Population =================================================\n");
-            for (int i = 0; i < instance.population_max_size; i++)
+            if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
             {
-                    fprintf(stdout, "%f %f (%d)\n", get_makespan(&(instance.population[i])), get_energy(&(instance.population[i])),
-                        instance.population[i].status);
-            }
-        }
-        else
-        {
-            fprintf(stdout, "%d\n", instance.population_count);
-            for (int i = 0; i < instance.population_max_size; i++)
-            {
-                if (instance.population[i].status > SOLUTION__STATUS_EMPTY)
+                for (int task = 0; task < etc->tasks_count; task++)
                 {
-                    for (int task = 0; task < etc->tasks_count; task++)
-                    {
-                        fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
-                    }
+                    fprintf(stdout, "%d\n", get_task_assigned_machine_id(&(instance.population[i]), task));
                 }
             }
-
-            fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
-            fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
-            fprintf(stderr, "LAST_FOUND_TIME|%.0f\n", elapsed_last_found);
-            fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
-            fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
-            fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
-            fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
-            fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_success_random_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
-            fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
-            fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
-            fprintf(stderr, "TOTAL_SOLS_NO_EVOLUCIONADAS|%d\n", total_soluciones_no_evolucionadas);
-            fprintf(stderr, "TOTAL_SOLS_DOMINADAS|%d\n", total_soluciones_evolucionadas_dominadas);
-            fprintf(stderr, "TOTAL_RE_TRABAJO|%d\n", total_re_iterations);
         }
+
+        fprintf(stderr, "CANT_ITERACIONES|%d\n", total_iterations);
+        fprintf(stderr, "TOTAL_TIME|%.0f\n", elapsed_total_time);
+        fprintf(stderr, "LAST_FOUND_TIME|%.0f\n", elapsed_last_found);
+        fprintf(stderr, "TOTAL_SWAPS|%d\n", total_swaps);
+        fprintf(stderr, "TOTAL_MOVES|%d\n", total_moves);
+        fprintf(stderr, "TOTAL_RANDOM_SEARCHES|%d\n", total_random_greedy_searches);
+        fprintf(stderr, "TOTAL_ENERGY_SEARCHES|%d\n", total_energy_greedy_searches);
+        fprintf(stderr, "TOTAL_MAKESPAN_SEARCHES|%d\n", total_makespan_greedy_searches);
+        fprintf(stderr, "TOTAL_SUCCESS_RANDOM_SEARCHES|%d\n", total_success_random_greedy_searches);
+        fprintf(stderr, "TOTAL_SUCCESS_ENERGY_SEARCHES|%d\n", total_success_energy_greedy_searches);
+        fprintf(stderr, "TOTAL_SUCCESS_MAKESPAN_SEARCHES|%d\n", total_success_makespan_greedy_searches);
+        fprintf(stderr, "TOTAL_POPULATION_FULL|%d\n", total_population_full);
+        fprintf(stderr, "TOTAL_SOLS_NO_EVOLUCIONADAS|%d\n", total_soluciones_no_evolucionadas);
+        fprintf(stderr, "TOTAL_SOLS_DOMINADAS|%d\n", total_soluciones_evolucionadas_dominadas);
+        fprintf(stderr, "TOTAL_RE_TRABAJO|%d\n", total_re_iterations);
     }
+    #endif
 
     // Libero la memoria del dispositivo.
     pals_cpu_1pop_finalize(instance);
@@ -612,7 +632,7 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
         empty_instance.threads_args[i].etc = empty_instance.etc;
         empty_instance.threads_args[i].energy = empty_instance.energy;
-        
+
         empty_instance.threads_args[i].max_iterations = input.max_iterations;
         empty_instance.threads_args[i].max_time_secs = input.max_time_secs;
 
@@ -697,14 +717,17 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
-                
+
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
         (thread_instance->total_iterations < thread_instance->max_iterations) &&
         (thread_instance->global_total_iterations[0] < thread_instance->max_iterations))
     {
         work_type = *(thread_instance->work_type);
-        if (DEBUG_DEV) printf("[DEBUG] [THREAD=%d] Work type = %d\n", thread_instance->thread_idx, work_type);
+
+        #if defined(DEBUG_DEV)
+        printf("[DEBUG] [THREAD=%d] Work type = %d\n", thread_instance->thread_idx, work_type);
+        #endif
 
         if (work_type == PALS_CPU_1POP_WORK__EXIT)
         {
@@ -751,33 +774,33 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 //pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
                 archivers_aga(thread_instance, thread_instance->thread_idx);
 
-                if (DEBUG_DEV)
-                {
-                    fprintf(stdout, "[DEBUG] Population\n");
-                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Population\n");
+                fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
 
-                    for (int i = 0; i < thread_instance->population_max_size; i++)
-                    {
-                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                            thread_instance->population[i].initialized,
-                            thread_instance->population[i].status);
-                    }
+                for (int i = 0; i < thread_instance->population_max_size; i++)
+                {
+                    fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                        thread_instance->population[i].initialized,
+                        thread_instance->population[i].status);
                 }
+                #endif
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
-                if (DEBUG)
-                {
-                    fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
-                        thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
-                        get_energy(&(thread_instance->population[thread_instance->thread_idx])));
-                }
+                #if defined(DEBUG)
+                fprintf(stdout, "[DEBUG] Initializing individual %d (%f %f)\n",
+                    thread_instance->thread_idx, get_makespan(&(thread_instance->population[thread_instance->thread_idx])),
+                    get_energy(&(thread_instance->population[thread_instance->thread_idx])));
+                #endif
 
                 // Timming -----------------------------------------------------
                 timming_end(">> Random MCT Time", ts_mct);
                 // Timming -----------------------------------------------------
 
-                if (DEBUG_DEV) validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
+                #if defined(DEBUG_DEV)
+                validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
+                #endif
             }
 
             // Espero a que los demas hilos terminen.
@@ -790,14 +813,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             // Comienza la bsqueda.
             pthread_mutex_lock(thread_instance->population_mutex);
-
                 thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
-
             pthread_mutex_unlock(thread_instance->population_mutex);
 
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
-        {            
+        {
             // PALS_CPU_1POP_WORK__SEARCH ====================================================================
             double random = 0.0; // Variable random multi-proposito :)
 
@@ -813,7 +834,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
                             selected_solution_pos = i;
 
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                            #endif
                         } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
                             candidate_to_del_pos = i;
                         }
@@ -844,7 +867,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 // Si es necesario inicializo el individuo.
                 if (selected_solution->initialized == 0)
                 {
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
+                    #endif
                     init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
                 }
 
@@ -862,23 +887,22 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 pthread_mutex_lock(thread_instance->population_mutex);
                     thread_instance->global_total_iterations[0] += local_iteration_count;
                     local_iteration_count = 0;
-                
+
                     int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
 
-                    if (DEBUG_DEV)
-                    {
-                        fprintf(stdout, "[DEBUG] Random selection\n");
-                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-                        fprintf(stdout, "        Random          : %f\n", random);
-                        fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Random selection\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                    fprintf(stdout, "        Random          : %f\n", random);
+                    fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
 
-                        for (int i = 0; i < thread_instance->population_max_size; i++)
-                        {
-                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                                thread_instance->population[i].initialized,
-                                thread_instance->population[i].status);
-                        }
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    {
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
                     }
+                    #endif
 
                     int current_sol_pos = -1;
                     int current_sol_index = -1;
@@ -897,20 +921,21 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     }
 
                     // Clono la solucion elegida =====================================================
-                    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                    #endif
                     clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
 
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
                 // Determino la estrategia de busqueda del hilo  =====================================================
-                if (DEBUG_DEV)
-                {
-                    fprintf(stdout, "[DEBUG] Selected individual\n");
-                    fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
-                    fprintf(stdout, "        Selected_solution_pos = %d\n", selected_solution_pos);
-                    fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
-                    fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
-                }
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Selected individual\n");
+                fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
+                fprintf(stdout, "        Selected_solution_pos = %d\n", selected_solution_pos);
+                fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
+                fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
+                #endif
 
                 float original_makespan = get_makespan(selected_solution);
                 float original_energy = get_energy(selected_solution);
@@ -942,13 +967,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 {
                     search_type = PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY;
                     thread_instance->total_makespan_greedy_searches++;
-
                 }
                 else if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN + PALS_CPU_1POP_SEARCH_BALANCE__ENERGY)
                 {
                     search_type = PALS_CPU_1POP_SEARCH__ENERGY_GREEDY;
                     thread_instance->total_energy_greedy_searches++;
-
                 }
                 else
                 {
@@ -958,7 +981,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 int work_do_iteration = 1;
 
-                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) + 
+                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
                     (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
 
                 while (work_do_iteration == 1) {
@@ -1132,13 +1155,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         }
 
                         int machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
- 			while (machine_a_task_count == 0) {
- 				machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
- 				machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
- 			}
+                        while (machine_a_task_count == 0) {
+                            machine_a = (machine_a + 1) % thread_instance->etc->machines_count;
+                            machine_a_task_count = get_machine_tasks_count(selected_solution, machine_a);
+                        }
 
                         if (machine_a == machine_b) machine_b = (machine_b + 1) % thread_instance->etc->machines_count;
-			int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
+                        int machine_b_task_count = get_machine_tasks_count(selected_solution, machine_b);
 
                         int task_x;
                         #ifdef CPU_MERSENNE_TWISTER
@@ -1180,7 +1203,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD) + 1;
                         if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
-                        
+
                         #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
@@ -1577,8 +1600,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                         {
                             // Intercambio las tareas!
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
                                 best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
+                            #endif
+                            
                             swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                             thread_instance->total_swaps++;
@@ -1587,30 +1613,31 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                         {
                             // Muevo la tarea!
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
                                 best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
+                            #endif
+                            
                             move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                             thread_instance->total_moves++;
                             //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
                         }
 
-                        if (DEBUG_DEV) validate_solution(selected_solution);
-                        if (DEBUG_DEV) {
-                            if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
-                            /*if ((floor(original_makespan) < floor(get_makespan(selected_solution))) &&
-                                (floor(original_energy) < floor(get_energy(selected_solution)))) {*/
+                        #if defined(DEBUG_DEV) 
+                        validate_solution(selected_solution);
+                    
+                        if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
+                            refresh_energy(selected_solution);
+                            refresh_makespan(selected_solution);
 
-                                refresh_energy(selected_solution);
-                                refresh_makespan(selected_solution);
+                            fprintf(stdout, "[ERROR] EMPEORA!\n");
+                            fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
+                            fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
 
-                                fprintf(stdout, "[ERROR] EMPEORA!\n");
-                                fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
-                                fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
-
-                                exit(-1);
-                            }
+                            exit(-1);
                         }
+                        #endif
                     }                // Termino el loop con la iteracin del thread
 
                     //refresh_energy(selected_solution);
@@ -1620,14 +1647,14 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         (original_energy > get_energy(selected_solution)))
                     {
                         //refresh_energy(selected_solution);
-                        
+
                         int mutex_locked;
                         int new_solution_eval = 0;
 
                         // Lo mejore. Intento obtener lock de la poblacion.
                         mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
-                        if (mutex_locked == 0) {                           
+                        if (mutex_locked == 0) {
                             // Chequeo si la nueva solucion es no-dominada.
                             //new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
                             new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
@@ -1655,18 +1682,19 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 thread_instance->total_soluciones_evolucionadas_dominadas++;
                             }
 
-                            if (DEBUG_DEV)
-                            {
-                                fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
-                                validate_thread_instance(thread_instance);
-                            }
-                            
+                            #if defined(DEBUG_DEV)
+                            fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
+                            validate_thread_instance(thread_instance);
+                            #endif
+
                             // Libero la posicion seleccionada.
                             selected_solution_pos = -1;
                         } else {
                             // Algun otro thread esta trabajando sobre la población.
                             // Intento hacer otro loop de trabajo y vuelvo a probar.
-                            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Re do iteration!\n");
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Re do iteration!\n");
+                            #endif
 
                             #ifdef CPU_MERSENNE_TWISTER
                             double random = cpu_mt_generate(*(thread_instance->thread_random_state));
@@ -1702,7 +1730,9 @@ void* pals_cpu_1pop_thread(void *thread_arg)
         }
     }
 
-    if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
+    #if defined(DEBUG_DEV) 
+    fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
+    #endif
 
     return NULL;
 }

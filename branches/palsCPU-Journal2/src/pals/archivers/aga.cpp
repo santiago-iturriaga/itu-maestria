@@ -51,16 +51,20 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             makespan = get_makespan(&(instance->population[s_pos]));
             energy = get_energy(&(instance->population[s_pos]));
 
-            if (DEBUG_DEV) fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", 
+            #if defined(DEBUG_DEV) 
+            fprintf(stdout, "[%d] Makespan: %f %f || Energy %f %f\n", 
                 s_pos, makespan, makespan_new, energy, energy_new);
+            #endif
 
             if ((makespan <= makespan_new) && (energy <= energy_new))
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Individual %d[%f,%f] is dominated by %d[%f,%f]\n", 
+                #if defined(DEBUG_DEV) 
+                fprintf(stdout, "[DEBUG] Individual %d[%f,%f] is dominated by %d[%f,%f]\n", 
                     new_solution_pos, makespan_new, energy_new, s_pos, makespan, energy);
+                #endif
             }
             else if ((makespan_new <= makespan) && (energy_new <= energy))
             {
@@ -69,8 +73,10 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 instance->population_count[0] = instance->population_count[0] - 1;
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed individual %d[%f,%f] because %d[%f,%f] is better\n", 
+                #if defined(DEBUG_DEV) 
+                fprintf(stdout, "[DEBUG] Removed individual %d[%f,%f] because %d[%f,%f] is better\n", 
                     s_pos, makespan, energy, new_solution_pos, makespan_new, energy_new);
+                #endif
             }
         } 
         else if (instance->population[s_pos].status == SOLUTION__STATUS_TO_DEL) 
@@ -85,7 +91,9 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 // La nueva solucion domina a una ya existente que esta para borrar. La borro del todo.
                 instance->population[s_pos].status = SOLUTION__STATUS_EMPTY;
 
-                if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Removed TO_DEL individual %d because %d is better\n", s_pos, new_solution_pos);
+                #if defined(DEBUG_DEV) 
+                fprintf(stdout, "[DEBUG] Removed TO_DEL individual %d because %d is better\n", s_pos, new_solution_pos);
+                #endif
             }
         }
     }
@@ -102,13 +110,6 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             int most_square_pop;
             most_square_pop = instance->archiver_state->grid_pop[new_solution_grid_pos];
          
-            /*
-            fprintf(stdout, "aga (population_count[0] = %d)+(count_threads = %d) >= (population_max_size = %d)\n", 
-                instance->population_count[0], instance->count_threads, instance->population_max_size);
-            
-            fprintf(stdout, "[DEBUG] aga thread(%d) new_sol_grid_pos(%d) new_sol_grid_square(%d)\n", 
-                instance->thread_idx, new_solution_grid_pos, most_square_pop);
-            */
             for (int i = 0; i < instance->population_max_size; i++)
             {
                 if ((instance->population[i].status == SOLUTION__STATUS_READY) && 
@@ -120,10 +121,6 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                     int i_square_pop;
                     i_square_pop = instance->archiver_state->grid_pop[i_grid_pos];
 
-                    /*fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
-                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);*/
-                        
-                    //if (instance->archiver_state->grid_pop[i_square_pop] > most_square_pop)
                     if (i_square_pop > most_square_pop)
                     {
                         most_square_pop = instance->archiver_state->grid_pop[i_square_pop];
@@ -167,7 +164,10 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                 *(instance->best_energy_solution) = new_solution_pos;        
             }
 
-            if (DEBUG_DEV) fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            #if defined(DEBUG_DEV) 
+            fprintf(stdout, "[DEBUG] Added invidiual %d because is ND\n", new_solution_pos);
+            #endif
+            
             return 1;
         }
     } else {
@@ -192,8 +192,10 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
     
     //fprintf(stdout, ">>> Min makespan(%f) Min energy(%f)\n", actual_best_makespan, actual_best_energy);
 
+    #if defined(DEBUG)
     assert(actual_best_makespan < init_best_makespan);
     assert(actual_best_energy < init_best_energy);
+    #endif
     
     #endif
 }
