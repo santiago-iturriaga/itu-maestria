@@ -112,19 +112,20 @@ int main(int argc, char **argv) {
             fprintf(stdout, ",gt 75,gt 50,lt 50,lt 25");
         #endif
         fprintf(stdout, "\n");
+        
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {                       
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                    
-                    aux = bga_get_full_accumulated_prob(&problem_state);
-                    probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
-                    
+                                        
                     fprintf(stdout, "%d", current_iteration);
                     
                     #if defined(DEBUG)
-                    fprintf(stdout, ",%.4f", probability_avg);
-                    fprintf(stdout, ",%ld", aux);
-                    fprintf(stdout, ",%ld", aux - current_acc_prob);
+                        aux = bga_get_full_accumulated_prob(&problem_state);
+                        probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
+
+                        fprintf(stdout, ",%.4f", probability_avg);
+                        fprintf(stdout, ",%ld", aux);
+                        fprintf(stdout, ",%ld", aux - current_acc_prob);
                     #endif
                     
                     fprintf(stdout, ",%ld,%ld,%.4f", fitness_sample_a, fitness_sample_b, fitness_sample_avg);
@@ -184,7 +185,7 @@ int main(int argc, char **argv) {
                 fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
             #endif
             
-            fitness_sample_avg = (fitness_sample_a + fitness_sample_b) / 2;
+            fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
         }
        
         long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
