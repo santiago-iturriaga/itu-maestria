@@ -16,7 +16,7 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-#define ARCHIVER_AGA
+//#define ARCHIVER_AGA
 
 #define INIT_MCT
 //#define INIT_PMINMIN

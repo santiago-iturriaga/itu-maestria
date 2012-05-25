@@ -552,10 +552,13 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
         empty_instance.population[i].status = SOLUTION__STATUS_EMPTY;
         empty_instance.population[i].initialized = 0;
     }
+    
+    #if defined(ARCHIVER_AGA)
+        if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using AGA archiver\n");
+        empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
 
-    if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using AGA archiever\n");
-    empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
-    archivers_aga_init(&empty_instance);
+        archivers_aga_init(&empty_instance);
+    #endif
 
     // =========================================================================
     // Pedido de memoria para la generacin de numeros aleatorios.
@@ -676,8 +679,10 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
     free(instance.threads);
     free(instance.threads_args);
 
-    archivers_aga_free(&instance);
-
+    #if defined(ARCHIVER_AGA)
+        archivers_aga_free(&instance);
+    #endif
+    
     pthread_mutex_destroy(&(instance.population_mutex));
     pthread_barrier_destroy(&(instance.sync_barrier));
 }
@@ -757,7 +762,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         &(thread_instance->population[thread_instance->thread_idx]),
                         thread_instance->count_threads);
 
-                    archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #if defined(ARCHIVER_AGA)
+                        archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #else
+                        pals_cpu_1pop_adhoc_arch(thread_instance, thread_instance->thread_idx);
+                    #endif
 
                     #if defined(DEBUG_DEV)
                     fprintf(stdout, "[DEBUG] Population\n");
@@ -810,8 +819,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                     pthread_mutex_lock(thread_instance->population_mutex);
 
-                    //pals_cpu_1pop_eval_new_solution(thread_instance, thread_instance->thread_idx);
-                    archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #if defined(ARCHIVER_AGA)
+                        archivers_aga(thread_instance, thread_instance->thread_idx);
+                    #else
+                        pals_cpu_1pop_adhoc_arch(thread_instance, thread_instance->thread_idx);
+                    #endif
 
                     #if defined(DEBUG_DEV)
                     fprintf(stdout, "[DEBUG] Population\n");
@@ -1696,8 +1708,12 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         if (mutex_locked == 0) {
                             // Chequeo si la nueva solucion es no-dominada.
-                            //new_solution_eval = pals_cpu_1pop_eval_new_solution(thread_instance, selected_solution_pos);
-                            new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
+                            
+                            #if defined(ARCHIVER_AGA)
+                                new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
+                            #else
+                                new_solution_eval = pals_cpu_1pop_adhoc_arch(thread_instance, selected_solution_pos);
+                            #endif
 
                             pthread_mutex_unlock(thread_instance->population_mutex);
 
