@@ -103,7 +103,11 @@ int main(int argc, char **argv) {
         float fitness_sample_avg = 0, probability_avg = 0;
         long fitness_sample_a = 0, fitness_sample_b = 0;
 
-        fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,f1,f2,avg f1 f2");
+        fprintf(stdout, "iter");
+        #if defined(DEBUG)
+            fprintf(stdout, ",avg. prob., abs. value,abs. improv.");
+        #endif
+        fprintf(stdout, ",f1,f2,avg f1 f2");
         #if defined(DEBUG)
             fprintf(stdout, ",gt 75,gt 50,lt 50,lt 25");
         #endif
@@ -111,14 +115,18 @@ int main(int argc, char **argv) {
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {                       
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                    aux = bga_get_full_accumulated_prob(&problem_state);
                     
+                    aux = bga_get_full_accumulated_prob(&problem_state);
                     probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
                     
                     fprintf(stdout, "%d", current_iteration);
+                    
+                    #if defined(DEBUG)
                     fprintf(stdout, ",%.4f", probability_avg);
                     fprintf(stdout, ",%ld", aux);
                     fprintf(stdout, ",%ld", aux - current_acc_prob);
+                    #endif
+                    
                     fprintf(stdout, ",%ld,%ld,%.4f", fitness_sample_a, fitness_sample_b, fitness_sample_avg);
                         
                     current_acc_prob = aux;
@@ -190,6 +198,8 @@ int main(int argc, char **argv) {
         aux2[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1);
         aux3[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1);
         aux4[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2);
+
+        bga_get_part_accumulated_prob(&problem_state, th_id); 
 
         #pragma omp barrier
         if (th_id == 0) {
