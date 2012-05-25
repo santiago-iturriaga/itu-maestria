@@ -18,9 +18,8 @@
 
 #define ARCHIVER_AGA
 
-//#define INIT_MCT
-//#define INIT_MINMIN
-#define INIT_PMINMIN
+#define INIT_MCT
+//#define INIT_PMINMIN
 
 #define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       650
 #define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   14
