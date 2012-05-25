@@ -20,9 +20,9 @@ inline void termination_criteria_init(struct termination_criteria *term_state,
 }
 
 inline int termination_criteria_eval(struct termination_criteria *term_state,
-    struct bga_state *problem_state, int iteration_count) {
+    struct bga_state *problem_state, int iteration_count, float fitness_sample_avg) {
 
-    return (iteration_count == term_state->max_iteration_count);
+    return ((iteration_count == term_state->max_iteration_count) || (fitness_sample_avg >= problem_state->max_prob_sum));
 }
 
 int main(int argc, char **argv) {
@@ -99,43 +99,44 @@ int main(int argc, char **argv) {
         #endif
 
         long current_acc_prob = 0;
+        long aux;
+        float fitness_sample_avg = 0, probability_avg = 0;
+        long fitness_sample_a = 0, fitness_sample_b = 0;
 
-        fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 50,lt 50,gt 75,lt 25\n");
-        while (!termination_criteria_eval(&term_state, &problem_state, current_iteration)) {           
+        fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,f1,f2,avg f1 f2");
+        #if defined(DEBUG)
+            fprintf(stdout, ",gt 75,gt 50,lt 50,lt 25");
+        #endif
+        fprintf(stdout, "\n");
+        while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {                       
             if (th_id == 0) {
                 if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                    //fprintf(stdout, "*** ITERACION %d *********************************************\n", current_iteration);
+                    aux = bga_get_full_accumulated_prob(&problem_state);
                     
-                    long aux;
-                    aux = bga_get_part_accumulated_prob(&problem_state, th_id);
-
-                    //fprintf(stdout, "                   Value: %ld (improv: %ld)\n", aux, aux - current_acc_prob);
-                    //fprintf(stdout, "     Success probability: %.4f%%\n", (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads));
-
-                    fprintf(stdout, "%d,%.4f;%ld,%ld,", current_iteration, 
-                        (double)(aux * 100) / ((double)problem_state.max_prob_sum / nthreads), aux, aux - current_acc_prob);
-
+                    probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
+                    
+                    fprintf(stdout, "%d", current_iteration);
+                    fprintf(stdout, ",%.4f", probability_avg);
+                    fprintf(stdout, ",%ld", aux);
+                    fprintf(stdout, ",%ld", aux - current_acc_prob);
+                    fprintf(stdout, ",%ld,%ld,%.4f", fitness_sample_a, fitness_sample_b, fitness_sample_avg);
+                        
                     current_acc_prob = aux;
 
-                    aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
-                    //fprintf(stdout, "  Aprox. prob. bit > 50%%: %ld\n", aux);
-                    
-                    fprintf(stdout, "%ld,", aux);
-                    
-                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
-                    //fprintf(stdout, "  Aprox. prob. bit < 50%%: %ld\n", aux);
+                    #if defined(DEBUG)
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
 
-                    fprintf(stdout, "%ld,", aux);
-
-                    aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
-                    //fprintf(stdout, "  Aprox. prob. bit > 75%%: %ld\n", aux);
-                    
-                    fprintf(stdout, "%ld,", aux);
-                    
-                    aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
-                    //fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux);
-                    
-                    fprintf(stdout, "%ld\n", aux);
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+                        
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+                        
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;                   
+                        fprintf(stdout, ",%ld", aux);
+                    #endif
+                    fprintf(stdout, "\n");
                 }
             }
 
@@ -165,34 +166,37 @@ int main(int argc, char **argv) {
             #endif
 
             bga_model_update(&problem_state, th_id);
+                        
+            #if defined(FULL_FITNESS_UPDATE)
+                fitness_sample_a = problem_state.samples_fitness[0];
+                fitness_sample_b = problem_state.samples_fitness[1];
+            #endif
+            #if defined(PARTIAL_FITNESS_UPDATE)
+                fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
+                fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
+            #endif
+            
+            fitness_sample_avg = (fitness_sample_a + fitness_sample_b) / 2;
         }
        
         long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
         
-        aux0[0] = aux0[0] = aux0[0] = aux0[0] = 0;
         aux1[0] = aux2[0] = aux3[0] = aux4[0] = 0;
         aux1[1] = aux2[1] = aux3[1] = aux4[1] = 0;
         aux1[2] = aux2[2] = aux3[2] = aux4[2] = 0;
         aux1[3] = aux2[3] = aux3[3] = aux4[3] = 0;
         
-        aux0[th_id] = bga_get_part_accumulated_prob(&problem_state, th_id);
-        aux1[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1);
-        aux2[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1);
-        aux3[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2));
+        aux1[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2));
+        aux2[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1);
+        aux3[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1);
         aux4[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2);
 
         #pragma omp barrier
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
-            /*fprintf(stdout, "*******************************************************\n", current_iteration);
-            fprintf(stdout, "*** FINAL *********************************************\n", current_iteration);
-            fprintf(stdout, "                   Value: %ld\n", final_acc_prob);
-            fprintf(stdout, "     Success probability: %.4f%%\n", (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum);
-            fprintf(stdout, "  Aprox. prob. bit > 50%%: %ld\n", aux1[0]+aux1[1]+aux1[2]+aux1[3]);
-            fprintf(stdout, "  Aprox. prob. bit < 50%%: %ld\n", aux2[0]+aux2[1]+aux2[2]+aux2[3]);
-            fprintf(stdout, "  Aprox. prob. bit > 75%%: %ld\n", aux3[0]+aux3[1]+aux3[2]+aux3[3]);
-            fprintf(stdout, "  Aprox. prob. bit < 25%%: %ld\n", aux4[0]+aux4[1]+aux4[2]+aux4[3]);*/
             
+            fprintf(stdout, ">>>>\n");
+            fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25\n");
             fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration, 
                 (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
                 final_acc_prob,

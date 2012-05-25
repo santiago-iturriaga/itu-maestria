@@ -10,7 +10,7 @@
 #define VECTOR_SET_THREADS      256
 
 #define VECTOR_SUM_BLOCKS       128
-/#define VECTOR_SUM_THREADS      512
+#define VECTOR_SUM_THREADS      512
 #define VECTOR_SUM_SHARED_MEM   512
 
 /*#define VECTOR_SUM_BLOCKS       128
