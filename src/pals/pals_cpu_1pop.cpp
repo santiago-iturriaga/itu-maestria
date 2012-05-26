@@ -492,7 +492,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 
 
 void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
-    int seed, struct pals_cpu_1pop_instance &empty_instance)
+int seed, struct pals_cpu_1pop_instance &empty_instance)
 {
 
     // Asignacin del paralelismo del algoritmo.
@@ -552,7 +552,7 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         empty_instance.population[i].status = SOLUTION__STATUS_EMPTY;
         empty_instance.population[i].initialized = 0;
     }
-
+    
     #if defined(ARCHIVER_AGA)
         if (!OUTPUT_SOLUTION) fprintf(stdout, "[INFO] Using AGA archiver\n");
         empty_instance.archiver_state = (struct aga_state*)malloc(sizeof(struct aga_state));
@@ -570,13 +570,13 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
     long int random_seed;
 
     #ifdef CPU_MERSENNE_TWISTER
-        empty_instance.random_states = (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
+    empty_instance.random_states = (struct cpu_mt_state*)malloc(sizeof(struct cpu_mt_state) * empty_instance.count_threads);
     #endif
     #ifdef CPU_RAND
-        empty_instance.random_states = (struct cpu_rand_state*)malloc(sizeof(struct cpu_rand_state) * empty_instance.count_threads);
+    empty_instance.random_states = (struct cpu_rand_state*)malloc(sizeof(struct cpu_rand_state) * empty_instance.count_threads);
     #endif
     #ifdef CPU_DRAND48
-        empty_instance.random_states = (struct cpu_drand48_state*)malloc(sizeof(struct cpu_drand48_state) * empty_instance.count_threads);
+    empty_instance.random_states = (struct cpu_drand48_state*)malloc(sizeof(struct cpu_drand48_state) * empty_instance.count_threads);
     #endif
 
     for (int i = 0; i < empty_instance.count_threads; i++)
@@ -584,13 +584,13 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         random_seed = rand();
 
         #ifdef CPU_MERSENNE_TWISTER
-            cpu_mt_init(random_seed, empty_instance.random_states[i]);
+        cpu_mt_init(random_seed, empty_instance.random_states[i]);
         #endif
         #ifdef CPU_RAND
-            cpu_rand_init(random_seed, empty_instance.random_states[i]);
+        cpu_rand_init(random_seed, empty_instance.random_states[i]);
         #endif
         #ifdef CPU_DRAND48
-            cpu_drand48_init(random_seed, empty_instance.random_states[i]);
+        cpu_drand48_init(random_seed, empty_instance.random_states[i]);
         #endif
     }
 
@@ -608,12 +608,6 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         exit(EXIT_FAILURE);
     }
 
-    if (pthread_mutex_init(&(empty_instance.next_thread_mutex), NULL))
-    {
-        printf("Could not create a next thread mutex\n");
-        exit(EXIT_FAILURE);
-    }
-
     if (pthread_barrier_init(&(empty_instance.sync_barrier), NULL, empty_instance.count_threads))
     {
         printf("Could not create a sync barrier\n");
@@ -628,7 +622,6 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         malloc(sizeof(struct pals_cpu_1pop_thread_arg) * empty_instance.count_threads);
 
     empty_instance.work_type = PALS_CPU_1POP_WORK__INIT;
-    empty_instance.next_mutex_thread = 0;
 
     timespec ts_start;
     clock_gettime(CLOCK_REALTIME, &ts_start);
@@ -637,7 +630,6 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
     {
         empty_instance.threads_args[i].thread_idx = i;
         empty_instance.threads_args[i].count_threads = empty_instance.count_threads;
-        empty_instance.threads_args[i].next_mutex_thread = &empty_instance.next_mutex_thread;
 
         empty_instance.threads_args[i].etc = empty_instance.etc;
         empty_instance.threads_args[i].energy = empty_instance.energy;
@@ -655,7 +647,6 @@ void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct ene
         empty_instance.threads_args[i].work_type = &(empty_instance.work_type);
         empty_instance.threads_args[i].global_total_iterations = &(empty_instance.global_total_iterations);
 
-        empty_instance.threads_args[i].next_thread_mutex = &(empty_instance.next_thread_mutex);
         empty_instance.threads_args[i].population_mutex = &(empty_instance.population_mutex);
         empty_instance.threads_args[i].sync_barrier = &(empty_instance.sync_barrier);
 
@@ -691,8 +682,7 @@ void pals_cpu_1pop_finalize(struct pals_cpu_1pop_instance &instance)
     #if defined(ARCHIVER_AGA)
         archivers_aga_free(&instance);
     #endif
-
-    pthread_mutex_destroy(&(instance.next_thread_mutex));
+    
     pthread_mutex_destroy(&(instance.population_mutex));
     pthread_barrier_destroy(&(instance.sync_barrier));
 }
@@ -730,13 +720,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
     int selected_solution_pos = -1;
     int local_iteration_count = 0;
-    double random = 0.0; // Variable random multi-proposito :)
-    struct solution *selected_solution = NULL;
-    float original_makespan = 0.0;
-    float original_energy = 0.0;
-    int search_type;
-    int work_do_iteration;
-    int work_iteration_size;
 
     while ((terminate == 0) &&
         (ts_current.tv_sec - thread_instance->ts_start.tv_sec < thread_instance->max_time_secs) &&
@@ -754,6 +737,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
             // PALS_CPU_1POP_WORK__EXIT =======================================================================
             // Finalizo la ejecucin del algoritmo!
             terminate = 1;
+
         }
         else if (work_type == PALS_CPU_1POP_WORK__INIT)
         {
@@ -770,7 +754,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     #if defined(DEBUG)
                     printf("[DEBUG] Usando pMin-Min\n");
                     #endif
-
+                    
                     // Inicializo el individuo que me toca.
                     init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
 
@@ -806,7 +790,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     timming_end(">> Random MCT Time", ts_mct);
                     // Timming -----------------------------------------------------
 
-                    #if defined(DEBUG_DEV)
+                    #if defined(DEBUG_DEV) 
                     validate_solution(&(thread_instance->population[thread_instance->thread_idx]));
                     #endif
                 }
@@ -879,113 +863,43 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 exit(EXIT_FAILURE);
             }
 
-            // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
+            // Comienza la bsqueda.
             pthread_mutex_lock(thread_instance->population_mutex);
-                int candidate_to_del_pos = -1;
-                for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
-                {
-                    if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
-                    {
-                        thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-                        selected_solution_pos = i;
-
-                        #if defined(DEBUG_DEV)
-                            fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
-                        #endif
-                    } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
-                        candidate_to_del_pos = i;
-                    }
-                }
-
-                if ((selected_solution_pos == -1) && (candidate_to_del_pos != -1)) {
-                    selected_solution_pos = candidate_to_del_pos;
-                    thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
-                }
+                thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
             pthread_mutex_unlock(thread_instance->population_mutex);
 
-            struct solution *selected_solution;
-            selected_solution = &(thread_instance->population[selected_solution_pos]);
-
-            // Si es necesario inicializo el individuo.
-            if (selected_solution->initialized == 0)
-            {
-                #if defined(DEBUG_DEV)
-                    fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
-                #endif
-                init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
-            }
-
-            // Sorteo la solucion con la que me toca trabajar  =====================================================
-            #ifdef CPU_MERSENNE_TWISTER
-                random = cpu_mt_generate(*(thread_instance->thread_random_state));
-            #endif
-            #ifdef CPU_RAND
-                random = cpu_rand_generate(*(thread_instance->thread_random_state));
-            #endif
-            #ifdef CPU_DRAND48
-                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-            #endif
-
-            int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
-
-            #if defined(DEBUG_DEV)
-            fprintf(stdout, "[DEBUG] Random selection\n");
-            fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-            fprintf(stdout, "        Random          : %f\n", random);
-            fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
-
-            for (int i = 0; i < thread_instance->population_max_size; i++)
-            {
-                fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                    thread_instance->population[i].initialized,
-                    thread_instance->population[i].status);
-            }
-            #endif
-
-            int current_sol_pos = -1;
-            int current_sol_index = -1;
-
-            for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
-            {
-                if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
-                {
-                    current_sol_index++;
-
-                    if (current_sol_index == random_sol_index)
-                    {
-                        current_sol_pos = i;
-                    }
-                }
-            }
-
-            // Clono la solucion elegida =====================================================
-            #if defined(DEBUG_DEV)
-            fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
-            #endif
-            clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
-
-            #if defined(DEBUG_DEV)
-                fprintf(stdout, "[DEBUG] Selected individual\n");
-                fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
-                fprintf(stdout, "        Selected_solution_pos = %d\n", selected_solution_pos);
-                fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
-                fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
-            #endif
-
-            // Comienza la bsqueda.
-            work_do_iteration = 1;
-            thread_instance->work_type[0] = PALS_CPU_1POP_WORK__SEARCH;
-
-            rc = pthread_barrier_wait(thread_instance->sync_barrier);
-            if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-            {
-                printf("Could not wait on barrier\n");
-                exit(EXIT_FAILURE);
-            }
         }
         else if (work_type == PALS_CPU_1POP_WORK__SEARCH)
         {
             // PALS_CPU_1POP_WORK__SEARCH ====================================================================
+            double random = 0.0; // Variable random multi-proposito :)
+
+            // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
+            int candidate_to_del_pos = -1;
+            if (selected_solution_pos == -1) {
+                pthread_mutex_lock(thread_instance->population_mutex);
+
+                    for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
+                    {
+                        if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
+                        {
+                            thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
+                            selected_solution_pos = i;
+
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
+                            #endif
+                        } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
+                            candidate_to_del_pos = i;
+                        }
+                    }
+
+                    if ((selected_solution_pos == -1)&&(candidate_to_del_pos != -1)) {
+                        selected_solution_pos = candidate_to_del_pos;
+                        thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
+                    }
+                pthread_mutex_unlock(thread_instance->population_mutex);
+            }
 
             // Si no encuentro un lugar libre? duermo un rato y vuelvo a probar?
             if (selected_solution_pos == -1)
@@ -995,35 +909,110 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                 terminate = 1;
                 thread_instance->total_population_full++;
+
             }
             else
             {
+                struct solution *selected_solution;
                 selected_solution = &(thread_instance->population[selected_solution_pos]);
 
-                // Determino la estrategia de busqueda del hilo  =====================================================
-                original_makespan = get_makespan(selected_solution);
-                original_energy = get_energy(selected_solution);
+                // Si es necesario inicializo el individuo.
+                if (selected_solution->initialized == 0)
+                {
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
+                    #endif
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
+                }
 
+                // Sorteo la solucion con la que me toca trabajar  =====================================================
                 #ifdef CPU_MERSENNE_TWISTER
-                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                random = cpu_mt_generate(*(thread_instance->thread_random_state));
                 #endif
                 #ifdef CPU_RAND
-                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                random = cpu_rand_generate(*(thread_instance->thread_random_state));
                 #endif
                 #ifdef CPU_DRAND48
-                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                 #endif
 
+                pthread_mutex_lock(thread_instance->population_mutex);
+                    thread_instance->global_total_iterations[0] += local_iteration_count;
+                    local_iteration_count = 0;
+
+                    int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
+
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Random selection\n");
+                    fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
+                    fprintf(stdout, "        Random          : %f\n", random);
+                    fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
+
+                    for (int i = 0; i < thread_instance->population_max_size; i++)
+                    {
+                        fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
+                            thread_instance->population[i].initialized,
+                            thread_instance->population[i].status);
+                    }
+                    #endif
+
+                    int current_sol_pos = -1;
+                    int current_sol_index = -1;
+
+                    for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
+                    {
+                        if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
+                        {
+                            current_sol_index++;
+
+                            if (current_sol_index == random_sol_index)
+                            {
+                                current_sol_pos = i;
+                            }
+                        }
+                    }
+
+                    // Clono la solucion elegida =====================================================
+                    #if defined(DEBUG_DEV)
+                    fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
+                    #endif
+                    clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
+
+                pthread_mutex_unlock(thread_instance->population_mutex);
+
+                // Determino la estrategia de busqueda del hilo  =====================================================
+                #if defined(DEBUG_DEV)
+                fprintf(stdout, "[DEBUG] Selected individual\n");
+                fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
+                fprintf(stdout, "        Selected_solution_pos = %d\n", selected_solution_pos);
+                fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
+                fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
+                #endif
+
+                float original_makespan = get_makespan(selected_solution);
+                float original_energy = get_energy(selected_solution);
+
+                #ifdef CPU_MERSENNE_TWISTER
+                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                #endif
+                #ifdef CPU_RAND
+                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                #endif
+                #ifdef CPU_DRAND48
+                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                #endif
+
+                int search_type;
                 double search_type_random = 0.0;
 
                 #ifdef CPU_MERSENNE_TWISTER
-                    search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                search_type_random = cpu_mt_generate(*(thread_instance->thread_random_state));
                 #endif
                 #ifdef CPU_RAND
-                    search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                search_type_random = cpu_rand_generate(*(thread_instance->thread_random_state));
                 #endif
                 #ifdef CPU_DRAND48
-                    search_type_random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                search_type_random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                 #endif
 
                 if (search_type_random < PALS_CPU_1POP_SEARCH_BALANCE__MAKESPAN)
@@ -1042,11 +1031,14 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     thread_instance->total_random_greedy_searches++;
                 }
 
-                work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
+                int work_do_iteration = 1;
+
+                int work_iteration_size = (int)floor((PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR) +
                     (random * (PALS_CPU_1POP_WORK__THREAD_ITERATIONS - (PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR))));
 
                 while (work_do_iteration == 1) {
-                    //fprintf(stdout, "work_iteration_size = %d\n", work_iteration_size);
+                    work_do_iteration = 0;
+
                     for (int search_iteration = 0; search_iteration < work_iteration_size; search_iteration++)
                     {
                         thread_instance->total_iterations++;
@@ -1060,24 +1052,24 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             //fprintf(stdout, "[DEBUG] Makespan greedy\n");
 
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_WORST) {
                                 #ifdef CPU_MERSENNE_TWISTER
-                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_RAND
-                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_DRAND48
-                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                 #endif
 
                                 machine_a = (int)floor(random * thread_instance->etc->machines_count);
@@ -1090,24 +1082,24 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             }
 
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             if (random > PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY_PSEL_BEST) {
                                 #ifdef CPU_MERSENNE_TWISTER
-                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_RAND
-                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_DRAND48
-                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                 #endif
 
                                 // Siempre selecciono la segunda mquina aleatoriamente.
@@ -1125,24 +1117,24 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             //fprintf(stdout, "[DEBUG] Energy greedy\n");
 
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_WORST) {
                                 #ifdef CPU_MERSENNE_TWISTER
-                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_RAND
-                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_DRAND48
-                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                 #endif
 
                                 machine_a = (int)floor(random * thread_instance->etc->machines_count);
@@ -1155,24 +1147,24 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                             }
 
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             if (random > PALS_CPU_1POP_SEARCH__ENERGY_GREEDY_PSEL_BEST) {
                                 #ifdef CPU_MERSENNE_TWISTER
-                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_RAND
-                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                 #endif
                                 #ifdef CPU_DRAND48
-                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                 #endif
 
                                 // Siempre selecciono la segunda mquina aleatoriamente.
@@ -1188,26 +1180,26 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         else
                         {
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             // La estrategia es aleatoria.
                             machine_a = (int)floor(random * thread_instance->etc->machines_count);
 
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             // Siempre selecciono la segunda mquina aleatoriamente.
@@ -1225,13 +1217,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                         int task_x;
                         #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
                         task_x = (int)floor(random * machine_a_task_count);
@@ -1252,52 +1244,52 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         int machine_b_current;
 
                         #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
                         int top_task_a = (int)floor(random * PALS_CPU_1POP_WORK__SRC_TASK_NHOOD) + 1;
                         if (top_task_a > machine_a_task_count) top_task_a = machine_a_task_count;
 
                         #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
                         int top_task_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_TASK_NHOOD) + 1;
                         if (top_task_b > machine_b_task_count) top_task_b = machine_b_task_count;
 
                         #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
                         int top_machine_b = (int)floor(random * PALS_CPU_1POP_WORK__DST_MACH_NHOOD) + 1;
                         if (top_machine_b > thread_instance->etc->machines_count) top_machine_b = thread_instance->etc->machines_count;
 
                         #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                         #endif
                         #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                         #endif
 
                         int task_y = (int)floor(random * machine_b_task_count);
@@ -1327,13 +1319,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
                             // Determino que tipo movimiento va a realizar el hilo.
                             #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
                             #endif
                             #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                             #endif
 
                             int mov_type = PALS_CPU_1POP_SEARCH_OP__SWAP;
@@ -1369,13 +1361,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         get_etc_value(thread_instance->etc, machine_b, task_x_current);
 
                                     #ifdef CPU_MERSENNE_TWISTER
-                                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                    random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                     #endif
                                     #ifdef CPU_RAND
-                                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                    random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                     #endif
                                     #ifdef CPU_DRAND48
-                                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                    random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                     #endif
 
                                     if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
@@ -1389,6 +1381,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         if (machine_b_ct_new <= machine_a_ct_new)
                                         {
                                             if (machine_a_ct_new < best_delta_makespan) {
+                                                //  printf("1\n");
                                                 best_delta_makespan = machine_a_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = task_x_pos;
@@ -1398,6 +1391,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             } else if (floor(machine_a_ct_new) == floor(best_delta_makespan)) {
                                                 if (swap_diff_energy > best_delta_energy)
                                                 {
+                                                    //  printf("2\n");
                                                     best_delta_energy = swap_diff_energy;
                                                     best_delta_makespan = machine_a_ct_new;
                                                     task_x_best_swap_pos = task_x_pos;
@@ -1410,6 +1404,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         else if (machine_a_ct_new <= machine_b_ct_new)
                                         {
                                             if (machine_b_ct_new < best_delta_makespan) {
+                                                //printf("3\n");
                                                 best_delta_makespan = machine_b_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = task_x_pos;
@@ -1419,6 +1414,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             } else if (floor(machine_b_ct_new) == floor(best_delta_makespan)) {
                                                 if (swap_diff_energy > best_delta_energy)
                                                 {
+                                                    //printf("4\n");
                                                     best_delta_energy = swap_diff_energy;
                                                     best_delta_makespan = machine_b_ct_new;
                                                     task_x_best_swap_pos = task_x_pos;
@@ -1428,6 +1424,19 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                                 }
                                             }
                                         }
+
+                                        /*if ((task_x_best_swap_pos == -1) && (task_y_best_swap_pos == -1)) {
+                                            if (swap_diff_energy > best_delta_energy)
+                                            {
+                                                printf("5\n");
+                                                best_delta_energy = swap_diff_energy;
+                                                best_delta_makespan = current_makespan;
+                                                task_x_best_swap_pos = task_x_pos;
+                                                task_y_best_swap_pos = task_y_pos;
+                                                task_x_best_move_pos = -1;
+                                                machine_b_best_move_id = -1;
+                                            }
+                                        }*/
                                     }
 
                                     if ((search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY) ||
@@ -1442,6 +1451,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             (machine_a_ct_new <= current_makespan) &&
                                             (machine_b_ct_new <= current_makespan))
                                         {
+                                            //printf("6\n");
                                             best_delta_energy = swap_diff_energy;
 
                                             if (machine_a_ct_new <= machine_b_ct_new) best_delta_makespan = machine_b_ct_new;
@@ -1454,6 +1464,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         } else if (floor(swap_diff_energy) == floor(best_delta_energy)) {
                                             if ((machine_b_ct_new <= machine_a_ct_new) && (machine_a_ct_new < best_delta_makespan))
                                             {
+                                                //printf("7\n");
                                                 best_delta_makespan = machine_a_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = task_x_pos;
@@ -1463,6 +1474,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                             }
                                             else if ((machine_a_ct_new <= machine_b_ct_new) && (machine_b_ct_new < best_delta_makespan))
                                             {
+                                                //printf("8\n");
                                                 best_delta_makespan = machine_b_ct_new;
                                                 best_delta_energy = swap_diff_energy;
                                                 task_x_best_swap_pos = task_x_pos;
@@ -1482,13 +1494,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                 {
                                     if (machine_b_offset == 1) {
                                         #ifdef CPU_MERSENNE_TWISTER
-                                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                         #endif
                                         #ifdef CPU_RAND
-                                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                         #endif
                                         #ifdef CPU_DRAND48
-                                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                         #endif
 
                                         // Siempre selecciono la segunda mquina aleatoriamente.
@@ -1517,13 +1529,13 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                                         machine_b_ct_new = machine_b_ct_old + get_etc_value(thread_instance->etc, machine_b_current, task_x_current);
 
                                         #ifdef CPU_MERSENNE_TWISTER
-                                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_mt_generate(*(thread_instance->thread_random_state));
                                         #endif
                                         #ifdef CPU_RAND
-                                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_rand_generate(*(thread_instance->thread_random_state));
                                         #endif
                                         #ifdef CPU_DRAND48
-                                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                                        random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                                         #endif
 
                                         if ((search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY) ||
@@ -1640,11 +1652,11 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         if ((task_x_best_swap_pos != -1) && (task_y_best_swap_pos != -1))
                         {
                             // Intercambio las tareas!
-                            #if defined(DEBUG_DEV)
+                            #if defined(DEBUG_DEV) 
                             fprintf(stdout, "[DEBUG] Ejecuto un SWAP! %f %f (%d, %d, %d, %d)\n",
                                 best_delta_makespan, best_delta_energy, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
                             #endif
-
+                            
                             swap_tasks_by_pos(selected_solution, machine_a, task_x_best_swap_pos, machine_b, task_y_best_swap_pos);
 
                             thread_instance->total_swaps++;
@@ -1653,226 +1665,116 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         else if ((task_x_best_move_pos != -1) && (machine_b_best_move_id != -1))
                         {
                             // Muevo la tarea!
-                            #if defined(DEBUG_DEV)
+                            #if defined(DEBUG_DEV) 
                             fprintf(stdout, "[DEBUG] Ejecuto un MOVE! %f %f (%d, %d, %d)\n",
                                 best_delta_makespan, best_delta_energy, machine_a, task_x_best_move_pos, machine_b_best_move_id);
                             #endif
-
+                            
                             move_task_to_machine_by_pos(selected_solution, machine_a, task_x_best_move_pos, machine_b_best_move_id);
 
                             thread_instance->total_moves++;
                             //printf("Makespan %f Energy %f\n", get_makespan(selected_solution), get_energy(selected_solution));
                         }
 
-                        #if defined(DEBUG_DEV)
-                            validate_solution(selected_solution);
+                        #if defined(DEBUG_DEV) 
+                        validate_solution(selected_solution);
+                    
+                        if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
+                            refresh_energy(selected_solution);
+                            refresh_makespan(selected_solution);
 
-                            if ((current_makespan < get_makespan(selected_solution)) && (current_energy < get_energy(selected_solution))) {
-                                refresh_energy(selected_solution);
-                                refresh_makespan(selected_solution);
+                            fprintf(stdout, "[ERROR] EMPEORA!\n");
+                            fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
+                            fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
 
-                                fprintf(stdout, "[ERROR] EMPEORA!\n");
-                                fprintf(stdout, "[ERROR] Makespan %f ahora %f\n", current_makespan, get_makespan(selected_solution));
-                                fprintf(stdout, "[ERROR] Energy   %f ahora %f\n", current_energy, get_energy(selected_solution));
-
-                                exit(-1);
-                            }
+                            exit(-1);
+                        }
                         #endif
                     }                // Termino el loop con la iteracin del thread
 
-                    pthread_mutex_lock(thread_instance->next_thread_mutex);
-                        if (thread_instance->next_mutex_thread[0] == thread_instance->thread_idx) work_do_iteration = 0;
-                    pthread_mutex_unlock(thread_instance->next_thread_mutex);
-
-                    if (work_do_iteration == 1) {
-                        // Algun otro thread esta trabajando sobre la población.
-                        // Intento hacer otro loop de trabajo y vuelvo a probar.
-                        #if defined(DEBUG_DEV)
-                        fprintf(stdout, "[DEBUG] Redo iteration!\n");
-                        #endif
-
-                        #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                        #endif
-                        #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                        #endif
-                        #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                        #endif
-
-                        work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
-                        thread_instance->total_re_iterations++;
-                    }
-                }
-            }
-
-            if ((selected_solution_pos != -1) && (thread_instance->next_mutex_thread[0] == thread_instance->thread_idx)) {
-                // Obtengo un lock de la poblacion.
-                int mutex_locked;
-                mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
-
-                if (mutex_locked == 0) {
-                    /*fprintf(stdout, "[DEBUG] Algo encontre %f %f > %f %f...\n", original_makespan, original_energy,
-                        get_makespan(selected_solution), get_energy(selected_solution));*/
+                    //refresh_energy(selected_solution);
+                    //refresh_makespan(selected_solution);
 
                     if ((original_makespan > get_makespan(selected_solution)) ||
                         (original_energy > get_energy(selected_solution)))
                     {
+                        //refresh_energy(selected_solution);
+
+                        int mutex_locked;
                         int new_solution_eval = 0;
 
-                        // Chequeo si la nueva solucion es no-dominada.
-                        #if defined(ARCHIVER_AGA)
-                            new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
-                        #else
-                            new_solution_eval = pals_cpu_1pop_adhoc_arch(thread_instance, selected_solution_pos);
-                        #endif
+                        // Lo mejore. Intento obtener lock de la poblacion.
+                        mutex_locked = pthread_mutex_trylock(thread_instance->population_mutex);
 
-                        if (new_solution_eval == 1)
-                        {
-                            thread_instance->ts_last_found = ts_current;
-                            thread_instance->iter_last_found = thread_instance->total_iterations;
+                        if (mutex_locked == 0) {
+                            // Chequeo si la nueva solucion es no-dominada.
+                            
+                            #if defined(ARCHIVER_AGA)
+                                new_solution_eval = archivers_aga(thread_instance, selected_solution_pos);
+                            #else
+                                new_solution_eval = pals_cpu_1pop_adhoc_arch(thread_instance, selected_solution_pos);
+                            #endif
 
-                            if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+                            pthread_mutex_unlock(thread_instance->population_mutex);
+
+                            if (new_solution_eval == 1)
                             {
-                                thread_instance->total_success_makespan_greedy_searches++;
+                                thread_instance->ts_last_found = ts_current;
+                                thread_instance->iter_last_found = thread_instance->total_iterations;
+
+                                if (search_type == PALS_CPU_1POP_SEARCH__MAKESPAN_GREEDY)
+                                {
+                                    thread_instance->total_success_makespan_greedy_searches++;
+                                }
+                                else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
+                                {
+                                    thread_instance->total_success_energy_greedy_searches++;
+                                }
+                                else
+                                {
+                                    thread_instance->total_success_random_greedy_searches++;
+                                }
+                            } else {
+                                thread_instance->total_soluciones_evolucionadas_dominadas++;
                             }
-                            else if (search_type == PALS_CPU_1POP_SEARCH__ENERGY_GREEDY)
-                            {
-                                thread_instance->total_success_energy_greedy_searches++;
-                            }
-                            else
-                            {
-                                thread_instance->total_success_random_greedy_searches++;
-                            }
+
+                            #if defined(DEBUG_DEV)
+                            fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
+                            validate_thread_instance(thread_instance);
+                            #endif
+
+                            // Libero la posicion seleccionada.
+                            selected_solution_pos = -1;
                         } else {
-                            thread_instance->total_soluciones_evolucionadas_dominadas++;
+                            // Algun otro thread esta trabajando sobre la población.
+                            // Intento hacer otro loop de trabajo y vuelvo a probar.
+                            #if defined(DEBUG_DEV) 
+                            fprintf(stdout, "[DEBUG] Re do iteration!\n");
+                            #endif
+
+                            #ifdef CPU_MERSENNE_TWISTER
+                            double random = cpu_mt_generate(*(thread_instance->thread_random_state));
+                            #endif
+                            #ifdef CPU_RAND
+                            double random = cpu_rand_generate(*(thread_instance->thread_random_state));
+                            #endif
+                            #ifdef CPU_DRAND48
+                            double random = cpu_drand48_generate(*(thread_instance->thread_random_state));
+                            #endif
+
+                            work_do_iteration = 1;
+                            work_iteration_size = (int)floor(random * PALS_CPU_1POP_WORK__THREAD_ITERATIONS / PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR);
+
+                            thread_instance->total_re_iterations++;
                         }
-
-                        #if defined(DEBUG_DEV)
-                        fprintf(stdout, "[DEBUG] Cantidad de individuos en la poblacion: %d\n", *(thread_instance->population_count));
-                        validate_thread_instance(thread_instance);
-                        #endif
-
-                        // Libero la posicion seleccionada.
-                        selected_solution_pos = -1;
                     }
                     else
                     {
                         // No lo pude mejorar.
                         thread_instance->total_soluciones_no_evolucionadas++;
                     }
-
-                    // Busco un lugar libre en la poblacin para clonar un individuo y evolucionarlo ==================
-                    int candidate_to_del_pos = -1;
-                    if (selected_solution_pos == -1) {
-                        for (int i = 0; (i < thread_instance->population_max_size) && (selected_solution_pos == -1); i++)
-                        {
-                            if (thread_instance->population[i].status == SOLUTION__STATUS_EMPTY)
-                            {
-                                thread_instance->population[i].status = SOLUTION__STATUS_NOT_READY;
-                                selected_solution_pos = i;
-
-                                #if defined(DEBUG_DEV)
-                                    fprintf(stdout, "[DEBUG] Found individual %d free\n", selected_solution_pos);
-                                #endif
-                            } else if (thread_instance->population[i].status == SOLUTION__STATUS_TO_DEL) {
-                                candidate_to_del_pos = i;
-                            }
-                        }
-
-                        if ((selected_solution_pos == -1) && (candidate_to_del_pos != -1)) {
-                            selected_solution_pos = candidate_to_del_pos;
-                            thread_instance->population[selected_solution_pos].status = SOLUTION__STATUS_NOT_READY;
-                        }
-
-                        selected_solution = &(thread_instance->population[selected_solution_pos]);
-
-                        // Si es necesario inicializo el individuo.
-                        if (selected_solution->initialized == 0)
-                        {
-                            #if defined(DEBUG_DEV)
-                                fprintf(stdout, "[DEBUG] Initializing individual %d\n", selected_solution_pos);
-                            #endif
-                            init_empty_solution(thread_instance->etc, thread_instance->energy, selected_solution);
-                        }
-
-                        // Sorteo la solucion con la que me toca trabajar  =====================================================
-                        #ifdef CPU_MERSENNE_TWISTER
-                            random = cpu_mt_generate(*(thread_instance->thread_random_state));
-                        #endif
-                        #ifdef CPU_RAND
-                            random = cpu_rand_generate(*(thread_instance->thread_random_state));
-                        #endif
-                        #ifdef CPU_DRAND48
-                            random = cpu_drand48_generate(*(thread_instance->thread_random_state));
-                        #endif
-
-                        thread_instance->global_total_iterations[0] += local_iteration_count;
-                        local_iteration_count = 0;
-
-                        int random_sol_index = (int)floor(random * (*(thread_instance->population_count)));
-
-                        #if defined(DEBUG_DEV)
-                        fprintf(stdout, "[DEBUG] Random selection\n");
-                        fprintf(stdout, "        Population_count: %d\n", *(thread_instance->population_count));
-                        fprintf(stdout, "        Random          : %f\n", random);
-                        fprintf(stdout, "        Random_sol_index: %d\n", random_sol_index);
-
-                        for (int i = 0; i < thread_instance->population_max_size; i++)
-                        {
-                            fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", i,
-                                thread_instance->population[i].initialized,
-                                thread_instance->population[i].status);
-                        }
-                        #endif
-
-                        int current_sol_pos = -1;
-                        int current_sol_index = -1;
-
-                        for (int i = 0; (i < thread_instance->population_max_size) && (current_sol_pos == -1); i++)
-                        {
-                            if (thread_instance->population[i].status > SOLUTION__STATUS_EMPTY)
-                            {
-                                current_sol_index++;
-
-                                if (current_sol_index == random_sol_index)
-                                {
-                                    current_sol_pos = i;
-                                }
-                            }
-                        }
-
-                        // Clono la solucion elegida =====================================================
-                        #if defined(DEBUG_DEV)
-                        fprintf(stdout, "[DEBUG] Cloning individual %d to %d\n", current_sol_pos, selected_solution_pos);
-                        #endif
-                        clone_solution(selected_solution, &(thread_instance->population[current_sol_pos]), 0);
-
-                        #if defined(DEBUG_DEV)
-                            fprintf(stdout, "[DEBUG] Selected individual\n");
-                            fprintf(stdout, "        Original_solutiol_pos = %d\n", current_sol_pos);
-                            fprintf(stdout, "        Selected_solution_pos = %d\n", selected_solution_pos);
-                            fprintf(stdout, "        Selected_solution.status = %d\n", selected_solution->status);
-                            fprintf(stdout, "        Selected_solution.initializd = %d\n", selected_solution->initialized);
-                        #endif
-                    }
-
-                    pthread_mutex_unlock(thread_instance->population_mutex);
-                } else {
-                    fprintf(stdout, "[DEBUG] ========>> MAL !!!\n");
                 }
-
-                pthread_mutex_lock(thread_instance->next_thread_mutex);
-                    thread_instance->next_mutex_thread[0]++;
-                    if (thread_instance->next_mutex_thread[0] >= thread_instance->count_threads) {
-                        thread_instance->next_mutex_thread[0] = 0;
-                    }
-                    //fprintf(stdout, "[DEBUG] Next is %d\n", thread_instance->next_mutex_thread[0]);
-                pthread_mutex_unlock(thread_instance->next_thread_mutex);
             }
-            
-            work_do_iteration = 1;
         }
 
         clock_gettime(CLOCK_REALTIME, &ts_current);
@@ -1884,7 +1786,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
         }
     }
 
-    #if defined(DEBUG_DEV)
+    #if defined(DEBUG_DEV) 
     fprintf(stdout, "[DEBUG] Me mandaron a terminar o se acabo el tiempo! Tengo algo para hacer?\n");
     #endif
 
