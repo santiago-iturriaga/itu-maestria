@@ -768,9 +768,13 @@ __global__ void kern_model_update(int *gpu_prob_vector, int prob_vector_size,
             int aux = gpu_prob_vector[prob_vector_position];
             aux = aux + delta;
             
-            if ((aux > MIN_PVALUE) && (aux < MAX_PVALUE)) {
-                gpu_prob_vector[prob_vector_position] = aux;
-            }
+            if (aux < MIN_PVALUE) {
+		aux = MIN_PVALUE;
+	    } else if (aux > MAX_PVALUE) {
+ 		aux = MAX_PVALUE;
+	    }
+            
+            gpu_prob_vector[prob_vector_position] = aux;
         }
     }
 }
