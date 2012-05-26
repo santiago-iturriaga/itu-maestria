@@ -3,9 +3,9 @@
 //#define TIMMING
 
 #define POPULATION_SIZE     768
-#define DELTA               1
+#define DELTA               8
 #define MIN_PVALUE          1
-#define MAX_PVALUE          769
+#define MAX_PVALUE          768
 
 /*#define POPULATION_SIZE     384
 #define DELTA               1
@@ -13,9 +13,9 @@
 #define MAX_PVALUE          385*/
 
 /*#define POPULATION_SIZE     1024
-#define DELTA               2
-#define MIN_PVALUE          100
-#define MAX_PVALUE          924*/
+#define DELTA               5
+#define MIN_PVALUE          1
+#define MAX_PVALUE          1024*/
 
 /*#define POPULATION_SIZE     4096
 #define DELTA               2
