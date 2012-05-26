@@ -8,7 +8,7 @@
 #define CPU_MERSENNE_TWISTER
 
 #define OUTPUT_SOLUTION 0
-#define DEBUG
+//#define DEBUG
 //#define DEBUG_DEV
 //#define TIMMING
 
