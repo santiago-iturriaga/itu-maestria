@@ -16,13 +16,13 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
-//#define ARCHIVER_AGA
+#define ARCHIVER_AGA
 
 #define INIT_MCT
 //#define INIT_PMINMIN
 
-#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       650
-#define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   14
+#define PALS_CPU_1POP_WORK__THREAD_ITERATIONS       10
+#define PALS_CPU_1POP_WORK__THREAD_RE_WORK_FACTOR   2
 
 #define PALS_CPU_1POP_WORK__SRC_TASK_NHOOD      27
 #define PALS_CPU_1POP_WORK__DST_TASK_NHOOD      15
@@ -70,9 +70,8 @@ struct pals_cpu_1pop_instance {
     int work_type;
     int global_total_iterations;
 
-    pthread_mutex_t     work_type_mutex;
+    pthread_mutex_t     next_thread_mutex;
     pthread_mutex_t     population_mutex;
-    sem_t               new_solutions_sem;
     pthread_barrier_t   sync_barrier;
 
     // Estado de los generadores aleatorios.
@@ -88,6 +87,7 @@ struct pals_cpu_1pop_instance {
 
     // Parámetros de ejecución.
     int count_threads;
+    int next_mutex_thread;
 };
 
 struct pals_cpu_1pop_thread_arg {
@@ -111,11 +111,13 @@ struct pals_cpu_1pop_thread_arg {
     struct aga_state *archiver_state;
 
     int count_threads;
+    int *next_mutex_thread;
     
     int *work_type;
     int *global_total_iterations;
 
     pthread_mutex_t     *population_mutex;
+    pthread_mutex_t     *next_thread_mutex;
     pthread_barrier_t   *sync_barrier;
 
     // Estado del generador aleatorio para el thread actual.
