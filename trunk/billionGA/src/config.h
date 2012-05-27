@@ -1,6 +1,6 @@
-//#define INFO
-//#define DEBUG
-//#define TIMMING
+#define INFO
+#define DEBUG
+#define TIMMING
 
 /*#define POPULATION_SIZE     768
 #define DELTA               64
@@ -35,7 +35,7 @@
 
 #define NUMBER_OF_SAMPLES   2
 //#define SHOW_UPDATE_EVERY   1
-#define SHOW_UPDATE_EVERY   10000
+#define SHOW_UPDATE_EVERY   1
 
 #define INIT_PROB_VECTOR_VALUE      POPULATION_SIZE >> 1
 
