@@ -1,6 +1,6 @@
-#define INFO
-#define DEBUG
-#define TIMMING
+//#define INFO
+//#define DEBUG
+//#define TIMMING
 
 /*#define POPULATION_SIZE     768
 #define DELTA               64
@@ -13,7 +13,6 @@
 #define MAX_PVALUE          385*/
 
 #define POPULATION_SIZE     1024
-//#define DELTA               164
 #define DELTA               1
 #define MIN_PVALUE          1
 #define MAX_PVALUE          1024
@@ -34,8 +33,8 @@
 //#define PARTIAL_FITNESS_UPDATE
 
 #define NUMBER_OF_SAMPLES   2
-//#define SHOW_UPDATE_EVERY   1
-#define SHOW_UPDATE_EVERY   1
+//#define SHOW_UPDATE_EVERY   10000
+#define SHOW_UPDATE_EVERY   10000
 
 #define INIT_PROB_VECTOR_VALUE      POPULATION_SIZE >> 1
 
