@@ -38,6 +38,7 @@ double timming_end(timespec &ts) {
     elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
             - ts.tv_nsec) / 1000.0);
     //fprintf(stdout, "[TIMMING] %s: %f microsegs.\n", message, elapsed);
+    return elapsed;
 }
 
 int main(int argc, char **argv) {
@@ -313,7 +314,7 @@ int main(int argc, char **argv) {
     }
 
     // === Libero la memoria del cGA.
-    bga_free(&problem_state);
+    //bga_free(&problem_state);
     
     #if defined(MACRO_TIMMING)
         cputime = timming_end(full_start);
