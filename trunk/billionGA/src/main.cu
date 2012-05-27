@@ -84,6 +84,11 @@ int main(int argc, char **argv) {
     int starting_gpu_device = atoi(argv[4]);
     assert(starting_gpu_device >= 0 && starting_gpu_device < number_gpus);
 
+    #if defined(MACRO_TIMMING)
+        cputime = timming_end(full_start);
+        fprintf(stdout, "[TIME] Init (1) processing time: %f (microseconds)\n", cputime);
+    #endif
+
     // === PRNG.
     int prng_vector_size = atoi(argv[3]);
     unsigned int prng_seeds[4] = {3822712292, 495793398, 4202624243, 3503457871}; // generated with: od -vAn -N4 -tu4 < /dev/urandom
@@ -99,11 +104,6 @@ int main(int argc, char **argv) {
     // === Inicialización del cGA
     struct bga_state problem_state;
     bga_initialization(&problem_state, problem_size, nthreads, NUMBER_OF_SAMPLES);
-
-    #if defined(MACRO_TIMMING)
-        cputime = timming_end(full_start);
-        fprintf(stdout, "[TIME] Init (1) processing time: %f (microseconds)\n", cputime);
-    #endif
 
     #pragma omp parallel // private(th_id)
     {
@@ -238,6 +238,9 @@ int main(int argc, char **argv) {
             #if defined(FULL_FITNESS_UPDATE)
                 #pragma omp barrier
                 if (th_id == 0) {
+                    #if defined(DEBUG)
+                        fprintf(stdout, "[DEBUG] In Sync!\n");
+                    #endif
                     bga_compute_sample_full_fitness(&problem_state);
                 }
                 #pragma omp barrier
