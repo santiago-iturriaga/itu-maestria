@@ -535,24 +535,24 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
         block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
         
-        //#if defined(HAS_NOISE)
-        //    prng_position = (block_starting_pos + tid) << 1;
-        //#else
+        #if defined(HAS_NOISE)
+            prng_position = (block_starting_pos + tid) << 1;
+        #else
             prng_position = block_starting_pos + tid;
-        //#endif
+        #endif
         
         prob_vector_position = prob_vector_starting_pos + block_starting_pos + tid;
 
         if (prng_position < max_samples_doable) {
-            //if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+            if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
                 aux = 1 << (tid & ((1 << 5)-1));
-            //}
+            }
             
-            /*#if defined(HAS_NOISE)
+            #if defined(HAS_NOISE)
                 if (prng_vector[prng_position] < 1 + NOISE_PROB) {
                     aux = 1 - aux;
                 }
-            #endif*/
+            #endif
         }
         current_block_sample[tid] = aux;
 
