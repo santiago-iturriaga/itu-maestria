@@ -39,5 +39,7 @@
 
 #define INIT_PROB_VECTOR_VALUE      POPULATION_SIZE >> 1
 
+#define MACRO_TIMMING
+
 //#define HAS_NOISE
 #define NOISE_PROB                  0.005
