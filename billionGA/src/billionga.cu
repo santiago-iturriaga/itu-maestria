@@ -527,6 +527,9 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
     int block_starting_pos;
     
     int aux;
+    int thread_bit_value = 1 << (tid & ((1 << 5)-1));
+    int thread_bit_pos = (tid << 5);
+    int sample_pos;
 
     for (int loop = 0; loop < loops_count; loop++) {
         // 0 por defecto.
@@ -545,11 +548,11 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
 
         if (prng_position < max_samples_doable) {
             if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-                aux = 1 << (tid & ((1 << 5)-1));
+                aux = thread_bit_value;
             }
             
             #if defined(HAS_NOISE)
-                if (prng_vector[prng_position] < 1 + NOISE_PROB) {
+                if (prng_vector[prng_position + 1] < 1 + NOISE_PROB) {
                     aux = 1 - aux;
                 }
             #endif
@@ -558,17 +561,17 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
 
         __syncthreads();
 
-        if ((tid << 5) < SAMPLE_PROB_VECTOR_THREADS) {
-            int aux = current_block_sample[tid << 5];
+        if (thread_bit_pos < SAMPLE_PROB_VECTOR_THREADS) {
+            aux = current_block_sample[thread_bit_pos];
 
             #pragma unroll
             for (int i = 1; i < 32; i++) {
-                aux = aux | current_block_sample[(tid << 5) + i];
+                aux = aux | current_block_sample[thread_bit_pos + i];
             }
 
-            int sample_pos = prob_vector_starting_pos + block_starting_pos;
+            sample_pos = prob_vector_starting_pos + block_starting_pos;
 
-            if ((sample_pos + (tid << 5)) < prob_vector_size) {
+            if ((sample_pos + thread_bit_pos) < prob_vector_size) {
                 gpu_sample[(sample_pos >> 5) + tid] = aux;
             }
         }
@@ -672,13 +675,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             int samples_per_loop = (SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS);
             int loops_count = max_samples_doable / samples_per_loop;
             if (max_samples_doable % samples_per_loop > 0) loops_count++;
-
-            /*
-            fprintf(stdout, "[TIME] max_samples_doable = %d\n", max_samples_doable);
-            fprintf(stdout, "[TIME] samples_per_loop = %d\n", samples_per_loop);
-            fprintf(stdout, "[TIME] loops_count = %d\n", loops_count);
-            */
-            
+           
             // Sampleo el vector de prob. con los números aleatorios generados.
             kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
