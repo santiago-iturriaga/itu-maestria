@@ -515,11 +515,10 @@ void bga_show_samples(struct bga_state *state) {
 
 __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_size,
     int prob_vector_starting_pos, float *prng_vector, int prng_vector_size, int *gpu_sample,
-    int population_size, int max_samples_doable, int loops_count) {
+    int population_size, int max_samples_doable, int loops_count, int samples_per_loop) {
 
     const int tid = threadIdx.x;
     const int bid = blockIdx.x;
-    const int samples_per_loop = gridDim.x * blockDim.x;
 
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_THREADS];
 
@@ -536,24 +535,24 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
         block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
         
-        #if defined(HAS_NOISE)
-            prng_position = (block_starting_pos + tid) << 1;
-        #else
+        //#if defined(HAS_NOISE)
+        //    prng_position = (block_starting_pos + tid) << 1;
+        //#else
             prng_position = block_starting_pos + tid;
-        #endif
+        //#endif
         
         prob_vector_position = prob_vector_starting_pos + block_starting_pos + tid;
 
         if (prng_position < max_samples_doable) {
-            if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
+            //if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
                 aux = 1 << (tid & ((1 << 5)-1));
-            }
+            //}
             
-            #if defined(HAS_NOISE)
+            /*#if defined(HAS_NOISE)
                 if (prng_vector[prng_position] < 1 + NOISE_PROB) {
                     aux = 1 - aux;
                 }
-            #endif
+            #endif*/
         }
         current_block_sample[tid] = aux;
 
@@ -674,7 +673,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
                 prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
                 state->gpu_samples[sample_number][prob_vector_number], state->population_size,
-                max_samples_doable, loops_count);
+                max_samples_doable, loops_count, samples_per_loop);
 
             #if defined(TIMMING)
                 ccudaEventRecord(end_inner, 0);
