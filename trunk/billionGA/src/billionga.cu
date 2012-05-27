@@ -515,39 +515,47 @@ void bga_show_samples(struct bga_state *state) {
 
 __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_size,
     int prob_vector_starting_pos, float *prng_vector, int prng_vector_size, int *gpu_sample,
-    int population_size) {
+    int population_size, int max_samples_doable, int loops_count) {
 
     const int tid = threadIdx.x;
     const int bid = blockIdx.x;
     const int samples_per_loop = gridDim.x * blockDim.x;
-
-    int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
-    if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
-
-    int loops_count = max_samples_doable / samples_per_loop;
-    if (max_samples_doable % samples_per_loop > 0) loops_count++;
 
     __shared__ int current_block_sample[SAMPLE_PROB_VECTOR_THREADS];
 
     int prob_vector_position;
     int prng_position;
     int block_starting_pos;
+    
+    int aux;
 
     for (int loop = 0; loop < loops_count; loop++) {
         // 0 por defecto.
-        current_block_sample[tid] = 0;
+        aux = 0;
 
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
         block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
-        prng_position = block_starting_pos + tid;
-        prob_vector_position = prob_vector_starting_pos + prng_position;
+        
+        #if defined(HAS_NOISE)
+            prng_position = (block_starting_pos + tid) << 1;
+        #else
+            prng_position = block_starting_pos + tid;
+        #endif
+        
+        prob_vector_position = prob_vector_starting_pos + block_starting_pos + tid;
 
         if (prng_position < max_samples_doable) {
             if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
-                // 1
-                current_block_sample[tid] = 1 << (tid & ((1 << 5)-1));
+                aux = 1 << (tid & ((1 << 5)-1));
             }
+            
+            #if defined(HAS_NOISE)
+                if (prng_vector[prng_position] < 1 + NOISE_PROB) {
+                    aux = 1 - aux;
+                }
+            #endif
         }
+        current_block_sample[tid] = aux;
 
         __syncthreads();
 
@@ -556,7 +564,7 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
 
             #pragma unroll
             for (int i = 1; i < 32; i++) {
-                aux = aux | current_block_sample[(tid << 5)+i];
+                aux = aux | current_block_sample[(tid << 5) + i];
             }
 
             int sample_pos = prob_vector_starting_pos + block_starting_pos;
@@ -603,15 +611,29 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
-        int total_loops;
-        total_loops = current_prob_vector_number_of_bits / mt_status->numbers_per_gen;
-        if (current_prob_vector_number_of_bits % mt_status->numbers_per_gen > 0) total_loops++;
+        int needed_rand;
+        #if defined(HAS_NOISE)
+            needed_rand = current_prob_vector_number_of_bits * 2;
+        #else
+            needed_rand = current_prob_vector_number_of_bits;
+        #endif
 
+        int total_loops;
+        total_loops = needed_rand / mt_status->numbers_per_gen;
+        if (needed_rand % mt_status->numbers_per_gen > 0) total_loops++;
+        
         int prob_vector_starting_pos;
+        prob_vector_starting_pos = 0;
+
+        #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] PRNG loop count: %d\n", total_loops);
+        #endif
 
         for (int loop = 0; loop < total_loops; loop++) {
-            prob_vector_starting_pos = mt_status->numbers_per_gen * loop;
-
+            #if defined(DEBUG)
+                fprintf(stdout, "[DEBUG] PRNG starting position: %d\n", prob_vector_starting_pos);
+            #endif
+            
             // Genero números aleatorios.
             #if defined(TIMMING)
                 fprintf(stdout, "[TIME] Generate mtgp32_generate_float\n", gputime);
@@ -636,11 +658,19 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 ccudaEventRecord(start_inner, 0);
             #endif
 
+            int max_samples_doable = current_prob_vector_number_of_bits - prob_vector_starting_pos;
+            if (max_samples_doable > (mt_status->numbers_per_gen >> 1)) max_samples_doable = (mt_status->numbers_per_gen >> 1);
+
+            int samples_per_loop = (SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS);
+            int loops_count = max_samples_doable / samples_per_loop;
+            if (max_samples_doable % samples_per_loop > 0) loops_count++;
+
             // Sampleo el vector de prob. con los números aleatorios generados.
             kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
                 prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
-                state->gpu_samples[sample_number][prob_vector_number], state->population_size);
+                state->gpu_samples[sample_number][prob_vector_number], state->population_size,
+                max_samples_doable, loops_count);
 
             #if defined(TIMMING)
                 ccudaEventRecord(end_inner, 0);
@@ -648,6 +678,8 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
                 ccudaEventElapsedTime(&gputime, start_inner, end_inner);
                 fprintf(stdout, "[TIME] Processing time: %f (ms)\n", gputime);
             #endif
+            
+            prob_vector_starting_pos += mt_status->numbers_per_gen;
         }
 
         #if defined(DEBUG)
