@@ -1,4 +1,4 @@
-rm bin/billonga
+rm bin/billionga
 svn update
 make
 
