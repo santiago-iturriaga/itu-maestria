@@ -3,6 +3,7 @@
 #include <limits.h>
 //#include <cuda.h>
 #include <omp.h>
+#include <time.h>
 
 #include "config.h"
 #include "cuda-util.h"
@@ -25,15 +26,27 @@ inline int termination_criteria_eval(struct termination_criteria *term_state,
     return ((iteration_count == term_state->max_iteration_count) || (fitness_sample_avg >= problem_state->max_prob_sum));
 }
 
+void timming_start(timespec &ts) {
+    clock_gettime(CLOCK_REALTIME, &ts);
+}
+
+double timming_end(timespec &ts) {
+    timespec ts_end;
+    clock_gettime(CLOCK_REALTIME, &ts_end);
+
+    double elapsed;
+    elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
+            - ts.tv_nsec) / 1000.0);
+    //fprintf(stdout, "[TIMMING] %s: %f microsegs.\n", message, elapsed);
+}
+
 int main(int argc, char **argv) {
+    double cputime;
     float gputime;
     
     #if defined(MACRO_TIMMING)
-        cudaEvent_t full_start;
-        cudaEvent_t full_end;
-        ccudaEventCreate(&full_start);
-        ccudaEventCreate(&full_end);
-        ccudaEventRecord(full_start, 0);
+        timespec full_start;
+        timming_start(full_start);
     #endif
     
     if (argc != 5) {
@@ -46,11 +59,8 @@ int main(int argc, char **argv) {
     #endif
 
     #if defined(MACRO_TIMMING)
-        cudaEvent_t start;
-        cudaEvent_t end;
-        ccudaEventCreate(&start);
-        ccudaEventCreate(&end);
-        ccudaEventRecord(start, 0);
+        timespec init1_start;
+        timming_start(init1_start);
     #endif
 
     long problem_size;
@@ -90,27 +100,26 @@ int main(int argc, char **argv) {
     bga_initialization(&problem_state, problem_size, nthreads, NUMBER_OF_SAMPLES);
 
     #if defined(MACRO_TIMMING)
-        ccudaEventRecord(end, 0);
-        ccudaEventSynchronize(end);
-        ccudaEventElapsedTime(&gputime, start, end);
-        fprintf(stdout, "[TIME] Init (1) processing time: %f (ms)\n", gputime);
+        cputime = timming_end(full_start);
+        fprintf(stdout, "[TIME] Init (1) processing time: %f (microseconds)\n", cputime);
     #endif
 
     #pragma omp parallel // private(th_id)
     {
-        #if defined(MACRO_TIMMING)
-            cudaEvent_t start;
-            cudaEvent_t end;
-            ccudaEventCreate(&start);
-            ccudaEventCreate(&end);
-            ccudaEventRecord(start, 0);
-        #endif
-
         int current_iteration = 0;
         int th_id = omp_get_thread_num();
 
         int th_device = (starting_gpu_device + th_id) % number_gpus;
         ccudaSetDevice(th_device);
+
+        #if defined(MACRO_TIMMING)
+            cudaEvent_t start;
+            cudaEvent_t end;
+            
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
+            ccudaEventRecord(start, 0);
+        #endif
 
         #if defined(INFO) || defined(DEBUG)
             fprintf(stdout, "[INFO] Thread %d using device %d.\n", th_id, th_device);
@@ -195,10 +204,6 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             #if defined(MACRO_TIMMING)
-                cudaEvent_t start;
-                cudaEvent_t end;
-                ccudaEventCreate(&start);
-                ccudaEventCreate(&end);
                 ccudaEventRecord(start, 0);
             #endif
 
@@ -216,8 +221,6 @@ int main(int argc, char **argv) {
             #endif
 
             #if defined(MACRO_TIMMING)
-                ccudaEventCreate(&start);
-                ccudaEventCreate(&end);
                 ccudaEventRecord(start, 0);
             #endif
 
@@ -247,8 +250,6 @@ int main(int argc, char **argv) {
             #endif
 
             #if defined(MACRO_TIMMING)
-                ccudaEventCreate(&start);
-                ccudaEventCreate(&end);
                 ccudaEventRecord(start, 0);
             #endif
 
@@ -304,23 +305,19 @@ int main(int argc, char **argv) {
 
         // === Libero la memoria del Mersenne Twister.
         mtgp32_free(&mt_status);
+        
+        #if defined(MACRO_TIMMING)
+            ccudaEventDestroy(start);
+            ccudaEventDestroy(end);
+        #endif
     }
 
     // === Libero la memoria del cGA.
     bga_free(&problem_state);
     
     #if defined(MACRO_TIMMING)
-        ccudaEventRecord(full_end, 0);
-        ccudaEventSynchronize(full_end);
-        ccudaEventElapsedTime(&gputime, full_start, full_end);
-        fprintf(stdout, "[TIME] Total processing time: %f (ms)\n", gputime);
-    #endif
-
-    #if defined(MACRO_TIMMING)
-        ccudaEventDestroy(start);
-        ccudaEventDestroy(end);
-        ccudaEventDestroy(full_start);
-        ccudaEventDestroy(full_end);
+        cputime = timming_end(full_start);
+        fprintf(stdout, "[TIME] Total processing time: %f (microseconds)\n", cputime);
     #endif
 
     return EXIT_SUCCESS;
