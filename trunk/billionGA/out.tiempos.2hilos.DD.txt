@@ -1,0 +1,173 @@
+[INFO] Cantidad de iteraciones 200000.
+[TIME] Init (1) processing time: 6237.998793 (microseconds)
+[INFO] Number of threads 2.
+[INFO] === Initializing Billion GA ====================
+[INFO] Problem size    : 1048576
+[INFO] Population size : 1024
+[INFO] Num. of vectors : 2
+[INFO] Delta           : 1
+[INFO] Prob. min. value: 1
+[INFO] Prob. max. value: 1024
+[INFO] Requesting a size 2 prob_vector_size CPU memory
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting CPU memory for sample 0 vectors array
+[INFO] > Requesting CPU memory for sample 1 vectors array
+[INFO] Requesting samples_fitness CPU memory (size: 2)
+[INFO] === Solicitando memoria para el thread 1 =====
+[INFO] > Requesting 524288 bits GPU memory for prob_vector 1 (size: 524288 / 2 Mb)
+[INFO] === Solicitando memoria para el thread 0 =====
+[INFO] > Requesting 524288 bits GPU memory for prob_vector 0 (size: 524288 / 2 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 1 (size: 16384 / 0 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 0 (size: 16384 / 0 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 1 (size: 16384 / 0 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 0 (size: 16384 / 0 Mb)
+[TIME] Init (2) processing time: 149.569733 (ms)
+iter,f1,f2,avg f1 f2
+[TIME] Init (2) processing time: 1.591296 (ms)
+iter,f1,f2,avg f1 f2
+0,0,0,0.0000,0.0000
+[TIME] Sampling processing time: 0.705376 (ms)
+[TIME] Sampling processing time: 0.713504 (ms)
+[TIME] Eval processing time: 0.171456 (ms)
+[TIME] Eval processing time: 0.175456 (ms)
+[TIME] Update processing time: 0.083136 (ms)
+[TIME] Update processing time: 0.080896 (ms)
+10000,265684,265489,265586.5000,25936.1816
+[TIME] Sampling processing time: 0.670784 (ms)
+[TIME] Sampling processing time: 0.678304 (ms)
+[TIME] Eval processing time: 0.165824 (ms)
+[TIME] Update processing time: 0.080224 (ms)
+[TIME] Eval processing time: 0.187072 (ms)
+[TIME] Update processing time: 0.087552 (ms)
+20000,269259,269185,269222.0000,26291.2109
+[TIME] Sampling processing time: 0.671232 (ms)
+[TIME] Eval processing time: 0.164320 (ms)
+[TIME] Update processing time: 0.080384 (ms)
+[TIME] Sampling processing time: 0.743136 (ms)
+[TIME] Eval processing time: 0.169568 (ms)
+[TIME] Update processing time: 0.088384 (ms)
+30000,272980,272979,272979.5000,26658.1543
+[TIME] Sampling processing time: 0.670240 (ms)
+[TIME] Eval processing time: 0.162912 (ms)
+[TIME] Update processing time: 0.081312 (ms)
+[TIME] Sampling processing time: 0.671072 (ms)
+[TIME] Eval processing time: 0.167968 (ms)
+[TIME] Update processing time: 0.080320 (ms)
+40000,276712,276515,276613.5000,27013.0371
+[TIME] Sampling processing time: 0.683296 (ms)
+[TIME] Eval processing time: 0.163264 (ms)
+[TIME] Update processing time: 0.079776 (ms)
+[TIME] Sampling processing time: 0.675712 (ms)
+[TIME] Eval processing time: 0.164896 (ms)
+[TIME] Update processing time: 0.080000 (ms)
+50000,279805,279861,279833.0000,27327.4414
+[TIME] Sampling processing time: 0.667456 (ms)
+[TIME] Eval processing time: 0.158528 (ms)
+[TIME] Update processing time: 0.079776 (ms)
+[TIME] Sampling processing time: 0.676192 (ms)
+[TIME] Eval processing time: 0.165472 (ms)
+[TIME] Update processing time: 0.078880 (ms)
+60000,284144,284114,284129.0000,27746.9727
+[TIME] Sampling processing time: 0.676384 (ms)
+[TIME] Eval processing time: 0.168992 (ms)
+[TIME] Update processing time: 0.079008 (ms)
+[TIME] Sampling processing time: 0.672128 (ms)
+[TIME] Eval processing time: 0.166368 (ms)
+[TIME] Update processing time: 0.080448 (ms)
+70000,286917,286943,286930.0000,28020.5078
+[TIME] Sampling processing time: 0.670720 (ms)
+[TIME] Eval processing time: 0.164192 (ms)
+[TIME] Update processing time: 0.078496 (ms)
+[TIME] Sampling processing time: 0.667936 (ms)
+[TIME] Eval processing time: 0.162112 (ms)
+[TIME] Update processing time: 0.080288 (ms)
+80000,290511,290784,290647.5000,28383.5449
+[TIME] Sampling processing time: 0.679040 (ms)
+[TIME] Eval processing time: 0.204960 (ms)
+[TIME] Update processing time: 0.080608 (ms)
+[TIME] Sampling processing time: 0.670272 (ms)
+[TIME] Eval processing time: 0.166624 (ms)
+[TIME] Update processing time: 0.079584 (ms)
+90000,293652,293919,293785.5000,28689.9902
+[TIME] Sampling processing time: 0.673248 (ms)
+[TIME] Eval processing time: 0.166016 (ms)
+[TIME] Update processing time: 0.078944 (ms)
+[TIME] Sampling processing time: 0.671968 (ms)
+[TIME] Eval processing time: 0.180832 (ms)
+[TIME] Update processing time: 0.080352 (ms)
+100000,297039,297659,297349.0000,29037.9883
+[TIME] Sampling processing time: 0.672608 (ms)
+[TIME] Eval processing time: 0.165760 (ms)
+[TIME] Update processing time: 0.078784 (ms)
+[TIME] Sampling processing time: 0.671232 (ms)
+[TIME] Eval processing time: 0.166208 (ms)
+[TIME] Update processing time: 0.080000 (ms)
+110000,301291,300786,301038.5000,29398.2910
+[TIME] Sampling processing time: 0.671040 (ms)
+[TIME] Eval processing time: 0.199264 (ms)
+[TIME] Update processing time: 0.080448 (ms)
+[TIME] Sampling processing time: 0.673792 (ms)
+[TIME] Eval processing time: 0.162144 (ms)
+[TIME] Update processing time: 0.079840 (ms)
+120000,303941,304053,303997.0000,29687.2070
+[TIME] Sampling processing time: 0.678912 (ms)
+[TIME] Eval processing time: 0.161024 (ms)
+[TIME] Update processing time: 0.079264 (ms)
+[TIME] Sampling processing time: 0.672096 (ms)
+[TIME] Eval processing time: 0.167360 (ms)
+[TIME] Update processing time: 0.081280 (ms)
+130000,307666,308118,307892.0000,30067.5781
+[TIME] Sampling processing time: 0.669760 (ms)
+[TIME] Eval processing time: 0.161984 (ms)
+[TIME] Update processing time: 0.079712 (ms)
+[TIME] Sampling processing time: 0.668992 (ms)
+[TIME] Eval processing time: 0.161440 (ms)
+[TIME] Update processing time: 0.078656 (ms)
+140000,310891,310869,310880.0000,30359.3750
+[TIME] Sampling processing time: 0.669856 (ms)
+[TIME] Eval processing time: 0.159136 (ms)
+[TIME] Update processing time: 0.079904 (ms)
+[TIME] Sampling processing time: 0.678176 (ms)
+[TIME] Eval processing time: 0.165504 (ms)
+[TIME] Update processing time: 0.079424 (ms)
+150000,313789,314281,314035.0000,30667.4805
+[TIME] Sampling processing time: 0.669600 (ms)
+[TIME] Eval processing time: 0.161600 (ms)
+[TIME] Update processing time: 0.078816 (ms)
+[TIME] Sampling processing time: 0.678624 (ms)
+[TIME] Eval processing time: 0.162656 (ms)
+[TIME] Update processing time: 0.079328 (ms)
+160000,317049,316755,316902.0000,30947.4609
+[TIME] Sampling processing time: 0.670240 (ms)
+[TIME] Eval processing time: 0.159584 (ms)
+[TIME] Update processing time: 0.079936 (ms)
+[TIME] Sampling processing time: 0.673344 (ms)
+[TIME] Eval processing time: 0.164128 (ms)
+[TIME] Update processing time: 0.079552 (ms)
+170000,320175,320237,320206.0000,31270.1172
+[TIME] Sampling processing time: 0.672000 (ms)
+[TIME] Eval processing time: 0.161184 (ms)
+[TIME] Update processing time: 0.078240 (ms)
+[TIME] Sampling processing time: 0.710624 (ms)
+[TIME] Eval processing time: 0.165216 (ms)
+[TIME] Update processing time: 0.081792 (ms)
+180000,323340,323396,323368.0000,31578.9062
+[TIME] Sampling processing time: 0.683168 (ms)
+[TIME] Eval processing time: 0.163808 (ms)
+[TIME] Update processing time: 0.081536 (ms)
+[TIME] Sampling processing time: 0.674112 (ms)
+[TIME] Eval processing time: 0.163424 (ms)
+[TIME] Update processing time: 0.078880 (ms)
+190000,325909,326205,326057.0000,31841.5039
+[TIME] Sampling processing time: 0.678560 (ms)
+[TIME] Eval processing time: 0.161184 (ms)
+[TIME] Update processing time: 0.080544 (ms)
+[TIME] Sampling processing time: 0.669216 (ms)
+[TIME] Eval processing time: 0.166944 (ms)
+[TIME] Update processing time: 0.087040 (ms)
+>>>>
+iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25
+200000,62.8449,674792304,204411,360668,163091,59146
+[TIME] Total processing time: 187192.210573 (microseconds)
