@@ -610,6 +610,10 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
+        #if defined(DEBUG)
+            fprintf(stdout, "[DEBUG] current_prob_vector_number_of_bits: %d\n", current_prob_vector_number_of_bits);
+        #endif
+
         int needed_rand;
         #if defined(HAS_NOISE)
             needed_rand = current_prob_vector_number_of_bits * 2;
