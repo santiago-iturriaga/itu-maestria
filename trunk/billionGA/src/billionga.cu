@@ -673,10 +673,12 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             int loops_count = max_samples_doable / samples_per_loop;
             if (max_samples_doable % samples_per_loop > 0) loops_count++;
 
+            /*
             fprintf(stdout, "[TIME] max_samples_doable = %d\n", max_samples_doable);
             fprintf(stdout, "[TIME] samples_per_loop = %d\n", samples_per_loop);
             fprintf(stdout, "[TIME] loops_count = %d\n", loops_count);
-
+            */
+            
             // Sampleo el vector de prob. con los números aleatorios generados.
             kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
