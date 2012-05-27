@@ -26,6 +26,13 @@ inline int termination_criteria_eval(struct termination_criteria *term_state,
 }
 
 int main(int argc, char **argv) {
+    float gputime;
+    /*cudaEvent_t full_start;
+    cudaEvent_t full_end;
+    ccudaEventCreate(&full_start);
+    ccudaEventCreate(&full_end);
+    ccudaEventRecord(full_start, 0);*/
+    
     if (argc != 5) {
         fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size> <max iteration> <prng vector size> <gpu device>\n(where 1 <= problem size <= %ld and problem_size can be divided by 8)\n\n", argv[0], LONG_MAX);
         return EXIT_FAILURE;
@@ -34,6 +41,13 @@ int main(int argc, char **argv) {
     #if defined(INFO) || defined(DEBUG)
         fprintf(stdout, "[INFO] === Starting... ===============================\n");
     #endif
+
+    /*
+    cudaEvent_t start;
+    cudaEvent_t end;
+    ccudaEventCreate(&start);
+    ccudaEventCreate(&end);
+    ccudaEventRecord(start, 0);*/
 
     long problem_size;
     problem_size = atol(argv[1]);
@@ -71,8 +85,22 @@ int main(int argc, char **argv) {
     struct bga_state problem_state;
     bga_initialization(&problem_state, problem_size, nthreads, NUMBER_OF_SAMPLES);
 
+    /*
+    ccudaEventRecord(end, 0);
+    ccudaEventSynchronize(end);
+    ccudaEventElapsedTime(&gputime, start, end);
+    fprintf(stdout, "[TIME] Init (1) processing time: %f (ms)\n", gputime);
+    * */
+
     #pragma omp parallel // private(th_id)
     {
+        /*
+        cudaEvent_t start;
+        cudaEvent_t end;
+        ccudaEventCreate(&start);
+        ccudaEventCreate(&end);
+        ccudaEventRecord(start, 0);*/
+
         int current_iteration = 0;
         int th_id = omp_get_thread_num();
 
@@ -92,6 +120,13 @@ int main(int argc, char **argv) {
         // === Inicialización del BillionGA.
         bga_initialize_thread(&problem_state, th_id);
 
+        /*
+        ccudaEventRecord(end, 0);
+        ccudaEventSynchronize(end);
+        ccudaEventElapsedTime(&gputime, start, end);
+        fprintf(stdout, "[TIME] Init (2) processing time: %f (ms)\n", gputime);
+        * */
+
         #if defined(DEBUG)
             #pragma omp barrier
             if (th_id == 0) bga_show_prob_vector_state(&problem_state);
@@ -100,7 +135,7 @@ int main(int argc, char **argv) {
 
         long current_acc_prob = 0;
         long aux;
-        float fitness_sample_avg = 0, probability_avg = 0;
+        float fitness_sample_avg = 0, probability_avg = 0, avg_fitness_porcentage = 0;
         long fitness_sample_a = 0, fitness_sample_b = 0;
 
         fprintf(stdout, "iter");
@@ -128,7 +163,10 @@ int main(int argc, char **argv) {
                         fprintf(stdout, ",%ld", aux - current_acc_prob);
                     #endif
                     
-                    fprintf(stdout, ",%ld,%ld,%.4f", fitness_sample_a, fitness_sample_b, fitness_sample_avg);
+                    avg_fitness_porcentage = (fitness_sample_avg / POPULATION_SIZE) * 100;
+                    
+                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b, 
+                        fitness_sample_avg, avg_fitness_porcentage);
                         
                     current_acc_prob = aux;
 
@@ -151,11 +189,33 @@ int main(int argc, char **argv) {
 
             current_iteration++;
 
+            /*
+            cudaEvent_t start;
+            cudaEvent_t end;
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
+            ccudaEventRecord(start, 0);*/
+
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
+
+            /*
+            ccudaEventRecord(end, 0);
+            ccudaEventSynchronize(end);
+            ccudaEventElapsedTime(&gputime, start, end);
+            fprintf(stdout, "[TIME] Sampling processing time: %f (ms)\n", gputime);
+            * */
 
             #if defined(DEBUG)
                 #pragma omp barrier
             #endif
+
+            /*
+            cudaEvent_t start;
+            cudaEvent_t end;
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
+            ccudaEventRecord(start, 0);*/
+
             bga_compute_sample_part_fitness(&problem_state, th_id);
 
             #if defined(DEBUG)
@@ -174,7 +234,28 @@ int main(int argc, char **argv) {
                 #pragma omp barrier
             #endif
 
+            /*
+            ccudaEventRecord(end, 0);
+            ccudaEventSynchronize(end);
+            ccudaEventElapsedTime(&gputime, start, end);
+            fprintf(stdout, "[TIME] Eval processing time: %f (ms)\n", gputime);
+            * */
+
+            /*
+            cudaEvent_t start;
+            cudaEvent_t end;
+            ccudaEventCreate(&start);
+            ccudaEventCreate(&end);
+            ccudaEventRecord(start, 0);*/
+
             bga_model_update(&problem_state, th_id);
+
+            /*
+            ccudaEventRecord(end, 0);
+            ccudaEventSynchronize(end);
+            ccudaEventElapsedTime(&gputime, start, end);
+            fprintf(stdout, "[TIME] Update processing time: %f (ms)\n", gputime);
+            * */
                         
             #if defined(FULL_FITNESS_UPDATE)
                 fitness_sample_a = problem_state.samples_fitness[0];
@@ -223,6 +304,20 @@ int main(int argc, char **argv) {
 
     // === Libero la memoria del cGA.
     bga_free(&problem_state);
+    
+    /*
+    ccudaEventRecord(final_end, 0);
+    ccudaEventSynchronize(final_end);
+    ccudaEventElapsedTime(&gputime, final_start, final_end);
+    fprintf(stdout, "[TIME] Total processing time: %f (ms)\n", gputime);
+    * */
+
+    /*
+    ccudaEventDestroy(start);
+    ccudaEventDestroy(end);
+    ccudaEventDestroy(start_end);
+    ccudaEventDestroy(end_end);
+    * */
 
     return EXIT_SUCCESS;
 }
