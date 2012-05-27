@@ -205,16 +205,20 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(start, 0);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+                	ccudaEventRecord(start, 0);
+		}
             #endif
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(end, 0);
-                ccudaEventSynchronize(end);
-                ccudaEventElapsedTime(&gputime, start, end);
-                fprintf(stdout, "[TIME] Sampling processing time: %f (ms)\n", gputime);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+	                ccudaEventRecord(end, 0);
+        	        ccudaEventSynchronize(end);
+               		ccudaEventElapsedTime(&gputime, start, end);
+                	fprintf(stdout, "[TIME] Sampling processing time: %f (ms)\n", gputime);
+		}
             #endif
 
             #if defined(DEBUG)
@@ -222,7 +226,9 @@ int main(int argc, char **argv) {
             #endif
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(start, 0);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+                	ccudaEventRecord(start, 0);
+		}
             #endif
 
             bga_compute_sample_part_fitness(&problem_state, th_id);
@@ -238,32 +244,35 @@ int main(int argc, char **argv) {
             #if defined(FULL_FITNESS_UPDATE)
                 #pragma omp barrier
                 if (th_id == 0) {
-                    #if defined(DEBUG)
-                        fprintf(stdout, "[DEBUG] In Sync!\n");
-                    #endif
                     bga_compute_sample_full_fitness(&problem_state);
                 }
                 #pragma omp barrier
             #endif
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(end, 0);
-                ccudaEventSynchronize(end);
-                ccudaEventElapsedTime(&gputime, start, end);
-                fprintf(stdout, "[TIME] Eval processing time: %f (ms)\n", gputime);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+	                ccudaEventRecord(end, 0);
+	                ccudaEventSynchronize(end);
+	                ccudaEventElapsedTime(&gputime, start, end);
+	                fprintf(stdout, "[TIME] Eval processing time: %f (ms)\n", gputime);
+		}
             #endif
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(start, 0);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+                	ccudaEventRecord(start, 0);
+		}
             #endif
 
             bga_model_update(&problem_state, th_id);
 
             #if defined(MACRO_TIMMING)
-                ccudaEventRecord(end, 0);
-                ccudaEventSynchronize(end);
-                ccudaEventElapsedTime(&gputime, start, end);
-                fprintf(stdout, "[TIME] Update processing time: %f (ms)\n", gputime);
+		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
+	                ccudaEventRecord(end, 0);
+	                ccudaEventSynchronize(end);
+	                ccudaEventElapsedTime(&gputime, start, end);
+	                fprintf(stdout, "[TIME] Update processing time: %f (ms)\n", gputime);
+		}
             #endif
                         
             #if defined(FULL_FITNESS_UPDATE)
