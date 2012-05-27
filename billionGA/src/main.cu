@@ -37,19 +37,19 @@ double timming_end(timespec &ts) {
     double elapsed;
     elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
             - ts.tv_nsec) / 1000.0);
-    //fprintf(stdout, "[TIMMING] %s: %f microsegs.\n", message, elapsed);
-    return elapsed;
+
+    return elapsed / 1000;
 }
 
 int main(int argc, char **argv) {
     double cputime;
     float gputime;
-    
+
     #if defined(MACRO_TIMMING)
         timespec full_start;
         timming_start(full_start);
     #endif
-    
+
     if (argc != 5) {
         fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size> <max iteration> <prng vector size> <gpu device>\n(where 1 <= problem size <= %ld and problem_size can be divided by 8)\n\n", argv[0], LONG_MAX);
         return EXIT_FAILURE;
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
         #if defined(MACRO_TIMMING)
             cudaEvent_t start;
             cudaEvent_t end;
-            
+
             ccudaEventCreate(&start);
             ccudaEventCreate(&end);
             ccudaEventRecord(start, 0);
@@ -162,13 +162,15 @@ int main(int argc, char **argv) {
             fprintf(stdout, ",gt 75,gt 50,lt 50,lt 25");
         #endif
         fprintf(stdout, "\n");
-        
-        while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {                       
+
+        while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {
+            int display_stats;
+            display_stats = current_iteration % SHOW_UPDATE_EVERY;
+
             if (th_id == 0) {
-                if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                                        
+                if (display_stats == 0) {
                     fprintf(stdout, "%d", current_iteration);
-                    
+
                     #if defined(DEBUG)
                         aux = bga_get_full_accumulated_prob(&problem_state);
                         probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
@@ -177,12 +179,12 @@ int main(int argc, char **argv) {
                         fprintf(stdout, ",%ld", aux);
                         fprintf(stdout, ",%ld", aux - current_acc_prob);
                     #endif
-                    
+
                     avg_fitness_porcentage = (fitness_sample_avg / POPULATION_SIZE) * 100;
-                    
-                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b, 
+
+                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
                         fitness_sample_avg, avg_fitness_porcentage);
-                        
+
                     current_acc_prob = aux;
 
                     #if defined(DEBUG)
@@ -191,11 +193,11 @@ int main(int argc, char **argv) {
 
                         aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
                         fprintf(stdout, ",%ld", aux);
-                        
+
                         aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
                         fprintf(stdout, ",%ld", aux);
-                        
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;                   
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
                         fprintf(stdout, ",%ld", aux);
                     #endif
                     fprintf(stdout, "\n");
@@ -205,20 +207,20 @@ int main(int argc, char **argv) {
             current_iteration++;
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                	ccudaEventRecord(start, 0);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(start, 0);
+            }
             #endif
 
             bga_model_sampling_mt(&problem_state, &mt_status, th_id);
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-	                ccudaEventRecord(end, 0);
-        	        ccudaEventSynchronize(end);
-               		ccudaEventElapsedTime(&gputime, start, end);
-                	fprintf(stdout, "[TIME] Sampling processing time: %f (ms)\n", gputime);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(end, 0);
+                ccudaEventSynchronize(end);
+                ccudaEventElapsedTime(&gputime, start, end);
+                fprintf(stdout, "[TIME] Sampling processing time: %f (ms)\n", gputime);
+            }
             #endif
 
             #if defined(DEBUG)
@@ -226,9 +228,9 @@ int main(int argc, char **argv) {
             #endif
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                	ccudaEventRecord(start, 0);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(start, 0);
+            }
             #endif
 
             bga_compute_sample_part_fitness(&problem_state, th_id);
@@ -250,31 +252,31 @@ int main(int argc, char **argv) {
             #endif
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-	                ccudaEventRecord(end, 0);
-	                ccudaEventSynchronize(end);
-	                ccudaEventElapsedTime(&gputime, start, end);
-	                fprintf(stdout, "[TIME] Eval processing time: %f (ms)\n", gputime);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(end, 0);
+                ccudaEventSynchronize(end);
+                ccudaEventElapsedTime(&gputime, start, end);
+                fprintf(stdout, "[TIME] Eval processing time: %f (ms)\n", gputime);
+            }
             #endif
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-                	ccudaEventRecord(start, 0);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(start, 0);
+            }
             #endif
 
             bga_model_update(&problem_state, th_id);
 
             #if defined(MACRO_TIMMING)
-		if (current_iteration % SHOW_UPDATE_EVERY == 0) {
-	                ccudaEventRecord(end, 0);
-	                ccudaEventSynchronize(end);
-	                ccudaEventElapsedTime(&gputime, start, end);
-	                fprintf(stdout, "[TIME] Update processing time: %f (ms)\n", gputime);
-		}
+            if (display_stats == 0) {
+                ccudaEventRecord(end, 0);
+                ccudaEventSynchronize(end);
+                ccudaEventElapsedTime(&gputime, start, end);
+                fprintf(stdout, "[TIME] Update processing time: %f (ms)\n", gputime);
+            }
             #endif
-                        
+
             #if defined(FULL_FITNESS_UPDATE)
                 fitness_sample_a = problem_state.samples_fitness[0];
                 fitness_sample_b = problem_state.samples_fitness[1];
@@ -283,48 +285,48 @@ int main(int argc, char **argv) {
                 fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
                 fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
             #endif
-            
+
             fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
         }
-       
+
         long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
-        
+
         aux1[0] = aux2[0] = aux3[0] = aux4[0] = 0;
         aux1[1] = aux2[1] = aux3[1] = aux4[1] = 0;
         aux1[2] = aux2[2] = aux3[2] = aux4[2] = 0;
         aux1[3] = aux2[3] = aux3[3] = aux4[3] = 0;
-        
+
         aux1[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2));
         aux2[th_id] = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1);
         aux3[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1);
         aux4[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2);
 
-        bga_get_part_accumulated_prob(&problem_state, th_id); 
+        bga_get_part_accumulated_prob(&problem_state, th_id);
 
         #pragma omp barrier
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
-            
+
             fprintf(stdout, ">>>>\n");
             fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25\n");
-            fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration, 
+            fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration,
                 (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
                 final_acc_prob,
                 aux1[0]+aux1[1]+aux1[2]+aux1[3],
-                aux2[0]+aux2[1]+aux2[2]+aux2[3], 
+                aux2[0]+aux2[1]+aux2[2]+aux2[3],
                 aux3[0]+aux3[1]+aux3[2]+aux3[3],
                 aux4[0]+aux4[1]+aux4[2]+aux4[3]);
         }
 
         // === Libero la memoria del Mersenne Twister.
         mtgp32_free(&mt_status);
-        
+
         #if defined(MACRO_TIMMING)
             ccudaEventDestroy(start);
             ccudaEventDestroy(end);
         #endif
     }
-    
+
     #if defined(MACRO_TIMMING)
         cputime = timming_end(full_start);
         fprintf(stdout, "[TIME] Total processing time: %f (microseconds)\n", cputime);
