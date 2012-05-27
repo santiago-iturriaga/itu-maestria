@@ -315,14 +315,14 @@ int main(int argc, char **argv) {
             ccudaEventDestroy(end);
         #endif
     }
-
-    // === Libero la memoria del cGA.
-    //bga_free(&problem_state);
     
     #if defined(MACRO_TIMMING)
         cputime = timming_end(full_start);
         fprintf(stdout, "[TIME] Total processing time: %f (microseconds)\n", cputime);
     #endif
+
+    // === Libero la memoria del cGA.
+    bga_free(&problem_state);
 
     return EXIT_SUCCESS;
 }
