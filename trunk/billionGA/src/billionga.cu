@@ -662,7 +662,12 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             #endif
 
             int max_samples_doable = current_prob_vector_number_of_bits - prob_vector_starting_pos;
-            if (max_samples_doable > (mt_status->numbers_per_gen >> 1)) max_samples_doable = (mt_status->numbers_per_gen >> 1);
+            
+            #if defined(HAS_NOISE)
+                if (max_samples_doable > (mt_status->numbers_per_gen >> 1)) max_samples_doable = (mt_status->numbers_per_gen >> 1);
+            #else
+                if (max_samples_doable > mt_status->numbers_per_gen) max_samples_doable = mt_status->numbers_per_gen;
+            #endif
 
             int samples_per_loop = (SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS);
             int loops_count = max_samples_doable / samples_per_loop;
