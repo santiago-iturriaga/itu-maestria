@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
                         current_acc_prob = aux;
                     #endif
 
-                    avg_fitness_porcentage = (fitness_sample_avg / POPULATION_SIZE) * 100;
+                    avg_fitness_porcentage = (fitness_sample_avg / problem_size) * 100;
 
                     fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
                         fitness_sample_avg, avg_fitness_porcentage);
