@@ -4,7 +4,9 @@
 #ARCH = -arch=compute_20
 VERB = -Xptxas=-v --ptxas-options=-v
 #OMP = -O3 -Xcompiler "-g -pg -fopenmp -lgomp"
-OMP = -O3 -Xcompiler "-fopenmp -lgomp"
+#OMP = -O3 -Xcompiler "-fopenmp -lgomp"
+OMP = -O3 -Xcompiler -fopenmp -lgomp
+#OMP = -O3 -Xcompiler "-fopenmp"
 
 MTGP32_INC = src/mtgp-1.1/mtgp32-fast.h src/mtgp-1.1/mtgp32-fast.c src/mtgp-1.1/mtgp-util.h \
 	src/mtgp-1.1/mtgp-util.cu src/mtgp-1.1/mtgp32-cuda.cu src/mtgp-1.1/mtgp32-cuda.h \
