@@ -33,6 +33,7 @@
 //#define PARTIAL_FITNESS_UPDATE
 
 #define NUMBER_OF_SAMPLES   2
+
 #define SHOW_UPDATE_EVERY   10000
 //#define SHOW_UPDATE_EVERY   10
 
