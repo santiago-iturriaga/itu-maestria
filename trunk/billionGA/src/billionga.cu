@@ -446,17 +446,17 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
 void bga_compute_sample_full_fitness(struct bga_state *state) {
     int result;
 
-    //fprintf(stdout, "bga_compute_sample_full_fitness\n");
+    fprintf(stdout, "bga_compute_sample_full_fitness\n");
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         result = 0;
 
         for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
-            //fprintf(stdout, "state->samples_vector_fitness[%d][%d] = %d\n",sample_number, prob_vector_number, state->samples_vector_fitness[sample_number][prob_vector_number]);
+            fprintf(stdout, "state->samples_vector_fitness[%d][%d] = %d\n",sample_number, prob_vector_number, state->samples_vector_fitness[sample_number][prob_vector_number]);
             result += state->samples_vector_fitness[sample_number][prob_vector_number];
         }
 
         state->samples_fitness[sample_number] = result;
-        //fprintf(stdout, "state->samples_fitness[%d] = %d\n",sample_number, result);
+        fprintf(stdout, "state->samples_fitness[%d] = %d\n",sample_number, result);
     }
 }
 
