@@ -50,6 +50,9 @@ int main(int argc, char **argv) {
         timming_start(full_start);
     #endif
 
+    timespec stats_timer;
+    timming_start(stats_timer);
+
     if (argc != 5) {
         fprintf(stdout, "Wrong! RFM!\n\nUsage: %s <problem size> <max iteration> <prng vector size> <gpu device>\n(where 1 <= problem size <= %ld and problem_size can be divided by 8)\n\n", argv[0], LONG_MAX);
         return EXIT_FAILURE;
@@ -165,7 +168,7 @@ int main(int argc, char **argv) {
         #if defined(DEBUG)
             fprintf(stdout, ",gt 75,gt 50,lt 50,lt 25");
         #endif
-        fprintf(stdout, "\n");
+        fprintf(stdout, ",time\n");
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {
             int display_stats;
@@ -204,6 +207,8 @@ int main(int argc, char **argv) {
                         aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
                         fprintf(stdout, ",%ld", aux);
                     #endif
+                    
+                    fprintf(stdout, ",%f", timming_end(stats_timer));
                     fprintf(stdout, "\n");
                 }
             }
