@@ -7,20 +7,19 @@ SOLUTIONS_BASE_DIR="1024x32.12"
 #THREADS=1
 THREADS=12
 
-#ITERATIONS=15
 ITERATIONS=30
+#ITERATIONS=15
 
 PALS_ITERATIONS=250000000
+
 PALS_TIMEOUT=15
 #PALS_TIMEOUT=30
 PALS_POP_SIZE=22
 
 VERIFICADOR="bin/verificador"
-MINMIN_METRICS_PATH="list-heuristics/1024x32/MinMin"
-
 ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
-ALGORITHMS_OUTNAME[0]="pals-1"
+ALGORITHMS_OUTNAME[0]="pals-aga"
 
 SCENARIOS[0]=0
 SCENARIOS[1]=3
@@ -61,9 +60,9 @@ WORKLOADS[23]="B.u_s_lolo"
 
 for a in {0..0}
 do
-    for s in {0..0} #10
+    for s in {0..10}
     do
-        for w in {0..0} #23
+        for w in {0..23}
         do
             for (( i=0; i<ITERATIONS; i++ ))
             do       
@@ -85,28 +84,12 @@ do
                 EXEC_VERIF="${VERIFICADOR} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${OUT}.sols ${DIMENSIONS}"
                 echo ${EXEC_VERIF}
                 ${EXEC_VERIF} > ${OUT}.metrics
-            
-                echo "set term postscript" > ${OUT}.plot
-                echo "set output '${OUT}.ps'" >> ${OUT}.plot
-                echo "plot '${OUT}.metrics' using 1:2 title 'PALS'" >> ${OUT}.plot
-                echo "set term png" >> ${OUT}.plot
-                echo "set output '${OUT}.png'" >> ${OUT}.plot
-                echo "replot" >> ${OUT}.plot
-                gnuplot ${OUT}.plot
             done
             
             TODAS_LAS_SOLUCIONES="${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}"
             cat ${SOLUTIONS_BASE_DIR}/scenario.${SCENARIOS[s]}.workload.${WORKLOADS[w]}.*/*.metrics > ${TODAS_LAS_SOLUCIONES}.sols
             bin/fp_2obj ${TODAS_LAS_SOLUCIONES}.sols
             mv FP.out ${TODAS_LAS_SOLUCIONES}.fp
-            
-            echo "set term postscript" > ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set output '${TODAS_LAS_SOLUCIONES}.ps'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "plot '${TODAS_LAS_SOLUCIONES}.fp' using 1:2 title 'PALS'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set term png" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "set output '${TODAS_LAS_SOLUCIONES}.png'" >> ${TODAS_LAS_SOLUCIONES}.plot
-            echo "replot" >> ${TODAS_LAS_SOLUCIONES}.plot
-            gnuplot ${TODAS_LAS_SOLUCIONES}.plot
         done
     done
 done
