@@ -171,50 +171,6 @@ int main(int argc, char **argv) {
         fprintf(stdout, ",time\n");
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {
-            int display_stats;
-            display_stats = current_iteration % SHOW_UPDATE_EVERY;
-
-            if (th_id == 0) {
-                if (display_stats == 0) {
-                    fprintf(stdout, "%d", current_iteration);
-
-                    #if defined(DEBUG)
-                        aux = bga_get_full_accumulated_prob(&problem_state);
-                        probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
-
-                        fprintf(stdout, ",%.4f", probability_avg);
-                        fprintf(stdout, ",%ld", aux);
-                        fprintf(stdout, ",%ld", aux - current_acc_prob);
-                        
-                        current_acc_prob = aux;
-                    #endif
-
-                    avg_fitness_porcentage = (fitness_sample_avg / problem_size) * 100;
-
-                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
-                        fitness_sample_avg, avg_fitness_porcentage);
-
-                    #if defined(DEBUG)
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-                    #endif
-                    
-                    fprintf(stdout, ",%f", timming_end(stats_timer));
-                    fprintf(stdout, "\n");
-                }
-            }
-
-            current_iteration++;
-
             #if defined(MACRO_TIMMING)
             if (display_stats == 0) {
                 ccudaEventRecord(start, 0);
@@ -286,20 +242,60 @@ int main(int argc, char **argv) {
             }
             #endif
 
-            if (th_id == 0) {
-                #if defined(FULL_FITNESS_UPDATE)
-                    //fprintf(stdout, "Full fitness\n");
-                    fitness_sample_a = problem_state.samples_fitness[0];
-                    fitness_sample_b = problem_state.samples_fitness[1];
-                #endif
-                #if defined(PARTIAL_FITNESS_UPDATE)
-                    //fprintf(stdout, "Partial fitness\n");
-                    fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
-                    fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
-                #endif
+            int display_stats;
+            display_stats = current_iteration % SHOW_UPDATE_EVERY;
 
-                fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
+            #if defined(FULL_FITNESS_UPDATE)
+                fitness_sample_a = problem_state.samples_fitness[0];
+                fitness_sample_b = problem_state.samples_fitness[1];
+            #endif
+            #if defined(PARTIAL_FITNESS_UPDATE)
+                fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
+                fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
+            #endif
+
+            fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
+
+            if (th_id == 0) {
+                if (display_stats == 0) {
+                    fprintf(stdout, "%d", current_iteration);
+
+                    #if defined(DEBUG)
+                        aux = bga_get_full_accumulated_prob(&problem_state);
+                        probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
+
+                        fprintf(stdout, ",%.4f", probability_avg);
+                        fprintf(stdout, ",%ld", aux);
+                        fprintf(stdout, ",%ld", aux - current_acc_prob);
+                        
+                        current_acc_prob = aux;
+                    #endif
+
+                    avg_fitness_porcentage = (fitness_sample_avg / problem_size) * 100;
+
+                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
+                        fitness_sample_avg, avg_fitness_porcentage);
+
+                    #if defined(DEBUG)
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+                    #endif
+                    
+                    fprintf(stdout, ",%f", timming_end(stats_timer));
+                    fprintf(stdout, "\n");
+                }
             }
+
+            current_iteration++;
         }
 
         long aux1[4], aux2[4], aux3[4], aux4[4];
