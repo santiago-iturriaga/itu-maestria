@@ -246,6 +246,7 @@ int main(int argc, char **argv) {
             display_stats = current_iteration % SHOW_UPDATE_EVERY;
 
             #if defined(FULL_FITNESS_UPDATE)
+                fprintf(stdout, "full!\n");
                 fitness_sample_a = problem_state.samples_fitness[0];
                 fitness_sample_b = problem_state.samples_fitness[1];
             #endif
