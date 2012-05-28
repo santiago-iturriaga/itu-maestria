@@ -1,0 +1,14 @@
+[INFO] Freeing gpu_prob_vectors[0]
+[INFO] Freeing gpu_prob_vectors[1]
+[INFO] Freeing gpu_samples[0][0]
+[INFO] Freeing gpu_samples[0][1]
+[INFO] Freeing gpu_samples[1][0]
+[INFO] Freeing gpu_samples[1][1]
+[INFO] Freeing vector_sum_float_free[0]
+[INFO] Freeing vector_sum_bit_free[0]
+[INFO] Freeing vector_sum_float_free[1]
+[ERROR] In ccudaFree Error(11):invalid argument
+
+real	274m23.337s
+user	541m58.136s
+sys	3m27.713s

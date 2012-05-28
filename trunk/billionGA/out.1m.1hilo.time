@@ -1,0 +1,9 @@
+[INFO] Freeing gpu_prob_vectors[0]
+[INFO] Freeing gpu_samples[0][0]
+[INFO] Freeing gpu_samples[1][0]
+[INFO] Freeing vector_sum_float_free[0]
+[INFO] Freeing vector_sum_bit_free[0]
+
+real	22m32.908s
+user	20m23.560s
+sys	2m7.220s
