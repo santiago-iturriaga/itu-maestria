@@ -42,10 +42,10 @@ double timming_end(timespec &ts) {
 }
 
 int main(int argc, char **argv) {
-    double cputime;
-    float gputime;
-
     #if defined(MACRO_TIMMING)
+        double cputime;
+        float gputime;
+
         timespec full_start;
         timming_start(full_start);
     #endif
@@ -148,9 +148,13 @@ int main(int argc, char **argv) {
             #pragma omp barrier
         #endif
 
-        long current_acc_prob = 0;
-        long aux;
-        float fitness_sample_avg = 0, probability_avg = 0, avg_fitness_porcentage = 0;
+        #if defined(DEBUG)
+            long current_acc_prob = 0;
+            float probability_avg = 0;
+            long aux;
+        #endif
+        float fitness_sample_avg = 0;
+        float avg_fitness_porcentage = 0;
         long fitness_sample_a = 0, fitness_sample_b = 0;
 
         fprintf(stdout, "iter");
@@ -178,14 +182,14 @@ int main(int argc, char **argv) {
                         fprintf(stdout, ",%.4f", probability_avg);
                         fprintf(stdout, ",%ld", aux);
                         fprintf(stdout, ",%ld", aux - current_acc_prob);
+                        
+                        current_acc_prob = aux;
                     #endif
 
                     avg_fitness_porcentage = (fitness_sample_avg / POPULATION_SIZE) * 100;
 
                     fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
                         fitness_sample_avg, avg_fitness_porcentage);
-
-                    current_acc_prob = aux;
 
                     #if defined(DEBUG)
                         aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
@@ -277,19 +281,23 @@ int main(int argc, char **argv) {
             }
             #endif
 
-            #if defined(FULL_FITNESS_UPDATE)
-                fitness_sample_a = problem_state.samples_fitness[0];
-                fitness_sample_b = problem_state.samples_fitness[1];
-            #endif
-            #if defined(PARTIAL_FITNESS_UPDATE)
-                fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
-                fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
-            #endif
+            if (th_id == 0) {
+                #if defined(FULL_FITNESS_UPDATE)
+                    fprintf(stdout, "Full fitness\n");
+                    fitness_sample_a = problem_state.samples_fitness[0];
+                    fitness_sample_b = problem_state.samples_fitness[1];
+                #endif
+                #if defined(PARTIAL_FITNESS_UPDATE)
+                    fprintf(stdout, "Partial fitness\n");
+                    fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
+                    fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
+                #endif
 
-            fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
+                fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
+            }
         }
 
-        long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
+        long aux1[4], aux2[4], aux3[4], aux4[4];
 
         aux1[0] = aux2[0] = aux3[0] = aux4[0] = 0;
         aux1[1] = aux2[1] = aux3[1] = aux4[1] = 0;
@@ -302,8 +310,8 @@ int main(int argc, char **argv) {
         aux4[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2);
 
         bga_get_part_accumulated_prob(&problem_state, th_id);
-
         #pragma omp barrier
+        
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
 
