@@ -283,12 +283,12 @@ int main(int argc, char **argv) {
 
             if (th_id == 0) {
                 #if defined(FULL_FITNESS_UPDATE)
-                    fprintf(stdout, "Full fitness\n");
+                    //fprintf(stdout, "Full fitness\n");
                     fitness_sample_a = problem_state.samples_fitness[0];
                     fitness_sample_b = problem_state.samples_fitness[1];
                 #endif
                 #if defined(PARTIAL_FITNESS_UPDATE)
-                    fprintf(stdout, "Partial fitness\n");
+                    //fprintf(stdout, "Partial fitness\n");
                     fitness_sample_a = problem_state.samples_vector_fitness[0][th_id];
                     fitness_sample_b = problem_state.samples_vector_fitness[1][th_id];
                 #endif
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
 
-            fprintf(stdout, ">>>>\n");
+            fprintf(stdout, "========00>>>>\n");
             fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25\n");
             fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration,
                 (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
