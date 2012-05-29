@@ -411,9 +411,9 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         vector_sum_bit_init(state->gpu_bit_vector_sum[prob_vector_number]);
 
-        #if defined(DEBUG)
+        //#if defined(DEBUG)
             fprintf(stdout, "[INFO] Computing sample vector %d fitness: ", sample_number);
-        #endif
+        //#endif
 
         int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
         if (prob_vector_number + 1 == state->number_of_prob_vectors) {
@@ -427,9 +427,9 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
             state->gpu_bit_vector_sum[prob_vector_number],
             state->cpu_bit_vector_sum[prob_vector_number]);
 
-        #if defined(DEBUG)
+        //#if defined(DEBUG)
             fprintf(stdout, "%d\n", state->samples_vector_fitness[sample_number][prob_vector_number]);
-        #endif
+        //#endif
     }
 
     #if defined(TIMMING)
