@@ -105,8 +105,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
             int most_square_pop;
             most_square_pop = instance->archiver_state->grid_pop[new_solution_grid_pos];
             
-            fprintf(stdout, "[DEBUG] aga thread(%d) new_sol_grid_pos(%d) new_sol_grid_square(%d)\n", 
-                instance->thread_idx, new_solution_grid_pos, most_square_pop);
+            /*fprintf(stdout, "[DEBUG] aga thread(%d) new_sol_grid_pos(%d) new_sol_grid_square(%d)\n", 
+                instance->thread_idx, new_solution_grid_pos, most_square_pop);*/
             
             for (int i = 0; i < instance->population_max_size; i++)
             {
@@ -119,8 +119,8 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
                     int i_square_pop;
                     i_square_pop = instance->archiver_state->grid_pop[i_grid_pos];
 
-                    fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
-                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);
+                    /*fprintf(stdout, "[DEBUG] aga thread(%d) sol_pos[%i](%d) sol_square[%i](%d)\n", 
+                        instance->thread_idx, i, i_grid_pos, i, i_square_pop);*/
                         
                     if (instance->archiver_state->grid_pop[i_square_pop] > most_square_pop)
                     {
