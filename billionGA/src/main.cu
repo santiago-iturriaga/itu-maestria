@@ -42,10 +42,10 @@ double timming_end(timespec &ts) {
 }
 
 int main(int argc, char **argv) {
-    #if defined(MACRO_TIMMING)
-        double cputime;
-        float gputime;
+    double cputime;
+    float gputime;
 
+    #if defined(MACRO_TIMMING)
         timespec full_start;
         timming_start(full_start);
     #endif
@@ -151,13 +151,9 @@ int main(int argc, char **argv) {
             #pragma omp barrier
         #endif
 
-        #if defined(DEBUG)
-            long current_acc_prob = 0;
-            float probability_avg = 0;
-            long aux;
-        #endif
-        float fitness_sample_avg = 0;
-        float avg_fitness_porcentage = 0;
+        long current_acc_prob = 0;
+        long aux;
+        float fitness_sample_avg = 0, probability_avg = 0, avg_fitness_porcentage = 0;
         long fitness_sample_a = 0, fitness_sample_b = 0;
 
         fprintf(stdout, "iter");
@@ -171,6 +167,50 @@ int main(int argc, char **argv) {
         fprintf(stdout, ",time\n");
 
         while (!termination_criteria_eval(&term_state, &problem_state, current_iteration, fitness_sample_avg)) {
+            int display_stats;
+            display_stats = current_iteration % SHOW_UPDATE_EVERY;
+
+            if (th_id == 0) {
+                if (display_stats == 0) {
+                    fprintf(stdout, "%d", current_iteration);
+
+                    #if defined(DEBUG)
+                        aux = bga_get_full_accumulated_prob(&problem_state);
+                        probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
+
+                        fprintf(stdout, ",%.4f", probability_avg);
+                        fprintf(stdout, ",%ld", aux);
+                        fprintf(stdout, ",%ld", aux - current_acc_prob);
+                    #endif
+
+                    avg_fitness_porcentage = (fitness_sample_avg / problem_size) * 100;
+
+                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
+                        fitness_sample_avg, avg_fitness_porcentage);
+
+                    current_acc_prob = aux;
+
+                    #if defined(DEBUG)
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+
+                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
+                        fprintf(stdout, ",%ld", aux);
+                    #endif
+                    
+                    fprintf(stdout, ",%f", timming_end(stats_timer));
+                    fprintf(stdout, "\n");
+                }
+            }
+
+            current_iteration++;
+
             #if defined(MACRO_TIMMING)
             if (display_stats == 0) {
                 ccudaEventRecord(start, 0);
@@ -242,11 +282,7 @@ int main(int argc, char **argv) {
             }
             #endif
 
-            int display_stats;
-            display_stats = current_iteration % SHOW_UPDATE_EVERY;
-
             #if defined(FULL_FITNESS_UPDATE)
-                fprintf(stdout, "full!\n");
                 fitness_sample_a = problem_state.samples_fitness[0];
                 fitness_sample_b = problem_state.samples_fitness[1];
             #endif
@@ -256,50 +292,9 @@ int main(int argc, char **argv) {
             #endif
 
             fitness_sample_avg = (float)(fitness_sample_a + fitness_sample_b) / 2.0;
-
-            if (th_id == 0) {
-                if (display_stats == 0) {
-                    fprintf(stdout, "%d", current_iteration);
-
-                    #if defined(DEBUG)
-                        aux = bga_get_full_accumulated_prob(&problem_state);
-                        probability_avg = (float)(aux * 100.0 / problem_state.max_prob_sum);
-
-                        fprintf(stdout, ",%.4f", probability_avg);
-                        fprintf(stdout, ",%ld", aux);
-                        fprintf(stdout, ",%ld", aux - current_acc_prob);
-                        
-                        current_acc_prob = aux;
-                    #endif
-
-                    avg_fitness_porcentage = (fitness_sample_avg / problem_size) * 100;
-
-                    fprintf(stdout, ",%ld,%ld,%.4f,%.4f", fitness_sample_a, fitness_sample_b,
-                        fitness_sample_avg, avg_fitness_porcentage);
-
-                    #if defined(DEBUG)
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, (POPULATION_SIZE >> 1) + (POPULATION_SIZE >> 2)) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, 1, POPULATION_SIZE >> 1) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 1) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-
-                        aux = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2) * nthreads;
-                        fprintf(stdout, ",%ld", aux);
-                    #endif
-                    
-                    fprintf(stdout, ",%f", timming_end(stats_timer));
-                    fprintf(stdout, "\n");
-                }
-            }
-
-            current_iteration++;
         }
 
-        long aux1[4], aux2[4], aux3[4], aux4[4];
+        long aux0[4], aux1[4], aux2[4], aux3[4], aux4[4];
 
         aux1[0] = aux2[0] = aux3[0] = aux4[0] = 0;
         aux1[1] = aux2[1] = aux3[1] = aux4[1] = 0;
@@ -312,12 +307,12 @@ int main(int argc, char **argv) {
         aux4[th_id] = bga_get_part_stats_prob(&problem_state, th_id, -1, POPULATION_SIZE >> 2);
 
         bga_get_part_accumulated_prob(&problem_state, th_id);
+
         #pragma omp barrier
-        
         if (th_id == 0) {
             long final_acc_prob = bga_get_full_accumulated_prob(&problem_state);
 
-            fprintf(stdout, "========00>>>>\n");
+            fprintf(stdout, ">>>>\n");
             fprintf(stdout, "iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25\n");
             fprintf(stdout, "%d,%.4f,%ld,%ld,%ld,%ld,%ld\n",current_iteration,
                 (double)(final_acc_prob * 100) / (double)problem_state.max_prob_sum,
