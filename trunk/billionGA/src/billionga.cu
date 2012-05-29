@@ -411,9 +411,9 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         vector_sum_bit_init(state->gpu_bit_vector_sum[prob_vector_number]);
 
-        //#if defined(DEBUG)
+        #if defined(DEBUG)
             fprintf(stdout, "[INFO] Computing sample vector %d fitness: ", sample_number);
-        //#endif
+        #endif
 
         int current_prob_vector_number_of_bits = state->prob_vector_bit_count;
         if (prob_vector_number + 1 == state->number_of_prob_vectors) {
@@ -427,9 +427,9 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
             state->gpu_bit_vector_sum[prob_vector_number],
             state->cpu_bit_vector_sum[prob_vector_number]);
 
-        //#if defined(DEBUG)
+        #if defined(DEBUG)
             fprintf(stdout, "%d\n", state->samples_vector_fitness[sample_number][prob_vector_number]);
-        //#endif
+        #endif
     }
 
     #if defined(TIMMING)
@@ -446,17 +446,14 @@ void bga_compute_sample_part_fitness(struct bga_state *state, int prob_vector_nu
 void bga_compute_sample_full_fitness(struct bga_state *state) {
     int result;
 
-    fprintf(stdout, "bga_compute_sample_full_fitness\n");
     for (int sample_number = 0; sample_number < state->number_of_samples; sample_number++) {
         result = 0;
 
         for (int prob_vector_number = 0; prob_vector_number < state->number_of_prob_vectors; prob_vector_number++) {
-            fprintf(stdout, "state->samples_vector_fitness[%d][%d] = %d\n",sample_number, prob_vector_number, state->samples_vector_fitness[sample_number][prob_vector_number]);
             result += state->samples_vector_fitness[sample_number][prob_vector_number];
         }
 
         state->samples_fitness[sample_number] = result;
-        fprintf(stdout, "state->samples_fitness[%d] = %d\n",sample_number, result);
     }
 }
 
@@ -526,9 +523,6 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
     const int bid = blockIdx.x;
     const int samples_per_loop = gridDim.x * blockDim.x;
 
-    const int thread_bit_value = 1 << (tid & ((1 << 5)-1));
-    const int thread_bit_pos = (tid << 5);
-    
     int max_samples_doable = prob_vector_size - prob_vector_starting_pos;
     if (max_samples_doable > prng_vector_size) max_samples_doable = prng_vector_size;
 
@@ -539,10 +533,10 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
 
     int prob_vector_position;
     int prng_position;
-    #if defined(HAS_NOISE)
-        int prng_noise_position;
-    #endif
     int block_starting_pos;
+
+    const int thread_bit_value = 1 << (tid & ((1 << 5)-1));
+    const int thread_bit_pos = (tid << 5);
     
     int sample_pos;
     int aux;
@@ -553,21 +547,13 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
 
         // Cada loop genera blockDim.x bits y los guarda en el array de __shared__ memory.
         block_starting_pos = (samples_per_loop * loop) + (bid * blockDim.x);
-        prng_position = (block_starting_pos + tid);
-        #if defined(HAS_NOISE)
-            prng_noise_position = prng_position + prng_vector_size;
-        #endif
-        prob_vector_position = prob_vector_starting_pos + (block_starting_pos + tid);
+        prng_position = block_starting_pos + tid;
+        prob_vector_position = prob_vector_starting_pos + block_starting_pos + tid;
 
         if (prng_position < max_samples_doable) {
             if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
                 aux = thread_bit_value;
             }
-            #if defined(HAS_NOISE)
-                if (prng_vector[prng_position + 1] < 1 + NOISE_PROB) {
-                    aux = 1 - aux;
-                }
-            #endif
         }
         current_block_sample[tid] = aux;
 
@@ -624,26 +610,15 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
         if (prob_vector_number + 1 == state->number_of_prob_vectors) {
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
-        #if defined(DEBUG)
-            fprintf(stdout, "[DEBUG] current_prob_vector_number_of_bits: %d\n", current_prob_vector_number_of_bits);
-        #endif
 
-        int random_numbers_avail;
-
-        #if defined(HAS_NOISE)
-            random_numbers_avail = (mt_status->numbers_per_gen >> 1);
-        #else
-            random_numbers_avail = mt_status->numbers_per_gen;
-        #endif
-        
         int total_loops;
-        total_loops = current_prob_vector_number_of_bits / random_numbers_avail;
-        if (random_numbers_avail % current_prob_vector_number_of_bits > 0) total_loops++;
+        total_loops = current_prob_vector_number_of_bits / mt_status->numbers_per_gen;
+        if (current_prob_vector_number_of_bits % mt_status->numbers_per_gen > 0) total_loops++;
 
         int prob_vector_starting_pos;
 
         for (int loop = 0; loop < total_loops; loop++) {
-            prob_vector_starting_pos = random_numbers_avail * loop;
+            prob_vector_starting_pos = mt_status->numbers_per_gen * loop;
 
             // Genero números aleatorios.
             #if defined(TIMMING)
@@ -672,7 +647,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             // Sampleo el vector de prob. con los números aleatorios generados.
             kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
-                prob_vector_starting_pos, (float*)mt_status->d_data, random_numbers_avail,
+                prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
                 state->gpu_samples[sample_number][prob_vector_number], state->population_size);
 
             #if defined(TIMMING)
