@@ -1,0 +1,20 @@
+[INFO] Freeing gpu_prob_vectors[0]
+[INFO] Freeing gpu_prob_vectors[1]
+[INFO] Freeing gpu_prob_vectors[2]
+[INFO] Freeing gpu_prob_vectors[3]
+[INFO] Freeing gpu_samples[0][0]
+[INFO] Freeing gpu_samples[0][1]
+[INFO] Freeing gpu_samples[0][2]
+[INFO] Freeing gpu_samples[0][3]
+[INFO] Freeing gpu_samples[1][0]
+[INFO] Freeing gpu_samples[1][1]
+[INFO] Freeing gpu_samples[1][2]
+[INFO] Freeing gpu_samples[1][3]
+[INFO] Freeing vector_sum_float_free[0]
+[INFO] Freeing vector_sum_bit_free[0]
+[INFO] Freeing vector_sum_float_free[1]
+[ERROR] In ccudaFree Error(17):invalid device pointer
+
+real	585m48.064s
+user	2342m34.501s
+sys	0m5.512s

@@ -1,0 +1,51 @@
+[INFO] Cantidad de iteraciones 100000.
+[INFO] Number of threads 4.
+[INFO] === Initializing Billion GA ====================
+[INFO] Problem size    : 1073741824
+[INFO] Population size : 1024
+[INFO] Num. of vectors : 4
+[INFO] Delta           : 1
+[INFO] Prob. min. value: 1
+[INFO] Prob. max. value: 1024
+[INFO] Requesting a size 4 prob_vector_size CPU memory
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting CPU memory for sample 0 vectors array
+[INFO] > Requesting CPU memory for sample 1 vectors array
+[INFO] Requesting samples_fitness CPU memory (size: 2)
+[INFO] === Solicitando memoria para el thread 2 =====
+[INFO] > Requesting 268435456 bits GPU memory for prob_vector 2 (size: 268435456 / 1024 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 2 (size: 8388608 / 32 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 2 (size: 8388608 / 32 Mb)
+iter,f1,f2,avg f1 f2,time
+[INFO] === Solicitando memoria para el thread 1 =====
+[INFO] > Requesting 268435456 bits GPU memory for prob_vector 1 (size: 268435456 / 1024 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 1 (size: 8388608 / 32 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 1 (size: 8388608 / 32 Mb)
+iter,f1,f2,avg f1 f2,time
+[INFO] === Solicitando memoria para el thread 3 =====
+[INFO] > Requesting 268435456 bits GPU memory for prob_vector 3 (size: 268435456 / 1024 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 3 (size: 8388608 / 32 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 3 (size: 8388608 / 32 Mb)
+iter,f1,f2,avg f1 f2,time
+[INFO] === Solicitando memoria para el thread 0 =====
+[INFO] > Requesting 268435456 bits GPU memory for prob_vector 0 (size: 268435456 / 1024 Mb)
+[INFO] Requesting a size 2 samples CPU memory
+[INFO] > Requesting sample 0 GPU memory for vector 0 (size: 8388608 / 32 Mb)
+[INFO] > Requesting sample 1 GPU memory for vector 0 (size: 8388608 / 32 Mb)
+iter,f1,f2,avg f1 f2,time
+0,0,0,0.0000,0.0000,4740.394000
+10000,537034078,537047399,537040768.0000,50.0158,3518953.602000
+20000,537205905,537195471,537200704.0000,50.0307,7033209.789000
+30000,537365756,537339084,537352448.0000,50.0448,10547472.105000
+40000,537527176,537531639,537529408.0000,50.0613,14061733.993000
+50000,537692620,537683509,537688064.0000,50.0761,17575994.043000
+60000,537828198,537836242,537832192.0000,50.0895,21090261.101000
+70000,538031777,537988316,538010048.0000,50.1061,24604522.752000
+80000,538194891,538202429,538198656.0000,50.1237,28118785.679000
+90000,538345300,538337733,538341504.0000,50.1370,31633049.354000
+>>>>
+iter,avg. prob., abs. value,abs. improv.,gt 75,gt 50,lt 50,lt 25
+100000,50.1511,551417015579,34550292,134772542,133207905,33754169
