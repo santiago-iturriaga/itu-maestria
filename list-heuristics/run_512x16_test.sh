@@ -20,14 +20,14 @@ mkdir ${SOLUTIONS_DIR}
 
 for a in {0..3}
 do
-	for s in {0..2}
-	do
-		for w in {0..3}
-		do
-			rm ${SOLUTIONS_DIR}/${ALGORITHMS[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics
-			
-			./${ALGORITHMS[a]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${DIMENSIONS} \
-				>> ${SOLUTIONS_DIR}/${ALGORITHMS[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics
-		done
-	done
+    for s in {0..2}
+    do
+        for w in {0..3}
+        do
+            rm ${SOLUTIONS_DIR}/${ALGORITHMS[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics
+            
+            ./${ALGORITHMS[a]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${DIMENSIONS} \
+                >> ${SOLUTIONS_DIR}/${ALGORITHMS[a]}.s${SCENARIOS[s]}.w${WORKLOADS[w]}.metrics
+        done
+    done
 done
