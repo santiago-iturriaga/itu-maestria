@@ -41,4 +41,4 @@
 
 //#define MACRO_TIMMING
 
-#define NOISE_PROB                  0.005
+//#define NOISE_PROB                  0.005
