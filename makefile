@@ -1,7 +1,8 @@
 #CC=gcc
 
 #NVCC=/home/santiago/cuda/bin/nvcc
-NVCC=/usr/local/cuda/bin/nvcc 
+#NVCC=/usr/local/cuda/bin/nvcc 
+NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
 NVCCLocal=/home/santiago/cuda/bin/nvcc 
 
 all: pals-opt verificador minmin
