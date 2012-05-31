@@ -1,7 +1,7 @@
 export LD_LIBRARY_PATH=/home/clusterusers/siturriaga/cuda/lib64:/home/clusterusers/siturriaga/cuda/lib
 export OMP_NUM_THREADS=1
 
-cd /home/clusterusers/siturriaga/itu-maestria/trunk/billionGA/
+#cd /home/clusterusers/siturriaga/itu-maestria/trunk/billionGA/
 
 #rm out-*.txt
 #make clu
