@@ -37,6 +37,17 @@ void bga_initialization(struct bga_state *state, long number_of_bits, int number
         fprintf(stdout, "[INFO] Delta           : %d\n", DELTA);
         fprintf(stdout, "[INFO] Prob. min. value: %d\n", MIN_PVALUE);
         fprintf(stdout, "[INFO] Prob. max. value: %d\n", MAX_PVALUE);
+        #if defined(FULL_FITNESS_UPDATE)
+            fprintf(stdout, "[INFO] No domain decomposition.\n");
+        #endif
+        #if defined(PARTIAL_FITNESS_UPDATE)
+            fprintf(stdout, "[INFO] With domain decomposition.\n");
+        #endif
+        #if defined(NOISE_PROB)
+            fprintf(stdout, "[INFO] Noise probability: %f\n", NOISE_PROB);
+        #else
+            fprintf(stdout, "[INFO] Without noise.\n");  
+        #endif
     //#endif
 
     // === Pido la memoria =============================================================
