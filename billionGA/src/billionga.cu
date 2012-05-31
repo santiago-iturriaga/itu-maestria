@@ -17,9 +17,7 @@
 #define SAMPLE_PROB_VECTOR_SHMEM     (SAMPLE_PROB_VECTOR_THREADS >> 5)
 
 #define UPDATE_PROB_VECTOR_BLOCKS    64
-//128
 #define UPDATE_PROB_VECTOR_THREADS   256
-//512
 #define UPDATE_PROB_VECTOR_SHMEM     (UPDATE_PROB_VECTOR_THREADS >> 5)
 
 // Paso 1 del algoritmo.
@@ -554,6 +552,12 @@ __global__ void kern_sample_prob_vector(int *gpu_prob_vector, int prob_vector_si
             if ((gpu_prob_vector[prob_vector_position] + population_size) >= (prng_vector[prng_position] * population_size)) {
                 aux = thread_bit_value;
             }
+            
+            #if defined(NOISE_PROB)
+                if (prng_vector[prng_position + prng_vector_size] < (1+NOISE_PROB)) {
+                    aux = 1 - aux;
+                }
+            #endif
         }
         current_block_sample[tid] = aux;
 
@@ -611,14 +615,22 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             current_prob_vector_number_of_bits = state->last_prob_vector_bit_count;
         }
 
+        int num_of_usable_random;
+        #if defined(NOISE_PROB)
+            // If noise is defined we can use only half of the random numbers generated.
+            num_of_usable_random = mt_status->numbers_per_gen >> 1;
+        #else
+            num_of_usable_random = mt_status->numbers_per_gen;
+        #endif
+
         int total_loops;
-        total_loops = current_prob_vector_number_of_bits / mt_status->numbers_per_gen;
-        if (current_prob_vector_number_of_bits % mt_status->numbers_per_gen > 0) total_loops++;
+        total_loops = current_prob_vector_number_of_bits / num_of_usable_random;
+        if (current_prob_vector_number_of_bits % num_of_usable_random > 0) total_loops++;
 
         int prob_vector_starting_pos;
 
         for (int loop = 0; loop < total_loops; loop++) {
-            prob_vector_starting_pos = mt_status->numbers_per_gen * loop;
+            prob_vector_starting_pos = num_of_usable_random * loop;
 
             // Genero números aleatorios.
             #if defined(TIMMING)
@@ -647,7 +659,7 @@ void bga_model_sampling_mt(struct bga_state *state, mtgp32_status *mt_status, in
             // Sampleo el vector de prob. con los números aleatorios generados.
             kern_sample_prob_vector<<< SAMPLE_PROB_VECTOR_BLOCKS, SAMPLE_PROB_VECTOR_THREADS>>>(
                 state->gpu_prob_vectors[prob_vector_number], current_prob_vector_number_of_bits,
-                prob_vector_starting_pos, (float*)mt_status->d_data, mt_status->numbers_per_gen,
+                prob_vector_starting_pos, (float*)mt_status->d_data, num_of_usable_random,
                 state->gpu_samples[sample_number][prob_vector_number], state->population_size);
 
             #if defined(TIMMING)
