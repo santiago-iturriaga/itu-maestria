@@ -5,6 +5,7 @@ import os
 import math
 
 cant_iters=30
+pals_alg_name = 'pals-aga'
 list_heur_dir = 'list-heuristics/'
 
 if __name__ == '__main__':
@@ -113,7 +114,7 @@ if __name__ == '__main__':
 
         for iter in range(cant_iters):
             dir_path = pals_dir + '/scenario.' + instancia[0] + '.workload.' + instancia[1] + '.' + str(iter) + '/'
-            file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
+            file_name = pals_alg_name + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
 
             path = dir_path + file_name
             #print path
@@ -169,7 +170,7 @@ if __name__ == '__main__':
 
             # INFO ===========================
 
-            file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
+            file_name = pals_alg_name + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
 
             path = dir_path + file_name
             #print path
