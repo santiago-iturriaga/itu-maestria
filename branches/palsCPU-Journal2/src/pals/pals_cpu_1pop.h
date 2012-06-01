@@ -16,6 +16,7 @@
 #ifndef PALS_CPU_1POP_H_
 #define PALS_CPU_1POP_H_
 
+//Si se comenta se usa el archivador "ADHOC"
 #define ARCHIVER_AGA
 
 #define INIT_MCT
