@@ -4,7 +4,7 @@
 #PBS -N palsCPU-1024-24-t
 
 # Requerimientos
-#PBS -l nodes=1:ppn=24,walltime=70:00:00
+#PBS -l nodes=1:ppn=24,walltime=01:59:00
 
 # Cola
 #PBS -q quick_jobs
