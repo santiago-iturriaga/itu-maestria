@@ -150,7 +150,7 @@ if __name__ == '__main__':
                 total_energy = total_energy + min_energy
                 total_sols = total_sols + sols
             else:
-                print "[ERROR] cargando heuristica pals"
+                print '[ERROR] cargando heuristica pals ' + path
                 #exit(-1)
 
             avg_makespan = total_makespan/cant_iters
