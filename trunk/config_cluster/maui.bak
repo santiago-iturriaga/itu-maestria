@@ -146,18 +146,18 @@ SYSCFG[base]            PLIST=general,quick&
 #SRCFG[eolres] USERLIST=aguti
 
 SRCFG[eolica] PERIOD=INFINITY
-SRCFG[eolica] STARTTIME=16:30:00
-SRCFG[eolica] ENDTIME=08:30:00
+#SRCFG[eolica] STARTTIME=16:30:00
+#SRCFG[eolica] ENDTIME=08:30:00
 SRCFG[eolica] TPN=1
 SRCFG[eolica] TASKCOUNT=1
-SRCFG[eolica] RESOURCES=PROCS:8
-SRCFG[eolica] NODEFEATURES=class0
+SRCFG[eolica] RESOURCES=PROCS:16
+SRCFG[eolica] NODEFEATURES=class3
 SRCFG[eolica] USERLIST=eolico
 
-SRCFG[rodrigoa] PERIOD=INFINITY
-SRCFG[rodrigoa] RESOURCES=PROCS:8
-SRCFG[rodrigoa] HOSTLIST=node06.cluster.fing
-SRCFG[rodrigoa] USERLIST=rodrigoa
+#SRCFG[rodrigoa] PERIOD=INFINITY
+#SRCFG[rodrigoa] RESOURCES=PROCS:8
+#SRCFG[rodrigoa] HOSTLIST=node06.cluster.fing
+#SRCFG[rodrigoa] USERLIST=rodrigoa
 
 #SRCFG[galnares] PERIOD=INFINITY
 ##SRCFG[galnares] STARTTIME=00:00:00
