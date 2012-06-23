@@ -4,7 +4,7 @@
 #PBS -N list-4096
 
 # Requerimientos
-#PBS -l nodes=1,walltime=10:00:00
+#PBS -l nodes=1,walltime=167:00:00
 
 # Cola
 #PBS -q small_jobs
