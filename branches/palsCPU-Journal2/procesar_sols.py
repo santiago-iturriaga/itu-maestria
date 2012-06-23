@@ -191,7 +191,7 @@ if __name__ == '__main__':
         resultados_pals_info[instancia] = (total_time/cant_iters,)
 
     print "[====== Tabla de makespan ======]"
-    print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS 2obj,PALS 2obj vs MinMin, Avg PALS 2obj, Stdev PALS 2obj, Avg ND"
+    print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS,PALS vs Best MinMin, Avg PALS, Stdev PALS, Avg ND"
     for instancia in instancias:
         min_minmin = resultados_MinMin[instancia][0]
         if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
@@ -210,7 +210,7 @@ if __name__ == '__main__':
             resultados_pals[instancia][2])
 
     print "[====== Tabla de energía ======]"
-    print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS 2obj,PALS 2obj vs MinMin"
+    print "Instancia,MinMin,MinMIN,MINMin,MINMIN,PALS,PALS vs Best MinMin, Avg PALS, Stdev PALS, Avg ND"
     for instancia in instancias:
         min_minmin = resultados_MinMin[instancia][1]
         if resultados_MinMIN[instancia][1] < min_minmin: min_minmin = resultados_MinMIN[instancia][1]
@@ -231,7 +231,8 @@ if __name__ == '__main__':
     print "[====== Tabla de info ======]"
     print "Instancia,Avg time"
     for instancia in instancias:
-        print "%s,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0])
+        pass
+        #print "%s,%.1f" % ('s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0])
 
     instancias_grupo_1 = {}
     instancias_grupo_2 = {}
@@ -361,7 +362,7 @@ if __name__ == '__main__':
         if item_grupo[1] == 'lolo': type_desc = 'Low Low'
         print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
 
-    csv = ""
+    csv = "cons,heter,improv. best makespan,improv. best energy,improv. avg makespan,improv. avg energy,avg std dev makespan,avg std dev energy,avg nd\n"
 
     print "[====== Tabla GRUPO 3 ======]"
     for item_grupo in sorted(instancias_grupo_3.keys()):
@@ -422,7 +423,7 @@ if __name__ == '__main__':
     print csv
 
     print "[====== Tabla improvements makespan ======]"
-    print "Instancia,MinMin,MinMIN,MINMin,MINMIN"
+    print "MinMin,MinMIN,MINMin,MINMIN"
     avg_makespan = [0.0,0.0,0.0,0.0]
     for instancia in instancias:
         avg_makespan[0] = avg_makespan[0] + (100 - (resultados_pals[instancia][3] * 100 / resultados_MinMin[instancia][0]))
@@ -439,7 +440,7 @@ if __name__ == '__main__':
     print "%.1f,%.1f,%.1f,%.1f" % (avg_makespan[0]/len(instancias), avg_makespan[1]/len(instancias), avg_makespan[2]/len(instancias), avg_makespan[3]/len(instancias))
 
     print "[====== Tabla de energía ======]"
-    print "Instancia,MinMin,MinMIN,MINMin,MINMIN"
+    print "MinMin,MinMIN,MINMin,MINMIN"
     avg_energy = [0.0,0.0,0.0,0.0]
     for instancia in instancias:
         avg_energy[0] = avg_energy[0] + (100 - (resultados_pals[instancia][5] * 100 / resultados_MinMin[instancia][1]))
