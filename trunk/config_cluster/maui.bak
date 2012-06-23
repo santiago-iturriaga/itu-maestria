@@ -148,9 +148,9 @@ SYSCFG[base]            PLIST=general,quick&
 SRCFG[eolica] PERIOD=INFINITY
 #SRCFG[eolica] STARTTIME=16:30:00
 #SRCFG[eolica] ENDTIME=08:30:00
-SRCFG[eolica] TPN=1
-SRCFG[eolica] TASKCOUNT=1
-SRCFG[eolica] RESOURCES=PROCS:16
+#SRCFG[eolica] TPN=1
+SRCFG[eolica] TASKCOUNT=2
+SRCFG[eolica] RESOURCES=PROCS:8
 SRCFG[eolica] NODEFEATURES=class3
 SRCFG[eolica] USERLIST=eolico
 
