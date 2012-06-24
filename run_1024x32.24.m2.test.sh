@@ -18,7 +18,7 @@ ALGORITHMS_OUTNAME[0]="pals-aga"
 
 for a in {0..0}
 do
-    for s in {0..10}
+    for s in {0..0}
     do
         for w in {10..14}
         do
