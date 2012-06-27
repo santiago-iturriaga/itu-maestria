@@ -14,7 +14,7 @@ for a in {0..3}
 do
     for s in {0..19}
     do
-        for w in {0..39}
+        for w in {0..29}
         do               
             EXEC="./${ALGORITHMS[a]} ${INSTANCES_PATH}/workload.${w} ${INSTANCES_PATH}/scenario.${s} ${DIMENSIONS}"
             echo ${EXEC}

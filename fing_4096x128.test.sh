@@ -7,7 +7,8 @@
 #PBS -l nodes=1:ppn=24,walltime=01:59:00
 
 # Cola
-#PBS -q quick_jobs
+###PBS -q quick_jobs
+#PBS -q medium_jobs
 
 # Working dir
 #PBS -d /home/siturria/itu-maestria/branches/palsCPU-Journal2/
