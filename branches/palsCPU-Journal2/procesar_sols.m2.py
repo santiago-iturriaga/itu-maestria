@@ -17,7 +17,7 @@ if __name__ == '__main__':
     dimension = sys.argv[1]
     sufijo = sys.argv[2]
 
-    list_heur_dir = list_heur_dir + dimension
+    list_heur_dir = list_heur_dir + dimension + '.m2'
     pals_dir = dimension + '.' + sufijo
 
     print 'List heuristics path : %s' % list_heur_dir

@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N list-2048
+#PBS -N palsCPU-1024-24c
 
 # Requerimientos
-#PBS -l nodes=1,walltime=167:00:00
+#PBS -l nodes=1:ppn=24,walltime=70:00:00
 
 # Cola
-#PBS -q small_jobs
+#PBS -q medium_jobs
 
 # Working dir
-#PBS -d /home/siturria/itu-maestria/branches/palsCPU-Journal2/list-heuristics/
+#PBS -d /home/siturria/itu-maestria/branches/palsCPU-Journal2/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
@@ -23,8 +23,8 @@
 # e: mail is sent when the job terminates.
 
 # Output path
-#PBS -e /home/siturria/itu-maestria/branches/palsCPU-Journal2/list-heuristics/
-#PBS -o /home/siturria/itu-maestria/branches/palsCPU-Journal2/list-heuristics/
+#PBS -e /home/siturria/itu-maestria/branches/palsCPU-Journal2/
+#PBS -o /home/siturria/itu-maestria/branches/palsCPU-Journal2/
 
 #PBS -V
 
@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_2048x64_full.c.sh
+./run_1024x32.24.c.sh
