@@ -1,5 +1,7 @@
 set -x
 
+cd /home/siturria/itu-maestria/branches/palsCPU-Journal2/metricas/2048x64
+
 SOLUTIONS_BASE_PATH="../../2048x64.24.adhoc"
 METRICS_PATH="metrics-adhoc"
 ITERATIONS=30

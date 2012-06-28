@@ -1,5 +1,7 @@
 set -x
 
+cd /home/siturria/itu-maestria/branches/palsCPU-Journal2/metricas/1024x32
+
 #METRICS_BIN="/home/santiago/itu-maestria/svn/trunk/metricas_mo/Spread_2obj"
 METRICS_BIN="/home/siturria/itu-maestria/trunk/metricas_mo/Spread_2obj"
 
