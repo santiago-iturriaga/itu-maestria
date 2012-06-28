@@ -7,8 +7,11 @@ import math
 cant_iters=30
 list_heur_dir = 'list-heuristics/'
 
-SCENARIOS=(0,6,11,13,16,19)
-WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
+SCENARIOS=(0,3,6,9,10,11,13,14,16,17,19)
+WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
+
+#SCENARIOS=(0,6,11,13,16,19)
+#WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
 
 if __name__ == '__main__':
     if len(sys.argv) != 6:
@@ -316,10 +319,14 @@ if __name__ == '__main__':
         instancias_grupo_2[grupo_2].append(instancia)
         instancias_grupo_3[grupo_3].append(instancia)
 
+    mk_best_1 = 0.0
     mk_avg_1 = 0.0
+    nrg_best_1 = 0.0
     nrg_avg_1 = 0.0
 
+    mk_best_2 = 0.0
     mk_avg_2 = 0.0
+    nrg_best_2 = 0.0
     nrg_avg_2 = 0.0
 
     #print resultados_pals_1
@@ -385,6 +392,11 @@ if __name__ == '__main__':
         if item_grupo[1] == 'lohi': type_desc = 'Low High'
         if item_grupo[1] == 'lolo': type_desc = 'Low Low'
         
+        if mk_best_1 < mk_total_improvement_best_1: mk_best_1 = mk_total_improvement_best_1
+        if mk_best_2 < mk_total_improvement_best_2: mk_best_2 = mk_total_improvement_best_2
+        if nrg_best_1 < nrg_total_improvement_best_1: nrg_best_1 = nrg_total_improvement_best_1
+        if nrg_best_2 < nrg_total_improvement_best_2: nrg_best_2 = nrg_total_improvement_best_2        
+        
         mk_avg_1 = mk_avg_1 + (mk_total_improvement_avg_1 / items)
         nrg_avg_1 = nrg_avg_1 + (nrg_total_improvement_avg_1 / items)
 
@@ -392,9 +404,9 @@ if __name__ == '__main__':
         nrg_avg_2 = nrg_avg_2 + (nrg_total_improvement_avg_2 / items)
         
         #print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
-        print "%s & %s & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_best_1, mk_total_improvement_avg_1 / items, nrg_total_improvement_best_1, nrg_total_improvement_avg_1 / items, mk_total_improvement_best_2, mk_total_improvement_avg_2 / items, nrg_total_improvement_best_2, nrg_total_improvement_avg_2 / items)
+        print "%s & %s & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (model_desc, type_desc, mk_total_improvement_best_1, mk_total_improvement_avg_1 / items, nrg_total_improvement_best_1, nrg_total_improvement_avg_1 / items, mk_total_improvement_best_2, mk_total_improvement_avg_2 / items, nrg_total_improvement_best_2, nrg_total_improvement_avg_2 / items)
 
-    print "%s & %.1f \\%% & %.1f \\%% & %.1f \\%% & %.1f \\%% \\\\" % (dimension, mk_avg_1 / len(instancias_grupo_2), nrg_avg_1 / len(instancias_grupo_2), mk_avg_2 / len(instancias_grupo_2), nrg_avg_2 / len(instancias_grupo_2))
+    print "%s & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (dimension, mk_best_1, mk_avg_1 / len(instancias_grupo_2), nrg_best_1, nrg_avg_1 / len(instancias_grupo_2), mk_best_2, mk_avg_2 / len(instancias_grupo_2), nrg_best_2, nrg_avg_2 / len(instancias_grupo_2))
 
     csv = "cons,heter,improv. best makespan,improv. best energy,improv. avg makespan,improv. avg energy,avg std dev makespan,avg std dev energy,avg nd\n"
 
