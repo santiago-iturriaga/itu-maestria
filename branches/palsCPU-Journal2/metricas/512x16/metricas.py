@@ -77,7 +77,26 @@ if __name__ == '__main__':
             aggr_igd_aga = aggr_value(igd_aga)
             aggr_igd_adhoc = aggr_value(igd_adhoc)
 
-            print "%s %s,%s,%s,%s,%s" % (s,w,aggr_nd_aga[0],aggr_nd_aga[1],aggr_nd_adhoc[0],aggr_nd_adhoc[1]),
-            print ",%s,%s,%s,%s" % (aggr_spread_aga[0],aggr_spread_aga[1],aggr_spread_adhoc[0],aggr_spread_adhoc[1]),
-            print ",%s,%s,%s,%s" % (aggr_hv_aga[0],aggr_hv_aga[1],aggr_hv_adhoc[0],aggr_hv_adhoc[1]),
-            print ",%s,%s,%s,%s" % (aggr_igd_aga[0],aggr_igd_aga[1],aggr_igd_adhoc[0],aggr_igd_adhoc[1])
+            #print "%s %s,%s,%s,%s,%s" % (s,w,aggr_nd_aga[0],aggr_nd_aga[1],aggr_nd_adhoc[0],aggr_nd_adhoc[1]),
+            #print ",%s,%s,%s,%s" % (aggr_spread_aga[0],aggr_spread_aga[1],aggr_spread_adhoc[0],aggr_spread_adhoc[1]),
+            #print ",%s,%s,%s,%s" % (aggr_hv_aga[0],aggr_hv_aga[1],aggr_hv_adhoc[0],aggr_hv_adhoc[1]),
+            #print ",%s,%s,%s,%s" % (aggr_igd_aga[0],aggr_igd_aga[1],aggr_igd_adhoc[0],aggr_igd_adhoc[1])
+
+            print "%s %s"%(s,w),
+            print ",%s,%s,%s,%s" % (aggr_nd_aga[0],aggr_nd_aga[1],aggr_nd_adhoc[0],aggr_nd_adhoc[1]),
+            
+            min_spread = aggr_spread_aga[0]
+            if aggr_spread_adhoc[0] < min_spread: min_spread = aggr_spread_adhoc[0]
+            
+            print ",%s,%s,%s,%s" % (aggr_spread_aga[0]/min_spread,aggr_spread_aga[1]/min_spread,aggr_spread_adhoc[0]/min_spread,aggr_spread_adhoc[1]/min_spread),
+            
+            max_hv = aggr_hv_aga[0]
+            if aggr_hv_adhoc[0] > max_hv: max_hv = aggr_hv_adhoc[0]
+            
+            print ",%s,%s,%s,%s" % (aggr_hv_aga[0]/max_hv,aggr_hv_aga[1]/max_hv,aggr_hv_adhoc[0]/max_hv,aggr_hv_adhoc[1]/max_hv),
+            
+            min_igd = aggr_igd_aga[0]
+            if aggr_igd_adhoc[0] < min_igd: min_igd = aggr_igd_adhoc[0]
+            
+            print ",%s,%s,%s,%s" % (aggr_igd_aga[0]/min_igd,aggr_igd_aga[1]/min_igd,aggr_igd_adhoc[0]/min_igd,aggr_igd_adhoc[1]/min_igd),
+            print ""
