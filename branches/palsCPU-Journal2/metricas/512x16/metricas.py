@@ -32,7 +32,7 @@ def aggr_value(values):
 
         return (mean,math.sqrt(aux))
     else:
-        return (-1,-1)
+        return (0,0)
 
 def get_metric(path,s,w,suffix):
     valores = []
@@ -122,11 +122,13 @@ if __name__ == '__main__':
 
             max_hv = aggr_hv_aga[0]
             if aggr_hv_adhoc[0] > max_hv: max_hv = aggr_hv_adhoc[0]
+            if max_hv == 0: max_hv = 1
 
             print ",%s,%s,%s,%s" % (aggr_hv_aga[0]/max_hv,aggr_hv_aga[1]/max_hv,aggr_hv_adhoc[0]/max_hv,aggr_hv_adhoc[1]/max_hv),
 
             min_igd = aggr_igd_aga[0]
             if aggr_igd_adhoc[0] < min_igd: min_igd = aggr_igd_adhoc[0]
+            if min_igd == 0: min_igd = 1
 
             print ",%s,%s,%s,%s" % (aggr_igd_aga[0]/min_igd,aggr_igd_aga[1]/min_igd,aggr_igd_adhoc[0]/min_igd,aggr_igd_adhoc[1]/min_igd),
             print ""
@@ -154,14 +156,14 @@ if __name__ == '__main__':
             nd_aga.append(aggr_nd_aga[0])
             nd_adhoc.append(aggr_nd_adhoc[0])
 
-            spread_aga.append(aggr_spread_aga[0]/min_spread)
-            spread_adhoc.append(aggr_spread_adhoc[0]/min_spread)
+            spread_aga.append(aggr_spread_aga[0])
+            spread_adhoc.append(aggr_spread_adhoc[0])
 
-            igd_aga.append(aggr_igd_aga[0]/min_igd)
-            igd_adhoc.append(aggr_igd_adhoc[0]/min_igd)
+            igd_aga.append(aggr_igd_aga[0])
+            igd_adhoc.append(aggr_igd_adhoc[0])
 
-            hv_aga.append(aggr_hv_aga[0]/max_hv)
-            hv_adhoc.append(aggr_hv_adhoc[0]/max_hv)
+            hv_aga.append(aggr_hv_aga[0])
+            hv_adhoc.append(aggr_hv_adhoc[0])
 
     l = len(SCENARIOS)*len(WORKLOADS)
     avg_nd[0] = avg_nd[0]/l
@@ -190,8 +192,12 @@ if __name__ == '__main__':
     spread_aga = aggr_value(spread_aga)
     spread_adhoc = aggr_value(spread_adhoc)
 
+    print igd_aga
+
     igd_aga = aggr_value(igd_aga)
     igd_adhoc = aggr_value(igd_adhoc)
+
+    print igd_aga
 
     hv_aga = aggr_value(hv_aga)
     hv_adhoc = aggr_value(hv_adhoc)
