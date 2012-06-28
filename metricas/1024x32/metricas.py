@@ -37,12 +37,20 @@ def get_metric(path,s,w,suffix):
     valores = []
 
     for i in range(30):
-        full_path = path + ".scenario." + str(s) + ".workload." + w + "." + str(i) + "." + suffix
-        #print full_path
-        file = open(full_path)
-        valor = float(file.readline().split(' ')[0])
-        if not math.isnan(valor):
-            valores.append(valor)
+	valor_aux = 0
+	full_path = path + ".scenario." + str(s) + ".workload." + w + "." + str(i) + "." + suffix
+	try:
+	        file = open(full_path)
+
+		valor_aux = file.readline()
+	        valor = float(valor_aux.split(' ')[0])
+
+        	#if not math.isnan(valor):
+	 	if valor > 0:
+			valores.append(valor)
+	except:
+		print full_path
+		print valor_aux
         
     return valores
 
