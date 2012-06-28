@@ -154,14 +154,14 @@ if __name__ == '__main__':
             nd_aga.append(aggr_nd_aga[0])
             nd_adhoc.append(aggr_nd_adhoc[0])
 
-            spread_aga.append(aggr_spread_aga[0])
-            spread_adhoc.append(aggr_spread_adhoc[0])
+            spread_aga.append(aggr_spread_aga[0]/min_spread)
+            spread_adhoc.append(aggr_spread_adhoc[0]/min_spread)
 
-            igd_aga.append(aggr_igd_aga[0])
-            igd_adhoc.append(aggr_igd_adhoc[0])
+            igd_aga.append(aggr_igd_aga[0]/min_igd)
+            igd_adhoc.append(aggr_igd_adhoc[0]/min_igd)
 
-            hv_aga.append(aggr_hv_aga[0])
-            hv_adhoc.append(aggr_hv_adhoc[0])
+            hv_aga.append(aggr_hv_aga[0]/max_hv)
+            hv_adhoc.append(aggr_hv_adhoc[0]/max_hv)
 
     l = len(SCENARIOS)*len(WORKLOADS)
     avg_nd[0] = avg_nd[0]/l
