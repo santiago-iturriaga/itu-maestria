@@ -1,5 +1,7 @@
 set -x
 
+cd /home/siturria/itu-maestria/branches/palsCPU-Journal2/metricas/2048x64
+
 #CLASSPATH="/home/santiago/itu-maestria/svn/trunk/metricas_mo/java/bin"
 CLASSPATH="/home/siturria/itu-maestria/trunk/metricas_mo/java/bin"
 NUM_OBJ=2
