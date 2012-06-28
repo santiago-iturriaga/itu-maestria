@@ -212,9 +212,10 @@ if __name__ == '__main__':
     if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
 
     print ""
-    print "$%s\pm%s$,$%s\pm%s$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1])
-    print "$%.2f\pm%.2f$,$%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread)
-    print "%s,%s,%s,%s" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd)
-    print "%s,%s,%s,%s" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv)
-    #print ""
+    print "$%.2f\pm%.2f$ \\%% $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
+    print "\\%% $%.2f\pm%.2f$ \\%% $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+    print "\\%% $%.2f\pm%.2f$ \\%% $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+    print "\\%% $%.2f\pm%.2f$ \\%% $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+    print "\\%%"
+    
     #print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1],spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread,igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd,hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv)
