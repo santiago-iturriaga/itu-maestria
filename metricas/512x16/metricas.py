@@ -117,6 +117,7 @@ if __name__ == '__main__':
 
             min_spread = aggr_spread_aga[0]
             if aggr_spread_adhoc[0] < min_spread: min_spread = aggr_spread_adhoc[0]
+            if min_spread == 0: min_spread = 1
 
             print ",%s,%s,%s,%s" % (aggr_spread_aga[0]/min_spread,aggr_spread_aga[1]/min_spread,aggr_spread_adhoc[0]/min_spread,aggr_spread_adhoc[1]/min_spread),
 
@@ -192,12 +193,8 @@ if __name__ == '__main__':
     spread_aga = aggr_value(spread_aga)
     spread_adhoc = aggr_value(spread_adhoc)
 
-    print igd_aga
-
     igd_aga = aggr_value(igd_aga)
     igd_adhoc = aggr_value(igd_adhoc)
-
-    print igd_aga
 
     hv_aga = aggr_value(hv_aga)
     hv_adhoc = aggr_value(hv_adhoc)
