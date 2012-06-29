@@ -1,7 +1,7 @@
 set -x
 
 SOLUTIONS_BASE_PATH_1="../../1024x32.24_10s"
-SOLUTIONS_BASE_PATH_2="../../1024x32.adhoc"
+SOLUTIONS_BASE_PATH_2="../../1024x32.24.adhoc"
 METRICS_PATH="../../1024x32.fp"
 
 SCENARIOS[0]=0
@@ -20,30 +20,39 @@ WORKLOADS[0]="A.u_c_hihi"
 WORKLOADS[1]="A.u_c_hilo"
 WORKLOADS[2]="A.u_c_lohi"
 WORKLOADS[3]="A.u_c_lolo"
-WORKLOADS[4]="A.u_i_hihi"
-WORKLOADS[5]="A.u_i_hilo"
-WORKLOADS[6]="A.u_i_lohi"
-WORKLOADS[7]="A.u_i_lolo"
-WORKLOADS[8]="A.u_s_hihi"
-WORKLOADS[9]="A.u_s_hilo"
-WORKLOADS[10]="A.u_s_lohi"
-WORKLOADS[11]="A.u_s_lolo"
-WORKLOADS[12]="B.u_c_hihi"
-WORKLOADS[13]="B.u_c_hilo"
-WORKLOADS[14]="B.u_c_lohi"
-WORKLOADS[15]="B.u_c_lolo"
-WORKLOADS[16]="B.u_i_hihi"
-WORKLOADS[17]="B.u_i_hilo"
-WORKLOADS[18]="B.u_i_lohi"
-WORKLOADS[19]="B.u_i_lolo"
-WORKLOADS[20]="B.u_s_hihi"
-WORKLOADS[21]="B.u_s_hilo"
-WORKLOADS[22]="B.u_s_lohi"
-WORKLOADS[23]="B.u_s_lolo"
+WORKLOADS[4]="B.u_c_hihi"
+WORKLOADS[5]="B.u_c_hilo"
+WORKLOADS[6]="B.u_c_lohi"
+WORKLOADS[7]="B.u_c_lolo"
+
+#WORKLOADS[0]="A.u_c_hihi"
+#WORKLOADS[1]="A.u_c_hilo"
+#WORKLOADS[2]="A.u_c_lohi"
+#WORKLOADS[3]="A.u_c_lolo"
+#WORKLOADS[4]="A.u_i_hihi"
+#WORKLOADS[5]="A.u_i_hilo"
+#WORKLOADS[6]="A.u_i_lohi"
+#WORKLOADS[7]="A.u_i_lolo"
+#WORKLOADS[8]="A.u_s_hihi"
+#WORKLOADS[9]="A.u_s_hilo"
+#WORKLOADS[10]="A.u_s_lohi"
+#WORKLOADS[11]="A.u_s_lolo"
+#WORKLOADS[12]="B.u_c_hihi"
+#WORKLOADS[13]="B.u_c_hilo"
+#WORKLOADS[14]="B.u_c_lohi"
+#WORKLOADS[15]="B.u_c_lolo"
+#WORKLOADS[16]="B.u_i_hihi"
+#WORKLOADS[17]="B.u_i_hilo"
+#WORKLOADS[18]="B.u_i_lohi"
+#WORKLOADS[19]="B.u_i_lolo"
+#WORKLOADS[20]="B.u_s_hihi"
+#WORKLOADS[21]="B.u_s_hilo"
+#WORKLOADS[22]="B.u_s_lohi"
+#WORKLOADS[23]="B.u_s_lolo"
 
 for s in {0..10}
 do
-    for w in {0..23}
+    for w in {0..7}
     do
         mkdir -p ${METRICS_PATH}
 
