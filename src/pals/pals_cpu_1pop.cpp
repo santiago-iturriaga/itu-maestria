@@ -1051,7 +1051,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     random = cpu_drand48_generate(*(thread_instance->thread_random_state));
                 #endif
 
-                search_type;
                 search_type_random = 0.0;
 
                 #ifdef CPU_MERSENNE_TWISTER
@@ -1277,9 +1276,6 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                         machine_a_energy_max = get_energy_max_value(thread_instance->energy, machine_a);
                         machine_b_energy_idle = get_energy_idle_value(thread_instance->energy, machine_b);
                         machine_b_energy_max = get_energy_max_value(thread_instance->energy, machine_b);
-
-                        machine_a_ct_old, machine_b_ct_old;
-                        machine_a_ct_new, machine_b_ct_new;
 
                         current_makespan = get_makespan(selected_solution);
                         current_energy = get_energy(selected_solution);
