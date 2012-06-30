@@ -41,6 +41,8 @@ if __name__ == '__main__':
                 file_name = prefix + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
 
                 path = dir_path + file_name
+                
+                print path
 
                 # INFO ===========================
 
