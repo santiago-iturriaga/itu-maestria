@@ -12,6 +12,39 @@ fp: fp_2obj.cpp
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
 	
+
+pals-prof: src/main.cpp \
+		src/load_params.cpp \
+		src/load_instance.cpp \
+		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
+		src/random/cpu_rand.cpp \
+        src/random/cpu_drand48.cpp \
+		src/random/cpu_mt.cpp \
+        src/pals/archivers/aga.cpp \
+		src/pals/pals_cpu_1pop.cpp 
+	$(CX) -pg src/main.cpp \
+		src/load_instance.cpp \
+		src/load_params.cpp \
+		src/etc_matrix.cpp \
+		src/energy_matrix.cpp \
+		src/solution.cpp \
+		src/utils.cpp \
+		src/basic/mct.cpp \
+		src/basic/minmin.cpp \
+		src/basic/pminmin.cpp \
+		src/random/cpu_rand.cpp \
+		src/random/cpu_drand48.cpp \
+		src/random/cpu_mt.cpp \
+		src/pals/archivers/aga.cpp \
+		src/pals/pals_cpu_1pop.cpp \
+		$(LIBS) -o bin/pals_cpu_prof
+
 pals-gdb: src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
