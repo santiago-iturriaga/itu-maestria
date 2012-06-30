@@ -16,7 +16,7 @@ if __name__ == '__main__':
     sufijo = sys.argv[2]
     start = int(sys.argv[3])
     end = int(sys.argv[4])
-    prefix = int(sys.argv[5])
+    prefix = sys.argv[5]
 
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
