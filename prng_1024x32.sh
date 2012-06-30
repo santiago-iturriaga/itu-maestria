@@ -15,7 +15,7 @@ THREADS[1]=2
 THREADS[2]=4
 THREADS[3]=8
 
-INSTANCE="instancias/${DIMENSION_2}.ME/scenario.0 instancias/${DIMENSION_2}.ME/workload.A.u_c_hihi"
+INSTANCE="instancias/${DIMENSION_2}.ME/scenario.0 instancias/${DIMENSION_2}.ME/workload.A.u_c_hihi ${DIMENSION_1}"
 
 for (( t=0; t<4; t++ ))
 do
