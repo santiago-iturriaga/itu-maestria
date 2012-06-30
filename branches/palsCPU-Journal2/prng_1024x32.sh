@@ -23,13 +23,13 @@ for (( t=0; t<4; t++ ))
 do
     for (( i=0; i<${ITER}; i++ ))
     do
-        time (bin/pals_cpu_mt_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_POPULATION} ${PALS_ITER} ${PALS_TIMEOUT} 1> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.time
+        time (bin/pals_cpu_mt_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.time
         gprof bin/pals_cpu_mt_prof gmon.out > ${PRNG_PATH}/gmon.mt.${THREADS[t]}.${i}.txt
 
-        time (bin/pals_cpu_randr_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_POPULATION} ${PALS_ITER} ${PALS_TIMEOUT} 1> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.time
+        time (bin/pals_cpu_randr_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.time
         gprof bin/pals_cpu_mt_prof gmon.out > ${PRNG_PATH}/gmon.randr.${THREADS[t]}.${i}.txt
 
-        time (bin/pals_cpu_drand48r_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_POPULATION} ${PALS_ITER} ${PALS_TIMEOUT} 1> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.time
+        time (bin/pals_cpu_drand48r_prof ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.time
         gprof bin/pals_cpu_mt_prof gmon.out > ${PRNG_PATH}/gmon.drand48r.${THREADS[t]}.${i}.txt
     done
 done
