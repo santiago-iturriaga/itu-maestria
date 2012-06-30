@@ -1,3 +1,5 @@
+set -x
+
 PRNG_PATH="prng"
 mkdir -p ${PRNG_PATH}
 
