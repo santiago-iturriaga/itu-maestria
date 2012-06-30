@@ -7,8 +7,8 @@ import math
 cant_iters=30
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
-        print "Error! Uso: %s <dimension> <sufijo> <start> <end>"
+    if len(sys.argv) != 6:
+        print "Error! Uso: %s <dimension> <sufijo> <start> <end> <prefijo>"
         print "        Ej: %s 1024x32 speed 1 24"
         exit(-1)
 
@@ -16,6 +16,7 @@ if __name__ == '__main__':
     sufijo = sys.argv[2]
     start = int(sys.argv[3])
     end = int(sys.argv[4])
+    prefix = int(sys.argv[5])
 
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
@@ -37,13 +38,13 @@ if __name__ == '__main__':
 
             for iter in range(cant_iters):
                 dir_path = pals_dir + '/scenario.' + instancia[0] + '.workload.' + instancia[1] + '.' + str(iter) + '/'
-                file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
+                file_name = prefix + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.metrics'
 
                 path = dir_path + file_name
 
                 # INFO ===========================
 
-                file_name = 'pals-1.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
+                file_name = prefix + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
 
                 path = dir_path + file_name
                 #print path
