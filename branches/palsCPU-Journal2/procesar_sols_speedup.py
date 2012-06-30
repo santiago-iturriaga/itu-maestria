@@ -4,7 +4,7 @@ import sys
 import os
 import math
 
-cant_iters=30
+cant_iters=15
 
 if __name__ == '__main__':
     if len(sys.argv) != 6:
