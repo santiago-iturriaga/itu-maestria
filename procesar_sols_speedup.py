@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
                 path = dir_path + file_name
                 
-                print path
+                #print path
 
                 # INFO ===========================
 
