@@ -8,10 +8,10 @@ cant_iters=30
 list_heur_dir = 'list-heuristics/'
 
 SCENARIOS=(0,3,6,9,10,11,13,14,16,17,19)
-WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
+#WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
 
 #SCENARIOS=(0,6,11,13,16,19)
-#WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
+WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
 
 if __name__ == '__main__':
     if len(sys.argv) != 6:
@@ -410,5 +410,46 @@ if __name__ == '__main__':
 
     csv = "cons,heter,improv. best makespan,improv. best energy,improv. avg makespan,improv. avg energy,avg std dev makespan,avg std dev energy,avg nd\n"
 
-    #print "[====== CSV ======]"
-    #print csv
+    print "[====== Tabla AGA improvements makespan ======]"
+    print "MinMin,MinMIN,MINMin,MINMIN"
+    avg_makespan = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_makespan[0] = avg_makespan[0] + (100 - (resultados_pals_1[instancia][3] * 100 / resultados_MinMin[instancia][0]))
+        avg_makespan[1] = avg_makespan[1] + (100 - (resultados_pals_1[instancia][3] * 100 / resultados_MinMIN[instancia][0]))
+        avg_makespan[2] = avg_makespan[2] + (100 - (resultados_pals_1[instancia][3] * 100 / resultados_MINMin[instancia][0]))
+        avg_makespan[3] = avg_makespan[3] + (100 - (resultados_pals_1[instancia][3] * 100 / resultados_MINMIN[instancia][0]))
+       
+    print "%.1f,%.1f,%.1f,%.1f" % (avg_makespan[0]/len(instancias), avg_makespan[1]/len(instancias), avg_makespan[2]/len(instancias), avg_makespan[3]/len(instancias))
+
+    print "[====== Tabla AGA improvements energía ======]"
+    print "MinMin,MinMIN,MINMin,MINMIN"
+    avg_energy = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_energy[0] = avg_energy[0] + (100 - (resultados_pals_1[instancia][5] * 100 / resultados_MinMin[instancia][1]))
+        avg_energy[1] = avg_energy[1] + (100 - (resultados_pals_1[instancia][5] * 100 / resultados_MinMIN[instancia][1]))
+        avg_energy[2] = avg_energy[2] + (100 - (resultados_pals_1[instancia][5] * 100 / resultados_MINMin[instancia][1]))
+        avg_energy[3] = avg_energy[3] + (100 - (resultados_pals_1[instancia][5] * 100 / resultados_MINMIN[instancia][1]))
+
+    print "%.1f,%.1f,%.1f,%.1f" % (avg_energy[0]/len(instancias), avg_energy[1]/len(instancias), avg_energy[2]/len(instancias), avg_energy[3]/len(instancias))
+    
+    print "[====== Tabla ad hoc improvements makespan ======]"
+    print "MinMin,MinMIN,MINMin,MINMIN"
+    avg_makespan = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_makespan[0] = avg_makespan[0] + (100 - (resultados_pals_2[instancia][3] * 100 / resultados_MinMin[instancia][0]))
+        avg_makespan[1] = avg_makespan[1] + (100 - (resultados_pals_2[instancia][3] * 100 / resultados_MinMIN[instancia][0]))
+        avg_makespan[2] = avg_makespan[2] + (100 - (resultados_pals_2[instancia][3] * 100 / resultados_MINMin[instancia][0]))
+        avg_makespan[3] = avg_makespan[3] + (100 - (resultados_pals_2[instancia][3] * 100 / resultados_MINMIN[instancia][0]))
+       
+    print "%.1f,%.1f,%.1f,%.1f" % (avg_makespan[0]/len(instancias), avg_makespan[1]/len(instancias), avg_makespan[2]/len(instancias), avg_makespan[3]/len(instancias))
+
+    print "[====== Tabla ad hoc improvements energía ======]"
+    print "MinMin,MinMIN,MINMin,MINMIN"
+    avg_energy = [0.0,0.0,0.0,0.0]
+    for instancia in instancias:
+        avg_energy[0] = avg_energy[0] + (100 - (resultados_pals_2[instancia][5] * 100 / resultados_MinMin[instancia][1]))
+        avg_energy[1] = avg_energy[1] + (100 - (resultados_pals_2[instancia][5] * 100 / resultados_MinMIN[instancia][1]))
+        avg_energy[2] = avg_energy[2] + (100 - (resultados_pals_2[instancia][5] * 100 / resultados_MINMin[instancia][1]))
+        avg_energy[3] = avg_energy[3] + (100 - (resultados_pals_2[instancia][5] * 100 / resultados_MINMIN[instancia][1]))
+
+    print "%.1f,%.1f,%.1f,%.1f" % (avg_energy[0]/len(instancias), avg_energy[1]/len(instancias), avg_energy[2]/len(instancias), avg_energy[3]/len(instancias))
