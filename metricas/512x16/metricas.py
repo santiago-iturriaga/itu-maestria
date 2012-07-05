@@ -140,31 +140,31 @@ if __name__ == '__main__':
             print ",%s,%s,%s,%s" % (aggr_igd_aga[0]/min_igd,aggr_igd_aga[1]/min_igd,aggr_igd_adhoc[0]/min_igd,aggr_igd_adhoc[1]/min_igd),
             print ""
 
-            nd_aga_g.append(aggr_nd_aga[0])
-            nd_adhoc_g.append(aggr_nd_adhoc[0])
+            for i in nd_aga:
+                nd_aga_w[w].append(i)
+                nd_aga_g.append(i)
+            for i in spread_aga:
+                spread_aga_w[w].append(i/min_spread)
+                spread_aga_g.append(i/min_spread)
+            for i in igd_aga:
+                igd_aga_w[w].append(i/min_igd)
+                igd_aga_g.append(i/min_igd)
+            for i in hv_aga:
+                hv_aga_w[w].append(i/max_hv)
+                hv_aga_g.append(i/max_hv)
 
-            spread_aga_g.append(aggr_spread_aga[0]/min_spread)
-            spread_adhoc_g.append(aggr_spread_adhoc[0]/min_spread)
-
-            igd_aga_g.append(aggr_igd_aga[0]/min_igd)
-            igd_adhoc_g.append(aggr_igd_adhoc[0]/min_igd)
-
-            hv_aga_g.append(aggr_hv_aga[0]/max_hv)
-            hv_adhoc_g.append(aggr_hv_adhoc[0]/max_hv)
-            
-            #===========================================================
-            
-            nd_aga_w[w].append(aggr_nd_aga[0])
-            nd_adhoc_w[w].append(aggr_nd_adhoc[0])
-            
-            spread_aga_w[w].append(aggr_spread_aga[0]/min_spread)
-            spread_adhoc_w[w].append(aggr_spread_adhoc[0]/min_spread)
-            
-            igd_aga_w[w].append(aggr_igd_aga[0]/min_igd)
-            igd_adhoc_w[w].append(aggr_igd_adhoc[0]/min_igd)
-            
-            hv_aga_w[w].append(aggr_hv_aga[0]/max_hv)
-            hv_adhoc_w[w].append(aggr_hv_adhoc[0]/max_hv)
+            for i in nd_adhoc:
+                nd_adhoc_g.append(i)
+                nd_adhoc_w[w].append(i)
+            for i in spread_adhoc:
+                spread_adhoc_w[w].append(i/min_spread)
+                spread_adhoc_g.append(i/min_spread)
+            for i in igd_adhoc:
+                igd_adhoc_w[w].append(i/min_igd)
+                igd_adhoc_g.append(i/min_igd)
+            for i in hv_adhoc:
+                hv_adhoc_w[w].append(i/max_hv)
+                hv_adhoc_g.append(i/max_hv)
 
     nd_aga = aggr_value(nd_aga_g)
     nd_adhoc = aggr_value(nd_adhoc_g)
