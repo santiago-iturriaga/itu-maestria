@@ -93,6 +93,9 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     #endif
 
     int candidato_reemplazo = -1;
+    float candidato_reemplazo_mk_improv = 0.0;
+    float candidato_reemplazo_nrg_improv = 0.0;
+    
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
 
@@ -153,6 +156,9 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                     } else {
                         if (candidato_reemplazo == -1) {
                             candidato_reemplazo = s_pos;
+                            
+                            candidato_reemplazo_mk_improv = 0.0;
+                            candidato_reemplazo_nrg_improv = 0.0;
                         } else {
                             float diff_makespan_candidato_actual;
                             float diff_energy_candidato_actual;
