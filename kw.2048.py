@@ -35,13 +35,22 @@ def recopilar_metricas(base, instancias, scenarios, cant_iters, output_filename)
                 for i in range(cant_iters):
                     f = base_path  + "/scenario." + str(scenario) + ".workload." + str(instancia) + "." + str(i) + "/" + base_prefix + ".scenario." + str(scenario) + ".workload." + str(instancia) + ".metrics"
                     #print f
+
+                    min_mk = 0.0
+                    min_nrg = 0.0
                     
                     for metrica_line in open(f, "r"):
                         valor_mk = float(metrica_line.split(" ")[0].strip())
                         valor_nrg = float(metrica_line.split(" ")[1].strip())
+
+                        if min_mk == 0.0: min_mk = valor_mk
+                        elif min_mk > valor_mk: min_mk = valor_mk
+
+                        if min_nrg == 0.0: min_nrg = valor_nrg
+                        elif min_nrg > valor_nrg: min_nrg = valor_nrg
                         
-                        metrica_contenido_set_mk.append(valor_mk)
-                        metrica_contenido_set_nrg.append(valor_nrg)
+                    metrica_contenido_set_mk.append(min_mk)
+                    metrica_contenido_set_nrg.append(min_nrg)
                 
                 metrica_contenido_mk.append(metrica_contenido_set_mk)
                 metrica_contenido_nrg.append(metrica_contenido_set_nrg)

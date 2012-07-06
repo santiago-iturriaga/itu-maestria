@@ -93,8 +93,7 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     #endif
 
     int candidato_reemplazo = -1;
-    float candidato_reemplazo_mk_improv = 0.0;
-    float candidato_reemplazo_nrg_improv = 0.0;
+    float candidato_reemplazo_improv = 0.0;
     
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
@@ -156,19 +155,18 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                     } else {
                         if (candidato_reemplazo == -1) {
                             candidato_reemplazo = s_pos;
-                            
-                            candidato_reemplazo_mk_improv = 0.0;
-                            candidato_reemplazo_nrg_improv = 0.0;
-                        } else {
+
                             float diff_makespan_candidato_actual;
                             float diff_energy_candidato_actual;
-                            diff_makespan_candidato_actual = get_makespan(&(instance->population[candidato_reemplazo])) - makespan_new;
-                            diff_energy_candidato_actual = get_energy(&(instance->population[candidato_reemplazo])) - energy_new;
-
+                            diff_makespan_candidato_actual = (get_makespan(&(instance->population[candidato_reemplazo])) - makespan_new) / makespan_new;
+                            diff_energy_candidato_actual = (get_energy(&(instance->population[candidato_reemplazo])) - energy_new) / energy_new;
+                            
+                            candidato_reemplazo_improv = diff_makespan_candidato_actual + diff_energy_candidato_actual;
+                        } else {
                             float diff_makespan_individuo_actual;
                             float diff_energy_individuo_actual;
-                            diff_makespan_individuo_actual = makespan - makespan_new;
-                            diff_energy_individuo_actual = makespan - energy_new;
+                            diff_makespan_individuo_actual = (makespan - makespan_new) / makespan_new;
+                            diff_energy_individuo_actual = (energy - energy_new) / energy_new;
 
                             #if defined(DEBUG_DEV)
                                 fprintf(stdout, "[ND] Evaluo candidato contra:\n");
@@ -178,34 +176,9 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
                                     get_energy(&(instance->population[s_pos])),diff_energy_candidato_actual, diff_energy_individuo_actual);
                             #endif
 
-                            if (diff_makespan_individuo_actual > diff_makespan_candidato_actual) {
+                            if ((diff_makespan_individuo_actual + diff_energy_individuo_actual) > candidato_reemplazo_improv) {
                                 candidato_reemplazo = s_pos;
-
-                            } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) &&
-                                (diff_energy_individuo_actual > diff_energy_candidato_actual)) {
-
-                                candidato_reemplazo = s_pos;
-
-                            } else if ((diff_makespan_individuo_actual == diff_makespan_candidato_actual) &&
-                                (diff_energy_individuo_actual == diff_energy_candidato_actual)) {
-
-                                #if defined(DEBUG_DEV)
-                                fprintf(stdout, "[ND] Sorteo un candidato.\n");
-                                #endif
-
-                                #ifdef CPU_MERSENNE_TWISTER
-                                random = cpu_mt_generate(*(instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_RAND
-                                random = cpu_rand_generate(*(instance->thread_random_state));
-                                #endif
-                                #ifdef CPU_DRAND48
-                                random = cpu_drand48_generate(*(instance->thread_random_state));
-                                #endif
-
-                                if (random > 0.5) {
-                                    candidato_reemplazo = s_pos;
-                                }
+                                candidato_reemplazo_improv = diff_makespan_individuo_actual + diff_energy_individuo_actual;
                             }
                         }
                     }
