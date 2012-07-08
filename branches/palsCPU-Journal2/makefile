@@ -24,11 +24,11 @@ pals-prof: src/main.cpp \
 		src/basic/minmin.cpp \
 		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
-        src/random/cpu_drand48.cpp \
+	        src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-        src/pals/archivers/aga.cpp \
+	        src/pals/archivers/aga.cpp \
 		src/pals/pals_cpu_1pop.cpp 
-	$(CX) -pg src/main.cpp \
+	$(CX) -g -O3 src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
 		src/etc_matrix.cpp \
@@ -56,9 +56,9 @@ pals-gdb: src/main.cpp \
 		src/basic/minmin.cpp \
 		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
-        src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-        src/pals/archivers/aga.cpp \
+		src/pals/archivers/aga.cpp \
 		src/pals/pals_cpu_1pop.cpp 
 	$(CX) -g src/main.cpp \
 		src/load_instance.cpp \
