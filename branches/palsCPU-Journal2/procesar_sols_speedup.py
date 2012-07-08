@@ -18,6 +18,8 @@ if __name__ == '__main__':
     end = int(sys.argv[4])
     prefix = sys.argv[5]
 
+    avg_thread_0 = 0.0
+
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
         #print 'PALS path            : %s' % pals_dir
@@ -32,8 +34,6 @@ if __name__ == '__main__':
         instancias.sort()
 
         resultados_pals_info = {}
-
-        print instancias
 
         for instancia in instancias:
             total_time = 0.0
@@ -77,9 +77,12 @@ if __name__ == '__main__':
             aux = aux / (cant_iters-1)
             std = math.sqrt(aux)
             
-            resultados_pals_info[instancia] = (avg,std)
+            if threads == start:
+                avg_thread_0 = avg
+            
+            resultados_pals_info[instancia] = (avg,std,avg/avg_thread_0)
 
         #print "[====== Tabla de info ======]"
         #print "Instancia,Avg time"
         for instancia in instancias:
-            print "%d,%s,%.1f,%.2f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1])
+            print "%d,%s,%.1f,%.2f,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
