@@ -80,4 +80,4 @@ if __name__ == '__main__':
         #print "[====== Tabla de info ======]"
         #print "Instancia,Avg time"
         for instancia in instancias:
-            print "%d,%s,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1])
+            print "%d,%s,%.1f,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1])
