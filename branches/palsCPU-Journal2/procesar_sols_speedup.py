@@ -35,6 +35,8 @@ if __name__ == '__main__':
 
         for instancia in instancias:
             total_time = 0.0
+            
+            valores = []
 
             for iter in range(cant_iters):
                 dir_path = pals_dir + '/scenario.' + instancia[0] + '.workload.' + instancia[1] + '.' + str(iter) + '/'
@@ -59,14 +61,23 @@ if __name__ == '__main__':
 
                         if values[0] == 'TOTAL_TIME':
                             total_time = total_time + (float(values[1]) / 1000000.0)
+                            valores.append(float(values[1]))
 
                 else:
                     print "[ERROR] cargando info de la heuristica pals"
                     #exit(-1)
-
-            resultados_pals_info[instancia] = (total_time/cant_iters,)
+                    
+            avg = total_time/cant_iters
+            
+            aux = 0.0
+            for v in valores:
+                aux = aux + math.pox(v-avg,2)
+            aux = aux / (cant_iters-1)
+            std = math.sqrt(aux)
+            
+            resultados_pals_info[instancia] = (avg,std)
 
         #print "[====== Tabla de info ======]"
         #print "Instancia,Avg time"
         for instancia in instancias:
-            print "%d,%s,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0])
+            print "%d,%s,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1])
