@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     avg_thread_0 = 0.0
 
-    print "\textbf{threads} & \textbf{time (s)} & \textbf{speedup} \\"
+    print "\\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} \\"
 
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
