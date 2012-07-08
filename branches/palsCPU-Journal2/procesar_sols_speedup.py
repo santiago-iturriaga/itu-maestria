@@ -80,7 +80,7 @@ if __name__ == '__main__':
             if threads == start:
                 avg_thread_0 = avg
             
-            resultados_pals_info[instancia] = (avg,std,avg/avg_thread_0)
+            resultados_pals_info[instancia] = (avg,std,avg_thread_0/avg)
 
         #print "[====== Tabla de info ======]"
         #print "Instancia,Avg time"
