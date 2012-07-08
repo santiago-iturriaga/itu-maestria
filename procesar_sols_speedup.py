@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
                         if values[0] == 'TOTAL_TIME':
                             total_time = total_time + (float(values[1]) / 1000000.0)
-                            valores.append(float(values[1]))
+                            valores.append(float(values[1]) / 1000000.0)
 
                 else:
                     print "[ERROR] cargando info de la heuristica pals"
@@ -71,7 +71,7 @@ if __name__ == '__main__':
             
             aux = 0.0
             for v in valores:
-                aux = aux + math.pox(v-avg,2)
+                aux = aux + math.pow(v-avg,2)
             aux = aux / (cant_iters-1)
             std = math.sqrt(aux)
             
