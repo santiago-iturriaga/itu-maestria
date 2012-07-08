@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     avg_thread_0 = 0.0
    
-    resultados_pals_info = []
+    resultados_pals_info = {}
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
         #print 'PALS path            : %s' % pals_dir
