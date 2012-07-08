@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     avg_thread_0 = 0.0
 
-    print "\\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} \\"
+    print "\\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} \\\\"
 
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
@@ -92,4 +92,4 @@ if __name__ == '__main__':
 
         #print "[====== Latex tabla de info ======]"
         for instancia in instancias:
-            print "$%d$ & $%.1f\pm%.2f$ & $%.1f$ \\" % (threads, resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
+            print "$%d$ & $%.1f\pm%.2f$ & $%.1f$ \\\\" % (threads, resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
