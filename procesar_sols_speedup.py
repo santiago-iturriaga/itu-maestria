@@ -19,9 +19,8 @@ if __name__ == '__main__':
     prefix = sys.argv[5]
 
     avg_thread_0 = 0.0
-
-    print "\\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} \\\\"
-
+   
+    resultados_pals_info = []
     for threads in range(start,end+1):
         pals_dir = dimension + '.' + sufijo + '.' + str(threads)
         #print 'PALS path            : %s' % pals_dir
@@ -35,7 +34,7 @@ if __name__ == '__main__':
         instancias = list(set(instancias_raw))
         instancias.sort()
 
-        resultados_pals_info = {}
+        resultados_pals_info[threads] = {}
 
         for instancia in instancias:
             total_time = 0.0
@@ -82,14 +81,9 @@ if __name__ == '__main__':
             if threads == start:
                 avg_thread_0 = avg
             
-            resultados_pals_info[instancia] = (avg,std,avg_thread_0/avg)
+            resultados_pals_info[threads][instancia] = (avg,std,avg_thread_0/avg)
 
-        #print "[====== CSV tabla de info ======]"
-        #print "Instancia,Avg time"
-        #for instancia in instancias:
-            #print "%d,%s,%.1f,%.2f,%.1f" % (threads,'s' + instancia[0] + ' ' + instancia[1], resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
-        #    print "%d,%.1f,%.2f,%.1f" % (threads, resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
-
-        #print "[====== Latex tabla de info ======]"
+    print "\\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} & & \\textbf{threads} & \\textbf{time (s)} & \\textbf{speedup} \\\\"
+    for t in range(start,(end/2)+1):
         for instancia in instancias:
-            print "$%d$ & $%.1f\pm%.2f$ & $%.1f$ \\\\" % (threads, resultados_pals_info[instancia][0], resultados_pals_info[instancia][1], resultados_pals_info[instancia][2])
+            print "$%d$ & $%.1f\pm%.2f$ & $%.1f$ & & $%d$ & $%.1f\pm%.2f$ & $%.1f$ \\\\" % (t, resultados_pals_info[t][instancia][0], resultados_pals_info[t][instancia][1], resultados_pals_info[t][instancia][2], t+(end/2), resultados_pals_info[t+(end/2)][instancia][0], resultados_pals_info[t+(end/2)][instancia][1], resultados_pals_info[t+(end/2)][instancia][2])
