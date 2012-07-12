@@ -9,11 +9,11 @@ do
     echo "time (${BASE_PATH}/bin/minmin ${INSTANCE}${i}.dat ${DIMENSION} 1> ${BASE_PATH}/8192x256/solutions/${i}.minmin.sol) 2> ${BASE_PATH}/8192x256/solutions/${i}.minmin.time"
 
     time (${BASE_PATH}/bin/minmin ${INSTANCE}${i}.dat ${DIMENSION} \
-	1> ${BASE_PATH}/8192x256/solutions/${i}.minmin.sol) \
-	2> ${BASE_PATH}/8192x256/solutions/${i}.minmin.time
+        1> ${BASE_PATH}/8192x256/solutions/${i}.minmin.sol) \
+        2> ${BASE_PATH}/8192x256/solutions/${i}.minmin.time
 
     echo "${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/8192x256/solutions/${i}.minmin.sol ${DIMENSION} > ${BASE_PATH}/8192x256/solutions/${i}.minmin.makespan"
 
     ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/8192x256/solutions/${i}.minmin.sol ${DIMENSION} \
-	> ${BASE_PATH}/8192x256/solutions/${i}.minmin.makespan
+        > ${BASE_PATH}/8192x256/solutions/${i}.minmin.makespan
 done
