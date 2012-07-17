@@ -1,0 +1,21 @@
+ /* Font Definitions */
+@font-face
+	{font-family:Arial;
+	panose-1:2 11 6 4 2 2 2 2 2 4;}
+@font-face
+	{font-family:"Times New Roman";
+	panose-1:2 2 6 3 5 4 5 2 3 4;}
+
+ /* Style Definitions */
+
+.MyPortletWebapp {
+	font: "Times New Roman";
+	font-size:13px;
+}
+
+.MyPortletWebapp a {
+    text-decoration: none;
+}
+.MyPortletWebapp a:hover {
+    text-decoration: underline;
+}
