@@ -112,6 +112,20 @@ echo "Job landed on: '"$HOSTNAME"'"
 echo "--------------------------------------------------"
 echo "Job execution starts on: '"$(date)"'"
 
+echo "--------------------------------------------------"
+echo "Job arguments"
+echo "--------------------------------------------------"
+echo "Scenario: ${SCENARIO}"
+echo "Workload: ${WORKLOAD}"
+echo "NTasks: ${NTASKS}"
+echo "NMachines: ${NMACHINES}"
+echo "Algorithm: ${ALGORITHM}"
+echo "NThreads: ${NTHREADS}"
+echo "RandSeed: ${RANDSEED}"
+echo "Timeout: ${TIMEOUT}"
+echo "Iterations: ${ITERATIONS}"
+echo "PopSize: ${POPSIZE}"
+
 echo "---[WN HOME directory]----------------------------"
 ls -l $HOME
 

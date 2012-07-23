@@ -1120,7 +1120,7 @@ public class ME_MLS_portlet extends GenericPortlet {
                 diskFileItemFactory.setRepository(repositoryPath);
 
                 FileItemFactory factory = new DiskFileItemFactory();
-                PortletFileUpload upload = new PortletFileUpload( factory );
+                PortletFileUpload upload = new PortletFileUpload(factory);
                 List items = upload.parseRequest(request);            
                 Iterator iter = items.iterator();
                 
@@ -1129,20 +1129,30 @@ public class ME_MLS_portlet extends GenericPortlet {
                     String   fieldName  =item.getFieldName();
                     String   fileName   =item.getName();
                     String   contentType=item.getContentType();
-                    boolean isInMemory =item.isInMemory();
-                    long    sizeInBytes=item.getSize();
+                    boolean  isInMemory =item.isInMemory();
+                    long     sizeInBytes=item.getSize();
                     
                     // Prepare a log string with field list
                     logstring+=LS+"field name: '"+fieldName+"' - '"+item.getString()+"'";
                     
+					String[] result;
+					
                     switch(inputControlsIds.valueOf(fieldName)) {
                         case file_scenario:
-                            appInput.scenarioFileName = item.getString();
-                            appInput.inputSandbox_scenarioInputFile = processInputFile(item, appInput);
+							result = processInputFile(item, appInput);
+						
+                            appInput.scenarioFileName = result[1]; //item.getString();
+                            appInput.inputSandbox_scenarioInputFile = result[0];
+							
+							logstring+=" ('"+appInput.inputSandbox_scenarioInputFile+"')";
                         break;
                         case file_workload:
-                            appInput.workloadFileName = item.getString();
-                            appInput.inputSandbox_workloadInputFile = processInputFile(item, appInput);
+							result = processInputFile(item, appInput);
+						
+                            appInput.workloadFileName = result[1]; //item.getString();
+                            appInput.inputSandbox_workloadInputFile = result[0];
+							
+							logstring+=" ('"+appInput.inputSandbox_workloadInputFile+"')";
                         break;
                         case algorithm:
                             appInput.algorithm = item.getString();
@@ -1173,6 +1183,7 @@ public class ME_MLS_portlet extends GenericPortlet {
                         break;
                         default:
                             _log.warn("Unhandled input field: '"+fieldName+"' - '"+item.getString()+"'");
+							
                     } // switch fieldName
                 } // while iter.hasNext()
                 _log.info(
@@ -1184,11 +1195,11 @@ public class ME_MLS_portlet extends GenericPortlet {
             catch (Exception e) {
                 _log.info("Caught exception while processing files to upload: '"+e.toString()+"'");
             }
-        // The input form do not use the "multipart/form-data"
         } else  {
+			// The input form do not use the "multipart/form-data"
             // Retrieve from the input form the given application values
-            appInput.scenarioFileName = (String)request.getParameter("file_scenario");
-            appInput.workloadFileName = (String)request.getParameter("file_workload");
+            appInput.scenarioFileName = "ouch!"; //(String)request.getParameter("file_scenario");
+            appInput.workloadFileName = "ouch!!"; //(String)request.getParameter("file_workload");
             appInput.algorithm = (String)request.getParameter("algorithm");
             appInput.nmachines = (String)request.getParameter("nmachines");
             appInput.ntasks = (String)request.getParameter("ntasks");
@@ -1227,8 +1238,9 @@ public class ME_MLS_portlet extends GenericPortlet {
     // stored into the corresponding String variable
     // Before to submit the job the String value will be stored in the
     // proper job inputSandbox file
-    String processInputFile(FileItem item,App_Input appInput) {
+    String[] processInputFile(FileItem item, App_Input appInput) {
         String theNewFileName = "";
+		String uploadPath = "/tmp/";
         
         // Determin the filename
         String fileName = item.getName();
@@ -1237,41 +1249,20 @@ public class ME_MLS_portlet extends GenericPortlet {
             String fieldName = item.getFieldName();
 
             // Create a filename for the uploaded file
-            theNewFileName = "/tmp/"
-                                   +appInput.timestamp
-                                   +"_"
-                                   +appInput.username
-                                   +"_"
-                                   +fileName;
-            File uploadedFile = new File(theNewFileName);
-            //appInput.inputSandbox_inputFile = theNewFileName;
+            theNewFileName = appInput.timestamp + "_" + appInput.username + "_" + fileName;
+            File uploadedFile = new File(uploadPath + theNewFileName);
             
-            _log.info("Uploading file: '"+fileName+"' into '"+theNewFileName+"'");
+            _log.info("Uploading file: '" + fileName + "' into '" + uploadPath + theNewFileName + "'");
             try {
                 item.write(uploadedFile);
             }
             catch (Exception e) {
                 _log.error("Caught exception while uploading file: 'file_inputFile'");
             }
-
-            // File content has to be inserted into a String variables:
-            //   inputFileName -> inputFileText
-            /*
-            try {
-                if(fieldName.equals("file_inputFile"))
-                 appInput.inputFileText=updateString(theNewFileName);
-                 // Other params can be added as below ...
-                 //else if(fieldName.equals("..."))
-                 //   ...=updateString(theNewFileName);
-            else { // Never happens
-                 }
-            }
-            catch (Exception e) {
-                _log.error("Caught exception while processing strings: '"+e.toString()+"'");
-            }*/
         } // if
         
-        return theNewFileName;
+		String[] result = {uploadPath + theNewFileName, theNewFileName};
+        return result;
     } // processInputFile
 
     //
