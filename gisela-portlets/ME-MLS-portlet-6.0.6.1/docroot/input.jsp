@@ -22,104 +22,112 @@
   java.util.Date date = new java.util.Date();
 %>
 
-<div class="MyPortletWebapp">
-    <!-- portlet content here -->
-<span>
-    <img width="155" height="37" src="<%=renderRequest.getContextPath()%>/images/logo.jpg">
-    
-    <span style="position:relative;left:8px;top:0px">
-    <p style="background:#5EA3CE;width:440px; height:50px;position:relative;left:140px;top:-35px;">
-        <span style="font-size:18.0pt;font-family:Arial;color:white;position:relative;left:10px;top:15px;">ME-MLS</span>
-        <span style="font-family:Arial;color:white;font-weight:bold;position:relative;left:20px;top:15px;">Makespan-Energy Multithreading Local Search solver</span>
-    </p>
-    </span>
-</span>
+<div class="MyPortletWebapp" width="100%">
+	<!--<div style="align:right;">
+		<img style="align:right;" width="155" height="37" src="<%=renderRequest.getContextPath()%>/images/logo.jpg">
+	</div>-->
 
-<div> </div>
-    <span style="position:relative;left:4px;top:-35px;width:581px;height:4px">
-    <img width="581" height="4" src="<%=renderRequest.getContextPath()%>/images/bar.gif" v:shapes="_x0000_s1028">
-    </span>
+    <div style="background:#5EA3CE;">
+		<br/>
+		<span style="font-size:18.0pt;font-family:Arial;color:white;font-weight:bold;">ME-MLS</span>
+		<span style="font-family:Arial;color:white;font-weight:bold;">&nbsp;(Makespan-Energy Multithreading Local Search solver)</span>
+		<br/><br/>
+    </div>
 
-<div> </div>
+	<br/>
+	ME-MLS is an efficient multithreading local search algorithm for solving the multiobjective scheduling 
+	problem in heterogeneous computing systems considering the makespan and energy consumption objectives. The
+	proposed method follows a fully multiobjective approach using a Pareto-based dominance search executed in 
+	parallel. The experimental analysis demonstrates that the new multithreading algorithm outperforms a set 
+	of deterministic heuristics based on Min-Min. The new method is able to achieve significant improvements 
+	in both objectives in reduced execution times for a broad set of testbed instances.
+	<br/><br/>
+	<i>Reference</i>:<br/>
+	<b>A Multithreading Local Search For Multiobjective Energy-Aware Scheduling In Heterogeneous Computing Systems</b>, Iturriaga S., Nesmachnow S., Dorronsoro B., 26th European Conference on Modelling and Simulation (ECMS), Koblenz, Germany, 2012. 
 
-<span style="position:relative; left:0px;top:-10px">
-        ME-MLS is an efficient multithreading local search algorithm for solving the multiobjective scheduling 
-        problem in heterogeneous computing systems considering the makespan and energy consumption objectives. The
-        proposed method follows a fully multiobjective approach using a Pareto-based dominance search executed in 
-        parallel. The experimental analysis demonstrates that the new multithreading algorithm outperforms a set 
-        of deterministic heuristics based on Min-Min. The new method is able to achieve significant improvements 
-        in both objectives in reduced execution times for a broad set of testbed instances.
-        <br/><br/>
-        <u>Reference</u>:<br/>
-        <b>A Multithreading Local Search For Multiobjective Energy-Aware Scheduling In Heterogeneous Computing Systems</b>, Iturriaga S., Nesmachnow S., Dorronsoro B., 26th European Conference on Modelling and Simulation (ECMS), Koblenz, Germany, 2012. 
-</span>
+	<hr/>
 
-<div> </div>
+	<%
+	// Below the application submission web form 
+	//
+	// The <form> tag contains a portlet parameter value called 'PortletStatus' the value of this item
+	// will be read by the processAction portlet method which then assigns a proper view mode before
+	// the call to the doView method.
+	// PortletStatus values can range accordingly to values defined into Enum type: Actions
+	// The processAction method will assign a view mode accordingly to the values defined into
+	// the Enum type: Views. This value will be assigned calling the function: setRenderParameter
+	//
+	%>
 
+	<h3>Execution parameters</h3>
 
-<%
-// Below the application submission web form 
-//
-// The <form> tag contains a portlet parameter value called 'PortletStatus' the value of this item
-// will be read by the processAction portlet method which then assigns a proper view mode before
-// the call to the doView method.
-// PortletStatus values can range accordingly to values defined into Enum type: Actions
-// The processAction method will assign a view mode accordingly to the values defined into
-// the Enum type: Views. This value will be assigned calling the function: setRenderParameter
-//
-%>
-<span>
-<form enctype="multipart/form-data" action="<portlet:actionURL portletMode="view"><portlet:param name="PortletStatus" value="ACTION_SUBMIT"/></portlet:actionURL>" method="post">
-<dl>    
-    <!-- This block contains: label, file input and textarea for GATE Macro file -->
-    <dd>
-        <!--
-        Usage:
-           bin/pals_cpu <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>
+	<form enctype="multipart/form-data" action='<portlet:actionURL portletMode="view"><portlet:param name="PortletStatus" value="ACTION_SUBMIT"/></portlet:actionURL>' method="post">
+		<dl>    
+			<!-- This block contains: label, file input and textarea for GATE Macro file -->
+			<dd>
+				<!--
+				Usage:
+				   bin/pals_cpu <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>
 
-           Algorithms
-               0 PALS 2-populations
-               1 PALS 1-population
-               2 MinMin
-               3 MCT
-               4 pMinMin
-        -->
-        <p>Scenario file <input type="file" name="file_scenario" id="file_scenarioId" accept="*.*" /></p>
-        <p>Workload file <input type="file" name="file_workload" id="file_workloadId" accept="*.*" /></p>
-        <p>Number of tasks <input type="text" name="ntasks" id="ntasksId" /></p>
-        <p>Number of machines <input type="text" name="nmachines" id="nmachinesId" /></p>
-        <p>Algorithm <select id="algorithmId" name="algorithm">
-            <option value="1" selected>ME-MLS</option>
-            <option value="2">MinMin</option>
-            <option value="3">MCT</option>
-            <option value="4">pMinMin</option>
-        </select></p>
-        <p>Number of threads <input type="text" name="nthreads" id="nthreadsId" /></p>
-        <p>Random number generator seed <input type="text" name="randseed" id="randseedId" /></p>
-        <p>Max. execution time <input type="text" name="timeout" id="timeoutId" /> seconds</p>
-        <p>Max. iterations <input type="text" name="iterations" id="iterationsId" /></p>
-        <p>Population size <input type="text" name="popsize" id="popsizeId" /></p>
-    </dd>
-    <!-- This block contains the experiment name -->
-    <dd>
-        <p>Insert below your <b>job identifyer</b></p>
-        <textarea id="jobIdentifierId" rows="1" cols="60%" name="JobIdentifier">Job execution of: <%= date %></textarea>
-    </dd>   
-    <!-- This block contains form buttons: SUBMIT and Reset values -->
-    <dd>
-        <td><input type="button" value="Submit" onClick="preSubmit()"></td> 
-    </dd>
-</dl>
-</form>
-   <tr>
-        <form action="<portlet:actionURL portletMode="HELP"> /></portlet:actionURL>" method="post">
-        <td><input type="submit" value="About"></td>
-        </form>        
-   </tr>
-</table>
-</span>
+				   Algorithms
+					   0 PALS 2-populations
+					   1 PALS 1-population
+					   2 MinMin
+					   3 MCT
+					   4 pMinMin
+				-->
+				<table border="0">
+					<tr><td>
+						<p>Scenario file:&nbsp;&nbsp;</td><td><input type="file" name="file_scenario" id="file_scenarioId" accept="*.*" /></p>
+					</td></tr><tr><td>
+						<p>Workload file:&nbsp;&nbsp;</td><td><input type="file" name="file_workload" id="file_workloadId" accept="*.*" /></p>
+					</td></tr><tr><td>
+						<p>Number of tasks:&nbsp;&nbsp;</td><td><input type="text" name="ntasks" id="ntasksId" /></p>
+					</td></tr><tr><td>
+						<p>Number of machines:&nbsp;&nbsp;</td><td><input type="text" name="nmachines" id="nmachinesId" /></p>
+					</td></tr><tr><td>
+						<p>Algorithm:&nbsp;&nbsp;</td><td><select id="algorithmId" name="algorithm">
+							<option value="1" selected>ME-MLS</option>
+							<option value="2">MinMin</option>
+							<option value="3">MCT</option>
+							<option value="4">pMinMin</option>
+						</select></p>
+					</td></tr><tr><td>
+						<p>Number of threads:&nbsp;&nbsp;</td><td><input type="text" name="nthreads" id="nthreadsId" /></p>
+					</td></tr><tr><td style="white-space: nowrap;">
+						<p style="white-space: nowrap;">Random number generator seed:&nbsp;&nbsp;</td><td><input type="text" name="randseed" id="randseedId" /></p>
+					</td></tr><tr><td>
+						<p>Max. execution time:&nbsp;&nbsp;</td><td><input type="text" name="timeout" id="timeoutId" />&nbsp;(seconds)</p>
+					</td></tr><tr><td>
+						<p>Max. iterations:&nbsp;&nbsp;</td><td><input type="text" name="iterations" id="iterationsId" /></p>
+					</td></tr><tr><td>
+						<p>Population size:&nbsp;&nbsp;</td><td><input type="text" name="popsize" id="popsizeId" /></p>
+					</td></tr>
+				</table>
+			</dd>
+			<!-- This block contains the experiment name -->
+			<dd>
+				<p>Insert below your <b>job identifier</b></p>
+				<textarea id="jobIdentifierId" rows="1" cols="60%" name="JobIdentifier">Job execution of: <%= date %></textarea>
+			</dd>   
+			<!-- This block contains form buttons: SUBMIT and Reset values -->
+			<dd>
+				<input type="button" value="Submit" onClick="preSubmit()">
+			</dd>
+		</dl>
+	</form>
+	<table width="100%">
+		<tr>
+			<td align="left">
+				<!--<img style="align:right;" width="155" height="37" src="<%=renderRequest.getContextPath()%>/images/logo.jpg">-->
+			</td><td align="right">
+				<form action="<portlet:actionURL portletMode="HELP"> /></portlet:actionURL>" method="post">
+					<input type="submit" value="About">
+				</form>
+			</td>
+		</tr>
+	</table>
 </div>
-
 
 <%
 // Below the javascript functions used by the DPPM web form 
