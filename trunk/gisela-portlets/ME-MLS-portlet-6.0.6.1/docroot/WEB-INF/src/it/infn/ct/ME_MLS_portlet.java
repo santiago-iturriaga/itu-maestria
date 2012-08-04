@@ -1438,7 +1438,8 @@ public class ME_MLS_portlet extends GenericPortlet {
             String inputSandbox= appServerPath+"WEB-INF/job/"+appPreferences.pilotScript // pilot script
                                +","+appInput.inputSandbox_scenarioInputFile
                                +","+appInput.inputSandbox_workloadInputFile
-                               +","+appServerPath+"WEB-INF/job/me_mls_cpu"
+                               +","+appServerPath+"WEB-INF/job/makefile"
+                               +","+appServerPath+"WEB-INF/job/src.tar.gz"
                                ;
             // OutputSandbox (string with comma separated list of file names)
             String outputSandbox=appFile;                                     // Output file
