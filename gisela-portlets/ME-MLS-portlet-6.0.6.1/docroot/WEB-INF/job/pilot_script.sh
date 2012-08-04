@@ -82,20 +82,23 @@ echo "VO_SWPATH_CONTENT: "$VO_SWPATH_CONTENT
 #ls -ld $VO_SWPATH_CONTENT/$SW_NAME
 #echo
 
+tar xvzf src.tar.gz
+make
+
 # Get the hostname
 HOSTNAME=$(hostname -f)
 
 # bin/pals_cpu <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>
-SCENARIO=$1
-WORKLOAD=$2
-NTASKS=$3
-NMACHINES=$4
-ALGORITHM=$5
-NTHREADS=$6
-RANDSEED=$7
-TIMEOUT=$8
-ITERATIONS=$9
-POPSIZE=$10
+SCENARIO=${1}
+WORKLOAD=${2}
+NTASKS=${3}
+NMACHINES=${4}
+ALGORITHM=${5}
+NTHREADS=${6}
+RANDSEED=${7}
+TIMEOUT=${8}
+ITERATIONS=${9}
+POPSIZE=${10}
 
 # In order to avoid concurrent accesses to files, the 
 # portlet uses filename prefixes like
@@ -142,9 +145,11 @@ echo "outfile: '"$OUTFILE"'"                              >> $OUTFILE
 echo "--------------------------------------------------" >> $OUTFILE
 echo ""                                                   >> $OUTFILE
 
+echo "time(./me_mls_cpu $SCENARIO_INFILE $WORKLOAD_INFILE ${NTASKS} ${NMACHINES} ${ALGORITHM} ${NTHREADS} ${RANDSEED} ${TIMEOUT} ${ITERATIONS} ${POPSIZE} 1>${OUTFILE}.stdout 2>${OUTFILE}.stderr) &>${OUTFILE}.time"
+
 # Execute
 chmod +x me_mls_cpu
-time(./me_mls_cpu $SCENARIO_INFILE $WORKLOAD_INFILE $3 $4 $5 $6 $7 $8 $9 $10 1>${OUTFILE}.stdout 2>${OUTFILE}.stderr) &>${OUTFILE}.time
+time(./me_mls_cpu $SCENARIO_INFILE $WORKLOAD_INFILE ${NTASKS} ${NMACHINES} ${ALGORITHM} ${NTHREADS} ${RANDSEED} ${TIMEOUT} ${ITERATIONS} ${POPSIZE} 1>${OUTFILE}.stdout 2>${OUTFILE}.stderr) &>${OUTFILE}.time
 
 #
 # At the end of the script file it's a good practice to 
