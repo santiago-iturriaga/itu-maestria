@@ -108,7 +108,7 @@
 			<!-- This block contains the experiment name -->
 			<dd>
 				<p>Insert below your <b>job identifier</b></p>
-				<textarea id="jobIdentifierId" rows="1" cols="60%" name="JobIdentifier">Job execution of: <%= date %></textarea>
+				<textarea id="jobIdentifierId" rows="1" cols="60%" name="JobIdentifier">Job execution</textarea>
 			</dd>   
 			<!-- This block contains form buttons: SUBMIT and Reset values -->
 			<dd>

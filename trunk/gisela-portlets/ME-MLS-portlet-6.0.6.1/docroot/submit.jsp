@@ -35,7 +35,7 @@
 	<img src="<%=renderRequest.getContextPath()%>/images/AppLogo.png"/><br/><br/>
 	Your job has been <b>successfully</b> submitted; you may get reference to it with identifier:<br>
 	<b><%= jobIdentifier %></b><br /><br/>
-	Have a look on <a href="/my-jobs">MyJobs</a> area to get more information about all your submitted jobs.
+	Have a look on <a href="/myjobs">MyJobs</a> area to get more information about all your submitted jobs.
 	<br/><br/>
 	<form action='<portlet:actionURL portletMode="view"><portlet:param name="PortletStatus" value="ACTION_INPUT"/></portlet:actionURL>' method="post">
 		<input type="submit" value="Run a new application">
