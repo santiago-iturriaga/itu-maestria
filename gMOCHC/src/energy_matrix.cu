@@ -25,8 +25,14 @@ void init_energy_matrix(struct params *input, struct energy_matrix *energy) {
     energy->data_machine_index[0] = 0;
     energy->data_machine_index[1] = input->tasks_count;
     for (int i = 2; i < input->machines_count; i++) {
-        energy->data_machine_index[i] = input->machines_count * input->tasks_count;
+        energy->data_machine_index[i] = i * input->tasks_count;
     }
+    
+    #if defined(DEBUG_3)
+        for (int i = 0; i < input->machines_count; i++) {
+            fprintf(stderr, "[DEBUG] data_machine_index[%d]=%d\n", i, energy->data_machine_index[i]);
+        }
+    #endif
 }
 
 void free_energy_matrix(struct energy_matrix *energy) {
