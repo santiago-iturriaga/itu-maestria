@@ -14,17 +14,56 @@ MTGP32_SRC = src/random/mtgp-1.1/mtgp32-fast.c \
 	src/random/mtgp-1.1/mtgp32-cuda.cu \
 	src/random/mtgp-1.1/mtgp32dc-param-11213.c
 
+CPU_BIN = gmochc_cpu
+CPU_LINK = -lrt -lpthread
+CPU_OPTS = -Wall -DCPU -fno-exceptions
+
+BIN = gmochc
 LINK = -lcuda -lrt -lpthread
-#OPTS = -pedantic -wall
-OPTS = 
+OPTS = --ptxas-options=-v
 
 all: debug verificador minmin
 
 verificador: verificador.c
-	$(CC) $(OPTS) -g verificador.c -o bin/verificador
+	$(CC) $(CPU_OPTS) -g verificador.c -o bin/verificador
 
 minmin: minmin.c
-	$(CC) $(OPTS) -O3 minmin.c -o bin/minmin
+	$(CC) $(CPU_OPTS) -O3 minmin.c -o bin/minmin
+
+cpu: src/main.cu \
+		src/load_params.cu \
+		src/load_params.h \
+		src/load_instance.cu \
+		src/load_instance.h \
+		src/scenario.cu \
+		src/scenario.h \
+		src/etc_matrix.cu \
+		src/etc_matrix.h \
+		src/energy_matrix.cu \
+		src/energy_matrix.h \
+		src/solution.cu \
+		src/solution.h \
+		src/utils.cu \
+		src/utils.h \
+		src/basic/mct.cu \
+		src/basic/mct.h \
+		src/basic/minmin.cu \
+		src/basic/minmin.h \
+		src/basic/pminmin.cu \
+		src/basic/pminmin.h 
+	$(CC) $(CPU_OPTS) -g -x c++ \
+		src/main.cu \
+		src/load_instance.cu \
+		src/load_params.cu \
+		src/scenario.cu \
+		src/etc_matrix.cu \
+		src/energy_matrix.cu \
+		src/solution.cu \
+		src/utils.cu \
+		src/basic/mct.cu \
+		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
+		$(CPU_LINK) -o bin/$(CPU_BIN)
 
 debug: src/main.cu \
 		src/load_params.cu \
@@ -54,7 +93,7 @@ debug: src/main.cu \
 		src/random/RNG_rand48.cu \
 		src/random/RNG_rand48.h \
 		${MTGP32_INC} 
-	$(NVCC) $(OPTS) -g --ptxas-options=-v \
+	$(NVCC) $(OPTS) -g \
 		src/main.cu \
 		src/load_instance.cu \
 		src/load_params.cu \
@@ -69,8 +108,8 @@ debug: src/main.cu \
 		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
-		${MTGP32_SRC} ${LINK} \
-		-o bin/gmochc
+		$(MTGP32_SRC) $(LINK) \
+		-o bin/$(BIN)
 
 release: src/main.cu \
 		src/load_params.cu \
@@ -115,8 +154,8 @@ release: src/main.cu \
 		src/basic/pminmin.cu \
 		src/random/cpu_rand.cu \
 		src/random/RNG_rand48.cu \
-		${MTGP32_SRC} ${LINK} \
-		-o bin/gmochc 
+		$(MTGP32_SRC) $(LINK) \
+		-o bin/$(BIN)
 
 clean:
 	rm bin/*

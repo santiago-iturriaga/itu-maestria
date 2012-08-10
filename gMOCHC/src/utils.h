@@ -1,3 +1,8 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "config.h"
+
 #ifndef UTILS_H_
 #define UTILS_H_
 

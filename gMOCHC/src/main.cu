@@ -2,9 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda.h>
 #include <limits.h>
 #include <unistd.h>
+
+#if !defined(CPU)
+    #include <cuda.h>
+    #include "cuda_utils.h"
+    #include "random/RNG_rand48.h"
+#endif
 
 #include "config.h"
 
@@ -17,13 +22,10 @@
 #include "solution.h"
 
 #include "utils.h"
-#include "cuda_utils.h"
 
 #include "basic/mct.h"
 #include "basic/minmin.h"
 #include "basic/pminmin.h"
-
-#include "random/RNG_rand48.h"
 
 int main(int argc, char** argv)
 {
