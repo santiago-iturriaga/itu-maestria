@@ -49,21 +49,21 @@ int main(int argc, char** argv)
     // Timming -----------------------------------------------------
 
     // Se pide el espacio de memoria para la instancia del problema.
-    struct scenario *current_scenario = NULL;
-    init_scenario(&input, current_scenario);
+    struct scenario current_scenario;
+    init_scenario(&input, &current_scenario);
     
     #if defined(DEBUG_2)
-        show_scenario(current_scenario);
+        show_scenario(&current_scenario);
     #endif
     
-    struct etc_matrix *etc = NULL;
-    init_etc_matrix(&input, etc);
+    struct etc_matrix etc;
+    init_etc_matrix(&input, &etc);
 
-    struct energy_matrix *energy = NULL;
-    init_energy_matrix(&input, energy);  
+    struct energy_matrix energy;
+    init_energy_matrix(&input, &energy);  
 
     // Se carga la matriz de ETC.
-    if (load_instance(&input, current_scenario, etc, energy) == EXIT_FAILURE) {
+    if (load_instance(&input, &current_scenario, &etc, &energy) == EXIT_FAILURE) {
         fprintf(stderr, "[ERROR] ocurrió un error leyendo los archivos de instancia.\n");
         return EXIT_FAILURE;
     }
@@ -79,8 +79,8 @@ int main(int argc, char** argv)
         fprintf(stderr, "[DEBUG] creating empty solution...\n");
     #endif
     
-    struct solution *current_solution = NULL;
-    create_empty_solution(current_solution, current_scenario, etc, energy);
+    struct solution current_solution;
+    create_empty_solution(&current_solution, &current_scenario, &etc, &energy);
 
     // =============================================================
     // Solving the problem.
@@ -95,21 +95,21 @@ int main(int argc, char** argv)
 
     if (input.algorithm == ALGORITHM_MINMIN) {
 
-        compute_minmin(current_solution);
+        compute_minmin(&current_solution);
 
     } else if (input.algorithm == ALGORITHM_PMINMIND) {
 
-        compute_pminmin(current_solution, input.thread_count);
+        compute_pminmin(&current_solution, input.thread_count);
 
     } else if (input.algorithm == ALGORITHM_MCT) {
 
-        compute_mct(current_solution);
+        compute_mct(&current_solution);
 
     }
 
     #if defined(OUTPUT_SOLUTION)
-        for (int task_id = 0; task_id < etc->tasks_count; task_id++) {
-            fprintf(stdout, "%d\n", current_solution->task_assignment[task_id]);
+        for (int task_id = 0; task_id < etc.tasks_count; task_id++) {
+            fprintf(stdout, "%d\n", current_solution.task_assignment[task_id]);
         }
     #endif
 
@@ -120,10 +120,10 @@ int main(int argc, char** argv)
     // =============================================================
     // Release memory
     // =============================================================
-    free_solution(current_solution);
-    free_etc_matrix(etc);
-    free_energy_matrix(energy);
-    free_scenario(current_scenario);
+    free_solution(&current_solution);
+    free_etc_matrix(&etc);
+    free_energy_matrix(&energy);
+    free_scenario(&current_scenario);
 
     return EXIT_SUCCESS;
 }
