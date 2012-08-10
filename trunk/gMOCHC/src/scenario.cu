@@ -2,10 +2,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "load_params.h"
 #include "scenario.h"
 
+#include "load_params.h"
+#include "config.h"
+
 void init_scenario(struct params *input, struct scenario *s) {
+    #if defined(DEBUG_3)
+        fprintf(stderr, "[DEBUG] init_scenario\n");
+    #endif
+    
     s->machines_count = input->machines_count;
     s->idle_energy = (float*)malloc(sizeof(float) * input->machines_count);
 

@@ -2,10 +2,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "load_params.h"
 #include "energy_matrix.h"
 
-void init_energy_matrix(struct params *input, struct energy_matrix *energy) {   
+#include "load_params.h"
+#include "config.h"
+
+void init_energy_matrix(struct params *input, struct energy_matrix *energy) {
+    #if defined(DEBUG_3)
+        fprintf(stderr, "[DEBUG] init_energy_matrix\n");
+    #endif
+    
     energy->tasks_count = input->tasks_count;
     energy->machines_count = input->machines_count;
     energy->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
