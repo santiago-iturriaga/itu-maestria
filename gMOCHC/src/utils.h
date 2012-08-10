@@ -19,28 +19,4 @@ inline void timming_end(char *message, timespec &ts) {
     #endif
 }
 
-#if defined(TIMMING)
-    #define TIMMING_START(ts) timming_start(ts)
-    #define TIMMING_END(message,ts) timming_end(message,ts)
-#else
-    #define TIMMING_START(ts)
-    #define TIMMING_END(message,ts)
-#endif
-
-#if defined(DEBUG_LEVEL)
-    #define DEBUG_0
-#endif
-
-#if defined(DEBUG_LEVEL) && DEBUG_LEVEL >= 1
-    #define DEBUG_1
-#endif
-
-#if defined(DEBUG_LEVEL) && DEBUG_LEVEL >= 2
-    #define DEBUG_2
-#endif
-
-#if defined(DEBUG_LEVEL) && DEBUG_LEVEL >= 3
-    #define DEBUG_3
-#endif
-
 #endif // UTILS_H_
