@@ -6,7 +6,7 @@
 #include "load_params.h"
 
 int load_params(int argc, char **argv, struct params *input) {
-    if (argc != 11) {
+    if (argc == 11) {
         input->scenario_path = argv[1];
         #if defined(DEBUG_0) 
             fprintf(stderr, "[PARAMS] scenario path: %s\n", input->scenario_path);
