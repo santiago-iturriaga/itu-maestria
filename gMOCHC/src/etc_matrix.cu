@@ -2,10 +2,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "load_params.h"
 #include "etc_matrix.h"
 
+#include "load_params.h"
+#include "config.h"
+
 void init_etc_matrix(struct params *input, struct etc_matrix *etc) {
+    #if defined(DEBUG_3)
+        fprintf(stderr, "[DEBUG] init_etc_matrix\n");
+    #endif
+    
     etc->tasks_count = input->tasks_count;
     etc->machines_count = input->machines_count;
     etc->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);

@@ -3,11 +3,12 @@
 
 #include "load_instance.h"
 
-#ifndef _LOAD_INSTANCE_C_
-#define _LOAD_INSTANCE_C_
-
 /* Reads the input files and stores de data in memory */
-int load_instance(struct params *input, struct scenario *s, struct etc_matrix *etc, struct energy_matrix *energy) {  
+int load_instance(struct params *input, struct scenario *s, struct etc_matrix *etc, struct energy_matrix *energy) {
+    #if defined(DEBUG_3)
+        fprintf(stderr, "[DEBUG] load_instance\n");
+    #endif
+    
     FILE *scenario_file;
 
     if ((scenario_file = fopen(input->scenario_path, "r")) == NULL) {
@@ -64,5 +65,3 @@ int load_instance(struct params *input, struct scenario *s, struct etc_matrix *e
 
     return EXIT_SUCCESS;
 }
-
-#endif //_LOAD_INSTANCE_C_
