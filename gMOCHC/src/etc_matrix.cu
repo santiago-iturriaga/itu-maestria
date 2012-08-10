@@ -25,8 +25,14 @@ void init_etc_matrix(struct params *input, struct etc_matrix *etc) {
     etc->data_machine_index[0] = 0;
     etc->data_machine_index[1] = input->tasks_count;
     for (int i = 2; i < input->machines_count; i++) {
-        etc->data_machine_index[i] = input->machines_count * input->tasks_count;
+        etc->data_machine_index[i] = i * input->tasks_count;
     }
+    
+    #if defined(DEBUG_3)
+        for (int i = 0; i < input->machines_count; i++) {
+            fprintf(stderr, "[DEBUG] data_machine_index[%d]=%d\n", i, etc->data_machine_index[i]);
+        }
+    #endif
 }
 
 void free_etc_matrix(struct etc_matrix *etc) {

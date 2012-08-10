@@ -51,11 +51,7 @@ int main(int argc, char** argv)
     // Se pide el espacio de memoria para la instancia del problema.
     struct scenario current_scenario;
     init_scenario(&input, &current_scenario);
-    
-    #if defined(DEBUG_2)
-        show_scenario(&current_scenario);
-    #endif
-    
+       
     struct etc_matrix etc;
     init_etc_matrix(&input, &etc);
 
@@ -67,6 +63,10 @@ int main(int argc, char** argv)
         fprintf(stderr, "[ERROR] ocurrió un error leyendo los archivos de instancia.\n");
         return EXIT_FAILURE;
     }
+
+    #if defined(DEBUG_2)
+        show_scenario(&current_scenario);
+    #endif
 
     // Timming -----------------------------------------------------
     TIMMING_END("cargando instancia", ts_loading);
