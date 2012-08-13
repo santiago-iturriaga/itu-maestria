@@ -27,6 +27,9 @@
 #include "basic/minmin.h"
 #include "basic/pminmin.h"
 
+#include "cmochc/cmochc_cell.h"
+#include "cmochc/cmochc_island.h"
+
 int main(int argc, char** argv)
 {
     // =============================================================
@@ -46,7 +49,6 @@ int main(int argc, char** argv)
     #endif
 
     // Timming -----------------------------------------------------
-    timespec ts_loading;
     TIMMING_START(ts_loading)
     // Timming -----------------------------------------------------
 
@@ -75,16 +77,6 @@ int main(int argc, char** argv)
     // Timming -----------------------------------------------------
 
     // =============================================================
-    // Create empty solution
-    // =============================================================
-    #if defined(DEBUG_0)
-        fprintf(stderr, "[DEBUG] creating empty solution...\n");
-    #endif
-    
-    struct solution current_solution;
-    create_empty_solution(&current_solution, &current_scenario, &etc, &energy);
-
-    // =============================================================
     // Solving the problem.
     // =============================================================
     #if defined(DEBUG_0)
@@ -95,25 +87,57 @@ int main(int argc, char** argv)
     TIMMING_START(ts)
     // Timming -----------------------------------------------------
 
-    if (input.algorithm == ALGORITHM_MINMIN) {
+    if ((input.algorithm == ALGORITHM_MINMIN) || 
+        (input.algorithm == ALGORITHM_PMINMIND) ||
+        (input.algorithm == ALGORITHM_MCT)) {
 
-        compute_minmin(&current_solution);
+        // =============================================================
+        // Trajectory algorithms.
+        // =============================================================
+        
+        // Create empty solution       
+        #if defined(DEBUG_0)
+            fprintf(stderr, "[DEBUG] creating empty solution...\n");
+        #endif
+        
+        struct solution current_solution;
+        create_empty_solution(&current_solution, &current_scenario, &etc, &energy);
+            
+        if (input.algorithm == ALGORITHM_MINMIN) {
 
-    } else if (input.algorithm == ALGORITHM_PMINMIND) {
+            compute_minmin(&current_solution);
 
-        compute_pminmin(&current_solution, input.thread_count);
+        } else if (input.algorithm == ALGORITHM_PMINMIND) {
 
-    } else if (input.algorithm == ALGORITHM_MCT) {
+            compute_pminmin(&current_solution, input.thread_count);
 
-        compute_mct(&current_solution);
+        } else if (input.algorithm == ALGORITHM_MCT) {
 
-    }
+            compute_mct(&current_solution);
+        } 
 
-    #if defined(OUTPUT_SOLUTION)
-        for (int task_id = 0; task_id < etc.tasks_count; task_id++) {
-            fprintf(stdout, "%d\n", current_solution.task_assignment[task_id]);
+        #if defined(OUTPUT_SOLUTION)
+            for (int task_id = 0; task_id < etc.tasks_count; task_id++) {
+                fprintf(stdout, "%d\n", current_solution.task_assignment[task_id]);
+            }
+        #endif
+
+        free_solution(&current_solution);
+    } else {
+        // =============================================================
+        // Population algorithms.
+        // =============================================================
+        
+        if (input.algorithm == ALGORITHM_CMOCHCISLAND) {
+            
+            compute_cmochc_island(input, current_scenario, etc, energy);
+            
+        } else if (input.algorithm == ALGORITHM_CMOCHCCELL) {
+
+            compute_cmochc_cell(input, current_scenario, etc, energy);
+
         }
-    #endif
+    }
 
     // Timming -----------------------------------------------------
     TIMMING_END("Elapsed algorithm total time", ts);
@@ -122,7 +146,6 @@ int main(int argc, char** argv)
     // =============================================================
     // Release memory
     // =============================================================
-    free_solution(&current_solution);
     free_etc_matrix(&etc);
     free_energy_matrix(&energy);
     free_scenario(&current_scenario);

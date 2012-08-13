@@ -39,6 +39,10 @@ int load_params(int argc, char **argv, struct params *input) {
                 fprintf(stderr, " MinMin\n");
             } else if (input->algorithm == ALGORITHM_PMINMIND) {
                 fprintf(stderr, " pMinMin/D\n");
+            } else if (input->algorithm == ALGORITHM_CMOCHCISLAND) {
+                fprintf(stderr, " cMOCHC/islands\n");
+            } else if (input->algorithm == ALGORITHM_CMOCHCCELL) {
+                fprintf(stderr, " cMOCHC/cellular\n");
             } else {
                 fprintf(stderr, " unknown!?\n");
             }

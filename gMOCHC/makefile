@@ -45,6 +45,10 @@ cpu: src/main.cu \
 		src/solution.h \
 		src/utils.cu \
 		src/utils.h \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -60,6 +64,8 @@ cpu: src/main.cu \
 		src/energy_matrix.cu \
 		src/solution.cu \
 		src/utils.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
 		src/basic/pminmin.cu \
@@ -82,6 +88,10 @@ debug: src/main.cu \
 		src/utils.h \
 		src/cuda_utils.cu \
 		src/cuda_utils.h \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -103,6 +113,8 @@ debug: src/main.cu \
 		src/solution.cu \
 		src/utils.cu \
 		src/cuda_utils.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
 		src/basic/pminmin.cu \
@@ -128,6 +140,10 @@ release: src/main.cu \
 		src/utils.h \
 		src/cuda_utils.cu \
 		src/cuda_utils.h \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -149,6 +165,8 @@ release: src/main.cu \
 		src/solution.cu \
 		src/utils.cu \
 		src/cuda_utils.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
 		src/basic/pminmin.cu \

@@ -1,10 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "config.h"
-
 #ifndef UTILS_H_
 #define UTILS_H_
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "config.h"
 
 inline void timming_start(timespec &ts) {
     #if defined(TIMMING)

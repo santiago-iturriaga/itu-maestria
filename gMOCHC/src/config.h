@@ -4,22 +4,22 @@
 /* Outputs solution(s) to stdout */
 //#define OUTPUT_SOLUTION
 
-//#define TIMMING
+/* Records the execution time of 
+ * some important operations */
+#define TIMMING
 
 /* Debug level
-  0 No debug
-  1 Minimal debug
-  2 Medium debug
-  3 Debug everything */
+ * 0 No debug
+ * 1 Minimal debug
+ * 2 Medium debug
+ * 3 Debug everything */
 #define DEBUG_LEVEL             3
-
-#define THREAD_COUNT            12
 
 //#define REPORT_EVERY_SECONDS    1
 //#define REPORT_EVERY_ITERS      1
 
 #if defined(TIMMING)
-    #define TIMMING_START(ts) timming_start(ts)
+    #define TIMMING_START(ts) timespec ts;timming_start(ts);
     #define TIMMING_END(message,ts) timming_end(message,ts)
 #else
     #define TIMMING_START(ts)
