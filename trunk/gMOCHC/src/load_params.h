@@ -1,9 +1,11 @@
 #ifndef LOAD_PARAMS_H_
 #define LOAD_PARAMS_H_
 
-#define ALGORITHM_MCT       0
-#define ALGORITHM_MINMIN    1
-#define ALGORITHM_PMINMIND  2
+#define ALGORITHM_MCT           0
+#define ALGORITHM_MINMIN        1
+#define ALGORITHM_PMINMIND      2
+#define ALGORITHM_CMOCHCISLAND  3
+#define ALGORITHM_CMOCHCCELL    4
 
 struct params {
     char *scenario_path;
