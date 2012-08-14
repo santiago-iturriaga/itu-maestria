@@ -13,7 +13,7 @@ inline void timming_start(timespec &ts) {
     #endif
 }
 
-inline void timming_end(char *message, timespec &ts) {
+inline void timming_end(const char *message, timespec &ts) {
     #if defined(TIMMING)
         timespec ts_end;
         clock_gettime(CLOCK_REALTIME, &ts_end);
