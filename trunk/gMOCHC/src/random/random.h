@@ -15,7 +15,7 @@
 
 #if defined(CPU_DRAND48)
     #define RAND_STATE struct cpu_drand48_state
-    #define RAND_INIT(seed,state) cpu_drand48_init(seed,ts);
+    #define RAND_INIT(seed,state) cpu_drand48_init(seed,state);
     #define RAND_GENERATE(state) cpu_drand48_generate(state);
     #define RAND_FINALIZE(state) cpu_drand48_free(state);
 #endif

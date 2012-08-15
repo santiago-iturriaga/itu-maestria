@@ -9,8 +9,8 @@
 #define TIMMING
 
 /* Random number generator */
-#define CPU_RAND
-//#define CPU_DRAND48
+//#define CPU_RAND
+#define CPU_DRAND48
 //#define CPU_MT
 
 /* Debug level
