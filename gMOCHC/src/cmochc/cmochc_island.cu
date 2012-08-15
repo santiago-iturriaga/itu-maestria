@@ -490,6 +490,7 @@ void* slave_thread(void *data) {
     // Finalizo el thread.
     // ================================================================
     free(instance->population);
+    free(sorted_population);
 
     return 0;
 }

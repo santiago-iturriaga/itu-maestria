@@ -184,5 +184,42 @@ release: src/main.cu \
 		$(MTGP32_SRC) $(LINK) \
 		-o bin/$(BIN)
 
+check: src/main.cu \
+		src/load_params.cu \
+		src/load_params.h \
+		src/load_instance.cu \
+		src/load_instance.h \
+		src/scenario.cu \
+		src/scenario.h \
+		src/etc_matrix.cu \
+		src/etc_matrix.h \
+		src/energy_matrix.cu \
+		src/energy_matrix.h \
+		src/solution.cu \
+		src/solution.h \
+		src/utils.cu \
+		src/utils.h \
+		src/random/cpu_rand.h \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.h \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
+		src/basic/mct.cu \
+		src/basic/mct.h \
+		src/basic/minmin.cu \
+		src/basic/minmin.h \
+		src/basic/pminmin.cu \
+		src/basic/pminmin.h 
+	cppcheck *.c \
+		src/*.cu \
+		src/basic/*.cu \
+		src/random/*.cu \
+		src/cmochc/*.cu
+
 clean:
 	rm bin/*
