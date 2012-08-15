@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -22,8 +23,20 @@ inline void timming_end(const char *message, timespec &ts) {
         double elapsed;
         elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
                 - ts.tv_nsec) / 1000.0);
-        fprintf(stdout, "[TIMER] %s: %f microsegs.\n", message, elapsed);
+        fprintf(stderr, "[TIMER] %s: %f microsegs.\n", message, elapsed);
     #endif
+}
+
+inline const char* int_to_binary(int x) {
+    static char b[33];
+    b[0] = '\0';
+
+    int z;
+    for (z = 2147483648; z > 0; z >>= 1) {
+        strcat(b, ((x & z) == z) ? "1" : "0");
+    }
+
+    return b;
 }
 
 #if defined(DEBUG_LEVEL)
