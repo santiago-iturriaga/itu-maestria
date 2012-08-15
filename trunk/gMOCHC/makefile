@@ -15,11 +15,11 @@ MTGP32_SRC = src/random/mtgp-1.1/mtgp32-fast.c \
 	src/random/mtgp-1.1/mtgp32dc-param-11213.c
 
 CPU_BIN = gmochc_cpu
-CPU_LINK = -lrt -lpthread
+CPU_LINK = -lrt -lpthread -lm
 CPU_OPTS = -Wall -DCPU -fno-exceptions
 
 BIN = gmochc
-LINK = -lcuda -lrt -lpthread
+LINK = -lcuda -lrt -lpthread -lm
 OPTS = --ptxas-options=-v
 
 all: debug verificador minmin
@@ -45,6 +45,12 @@ cpu: src/main.cu \
 		src/solution.h \
 		src/utils.cu \
 		src/utils.h \
+		src/random/cpu_rand.h \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.h \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cu \
 		src/cmochc/cmochc_cell.h \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.h \
@@ -64,6 +70,9 @@ cpu: src/main.cu \
 		src/energy_matrix.cu \
 		src/solution.cu \
 		src/utils.cu \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.cu \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.cu \
 		src/basic/mct.cu \
