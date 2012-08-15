@@ -374,13 +374,16 @@ void* slave_thread(void *data) {
         if (threshold < 0) {
             threshold = max_threshold;
 
+            int best_sol_index;
+            best_sol_index = sorted_population[0];
+            
             if (local_elite_sol->initialized == 0) {
                 // Si la solución elite no esta inicializada...
-                clone_solution(local_elite_sol, &population[0]);
-            } else if (fitness(local_elite_sol) > fitness(&population[0])) {
+                clone_solution(local_elite_sol, &population[best_sol_index]);
+            } else if (fitness(local_elite_sol) > fitness(&population[best_sol_index])) {
                 // O si la mejor solución de la población es mejor
                 // que la solución elite...
-                clone_solution(local_elite_sol, &population[0]);
+                clone_solution(local_elite_sol, &population[best_sol_index]);
             }
 
             // =======================================================
