@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <math.h>
 
 #include "cmochc_island.h"
 
@@ -10,11 +11,11 @@
 #include "../energy_matrix.h"
 #include "../utils.h"
 #include "../basic/mct.h"
+#include "../random/random.h"
 
 #define LOCAL_ITERATION_COUNT   50
 #define GLOBAL_ITERATION_COUNT  50
 
-#define LOCAL_ELITE_POP_SIZE    1
 #define GLOBAL_ELITE_POP_SIZE   50
 
 struct cmochc {
@@ -28,10 +29,13 @@ struct cmochc {
 
     /* Poblacion de cada esclavo */
     struct solution **population;
-    /* Poblacion elite local a cada esclavo */
-    struct solution **local_elite_pop;
+    /* Solucion elite local a cada esclavo */
+    struct solution *local_elite_sol;
     /* Poblacion elite global mantenida por el master */
     struct solution global_elite_pop[GLOBAL_ELITE_POP_SIZE];
+
+    /* Poblacion de cada esclavo */
+    RAND_STATE *rand_state;
 };
 
 struct cmochc_thread {
@@ -144,8 +148,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         }
         else
         {
-            #if defined(DEBUG)
-            printf("[DEBUG] thread %d <OK>\n", i);
+            #if defined(DEBUG_1)
+                printf("[DEBUG] thread %d <OK>\n", i);
             #endif
         }
     }
@@ -163,19 +167,24 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct etc_matrix &etc, struct energy_matrix &energy) {
 
     fprintf(stdout, "[INFO] == Configuration constants =============================\n");
-    fprintf(stdout, "       ITERATION_COUNT         : %d\n", ITERATION_COUNT);
-    fprintf(stdout, "       LOCAL_ELITE_POP_SIZE    : %d\n", LOCAL_ELITE_POP_SIZE);
+    fprintf(stdout, "       LOCAL ITERATION_COUNT   : %d\n", LOCAL_ITERATION_COUNT);
+    fprintf(stdout, "       GLOBAL ITERATION_COUNT  : %d\n", GLOBAL_ITERATION_COUNT);
     fprintf(stdout, "       GLOBAL_ELITE_POP_SIZE   : %d\n", GLOBAL_ELITE_POP_SIZE);
     fprintf(stdout, "[INFO] ========================================================\n");
 
+    // Estado relacionado con el problema.
     instance.input = &input;
     instance.current_scenario = &current_scenario;
     instance.etc = &etc;
     instance.energy = &energy;
-    
+
+    // Estado del generador aleatorio.
+    instance.rand_state = (RAND_STATE*)(malloc(sizeof(RAND_STATE) * input.thread_count));
+
+    // Estado de la población.
     instance.population = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
-    instance.local_elite_pop = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
-    
+    instance.local_elite_sol = (struct solution*)(malloc(sizeof(struct solution) * input.thread_count));
+
     instance.threads = (pthread_t*)malloc(sizeof(pthread_t) * input.thread_count);
     *threads_data = (struct cmochc_thread*)malloc(sizeof(struct cmochc_thread) * input.thread_count);
 
@@ -219,49 +228,173 @@ void migrate(struct cmochc &instance) {
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize(struct cmochc &instance, struct cmochc_thread *threads) {
     free(instance.population);
+    free(instance.local_elite_sol);
+    free(instance.rand_state);
     free(instance.threads);
     free(threads);
+}
+
+int distance(struct solution *s1, struct solution *s2) {
+    int distance = 0;
+
+    for (int i = 0; i < s1->etc->tasks_count; i++) {
+        if (s1->task_assignment[i] != s2->task_assignment[i]) distance++;
+    }
+
+    return distance;
+}
+
+void hux(struct solution *p1, struct solution *p2,
+    struct solution *c1, struct solution *c2) {
+
+
+}
+
+double fitness(struct solution *s) {
+    return 0.0;
 }
 
 /* Logica de los esclavos */
 void* slave_thread(void *data) {
     struct cmochc_thread *t_data = (struct cmochc_thread*)data;
     struct cmochc *instance = t_data->data;
-    
-    // http://en.wikipedia.org/wiki/Merge_sort
-    // http://en.wikipedia.org/wiki/Insertion_sort
-    // http://blog.macuyiko.com/2009/01/modern-genetic-and-other-algorithms_237.html
-    
+
+    int thread_id = t_data->thread_id;
+
+    struct params *input = instance->input;
+    struct scenario *current_scenario = instance->current_scenario;
+    struct etc_matrix *etc = instance->etc;
+    struct energy_matrix *energy = instance->energy;
+
+    RAND_STATE *rand_state = instance->rand_state;
+
     // ================================================================
     // Inicializo el thread.
     // ================================================================
-    instance->population[t_data->thread_id] = (struct solution*)(malloc(sizeof(struct solution) * instance->input->population_size));
-    
-    for (int i = 0; i < instance->input->population_size; i++) {
-        compute_mct_random(&(instance->population[t_data->thread_id][i]), i, i % 2);
-        instance->population[t_data->thread_id][i].initialized = 1;
+
+    /* Inicializo la población de padres y limpio la de hijos */
+    int max_pop_sols = 2 * input->population_size;
+
+    /* Poblacion de cada esclavo */
+    instance->population[thread_id] = (struct solution*)(malloc(sizeof(struct solution) * max_pop_sols));
+    struct solution *population = instance->population[thread_id];
+
+    int *sorted_population;
+    sorted_population = (int*)(malloc(sizeof(int) * max_pop_sols));
+
+    for (int i = 0; i < input->population_size; i++) {
+        // Random init.
+        compute_mct_random(&(population[i]),i,i & 0x1);
+        population[i].initialized = 1;
+
+        sorted_population[i] = i;
     }
 
-    instance->local_elite_pop[t_data->thread_id] = (struct solution*)(malloc(sizeof(struct solution) * LOCAL_ELITE_POP_SIZE));
+    for (int i = instance->input->population_size; i < max_pop_sols; i++) {
+        population[i].initialized = 0;
 
-    for (int i = 0; i < LOCAL_ELITE_POP_SIZE; i++) {
-        instance->local_elite_pop[t_data->thread_id][i].initialized = 0;
+        sorted_population[i] = i;
     }
-    
+
+    /* Limpio la solución elite */
+    struct solution *local_elite_sol = &(instance->local_elite_sol[thread_id]);
+    local_elite_sol->initialized = 0;
+
+    /* Inicialización del estado del generador aleatorio */
+    RAND_INIT(thread_id,rand_state[thread_id]);
+
     // ================================================================
     // .
     // ================================================================
-    struct solution children
-    
+    int next_avail_children, born_children;
+    int max_children = input->population_size / 2;
+
+    int max_distance = etc->tasks_count;
+    int max_threshold = max_distance / 4;
+    int threshold = max_threshold;
+
+    // http://en.wikipedia.org/wiki/Merge_sort
+    // http://en.wikipedia.org/wiki/Insertion_sort
+    // http://blog.macuyiko.com/2009/01/modern-genetic-and-other-algorithms_237.html
+
     for (int iteracion = 0; iteracion < LOCAL_ITERATION_COUNT; iteracion++) {
-        
+        #ifdef DEBUG_3
+            fprintf(stdout, "[DEBUG] Iteration %d.", iteracion);
+        #endif
+
+        // =======================================================
+        // Mating
+        // =======================================================
+        next_avail_children = input->population_size;
+        born_children = 0;
+
+        double random;
+        int p1_idx, p2_idx;
+        for (int child = 0; child < max_children; child++) {
+            if (next_avail_children + 1 < input->population_size) {
+                // Padre aleatorio 1
+                random = RAND_GENERATE(rand_state[thread_id]);
+                p1_idx = (int)(floor(input->population_size * random));
+
+                // Padre aleatorio 2
+                random = RAND_GENERATE(rand_state[thread_id]);
+                p2_idx = (int)(floor((input->population_size - 1) * random));
+                if (p2_idx >= p1_idx) p2_idx++;
+
+                ASSERT(p1_idx != p2_idx)
+                ASSERT(p1_idx > 0)
+                ASSERT(p1_idx < input->population_size)
+                ASSERT(p2_idx > 0)
+                ASSERT(p2_idx < input->population_size)
+
+                // Chequeo la distancia entre padres
+                if (distance(&population[p1_idx],&population[p2_idx]) > threshold) {
+                    // Aplico HUX y creo dos hijos
+                    hux(&population[p1_idx],&population[p2_idx],
+                        &population[next_avail_children],&population[next_avail_children+1]);
+
+                    next_avail_children += 2;
+                    born_children++;
+                }
+            }
+        }
+
+        if (born_children > 0) {
+            #ifdef DEBUG_3
+                fprintf(stdout, "[DEBUG] %d children born.", born_children);
+            #endif
+        } else {
+            threshold--;
+
+            #ifdef DEBUG_3
+                fprintf(stdout, "[DEBUG] No children born.");
+            #endif
+        }
+
+        if (threshold < 0) {
+            threshold = max_threshold;
+
+            if (local_elite_sol->initialized == 0) {
+                // Si la solución elite no esta inicializada...
+                clone_solution(local_elite_sol, &population[0]);
+            } else if (fitness(local_elite_sol) > fitness(&population[0])) {
+                // O si la mejor solución de la población es mejor
+                // que la solución elite...
+                clone_solution(local_elite_sol, &population[0]);
+            }
+
+            // =======================================================
+            // Cataclysm
+            // =======================================================
+
+            // ...
+        }
     }
 
     // ================================================================
     // Finalizo el thread.
     // ================================================================
     free(instance->population);
-    free(instance->local_elite_pop);
-    
+
     return 0;
 }

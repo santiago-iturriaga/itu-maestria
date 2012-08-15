@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 
 #include "config.h"
 
@@ -24,5 +25,11 @@ inline void timming_end(const char *message, timespec &ts) {
         fprintf(stdout, "[TIMER] %s: %f microsegs.\n", message, elapsed);
     #endif
 }
+
+#if defined(DEBUG_LEVEL)
+    #define ASSERT(a) assert(a);
+#else
+    #define ASSERT(a)
+#endif
 
 #endif // UTILS_H_
