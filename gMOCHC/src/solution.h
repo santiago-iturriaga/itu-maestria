@@ -24,6 +24,7 @@ struct solution {
     
     float *machine_compute_time;
     float makespan;
+    
     float *machine_energy_consumption;
     float energy_consumption;
 };

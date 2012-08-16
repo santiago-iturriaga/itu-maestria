@@ -73,7 +73,6 @@ void refresh_solution(struct solution *sol) {
         sol->machine_compute_time[machine] = 0.0;
     }
     
-    int makespan_machine = 0;
     sol->makespan = 0.0;
     
     for (int task = 0; task < sol->etc->tasks_count; task++) {
@@ -81,21 +80,23 @@ void refresh_solution(struct solution *sol) {
         
         sol->machine_compute_time[machine] += get_etc_value(sol->etc, machine, task);
         if (sol->makespan < sol->machine_compute_time[machine]) {
-            makespan_machine = machine;
             sol->makespan = sol->machine_compute_time[machine];
         }
     }
 
     for (int machine = 0; machine < sol->etc->machines_count; machine++) {
         sol->machine_energy_consumption[machine] = sol->makespan * get_scenario_energy_idle(sol->s, machine);
+        sol->energy_consumption += sol->machine_energy_consumption[machine];
     }
     
-    sol->energy_consumption = sol->makespan * get_scenario_energy_max(sol->s, makespan_machine);
-    
+    double task_energy_consumption;
     for (int task = 0; task < sol->etc->tasks_count; task++) {
         int machine = sol->task_assignment[task];
         
-        sol->machine_energy_consumption[machine] += get_energy_value(sol->energy, machine, task);
+        task_energy_consumption = get_energy_value(sol->energy, machine, task);
+        
+        sol->machine_energy_consumption[machine] += task_energy_consumption;
+        sol->energy_consumption += task_energy_consumption;
     }
 }
 
