@@ -13,8 +13,15 @@
 #include "../basic/mct.h"
 #include "../random/random.h"
 
-#define LOCAL_ITERATION_COUNT   5
+#define LOCAL_ITERATION_COUNT   2000
 #define GLOBAL_ELITE_POP_SIZE   3
+
+#define CROSS_MAX_THRESHOLD_DIVISOR 4
+/* Aprox. one cataclysm every 5 local iterations without change */
+#define CROSS_THRESHOLD_STEP_DIVISOR 5
+
+/* Only hux_custom */
+#define CROSSOVER_FLIP_PROB     0.25
 
 struct cmochc {
     struct params *input;
@@ -31,11 +38,18 @@ struct cmochc {
     struct solution *local_elite_sol;
     /* Poblacion elite global mantenida por el master */
     struct solution global_elite_pop[GLOBAL_ELITE_POP_SIZE];
-    
+
     float **weights;
 
     /* Poblacion de cada esclavo */
     RAND_STATE *rand_state;
+
+    /* Statistics */
+    int *generations_no_children_born;
+    int *generations_no_children_inserted;
+    int *generations_at_least_one_children_inserted;
+    int *generations_improved_sols;
+    int *generations_cataclysm_count;
 };
 
 struct cmochc_thread {
@@ -58,6 +72,9 @@ void gather(struct cmochc &instance);
 
 /* Migra los mejores elementos a poblaciones vecinas */
 void migrate(struct cmochc &instance);
+
+/* Muestra el resultado de la ejecución */
+void display_results(struct cmochc &instance);
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize(struct cmochc &instance, struct cmochc_thread *threads);
@@ -158,7 +175,45 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     #if defined(DEBUG_1)
         fprintf(stderr, "[DEBUG] CPU CHC (islands): finalize\n");
     #endif
+
+    display_results(instance);
     finalize(instance, threads);
+}
+
+void display_results(struct cmochc &instance) {
+    /* Show solutions */
+    #if defined(OUTPUT_SOLUTION)
+        int count = 0;
+        for (int sol_id = 0; sol_id < GLOBAL_ELITE_POP_SIZE; sol_id++) {
+            if (instance.global_elite_pop[sol_id].initialized == 1) {
+                count++;
+            }
+        }
+
+        fprintf(stdout, "%d\n", count);
+        for (int sol_id = 0; sol_id < GLOBAL_ELITE_POP_SIZE; sol_id++) {
+            if (instance.global_elite_pop[sol_id].initialized == 1) {
+                for (int task_id = 0; task_id < instance.etc->tasks_count; task_id++) {
+                    fprintf(stdout, "%d\n", instance.global_elite_pop[sol_id].task_assignment[task_id]);
+                }
+            }
+        }
+    #endif
+
+    #ifdef DEBUG_1
+        fprintf(stderr, "[INFO] == Statistics ==========================================\n");
+        for (int t = 0; t < instance.input->thread_count; t++)
+            fprintf(stderr, "       [thread %d] NO CHILDREN BORN COUNT           : %d\n", t, instance.generations_no_children_born[t]);
+        for (int t = 0; t < instance.input->thread_count; t++)
+            fprintf(stderr, "       [thread %d] NO CHILDREN INSERTED COUNT       : %d\n", t, instance.generations_no_children_inserted[t]);
+        for (int t = 0; t < instance.input->thread_count; t++)
+            fprintf(stderr, "       [thread %d] AT LEAST ONE CHILDREN BORN COUNT : %d\n", t, instance.generations_at_least_one_children_inserted[t]);
+        for (int t = 0; t < instance.input->thread_count; t++)
+            fprintf(stderr, "       [thread %d] IMPROVED SOLUTIONS COUNT         : %d\n", t, instance.generations_improved_sols[t]);
+        for (int t = 0; t < instance.input->thread_count; t++)
+            fprintf(stderr, "       [thread %d] CATACLYSM COUNT                  : %d\n", t, instance.generations_cataclysm_count[t]);
+        fprintf(stderr, "[INFO] ========================================================\n");
+    #endif
 }
 
 /* Inicializa los hilos y las estructuras de datos */
@@ -166,9 +221,11 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct params &input, struct scenario &current_scenario,
     struct etc_matrix &etc, struct energy_matrix &energy) {
 
-    fprintf(stderr, "[INFO] == Configuration constants =============================\n");
-    fprintf(stderr, "       LOCAL ITERATION_COUNT   : %d\n", LOCAL_ITERATION_COUNT);
-    fprintf(stderr, "       GLOBAL_ELITE_POP_SIZE   : %d\n", GLOBAL_ELITE_POP_SIZE);
+    fprintf(stderr, "[INFO] == Global configuration constants ======================\n");
+    fprintf(stderr, "       LOCAL ITERATION_COUNT        : %d\n", LOCAL_ITERATION_COUNT);
+    fprintf(stderr, "       GLOBAL_ELITE_POP_SIZE        : %d\n", GLOBAL_ELITE_POP_SIZE);
+    fprintf(stderr, "       CROSS_MAX_THRESHOLD_DIVISOR  : %d\n", CROSS_MAX_THRESHOLD_DIVISOR);
+    fprintf(stderr, "       CROSS_THRESHOLD_STEP_DIVISOR : %d\n", CROSS_THRESHOLD_STEP_DIVISOR);
     fprintf(stderr, "[INFO] ========================================================\n");
 
     // Estado relacionado con el problema.
@@ -182,6 +239,13 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 
     // Weights
     instance.weights = (float**)(malloc(sizeof(float*) * input.thread_count));
+
+    /* Statistics */
+    instance.generations_no_children_born = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.generations_no_children_inserted = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.generations_at_least_one_children_inserted = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.generations_improved_sols = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.generations_cataclysm_count = (int*)(malloc(sizeof(int) * input.thread_count));
 
     // Estado de la población.
     instance.population = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
@@ -229,15 +293,21 @@ void migrate(struct cmochc &instance) {
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize(struct cmochc &instance, struct cmochc_thread *threads) {
+    free(instance.generations_cataclysm_count);
+    free(instance.generations_improved_sols);
+    free(instance.generations_no_children_born);
+    free(instance.generations_no_children_inserted);
+    free(instance.generations_at_least_one_children_inserted);
     free(instance.weights);
     free(instance.population);
     free(instance.local_elite_sol);
     free(instance.rand_state);
     free(instance.threads);
+
     free(threads);
 }
 
-int distance(struct solution *s1, struct solution *s2) {
+inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
     for (int i = 0; i < s1->etc->tasks_count; i++) {
@@ -250,7 +320,30 @@ int distance(struct solution *s1, struct solution *s2) {
     return distance;
 }
 
-void hux(RAND_STATE &rand_state,
+inline void hux_custom(RAND_STATE &rand_state,
+    struct solution *p1, struct solution *p2,
+    struct solution *c1, struct solution *c2) {
+
+    double random;
+    for (int task_index = 0; task_index < p1->etc->tasks_count; task_index++) {
+        random = RAND_GENERATE(rand_state);
+
+        if (random <= CROSSOVER_FLIP_PROB) {
+            /* Si la máscara vale 1 copio las asignaciones cruzadas de la tarea */
+            c1->task_assignment[task_index] = p2->task_assignment[task_index];
+            c2->task_assignment[task_index] = p1->task_assignment[task_index];
+        } else {
+            /* Si la máscara vale 0 copio las asignaciones derecho de la tarea */
+            c1->task_assignment[task_index] = p1->task_assignment[task_index];
+            c2->task_assignment[task_index] = p2->task_assignment[task_index];
+        }
+    }
+
+    refresh_solution(c1);
+    refresh_solution(c2);
+}
+
+inline void hux(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
     struct solution *c1, struct solution *c2) {
 
@@ -261,7 +354,7 @@ void hux(RAND_STATE &rand_state,
         random = RAND_GENERATE(rand_state);
 
         int mask = 0x0;
-        int mask_size = 256; /* 8-bit mask */
+        int mask_size = 256; // 8-bit mask
         float base_step = 1.0/(double)mask_size;
         float base = base_step;
 
@@ -270,53 +363,90 @@ void hux(RAND_STATE &rand_state,
             mask += 0x1;
         }
 
-        /*
-        #ifdef DEBUG_3
-            char *aux;
-            aux = int_to_binary(mask);
-            
-            fprintf(stderr, "[DEBUG] Bit mask: %d | %x | %s\n", mask, mask, aux);
-            
-            free(aux);
-        #endif
-        * */
-
         int mask_index = 0x1;
         while ((mask_index < mask_size) && (current_task_index < p1->etc->tasks_count)) {
             if ((mask & 0x1) == 1) {
-                /* Si la máscara vale 1 copio las asignaciones cruzadas de la tarea */
+                // Si la máscara vale 1 copio las asignaciones cruzadas de la tarea
                 c1->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
                 c2->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
             } else {
-                /* Si la máscara vale 0 copio las asignaciones derecho de la tarea */
+                // Si la máscara vale 0 copio las asignaciones derecho de la tarea
                 c1->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
                 c2->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
             }
 
-            /* Desplazo la máscara hacia la derecha */
+            // Desplazo la máscara hacia la derecha
             mask = mask >> 1;
             mask_index = mask_index << 1;
             current_task_index++;
         }
     }
-    
+
     refresh_solution(c1);
     refresh_solution(c2);
-
-    #ifdef DEBUG_3
-        validate_solution(c1);
-        validate_solution(c2);
-    #endif
 }
 
-float fitness(struct solution *population, float *fitness_population, float *weights, int index) {
+inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
+    int current_task_index = 0;
+    int tasks_count = seed->etc->tasks_count;
+    int machines_count = seed->etc->machines_count;
+
+    while (current_task_index < tasks_count) {
+        double random;
+        random = RAND_GENERATE(rand_state);
+
+        int mask = 0x0;
+        int mask_size = 256; // 8-bit mask
+        float base_step = 1.0/(double)mask_size;
+        float base = base_step;
+
+        while (random > base) {
+            base += base_step;
+            mask += 0x1;
+        }
+
+        int destination_machine;
+        int mask_index = 0x1;
+        while ((mask_index < mask_size) && (current_task_index < tasks_count)) {
+            if ((mask & 0x1) == 1) {
+                random = RAND_GENERATE(rand_state);
+                destination_machine = (int)(floor(machines_count * random));
+                
+                ASSERT(destination_machine >= 0)
+                ASSERT(destination_machine < machines_count)
+                
+                // Si la máscara vale 1 copio las asignaciones cruzadas de la tarea
+                mutation->task_assignment[current_task_index] = destination_machine;
+                
+                /*#ifdef DEBUG_3
+                    fprintf(stderr, "task=%d>>machine=%d, ", current_task_index, destination_machine);
+                #endif*/
+            } else {
+                // Si la máscara vale 0 copio las asignaciones derecho de la tarea
+                mutation->task_assignment[current_task_index] = seed->task_assignment[current_task_index];
+            }
+
+            // Desplazo la máscara hacia la derecha
+            mask = mask >> 1;
+            mask_index = mask_index << 1;
+            current_task_index++;
+        }
+    }
+
+    refresh_solution(mutation);
+}
+
+inline float fitness(struct solution *population, float *fitness_population, float *weights, int index) {
     if (isnan(fitness_population[index])) {
-        fitness_population[index] = (population[index].makespan * weights[0]) + 
+        fitness_population[index] = (population[index].makespan * weights[0]) +
             (population[index].energy_consumption * weights[1]);
     }
-    
+
     return fitness_population[index];
 }
+
+void merge_sort(struct solution *population, float *weights, 
+    int *sorted_population, float *fitness_population, int population_size);
 
 /* Logica de los esclavos */
 void* slave_thread(void *data) {
@@ -332,9 +462,21 @@ void* slave_thread(void *data) {
 
     RAND_STATE *rand_state = instance->rand_state;
 
+    int *generations_no_children_born = instance->generations_no_children_born;
+    int *generations_no_children_inserted = instance->generations_no_children_inserted;
+    int *generations_at_least_one_children_inserted = instance->generations_at_least_one_children_inserted;
+    int *generations_improved_sols = instance->generations_improved_sols;
+    int *generations_cataclysm_count = instance->generations_cataclysm_count;
+
     // ================================================================
     // Inicializo el thread.
     // ================================================================
+
+    generations_no_children_born[thread_id] = 0;
+    generations_no_children_inserted[thread_id] = 0;
+    generations_at_least_one_children_inserted[thread_id] = 0;
+    generations_improved_sols[thread_id] = 0;
+    generations_cataclysm_count[thread_id] = 0;
 
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id,rand_state[thread_id]);
@@ -356,7 +498,7 @@ void* slave_thread(void *data) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Thread %d, weight (%f,%f)\n", thread_id, weights[0], weights[1]);
     #endif
-    
+
     ASSERT(weights[0] >= 0)
     ASSERT(weights[0] <= 1)
     ASSERT(weights[1] >= 0)
@@ -376,27 +518,27 @@ void* slave_thread(void *data) {
     fitness_population = (float*)(malloc(sizeof(float) * max_pop_sols));
 
     for (int i = 0; i < input->population_size; i++) {
-        // Random init.       
+        // Random init.
         create_empty_solution(&(population[i]),current_scenario,etc,energy);
-        
+
         random = RAND_GENERATE(rand_state[thread_id]);
         int starting_pos;
         starting_pos = (int)(floor(etc->tasks_count * random));
-        
+
         #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n", 
+            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
                 thread_id, i, starting_pos, i & 0x1);
         #endif
-        
+
         compute_mct_random(&(population[i]), starting_pos, i & 0x1);
-        
+
         sorted_population[i] = i;
         fitness_population[i] = NAN;
-        
+
         fitness(population, fitness_population, weights, i);
-        
+
         #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, inicializado solution %d, fitness %f\n", 
+            fprintf(stderr, "[DEBUG] Thread %d, inicializado solution %d, fitness %f\n",
                 thread_id, i, fitness(population, fitness_population, weights, i));
         #endif
     }
@@ -410,11 +552,11 @@ void* slave_thread(void *data) {
 
     /* Limpio la solución elite */
     struct solution *local_elite_sol = &(instance->local_elite_sol[thread_id]);
-    local_elite_sol->initialized = 0;
-    
+    create_empty_solution(local_elite_sol,current_scenario,etc,energy);
+
     float local_elite_fitness;
     local_elite_fitness = NAN;
-    
+
     // ================================================================
     // .
     // ================================================================
@@ -422,12 +564,16 @@ void* slave_thread(void *data) {
     int max_children = input->population_size / 2;
 
     int max_distance = etc->tasks_count;
-    int max_threshold = max_distance / 4;
-    int threshold = max_threshold;
 
-    // http://en.wikipedia.org/wiki/Merge_sort
-    // http://en.wikipedia.org/wiki/Insertion_sort
-    // http://blog.macuyiko.com/2009/01/modern-genetic-and-other-algorithms_237.html
+    int threshold_max = max_distance / CROSS_MAX_THRESHOLD_DIVISOR;
+    int threshold_step = threshold_max / CROSS_THRESHOLD_STEP_DIVISOR;
+    if (threshold_step == 0) threshold_step = 1;
+    int threshold = threshold_max;
+
+    #ifdef DEBUG_1
+        fprintf(stderr, "[DEBUG] Threshold Max %d.\n", threshold_max);
+        fprintf(stderr, "[DEBUG] Threshold Step %d.\n", threshold_step);
+    #endif
 
     for (int iteracion = 0; iteracion < LOCAL_ITERATION_COUNT; iteracion++) {
         #ifdef DEBUG_3
@@ -456,19 +602,29 @@ void* slave_thread(void *data) {
                 if (p2_rand >= p1_rand) p2_rand++;
                 p2_idx = sorted_population[p2_rand];
 
+                /*
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Selected parents %d(%d) and %d(%d) [%d]\n", p1_idx, p1_rand, p2_idx, p2_rand, input->population_size);
+                #endif
+                * */
+
+                /*
                 ASSERT(p1_idx != p2_idx)
                 ASSERT(p1_idx >= 0)
                 ASSERT(p1_idx < input->population_size)
                 ASSERT(p2_idx >= 0)
                 ASSERT(p2_idx < input->population_size)
+                */
 
                 // Chequeo la distancia entre padres
                 d = distance(&population[p1_idx],&population[p2_idx]);
-                
+
+                /*
                 #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] Selected parents %d and %d > distance = %f\n", p1_idx, p2_idx, d);
                 #endif
-                
+                * */
+
                 if (d > threshold) {
                     // Aplico HUX y creo dos hijos
                     c1_idx = sorted_population[next_avail_children];
@@ -495,17 +651,62 @@ void* slave_thread(void *data) {
             // Sort parent+children population
             // =======================================================
 
-            // ...
+            float worst_parent;
+            worst_parent = fitness(population, fitness_population, weights, sorted_population[input->population_size-1]);
+
+            merge_sort(population, weights, sorted_population, fitness_population, max_pop_sols);
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Post-sorted population\n");
+                fprintf(stderr, "parents> ");
+                for (int i = 0; i < input->population_size; i++) {
+                    fprintf(stderr, "%d(%f)  ", sorted_population[i], fitness_population[sorted_population[i]]);
+                }
+                fprintf(stderr, "\n");
+                fprintf(stderr, "childs > ");
+                for (int i = input->population_size; i < max_pop_sols; i++) {
+                    fprintf(stderr, "%d(%f)  ", sorted_population[i], fitness_population[sorted_population[i]]);
+                }
+                fprintf(stderr, "\n");
+            #endif
+
+            if (worst_parent > fitness(population, fitness_population, weights, sorted_population[input->population_size-1])) {
+                #ifdef DEBUG_1
+                    generations_at_least_one_children_inserted[thread_id]++;
+                #endif
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] At least one children inserted.\n");
+                #endif
+            } else {
+                #ifdef DEBUG_1
+                    generations_no_children_inserted[thread_id]++;
+                #endif
+
+                threshold -= threshold_step;
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] No children inserted into the population.\n");
+                #endif
+            }
         } else {
-            threshold--;
+            #ifdef DEBUG_1
+                generations_no_children_born[thread_id]++;
+            #endif
+
+            threshold -= threshold_step;
 
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] No children born.\n");
             #endif
         }
 
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Threshold %d\n", threshold);
+        #endif
+
         if (threshold < 0) {
-            threshold = max_threshold;
+            threshold = threshold_max;
 
             int best_sol_index;
             best_sol_index = sorted_population[0];
@@ -513,41 +714,195 @@ void* slave_thread(void *data) {
             if (local_elite_sol->initialized == 0) {
                 // Si la solución elite no esta inicializada...
                 clone_solution(local_elite_sol, &population[best_sol_index]);
+                local_elite_sol->initialized = 1;
                 local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
-                
+
+                #ifdef DEBUG_1
+                    generations_improved_sols[thread_id]++;
+                #endif
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Current best solution was improved (from %f to %f)!\n",
+                        fitness(population, fitness_population, weights, best_sol_index),
+                        local_elite_fitness);
+                #endif
             } else if (local_elite_fitness > fitness(population, fitness_population, weights, best_sol_index)) {
                 // O si la mejor solución de la población es mejor
                 // que la solución elite...
                 clone_solution(local_elite_sol, &population[best_sol_index]);
                 local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
-                
+
+                #ifdef DEBUG_1
+                    generations_improved_sols[thread_id]++;
+                #endif
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Current best solution was improved (from %f to %f)!\n",
+                        fitness(population, fitness_population, weights, best_sol_index),
+                        local_elite_fitness);
+                #endif
+            } else {
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Current best solution was NOT improved\n");
+                #endif
             }
 
             // =======================================================
             // Cataclysm
             // =======================================================
+            
+            #ifdef DEBUG_1
+                generations_cataclysm_count[thread_id]++;
+            #endif
 
-            // ...
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Cataclysm %d!\n", generations_cataclysm_count[thread_id]);
+                fprintf(stderr, "[DEBUG] Post-mutate population\n");
+                fprintf(stderr, "solutions> ");
+            #endif
+           
+            for (int i = 0; i < input->population_size; i++) {                                
+                if (fitness(population, fitness_population, weights, sorted_population[i]) != local_elite_fitness) {
+                    mutate(rand_state[thread_id], local_elite_sol, &population[sorted_population[i]]);
+                    
+                    fitness_population[sorted_population[i]] = NAN;
+                    fitness(population, fitness_population, weights, sorted_population[i]);
+                }
+                
+                #ifdef DEBUG_3
+                    fprintf(stderr, "%d(%f)  ", sorted_population[i], fitness_population[sorted_population[i]]);
+                #endif
+            }
+            #ifdef DEBUG_3
+                fprintf(stderr, "\n");
+            #endif
         }
-        
+
         // =======================================================
         // Reset children population
         // =======================================================
         int sorted_i;
         for (int i = instance->input->population_size; i < max_pop_sols; i++) {
             sorted_i = sorted_population[i];
-            
+
             population[sorted_i].initialized = 0;
             fitness_population[sorted_i] = NAN;
+        }
+
+        // =======================================================
+        // Check for best solution
+        // =======================================================        
+        int best_sol_index;
+        best_sol_index = sorted_population[0];
+
+        if (local_elite_sol->initialized == 0) {
+            // Si la solución elite no esta inicializada...
+            clone_solution(local_elite_sol, &population[best_sol_index]);
+            local_elite_sol->initialized = 1;
+            local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
+
+            #ifdef DEBUG_1
+                generations_improved_sols[thread_id]++;
+            #endif
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Current best solution was improved (to %f)!\n",
+                    local_elite_fitness);
+            #endif
+        } else if (local_elite_fitness > fitness(population, fitness_population, weights, best_sol_index)) {
+            // O si la mejor solución de la población es mejor
+            // que la solución elite...
+            clone_solution(local_elite_sol, &population[best_sol_index]);
+            local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
+
+            #ifdef DEBUG_1
+                generations_improved_sols[thread_id]++;
+            #endif
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Current best solution was improved (from %f to %f)!\n",
+                    fitness(population, fitness_population, weights, best_sol_index),
+                    local_elite_fitness);
+            #endif
+        } else {
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Current best solution was NOT improved\n");
+            #endif
         }
     }
 
     // ================================================================
     // Finalizo el thread.
     // ================================================================
+    for (int i = 0; i < max_pop_sols; i++) {
+        free_solution(&(population[i]));
+    }
+
     free(instance->population);
     free(sorted_population);
     free(fitness_population);
 
     return 0;
+}
+
+inline void merge_sort(struct solution *population, float *weights, int *sorted_population, float *fitness_population, int population_size) {
+    int increment, l, l_max, r, r_max, current, i;
+    int *tmp;
+
+    increment = 1;
+    tmp = (int*)malloc(sizeof(int) * population_size);
+
+    float fitness_r, fitness_l;
+
+    while (increment < population_size) {
+        l = 0;
+        r = increment;
+        l_max = r - 1;
+        r_max = (l_max + increment < population_size) ? l_max + increment : population_size - 1;
+
+        current = 0;
+
+        while (current < population_size) {
+            while (l <= l_max && r <= r_max) {
+                fitness_r = fitness(population, fitness_population, weights, sorted_population[r]);
+                fitness_l = fitness(population, fitness_population, weights, sorted_population[l]);
+                
+                /*fitness_r = fitness_population[sorted_population[r]];
+                fitness_l = fitness_population[sorted_population[l]];*/
+
+                if (!isnan(fitness_r) && !isnan(fitness_l)) {
+                    if (fitness_r < fitness_l) {
+                        tmp[current] = sorted_population[r++];
+                    } else {
+                        tmp[current] = sorted_population[l++];
+                    }
+                } else if (!isnan(fitness_r) && isnan(fitness_l)) {
+                    tmp[current] = sorted_population[r++];
+                } else if (isnan(fitness_r) && !isnan(fitness_l)) {
+                    tmp[current] = sorted_population[l++];
+                } else {
+                    /* Ambos son NAN, no importa */
+                    tmp[current] = sorted_population[l++];
+                }
+
+                current++;
+            }
+
+            while (r <= r_max) tmp[current++] = sorted_population[r++];
+            while (l <= l_max) tmp[current++] = sorted_population[l++];
+
+            l = r;
+            r += increment;
+            l_max = r - 1;
+            r_max = (l_max + increment < population_size) ? l_max + increment : population_size - 1;
+        }
+
+        increment *= 2;
+
+        for (i = 0; i < population_size; i++) {
+            sorted_population[i] = tmp[i];
+        }
+    }
+
+    free(tmp);
 }
