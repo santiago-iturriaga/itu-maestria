@@ -84,6 +84,8 @@ void refresh_solution(struct solution *sol) {
         }
     }
 
+    sol->energy_consumption = 0.0;
+
     for (int machine = 0; machine < sol->etc->machines_count; machine++) {
         sol->machine_energy_consumption[machine] = sol->makespan * get_scenario_energy_idle(sol->s, machine);
         sol->energy_consumption += sol->machine_energy_consumption[machine];
