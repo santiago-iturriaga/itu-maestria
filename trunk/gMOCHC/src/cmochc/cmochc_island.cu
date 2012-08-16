@@ -13,10 +13,8 @@
 #include "../basic/mct.h"
 #include "../random/random.h"
 
-#define LOCAL_ITERATION_COUNT   50
-#define GLOBAL_ITERATION_COUNT  50
-
-#define GLOBAL_ELITE_POP_SIZE   50
+#define LOCAL_ITERATION_COUNT   5
+#define GLOBAL_ELITE_POP_SIZE   3
 
 struct cmochc {
     struct params *input;
@@ -34,7 +32,7 @@ struct cmochc {
     /* Poblacion elite global mantenida por el master */
     struct solution global_elite_pop[GLOBAL_ELITE_POP_SIZE];
     
-    double **weights;
+    float **weights;
 
     /* Poblacion de cada esclavo */
     RAND_STATE *rand_state;
@@ -83,7 +81,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
 
     // Inicializo la memoria e inicializo los hilos de ejecucion.
     #if defined(DEBUG_1)
-        fprintf(stderr, "[DEBUG] CPU CHC (islands): init");
+        fprintf(stderr, "[DEBUG] CPU CHC (islands): init\n");
     #endif
 
     struct cmochc instance;
@@ -98,7 +96,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     TIMMING_END(">> cmochc_init", ts_init);
     // Timming -----------------------------------------------------
 
-    for (int iteracion = 0; iteracion < GLOBAL_ITERATION_COUNT; iteracion++) {
+    for (int iteracion = 0; iteracion < input.max_iterations; iteracion++) {
         // Timming -----------------------------------------------------
         TIMMING_START(ts_evolve);
         // Timming -----------------------------------------------------
@@ -170,7 +168,6 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 
     fprintf(stderr, "[INFO] == Configuration constants =============================\n");
     fprintf(stderr, "       LOCAL ITERATION_COUNT   : %d\n", LOCAL_ITERATION_COUNT);
-    fprintf(stderr, "       GLOBAL ITERATION_COUNT  : %d\n", GLOBAL_ITERATION_COUNT);
     fprintf(stderr, "       GLOBAL_ELITE_POP_SIZE   : %d\n", GLOBAL_ELITE_POP_SIZE);
     fprintf(stderr, "[INFO] ========================================================\n");
 
@@ -184,7 +181,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     instance.rand_state = (RAND_STATE*)(malloc(sizeof(RAND_STATE) * input.thread_count));
 
     // Weights
-    instance.weights = (double**)(malloc(sizeof(double*) * input.thread_count));
+    instance.weights = (float**)(malloc(sizeof(float*) * input.thread_count));
 
     // Estado de la población.
     instance.population = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
@@ -264,49 +261,45 @@ void hux(RAND_STATE &rand_state,
         random = RAND_GENERATE(rand_state);
 
         int mask = 0x0;
-        double base_step = 1.0/16.0; /* 16-bit mask */
-        double base = base_step;
+        int mask_size = 256; /* 8-bit mask */
+        float base_step = 1.0/(double)mask_size;
+        float base = base_step;
 
         while (random > base) {
             base += base_step;
             mask += 0x1;
         }
 
+        /*
         #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Bit mask: %s\n", int_to_binary(mask));
+            char *aux;
+            aux = int_to_binary(mask);
+            
+            fprintf(stderr, "[DEBUG] Bit mask: %d | %x | %s\n", mask, mask, aux);
+            
+            free(aux);
         #endif
+        * */
 
-        int mask_index = 0;
-        while ((mask_index < 16) && (current_task_index < p1->etc->tasks_count)) {
+        int mask_index = 0x1;
+        while ((mask_index < mask_size) && (current_task_index < p1->etc->tasks_count)) {
             if ((mask & 0x1) == 1) {
                 /* Si la máscara vale 1 copio las asignaciones cruzadas de la tarea */
                 c1->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
                 c2->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
-
-                #ifdef DEBUG_3
-                    fprintf(stderr, "swap/");
-                #endif
             } else {
                 /* Si la máscara vale 0 copio las asignaciones derecho de la tarea */
                 c1->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
                 c2->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
-
-                #ifdef DEBUG_3
-                    fprintf(stderr, "straight/");
-                #endif
             }
 
             /* Desplazo la máscara hacia la derecha */
             mask = mask >> 1;
-            mask_index++;
+            mask_index = mask_index << 1;
             current_task_index++;
         }
     }
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "\n");
-    #endif
-
+    
     refresh_solution(c1);
     refresh_solution(c2);
 
@@ -316,8 +309,13 @@ void hux(RAND_STATE &rand_state,
     #endif
 }
 
-double fitness(struct solution *s) {
-    return 0.0;
+float fitness(struct solution *population, float *fitness_population, float *weights, int index) {
+    if (isnan(fitness_population[index])) {
+        fitness_population[index] = (population[index].makespan * weights[0]) + 
+            (population[index].energy_consumption * weights[1]);
+    }
+    
+    return fitness_population[index];
 }
 
 /* Logica de los esclavos */
@@ -338,6 +336,32 @@ void* slave_thread(void *data) {
     // Inicializo el thread.
     // ================================================================
 
+    /* Inicialización del estado del generador aleatorio */
+    RAND_INIT(thread_id,rand_state[thread_id]);
+    double random;
+
+    /* Inicializo el peso asignado a este thread */
+    instance->weights[thread_id] = (float*)(malloc(sizeof(float) * 2));
+    float *weights = instance->weights[thread_id];
+
+    if (input->thread_count > 1) {
+        float thread_weight = (float)thread_id / (float)(input->thread_count-1);
+        weights[0] = thread_weight;
+        weights[1] = 1 - thread_weight;
+    } else {
+        weights[0] = 1;
+        weights[1] = 1;
+    }
+
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Thread %d, weight (%f,%f)\n", thread_id, weights[0], weights[1]);
+    #endif
+    
+    ASSERT(weights[0] >= 0)
+    ASSERT(weights[0] <= 1)
+    ASSERT(weights[1] >= 0)
+    ASSERT(weights[1] <= 1)
+
     /* Inicializo la población de padres y limpio la de hijos */
     int max_pop_sols = 2 * input->population_size;
 
@@ -348,40 +372,48 @@ void* slave_thread(void *data) {
     int *sorted_population;
     sorted_population = (int*)(malloc(sizeof(int) * max_pop_sols));
 
-    for (int i = 0; i < input->population_size; i++) {
-        // Random init.
-        compute_mct_random(&(population[i]),i,i & 0x1);
-        population[i].initialized = 1;
+    float *fitness_population;
+    fitness_population = (float*)(malloc(sizeof(float) * max_pop_sols));
 
+    for (int i = 0; i < input->population_size; i++) {
+        // Random init.       
+        create_empty_solution(&(population[i]),current_scenario,etc,energy);
+        
+        random = RAND_GENERATE(rand_state[thread_id]);
+        int starting_pos;
+        starting_pos = (int)(floor(etc->tasks_count * random));
+        
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n", 
+                thread_id, i, starting_pos, i & 0x1);
+        #endif
+        
+        compute_mct_random(&(population[i]), starting_pos, i & 0x1);
+        
         sorted_population[i] = i;
+        fitness_population[i] = NAN;
+        
+        fitness(population, fitness_population, weights, i);
+        
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, inicializado solution %d, fitness %f\n", 
+                thread_id, i, fitness(population, fitness_population, weights, i));
+        #endif
     }
 
     for (int i = instance->input->population_size; i < max_pop_sols; i++) {
-        population[i].initialized = 0;
+        create_empty_solution(&(population[i]),current_scenario,etc,energy);
 
         sorted_population[i] = i;
+        fitness_population[i] = NAN;
     }
 
     /* Limpio la solución elite */
     struct solution *local_elite_sol = &(instance->local_elite_sol[thread_id]);
     local_elite_sol->initialized = 0;
-
-    /* Inicialización del estado del generador aleatorio */
-    RAND_INIT(thread_id,rand_state[thread_id]);
-
-    /* Inicializo el peso asignado a este thread */
-    double thread_weight = (double)thread_id / (double)(input->thread_count-1);
-    instance->weights[thread_id] = (double*)(malloc(sizeof(double) * 2));
-    instance->weights[thread_id][0] = thread_weight;
-    instance->weights[thread_id][1] = 1-thread_weight;
     
-    ASSERT(instance->weights[thread_id][0] >= 0)
-    ASSERT(instance->weights[thread_id][0] <= 1)
-    ASSERT(instance->weights[thread_id][1] >= 0)
-    ASSERT(instance->weights[thread_id][1] <= 1)
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Thread %d, Weight (%f,%f)", thread_id, instance->weights[thread_id][0], instance->weights[thread_id][1]);
-    #endif
+    float local_elite_fitness;
+    local_elite_fitness = NAN;
     
     // ================================================================
     // .
@@ -407,12 +439,12 @@ void* slave_thread(void *data) {
         // =======================================================
         next_avail_children = input->population_size;
 
-        double random;
+        float d;
         int p1_idx, p2_idx;
         int p1_rand, p2_rand;
         int c1_idx, c2_idx;
         for (int child = 0; child < max_children; child++) {
-            if (next_avail_children + 1 < input->population_size) {
+            if (next_avail_children + 1 < max_pop_sols) {
                 // Padre aleatorio 1
                 random = RAND_GENERATE(rand_state[thread_id]);
                 p1_rand = (int)(floor(input->population_size * random));
@@ -425,13 +457,19 @@ void* slave_thread(void *data) {
                 p2_idx = sorted_population[p2_rand];
 
                 ASSERT(p1_idx != p2_idx)
-                ASSERT(p1_idx > 0)
+                ASSERT(p1_idx >= 0)
                 ASSERT(p1_idx < input->population_size)
-                ASSERT(p2_idx > 0)
+                ASSERT(p2_idx >= 0)
                 ASSERT(p2_idx < input->population_size)
 
                 // Chequeo la distancia entre padres
-                if (distance(&population[p1_idx],&population[p2_idx]) > threshold) {
+                d = distance(&population[p1_idx],&population[p2_idx]);
+                
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Selected parents %d and %d > distance = %f\n", p1_idx, p2_idx, d);
+                #endif
+                
+                if (d > threshold) {
                     // Aplico HUX y creo dos hijos
                     c1_idx = sorted_population[next_avail_children];
                     c2_idx = sorted_population[next_avail_children+1];
@@ -439,6 +477,9 @@ void* slave_thread(void *data) {
                     hux(rand_state[thread_id],
                         &population[p1_idx],&population[p2_idx],
                         &population[c1_idx],&population[c2_idx]);
+
+                    fitness(population, fitness_population, weights, c1_idx);
+                    fitness(population, fitness_population, weights, c2_idx);
 
                     next_avail_children += 2;
                 }
@@ -472,10 +513,14 @@ void* slave_thread(void *data) {
             if (local_elite_sol->initialized == 0) {
                 // Si la solución elite no esta inicializada...
                 clone_solution(local_elite_sol, &population[best_sol_index]);
-            } else if (fitness(local_elite_sol) > fitness(&population[best_sol_index])) {
+                local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
+                
+            } else if (local_elite_fitness > fitness(population, fitness_population, weights, best_sol_index)) {
                 // O si la mejor solución de la población es mejor
                 // que la solución elite...
                 clone_solution(local_elite_sol, &population[best_sol_index]);
+                local_elite_fitness = fitness(population, fitness_population, weights, best_sol_index);
+                
             }
 
             // =======================================================
@@ -484,6 +529,17 @@ void* slave_thread(void *data) {
 
             // ...
         }
+        
+        // =======================================================
+        // Reset children population
+        // =======================================================
+        int sorted_i;
+        for (int i = instance->input->population_size; i < max_pop_sols; i++) {
+            sorted_i = sorted_population[i];
+            
+            population[sorted_i].initialized = 0;
+            fitness_population[sorted_i] = NAN;
+        }
     }
 
     // ================================================================
@@ -491,6 +547,7 @@ void* slave_thread(void *data) {
     // ================================================================
     free(instance->population);
     free(sorted_population);
+    free(fitness_population);
 
     return 0;
 }

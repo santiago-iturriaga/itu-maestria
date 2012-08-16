@@ -22,13 +22,10 @@ BIN = gmochc
 LINK = -lcuda -lrt -lpthread -lm
 OPTS = --ptxas-options=-v
 
-all: debug verificador minmin
+all: debug verificador
 
 verificador: verificador.c
 	$(CC) $(CPU_OPTS) -g verificador.c -o bin/verificador
-
-minmin: minmin.c
-	$(CC) $(CPU_OPTS) -O3 minmin.c -o bin/minmin
 
 cpu: src/main.cu \
 		src/load_params.cu \

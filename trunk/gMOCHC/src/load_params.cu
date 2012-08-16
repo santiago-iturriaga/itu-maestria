@@ -73,7 +73,7 @@ int load_params(int argc, char **argv, struct params *input) {
             fprintf(stderr, "[PARAMS] population size: %d\n", input->population_size);
         #endif
 
-        if ((input->algorithm < 0)||(input->algorithm > 2)) {
+        if ((input->algorithm < 0)||(input->algorithm > 4)) {
             fprintf(stderr, "[ERROR] invalid algorithm.\n");
             return EXIT_FAILURE;
         }
@@ -83,9 +83,11 @@ int load_params(int argc, char **argv, struct params *input) {
         fprintf(stdout, "Usage:\n");    
         fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>\n\n", argv[0]);
         fprintf(stdout, "       Algorithms\n");
-        fprintf(stdout, "           0 MCT\n");
-        fprintf(stdout, "           1 MinMin\n");
-        fprintf(stdout, "           2 pMinMin/D\n");
+        fprintf(stdout, "           %d MCT\n",ALGORITHM_MCT);
+        fprintf(stdout, "           %d MinMin\n",ALGORITHM_MINMIN);
+        fprintf(stdout, "           %d pMinMin/D\n",ALGORITHM_PMINMIND);
+        fprintf(stdout, "           %d cMOCHC/islands\n",ALGORITHM_CMOCHCISLAND);
+        fprintf(stdout, "           %d cMOCHC/cellular\n",ALGORITHM_CMOCHCCELL);
         fprintf(stdout, "\n");
 
         return EXIT_FAILURE;

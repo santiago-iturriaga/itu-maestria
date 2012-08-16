@@ -117,6 +117,7 @@ int main(int argc, char** argv)
         } 
 
         #if defined(OUTPUT_SOLUTION)
+            fprintf(stdout, "1\n");
             for (int task_id = 0; task_id < etc.tasks_count; task_id++) {
                 fprintf(stdout, "%d\n", current_solution.task_assignment[task_id]);
             }

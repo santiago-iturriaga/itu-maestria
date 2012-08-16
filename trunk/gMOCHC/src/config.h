@@ -2,7 +2,7 @@
 #define CONFIG_H_
 
 /* Outputs solution(s) to stdout */
-//#define OUTPUT_SOLUTION
+#define OUTPUT_SOLUTION
 
 /* Records the execution time of 
  * some important operations */

@@ -27,13 +27,20 @@ inline void timming_end(const char *message, timespec &ts) {
     #endif
 }
 
-inline const char* int_to_binary(int x) {
-    static char b[33];
-    b[0] = '\0';
+inline char* int_to_binary(int x) {
+    //fprintf(stderr, ">> x=%d\n", x);
+
+    char *b = (char*)(malloc(sizeof(char) * 33));
+    b[32] = '\0';
+
+    int mask = 0x1;
 
     int z;
-    for (z = 2147483648; z > 0; z >>= 1) {
-        strcat(b, ((x & z) == z) ? "1" : "0");
+    for (z = 31; z >= 0; z--) {
+        //fprintf(stderr, ">> z=%d mask=%d\n", z, mask);
+        
+        b[z] = ((x & mask) != 0) ? '1' : '0';
+        mask = mask << 1;
     }
 
     return b;

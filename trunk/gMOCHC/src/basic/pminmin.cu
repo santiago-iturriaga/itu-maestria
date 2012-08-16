@@ -64,6 +64,7 @@ void compute_pminmin(struct solution *sol, int nthreads) {
     }
 
     refresh_solution(sol);
+    sol->initialized = 1;
 
     #ifdef DEBUG_0
         fprintf(stderr, "[DEBUG] pMinMin/D %d-threads: makespan=%f energy=%f.\n", nthreads, sol->makespan, sol->energy_consumption);

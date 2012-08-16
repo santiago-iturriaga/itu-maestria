@@ -8,6 +8,7 @@ void compute_mct(struct solution *sol) {
     #endif
     
     sol->makespan = 0.0;
+    sol->initialized = 1;
 
     int tasks_count = sol->etc->tasks_count;
     int machines_count = sol->etc->machines_count;
@@ -39,7 +40,8 @@ void compute_mct(struct solution *sol) {
     }
     
     refresh_solution(sol);
-
+    sol->initialized = 1;
+    
     #if defined(DEBUG_0)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);
     #endif
@@ -93,6 +95,7 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
     }
     
     refresh_solution(sol);
+    sol->initialized = 1;
 
     #if defined(DEBUG_0)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);

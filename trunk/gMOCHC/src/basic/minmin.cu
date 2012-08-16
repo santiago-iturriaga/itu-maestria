@@ -66,6 +66,7 @@ void compute_minmin(struct solution *sol) {
     }
 
     refresh_solution(sol);
+    sol->initialized = 1;
 
     #if defined(DEBUG_0)
         fprintf(stderr, "[DEBUG] MinMin solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);
