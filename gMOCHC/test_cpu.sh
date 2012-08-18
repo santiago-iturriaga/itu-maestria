@@ -12,9 +12,9 @@
 
 #cMOCHC/islands
 SEED=0
-THREADS=2
+THREADS=4
 POP=6
 TIMEOUT=1
-ITERATIONS=1
-bin/gmochc_cpu ~/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 ~/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 ${THREADS} ${SEED} ${TIMEOUT} ${ITERATIONS} ${POP} #1> sols.txt
+ITERATIONS=1000
+bin/gmochc_cpu ~/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 ~/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 ${THREADS} ${SEED} ${TIMEOUT} ${ITERATIONS} ${POP} 1> sols.txt 2>log.txt
 #bin/verificador ~/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 ~/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 sols.txt 512 16

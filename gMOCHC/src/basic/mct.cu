@@ -8,7 +8,6 @@ void compute_mct(struct solution *sol) {
     #endif
     
     sol->makespan = 0.0;
-    sol->initialized = 1;
 
     int tasks_count = sol->etc->tasks_count;
     int machines_count = sol->etc->machines_count;
