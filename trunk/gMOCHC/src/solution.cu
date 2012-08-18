@@ -50,6 +50,8 @@ void create_empty_solution(struct solution *new_solution, struct scenario *s, st
 }
 
 void clone_solution(struct solution *dst, struct solution *src) {
+    dst->initialized = src->initialized;
+    
     dst->s = src->s;
     dst->etc = src->etc;
     dst->energy = src->energy;

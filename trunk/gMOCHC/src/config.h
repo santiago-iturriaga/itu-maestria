@@ -6,7 +6,7 @@
 
 /* Records the execution time of 
  * some important operations */
-#define TIMMING
+//#define TIMMING
 
 /* Random number generator */
 //#define CPU_RAND
@@ -18,7 +18,7 @@
  * 1 Minimal debug
  * 2 Medium debug
  * 3 Debug everything */
-#define DEBUG_LEVEL 3
+#define DEBUG_LEVEL 1
 
 //#define REPORT_EVERY_SECONDS 1
 //#define REPORT_EVERY_ITERS   1
