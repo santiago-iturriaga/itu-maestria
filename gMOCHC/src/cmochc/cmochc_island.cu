@@ -15,7 +15,8 @@
 #include "../archivers/aga.h"
 
 //#define LOCAL_ITERATION_COUNT   1
-#define LOCAL_ITERATION_COUNT   50
+//#define LOCAL_ITERATION_COUNT   50
+#define LOCAL_ITERATION_COUNT   100
 //#define LOCAL_ITERATION_COUNT   100
 //#define LOCAL_ITERATION_COUNT   2000
 
@@ -911,7 +912,7 @@ void* slave_thread(void *data) {
                         
                     migrated = 1;
                 }
-            } */
+            }*/
             
             if (migrated == 0) {
                 #ifdef DEBUG_3
