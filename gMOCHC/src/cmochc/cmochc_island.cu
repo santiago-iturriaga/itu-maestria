@@ -894,41 +894,38 @@ void* slave_thread(void *data) {
         }
         
         /* Migro soluciones desde poblaciones elite vecinas */
-        /*int neigh_pop, migrated;
+        int neigh_pop, migrated;
         for (int n = BEST_SOLS_KEPT; n < max_pop_sols; n++) {
             migrated = 0;
             neigh_pop = n-BEST_SOLS_KEPT;
             
-            if (neigh_pop < input->thread_count) {
+            /*if (neigh_pop < input->thread_count) {
                 if (n_closest_threads[neigh_pop] != -1) {
                     #ifdef DEBUG_3
                         fprintf(stderr, "[DEBUG] Thread %d, migrando solución %d desde %d (to pos %d)\n", 
-                            thread_id, instance->sorted_population[neigh_pop][0], neigh_pop, sorted_population[n]);
+                            thread_id, instance->sorted_population[neigh_pop][1], neigh_pop, sorted_population[n]);
                     #endif
                     
                     clone_solution(&population[sorted_population[n]], 
-                        &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][0]]));
+                        &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][1]]));
                         
                     migrated = 1;
                 }
-            } 
+            } */
             
             if (migrated == 0) {
-                int rand_sol;
-                rand_sol = RAND_GENERATE(rand_state[thread_id]) * n;
-                
                 #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] Thread %d, muto la sol %d usando la sol %d\n", 
-                        thread_id, sorted_population[n], sorted_population[rand_sol]);
+                        thread_id, sorted_population[n], sorted_population[0]);
                 #endif
                 
-                mutate(rand_state[thread_id], &population[sorted_population[rand_sol]], &population[sorted_population[n]]);
+                mutate(rand_state[thread_id], &population[sorted_population[0]], &population[sorted_population[n]]);
             }
             
             fitness_population[sorted_population[n]] = NAN;
             fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[n]);
         }
-        */
+        
         /* ***************************************** */
         /* Espero a que los demas esclavos terminen. */
         /* ***************************************** */
