@@ -327,7 +327,7 @@ void update_grid(struct aga_state *state)
 
 void archivers_aga_init(struct aga_state *state, int population_max_size,
     struct solution *new_solutions, int new_solutions_size) {
-
+        
     state->population = (struct solution*)(malloc(sizeof(struct solution) * population_max_size));
     state->population_size = population_max_size;
     state->population_count = 0;
@@ -352,6 +352,12 @@ void archivers_aga_init(struct aga_state *state, int population_max_size,
     for (int i = 0; i < state->max_locations; i++) {
         state->grid_pop[i] = 0;
     }
+    
+    #ifdef DEBUG_1
+        fprintf(stderr, "[DEBUG] Archiver init\n");
+        fprintf(stderr, "> population_size   : %d\n", state->population_size);
+        fprintf(stderr, "> new_solutions_size: %d\n", state->new_solutions_size);
+    #endif
 }
 
 void archivers_aga_free(struct aga_state *state) {
