@@ -16,13 +16,16 @@
 
 //#define LOCAL_ITERATION_COUNT   1
 #define LOCAL_ITERATION_COUNT   50
+//#define LOCAL_ITERATION_COUNT   100
 //#define LOCAL_ITERATION_COUNT   2000
 
-#define CROSS_MAX_THRESHOLD_DIVISOR 4
-/* Aprox. one cataclysm every 5 local iterations without change */
-#define CROSS_THRESHOLD_STEP_DIVISOR 5
+#define BEST_SOLS_KEPT  3
 
-#define MAX_GLOBAL_POP 50
+#define CROSS_MAX_THRESHOLD_DIVISOR     4
+/* Aprox. one cataclysm every 5 local iterations without change */
+#define CROSS_THRESHOLD_STEP_DIVISOR    10
+
+#define MAX_GLOBAL_POP  50
 
 /* Only hux_custom */
 #define CROSSOVER_FLIP_PROB     0.25
@@ -286,14 +289,14 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     }
 
     /* Estado de la población elite global */
-    instance.global_elite_pop = (struct solution*)(malloc(sizeof(struct solution) * input.thread_count));
+    instance.global_elite_pop = (struct solution*)(malloc(sizeof(struct solution) * (input.thread_count * BEST_SOLS_KEPT)));
     
-    for (int i = 0; i < input.thread_count; i++) {
+    for (int i = 0; i < (input.thread_count * BEST_SOLS_KEPT); i++) {
         create_empty_solution(&instance.global_elite_pop[i], &current_scenario, &etc, &energy);
     }
     
     /* Inicializo el archivador */
-    archivers_aga_init(&instance.archiver, MAX_GLOBAL_POP, instance.global_elite_pop, input.thread_count);
+    archivers_aga_init(&instance.archiver, MAX_GLOBAL_POP, instance.global_elite_pop, (input.thread_count * BEST_SOLS_KEPT));
 }
 
 /* Obtiene los mejores elementos de cada población */
@@ -384,10 +387,10 @@ inline void hux(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
     struct solution *c1, struct solution *c2) {
 
+    double random;
     int current_task_index = 0;
 
     while (current_task_index < p1->etc->tasks_count) {
-        double random;
         random = RAND_GENERATE(rand_state);
 
         int mask = 0x0;
@@ -403,9 +406,17 @@ inline void hux(RAND_STATE &rand_state,
         int mask_index = 0x1;
         while ((mask_index < mask_size) && (current_task_index < p1->etc->tasks_count)) {
             if ((mask & 0x1) == 1) {
-                // Si la máscara vale 1 copio las asignaciones cruzadas de la tarea
-                c1->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
-                c2->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
+                random = RAND_GENERATE(rand_state);
+                
+                if (random < 0.1) {
+                    // Si la máscara vale 1 copio las asignaciones cruzadas de la tarea
+                    c1->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
+                    c2->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
+                } else {
+                    // Si la máscara vale 0 copio las asignaciones derecho de la tarea
+                    c1->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
+                    c2->task_assignment[current_task_index] = p2->task_assignment[current_task_index];
+                }
             } else {
                 // Si la máscara vale 0 copio las asignaciones derecho de la tarea
                 c1->task_assignment[current_task_index] = p1->task_assignment[current_task_index];
@@ -450,17 +461,21 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
         while ((mask_index < mask_size) && (current_task_index < tasks_count)) {
             if ((mask & 0x1) == 1) {
                 random = RAND_GENERATE(rand_state);
-                destination_machine = (int)(floor(machines_count * random));
                 
-                ASSERT(destination_machine >= 0)
-                ASSERT(destination_machine < machines_count)
-                
-                // Si la máscara vale 1 copio reubico aleariamente la tarea
-                mutation->task_assignment[current_task_index] = destination_machine;
-                
-                /*#ifdef DEBUG_3
-                    fprintf(stderr, "task=%d>>machine=%d, ", current_task_index, destination_machine);
-                #endif*/
+                if (random < 0.1) {
+                    random = RAND_GENERATE(rand_state);
+                    destination_machine = (int)(floor(machines_count * random));
+                    
+                    ASSERT(destination_machine >= 0)
+                    ASSERT(destination_machine < machines_count)
+                    
+                    // Si la máscara vale 1 copio reubico aleariamente la tarea
+                    mutation->task_assignment[current_task_index] = destination_machine;
+                    
+                    //#ifdef DEBUG_3
+                    //    fprintf(stderr, "task=%d>>machine=%d, ", current_task_index, destination_machine);
+                    //#endif
+                }
             } else {
                 // Si la máscara vale 0 copio las asignaciones derecho de la tarea
                 mutation->task_assignment[current_task_index] = seed->task_assignment[current_task_index];
@@ -552,8 +567,8 @@ void* slave_thread(void *data) {
     ASSERT(weights[1] <= 1)
     
     /* Busco los threads mas cercanos */
-    int *n_closest_threads = (int*)malloc(sizeof(int) * (input->population_size-1));   
-    for (int n = 0; n < input->population_size-1; n++) n_closest_threads[n] = -1;
+    int *n_closest_threads = (int*)malloc(sizeof(int) * input->thread_count);
+    for (int n = 0; n < input->thread_count; n++) n_closest_threads[n] = -1;
     
     float current_distance = thread_weight_step;
     float upper_bound, lower_bound;
@@ -561,7 +576,7 @@ void* slave_thread(void *data) {
     int next_neigh = 0;
     
     if (current_distance > 0) {
-        while ((current_distance <= 1.0) && (next_neigh < input->population_size-1)) {
+        while ((current_distance <= 1.0) && (next_neigh < input->thread_count)) {
             upper_bound = weights[0] + current_distance;
             if ((upper_bound >= 0.0)&&(upper_bound <= 1.0)) {
                 upper_neigh = upper_bound / thread_weight_step;
@@ -570,7 +585,7 @@ void* slave_thread(void *data) {
             }
 
             lower_bound = weights[0] - current_distance;
-            if ((lower_bound >= 0.0)&&(lower_bound <= 1.0)&&(next_neigh < input->population_size-1)) {
+            if ((lower_bound >= 0.0)&&(lower_bound <= 1.0)&&(next_neigh < input->thread_count)) {
                 lower_neigh = lower_bound / thread_weight_step;
                 n_closest_threads[next_neigh] = lower_neigh;
                 next_neigh++;
@@ -580,21 +595,19 @@ void* slave_thread(void *data) {
         }
     }
     
-    /*
     #ifdef DEBUG_1
-        if (thread_id == 1) {
+        //if (thread_id == 1) {
             fprintf(stderr, "[DEBUG] Thread %d, closest neighbours:\n", thread_id);
             float w0,w1;
-            for (int n = 0; n < input->population_size-1; n++) {
+            for (int n = 0; n < input->thread_count; n++) {
                 w0 = (float)n_closest_threads[n] * thread_weight_step;
                 w1 = 1 - w0;
                 
                 fprintf(stderr, "<%d> %d (%f,%f)\n", thread_id, n_closest_threads[n], w0, w1);
             }
             fprintf(stderr, "\n");
-        }
+        //}
     #endif
-    * */
 
     /* Inicializo la población de padres y limpio la de hijos */
     int max_pop_sols = 2 * input->population_size;
@@ -609,7 +622,7 @@ void* slave_thread(void *data) {
     float *fitness_population;
     fitness_population = (float*)(malloc(sizeof(float) * max_pop_sols));
 
-    for (int i = 0; i < input->population_size; i++) {
+    for (int i = 0; i < max_pop_sols; i++) {
         // Random init.
         create_empty_solution(&(population[i]),current_scenario,etc,energy);
 
@@ -646,13 +659,6 @@ void* slave_thread(void *data) {
                 thread_id, i, fitness(population, fitness_population, weights, 
                     makespan_norm_value, energy_norm_value, i));
         #endif
-    }
-
-    for (int i = instance->input->population_size; i < max_pop_sols; i++) {
-        create_empty_solution(&(population[i]),current_scenario,etc,energy);
-
-        sorted_population[i] = i;
-        fitness_population[i] = NAN;
     }
 
     // ================================================================
@@ -834,13 +840,11 @@ void* slave_thread(void *data) {
                     fprintf(stderr, "[DEBUG] Cataclysm %d!\n", generations_cataclysm_count[thread_id]);
                 #endif
                
-                for (int i = 1; i < max_pop_sols; i++) { /* No muto la mejor solución */
+                int solution_seed;
+                for (int i = BEST_SOLS_KEPT; i < max_pop_sols; i++) { /* No muto la mejor solución */
                     if (population[sorted_population[i]].initialized == 1) {
-                        if (RAND_GENERATE(rand_state[thread_id]) < 0.5) {
-                            mutate(rand_state[thread_id], &population[sorted_population[0]], &population[sorted_population[i]]);
-                        } else {
-                            mutate(rand_state[thread_id], &population[sorted_population[i]], &population[sorted_population[i]]);
-                        }
+                        solution_seed = RAND_GENERATE(rand_state[thread_id]) * BEST_SOLS_KEPT;
+                        mutate(rand_state[thread_id], &population[sorted_population[solution_seed]], &population[sorted_population[i]]);
                         
                         fitness_population[sorted_population[i]] = NAN;
                         fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[i]);
@@ -881,36 +885,50 @@ void* slave_thread(void *data) {
         }
         
         /* Copio mi mejor solución a la población temp principal */
-        clone_solution(&instance->global_elite_pop[thread_id], &population[sorted_population[0]]);
+        for (int i = 0; i < BEST_SOLS_KEPT; i++) {
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Thread %d, copiando mejor sol. %d en pos %d a para gather\n", 
+                    thread_id, i, sorted_population[i]);
+            #endif
+            clone_solution(&instance->global_elite_pop[thread_id * BEST_SOLS_KEPT + i], &population[sorted_population[i]]);
+        }
         
         /* Migro soluciones desde poblaciones elite vecinas */
-        for (int n = 1; n < max_pop_sols; n++) {
-            if (n > 0) {
-                if ((n < input->population_size-1)&&(n_closest_threads[n-1] != -1)) {
+        /*int neigh_pop, migrated;
+        for (int n = BEST_SOLS_KEPT; n < max_pop_sols; n++) {
+            migrated = 0;
+            neigh_pop = n-BEST_SOLS_KEPT;
+            
+            if (neigh_pop < input->thread_count) {
+                if (n_closest_threads[neigh_pop] != -1) {
                     #ifdef DEBUG_3
                         fprintf(stderr, "[DEBUG] Thread %d, migrando solución %d desde %d (to pos %d)\n", 
-                            thread_id, instance->sorted_population[thread_id][0], n-1, sorted_population[n]);
+                            thread_id, instance->sorted_population[neigh_pop][0], neigh_pop, sorted_population[n]);
                     #endif
                     
                     clone_solution(&population[sorted_population[n]], 
-                        &(instance->population[n-1][instance->sorted_population[n-1][0]]));
-                } else {
-                    int rand_sol;
-                    rand_sol = RAND_GENERATE(rand_state[thread_id]) * n;
-                    
-                    #ifdef DEBUG_3
-                        fprintf(stderr, "[DEBUG] Thread %d, muto la sol %d usando la sol %d\n", 
-                            thread_id, sorted_population[n], sorted_population[rand_sol]);
-                    #endif
-                    
-                    mutate(rand_state[thread_id], &population[sorted_population[rand_sol]], &population[sorted_population[n]]);
+                        &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][0]]));
+                        
+                    migrated = 1;
                 }
+            } 
+            
+            if (migrated == 0) {
+                int rand_sol;
+                rand_sol = RAND_GENERATE(rand_state[thread_id]) * n;
                 
-                fitness_population[sorted_population[n]] = NAN;
-                fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[n]);
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Thread %d, muto la sol %d usando la sol %d\n", 
+                        thread_id, sorted_population[n], sorted_population[rand_sol]);
+                #endif
+                
+                mutate(rand_state[thread_id], &population[sorted_population[rand_sol]], &population[sorted_population[n]]);
             }
+            
+            fitness_population[sorted_population[n]] = NAN;
+            fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[n]);
         }
-        
+        */
         /* ***************************************** */
         /* Espero a que los demas esclavos terminen. */
         /* ***************************************** */
@@ -922,9 +940,12 @@ void* slave_thread(void *data) {
         }
 
         // Muto la mejor solución que tenía.
-        // mutate(rand_state[thread_id], &population[sorted_population[0]], &population[sorted_population[0]]);
-        // fitness_population[sorted_population[0]] = NAN;
-        // fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[0]);
+        //for (int i = 0; i < BEST_SOLS_KEPT; i++) {
+        for (int i = 0; i < 1; i++) {
+            mutate(rand_state[thread_id], &population[sorted_population[i]], &population[sorted_population[i]]);
+            fitness_population[sorted_population[i]] = NAN;
+            fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[i]);
+        }
                 
         /* Re-sort de population */
         merge_sort(population, weights, makespan_norm_value, energy_norm_value, 
