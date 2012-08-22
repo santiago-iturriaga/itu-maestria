@@ -22,6 +22,7 @@
 package jmetal.metaheuristics.mocell;
 
 import java.util.Comparator;
+import java.util.List;
 
 import jmetal.util.comparators.*;
 import jmetal.util.archive.CrowdingArchive;
@@ -73,15 +74,30 @@ public class MOCell extends Algorithm{
     neighborhood       = new Neighborhood(populationSize);
     neighbors          = new SolutionSet[populationSize];
 
-    // Create the initial population
-    for (int i = 0; i < populationSize; i++){
-      Solution individual = new Solution(problem_);
-      problem_.evaluate(individual);           
-      problem_.evaluateConstraints(individual);
-      currentPopulation.add(individual);
-      individual.setLocation(i);
-      evaluations++;
-    }
+	List<Solution> initialPopulation = ((List<Solution>) getInputParameter("initialPopulation"));
+	
+	if (initialPopulation != null) {
+		for (int i = 0; (i < populationSize)
+				&& (i < initialPopulation.size()); i++) {
+			Solution solution;
+			solution = new Solution(initialPopulation.get(i));
+			problem_.evaluate(solution);
+			problem_.evaluateConstraints(solution);
+			evaluations++;
+			currentPopulation.add(solution);
+			solution.setLocation(i);
+		}
+	}
+
+	for (int i = currentPopulation.size(); i < populationSize; i++) {
+		Solution solution;
+		solution = new Solution(problem_);
+		problem_.evaluate(solution);
+		problem_.evaluateConstraints(solution);
+		evaluations++;
+		currentPopulation.add(solution);
+		solution.setLocation(i);
+	} // for   
 
     // Main loop
     while (evaluations < maxEvaluations){                                 

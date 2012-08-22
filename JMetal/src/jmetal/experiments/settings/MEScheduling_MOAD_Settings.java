@@ -1,46 +1,33 @@
-//  MOEAD_Settings.java 
-//
-//  Authors:
-//       Antonio J. Nebro <antonio@lcc.uma.es>
-//       Juan J. Durillo <durillo@lcc.uma.es>
-//
-//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo
-//
-//  This program is free software: you can redistribute it and/or modify
-//  it under the terms of the GNU Lesser General Public License as published by
-//  the Free Software Foundation, either version 3 of the License, or
-//  (at your option) any later version.
-//
-//  This program is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//  GNU Lesser General Public License for more details.
-// 
-//  You should have received a copy of the GNU Lesser General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 package jmetal.experiments.settings;
 
-import jmetal.metaheuristics.moead.*;
-
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
+import java.util.LinkedList;
+import java.util.List;
 
 import jmetal.core.Algorithm;
 import jmetal.core.Operator;
-import jmetal.core.Problem;
+import jmetal.core.Solution;
+import jmetal.core.SolutionSet;
 import jmetal.experiments.Settings;
+import jmetal.metaheuristics.moead.MOEAD;
+import jmetal.metaheuristics.moead.pMOEAD;
+import jmetal.metaheuristics.nsgaII.NSGAII;
+import jmetal.operators.crossover.Crossover;
 import jmetal.operators.crossover.CrossoverFactory;
+import jmetal.operators.mutation.Mutation;
 import jmetal.operators.mutation.MutationFactory;
+import jmetal.operators.selection.Selection;
 import jmetal.operators.selection.SelectionFactory;
 import jmetal.problems.ProblemFactory;
+import jmetal.problems.scheduling.MEProblem;
+import jmetal.problems.scheduling.MEProblem.Scenario;
+import jmetal.problems.scheduling.MEProblem.Workload;
 import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.JMException;
+import jmetal.util.listScheduling.RandomMCT;
 
-/**
- * Settings class of algorithm MOEA/D
- */
-public class MOEAD_Settings extends Settings {
+public class MEScheduling_MOAD_Settings extends Settings {
 	public double CR_;
 	public double F_;
 	public int populationSize_;
@@ -54,20 +41,23 @@ public class MOEAD_Settings extends Settings {
 	public int numberOfThreads; // Parameter used by the pMOEAD version
 	public String moeadVersion;
 
-	/**
-	 * Constructor
-	 */
-	public MOEAD_Settings(String problem) {
-		super(problem);
+	public MEScheduling_MOAD_Settings(String problemName)
+			throws ClassNotFoundException, IOException {
+		super(problemName);
 
-		Object[] problemParams = { "Real" };
-		try {
-			problem_ = (new ProblemFactory()).getProblem(problemName_,
-					problemParams);
-		} catch (JMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String[] problemInfo = problemName.split(" ");
+		assert (problemInfo.length == 4);
+		String[] dimension = problemInfo[1].split("x");
+
+		int taskCount = Integer.parseInt(dimension[0]);
+		int machineCount = Integer.parseInt(dimension[1]);
+		String scenarioPath = "/home/santiago/Scheduling/Energy-Makespan/instances.ruso/"
+				+ problemInfo[1] + "/" + problemInfo[2];
+		String workloadPath = "/home/santiago/Scheduling/Energy-Makespan/instances.ruso/"
+				+ problemInfo[1] + "/" + problemInfo[3];
+
+		problem_ = new MEProblem(taskCount, machineCount, scenarioPath,
+				workloadPath);
 
 		// Default settings
 		CR_ = 1.0;
@@ -89,7 +79,7 @@ public class MOEAD_Settings extends Settings {
 
 		numberOfThreads = 2; // Parameter used by the pMOEAD version
 		moeadVersion = "MOEAD"; // or "pMOEAD"
-	} // MOEAD_Settings
+	}
 
 	/**
 	 * Configure the algorithm with the specified parameter settings
@@ -119,6 +109,21 @@ public class MOEAD_Settings extends Settings {
 		algorithm.setInputParameter("maxEvaluations", maxEvaluations_);
 		algorithm.setInputParameter("dataDirectory", dataDirectory_);
 
+		try {
+			RandomMCT initMethod = new RandomMCT(problem_);
+			Solution initSolution;
+
+			List<Solution> population = new LinkedList<Solution>();
+			for (int i = 0; i < populationSize_; i++) {
+				initSolution = initMethod.compute();
+				population.add(initSolution);
+			}
+
+			algorithm.setInputParameter("initialPopulation", population);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		// Crossover operator
 		parameters = new HashMap();
 		parameters.put("CR", CR_);
@@ -144,4 +149,4 @@ public class MOEAD_Settings extends Settings {
 
 		return algorithm;
 	} // configure
-} // MOEAD_Settings
+}
