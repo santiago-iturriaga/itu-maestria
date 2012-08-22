@@ -6,7 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmetal.core.Algorithm;
-import jmetal.experiments.settings.MEScheduling_Settings;
+import jmetal.experiments.settings.MEScheduling_MOCell_Settings;
+import jmetal.experiments.settings.MEScheduling_NSGAII_Settings;
 import jmetal.util.JMException;
 
 public class MESchedulingStudy extends Experiment {
@@ -22,10 +23,6 @@ public class MESchedulingStudy extends Experiment {
 				parameters[i] = new HashMap();
 			} // for
 
-			if (problemId == 0) {
-				parameters[problemId].put("crossoverProbability_", 0.8);
-			}
-
 			if ((!paretoFrontFile_[problemId].equals(""))
 					|| (paretoFrontFile_[problemId] == null)) {
 				for (int i = 0; i < numberOfAlgorithms; i++) {
@@ -34,10 +31,8 @@ public class MESchedulingStudy extends Experiment {
 				}
 			} // if
 
-			for (int i = 0; i < numberOfAlgorithms; i++) {
-				algorithm[i] = new MEScheduling_Settings(problemName)
-						.configure(parameters[i]);
-			}
+			algorithm[0] = new MEScheduling_NSGAII_Settings(problemName).configure(parameters[0]);
+			algorithm[1] = new MEScheduling_MOCell_Settings(problemName).configure(parameters[1]);
 		} catch (IllegalArgumentException ex) {
 			Logger.getLogger(MESchedulingStudy.class.getName()).log(
 					Level.SEVERE, null, ex);
@@ -65,7 +60,7 @@ public class MESchedulingStudy extends Experiment {
 		MESchedulingStudy exp = new MESchedulingStudy();
 
 		exp.experimentName_ = "MESchedulingStudy";
-		exp.algorithmNameList_ = new String[] { "NSGAII" };
+		exp.algorithmNameList_ = new String[] { "NSGAII", "MOCell" };
 		exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0", "MEProblem 2048x64 scenario.0 workload.0" };
 		exp.paretoFrontFile_ = new String[] { "", "" };
 		exp.indicatorList_ = new String[] {};
