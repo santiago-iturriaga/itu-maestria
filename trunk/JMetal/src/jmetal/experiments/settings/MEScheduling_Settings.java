@@ -2,8 +2,12 @@ package jmetal.experiments.settings;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 import jmetal.core.Algorithm;
+import jmetal.core.Solution;
+import jmetal.core.SolutionSet;
 import jmetal.experiments.Settings;
 import jmetal.metaheuristics.nsgaII.NSGAII;
 import jmetal.operators.crossover.Crossover;
@@ -18,6 +22,7 @@ import jmetal.problems.scheduling.MEProblem.Scenario;
 import jmetal.problems.scheduling.MEProblem.Workload;
 import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.JMException;
+import jmetal.util.listScheduling.RandomMCT;
 
 public class MEScheduling_Settings extends Settings {
 	public int populationSize_;
@@ -74,18 +79,37 @@ public class MEScheduling_Settings extends Settings {
 		algorithm.setInputParameter("populationSize", populationSize_);
 		algorithm.setInputParameter("maxEvaluations", maxEvaluations_);
 
-	    // Mutation and Crossover for Real codification
-	    parameters = new HashMap() ;
-	    parameters.put("probability", crossoverProbability_) ;
-	    parameters.put("distributionIndex", crossoverDistributionIndex_) ;
-	    //crossover = CrossoverFactory.getCrossoverOperator("SBXCrossover", parameters); 
-	    crossover = CrossoverFactory.getCrossoverOperator("SinglePointCrossover", parameters);
-	    
-	    parameters = new HashMap() ;
-	    parameters.put("probability", mutationProbability_) ;
-	    parameters.put("distributionIndex", mutationDistributionIndex_) ;
-	    //mutation = MutationFactory.getMutationOperator("PolynomialMutation", parameters);
-	    mutation = MutationFactory.getMutationOperator("BitFlipMutation", parameters);
+		try {
+			RandomMCT initMethod = new RandomMCT(problem_);
+			Solution initSolution; 
+			
+			List<Solution> population = new LinkedList<Solution>();
+			for (int i = 0; i < populationSize_; i++) {
+				initSolution = initMethod.compute();			
+				population.add(initSolution);
+			}
+			
+			algorithm.setInputParameter("initialPopulation", population);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// Mutation and Crossover for Real codification
+		parameters = new HashMap();
+		parameters.put("probability", crossoverProbability_);
+		parameters.put("distributionIndex", crossoverDistributionIndex_);
+		// crossover = CrossoverFactory.getCrossoverOperator("SBXCrossover",
+		// parameters);
+		crossover = CrossoverFactory.getCrossoverOperator(
+				"SinglePointCrossover", parameters);
+
+		parameters = new HashMap();
+		parameters.put("probability", mutationProbability_);
+		parameters.put("distributionIndex", mutationDistributionIndex_);
+		// mutation = MutationFactory.getMutationOperator("PolynomialMutation",
+		// parameters);
+		mutation = MutationFactory.getMutationOperator("BitFlipMutation",
+				parameters);
 
 		// Selection Operator
 		parameters = null;
@@ -105,5 +129,4 @@ public class MEScheduling_Settings extends Settings {
 
 		return algorithm;
 	}
-
 }

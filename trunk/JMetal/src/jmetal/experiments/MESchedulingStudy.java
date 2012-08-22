@@ -66,8 +66,8 @@ public class MESchedulingStudy extends Experiment {
 
 		exp.experimentName_ = "MESchedulingStudy";
 		exp.algorithmNameList_ = new String[] { "NSGAII" };
-		exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0" };
-		exp.paretoFrontFile_ = new String[] { "" };
+		exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0", "MEProblem 2048x64 scenario.0 workload.0" };
+		exp.paretoFrontFile_ = new String[] { "", "" };
 		exp.indicatorList_ = new String[] {};
 		exp.experimentBaseDirectory_ = "/home/santiago/workspace/JMetal/results/"
 				+ exp.experimentName_;
@@ -77,7 +77,7 @@ public class MESchedulingStudy extends Experiment {
 		int numberOfAlgorithms = exp.algorithmNameList_.length;
 		exp.algorithmSettings_ = new Settings[numberOfAlgorithms];
 
-		exp.independentRuns_ = 4;
+		exp.independentRuns_ = 1;
 
 		// Run the experiments
 		int numberOfThreads;

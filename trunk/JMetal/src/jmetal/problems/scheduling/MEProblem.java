@@ -19,21 +19,21 @@ public class MEProblem extends Problem {
 		public float[][] Energy;
 	}
 
-	private int taskCount;
-	private int machineCount;
-	private Scenario scenario;
-	private Workload workload;
+	public int taskCount_;
+	public int machineCount_;
+	public Scenario scenario_;
+	public Workload workload_;
 
 	public MEProblem(int taskCount, int machineCount, String scenarioPath,
 			String workloadPath) throws ClassNotFoundException, IOException {
-		this.taskCount = taskCount;
-		this.machineCount = machineCount;
+		this.taskCount_ = taskCount;
+		this.machineCount_ = machineCount;
 
-		this.scenario = new Scenario();
-		this.scenario.Cores = new int[this.machineCount];
-		this.scenario.SSJ = new int[this.machineCount];
-		this.scenario.IdleEnergy = new float[this.machineCount];
-		this.scenario.MaxEnergy = new float[this.machineCount];
+		this.scenario_ = new Scenario();
+		this.scenario_.Cores = new int[this.machineCount_];
+		this.scenario_.SSJ = new int[this.machineCount_];
+		this.scenario_.IdleEnergy = new float[this.machineCount_];
+		this.scenario_.MaxEnergy = new float[this.machineCount_];
 
 		FileInputStream fstream = new FileInputStream(scenarioPath);
 		DataInputStream in = new DataInputStream(fstream);
@@ -51,7 +51,7 @@ public class MEProblem extends Problem {
 		String[] scenarioData;
 
 		while ((strLine = br.readLine()) != null) {
-			scenarioData = strLine.split(" ");
+			scenarioData = strLine.split(" |\t");
 
 			currentData = 0;
 			currentIndex = 0;
@@ -77,17 +77,17 @@ public class MEProblem extends Problem {
 				currentIndex++;
 			}
 
-			this.scenario.Cores[currentMachine] = cores;
-			this.scenario.SSJ[currentMachine] = ssj;
-			this.scenario.IdleEnergy[currentMachine] = idle;
-			this.scenario.MaxEnergy[currentMachine] = max;
+			this.scenario_.Cores[currentMachine] = cores;
+			this.scenario_.SSJ[currentMachine] = ssj;
+			this.scenario_.IdleEnergy[currentMachine] = idle;
+			this.scenario_.MaxEnergy[currentMachine] = max;
 			currentMachine++;
 		}
 		in.close();
 
-		this.workload = new Workload();
-		this.workload.ETC = new float[this.machineCount][this.taskCount];
-		this.workload.Energy = new float[this.machineCount][this.taskCount];
+		this.workload_ = new Workload();
+		this.workload_.ETC = new float[this.machineCount_][this.taskCount_];
+		this.workload_.Energy = new float[this.machineCount_][this.taskCount_];
 
 		fstream = new FileInputStream(workloadPath);
 		in = new DataInputStream(fstream);
@@ -97,14 +97,14 @@ public class MEProblem extends Problem {
 		int currentTask = 0;
 
 		while ((strLine = br.readLine()) != null) {
-			this.workload.ETC[currentMachine][currentTask] = Float
-					.parseFloat(strLine) / this.scenario.SSJ[currentMachine];
-			this.workload.Energy[currentMachine][currentTask] = this.workload.ETC[currentMachine][currentTask]
-					* this.scenario.MaxEnergy[currentMachine];
+			this.workload_.ETC[currentMachine][currentTask] = Float
+					.parseFloat(strLine) / this.scenario_.SSJ[currentMachine];
+			this.workload_.Energy[currentMachine][currentTask] = this.workload_.ETC[currentMachine][currentTask]
+					* this.scenario_.MaxEnergy[currentMachine];
 
 			currentMachine++;
 			
-			if (currentMachine == this.machineCount) {
+			if (currentMachine == this.machineCount_) {
 				currentTask++;
 				currentMachine = 0;
 			}
@@ -131,22 +131,22 @@ public class MEProblem extends Problem {
 		float totalEnergyConsumption = 0;
 
 		float makespan = 0;
-		float[] computeTime = new float[machineCount];
+		float[] computeTime = new float[machineCount_];
 
 		int assignedMachine;
-		for (int t = 0; t < taskCount; t++) {
+		for (int t = 0; t < taskCount_; t++) {
 			assignedMachine = (int) solution.getDecisionVariables()[t]
 					.getValue();
 
-			computeTime[assignedMachine] += workload.ETC[assignedMachine][t];
+			computeTime[assignedMachine] += workload_.ETC[assignedMachine][t];
 			if (computeTime[assignedMachine] > makespan)
 				makespan = computeTime[assignedMachine];
 
-			totalEnergyConsumption += workload.Energy[assignedMachine][t];
+			totalEnergyConsumption += workload_.Energy[assignedMachine][t];
 		}
 
-		for (int m = 0; m < machineCount; m++) {
-			totalEnergyConsumption += (scenario.IdleEnergy[m] * (makespan - computeTime[m]));
+		for (int m = 0; m < machineCount_; m++) {
+			totalEnergyConsumption += (scenario_.IdleEnergy[m] * (makespan - computeTime[m]));
 		}
 
 		solution.setObjective(0, makespan);
