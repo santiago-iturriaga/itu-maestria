@@ -145,13 +145,28 @@ public class MOCHC extends Algorithm {
     minimumDistance = (int) Math.floor(initialConvergenceCount * size);
 
     solutionSet = new SolutionSet(populationSize);
-    for (int i = 0; i < populationSize; i++) {
-      Solution solution = new Solution(problem_);
-      problem_.evaluate(solution);
-      problem_.evaluateConstraints(solution);
-      evaluations++;        
-      solutionSet.add(solution);
-    }      
+	List<Solution> initialPopulation = ((List<Solution>) getInputParameter("initialPopulation"));
+	
+	if (initialPopulation != null) {
+		for (int i = 0; (i < populationSize)
+				&& (i < initialPopulation.size()); i++) {
+			Solution solution;
+			solution = new Solution(initialPopulation.get(i));
+			problem_.evaluate(solution);
+			problem_.evaluateConstraints(solution);
+			evaluations++;
+			solutionSet.add(solution);
+		}
+	}
+
+	for (int i = solutionSet.size(); i < populationSize; i++) {
+		Solution solution;
+		solution = new Solution(problem_);
+		problem_.evaluate(solution);
+		problem_.evaluateConstraints(solution);
+		evaluations++;
+		solutionSet.add(solution);
+	} // for   
 
     while (!condition) {
       offspringPopulation = new SolutionSet(populationSize);
