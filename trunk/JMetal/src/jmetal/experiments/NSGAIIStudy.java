@@ -97,9 +97,9 @@ public class NSGAIIStudy extends Experiment {
     
     int numberOfAlgorithms = exp.algorithmNameList_.length ;
 
-    exp.experimentBaseDirectory_ = "/Users/antonio/Softw/pruebas/jmetal/kk/" +
+    exp.experimentBaseDirectory_ = "/home/santiago/workspace/JMetal/results/" +
                                    exp.experimentName_;
-    exp.paretoFrontDirectory_ = "/Users/antonio/Softw/pruebas/data/paretoFronts";
+    exp.paretoFrontDirectory_ = "/home/santiago/workspace/JMetal/results/pareto_fronts";
     
     exp.algorithmSettings_ = new Settings[numberOfAlgorithms] ;
     

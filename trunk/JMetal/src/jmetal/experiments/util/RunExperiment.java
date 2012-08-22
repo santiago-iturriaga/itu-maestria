@@ -188,74 +188,76 @@ public class RunExperiment extends Thread {
 
 					// STEP 9: calculate quality indicators
 					if (indicatorList_.length > 0) {
-						QualityIndicator indicators;
-						//System.out.println("PF file: " + paretoFrontFile_[problemId]);
-						indicators = new QualityIndicator(problem, paretoFrontFile_[problemId]);
-
-						for (int j = 0; j < indicatorList_.length; j++) {
-							if (indicatorList_[j].equals("HV")) {
-								double value = indicators.getHypervolume(resultFront);
-								FileWriter os;
-								try {
-									os = new FileWriter(experimentDirectory + "/HV", true);
-									os.write("" + value + "\n");
-									os.close();
-								} catch (IOException ex) {
-									Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
-								}
-							}
-							if (indicatorList_[j].equals("SPREAD")) {
-								FileWriter os = null;
-								try {
-									double value = indicators.getSpread(resultFront);
-									os = new FileWriter(experimentDirectory + "/SPREAD", true);
-									os.write("" + value + "\n");
-									os.close();
-								} catch (IOException ex) {
-									Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
-								} finally {
+						if (!paretoFrontFile_[problemId].equals("")) {
+							QualityIndicator indicators;
+							//System.out.println("PF file: " + paretoFrontFile_[problemId]);
+							indicators = new QualityIndicator(problem, paretoFrontFile_[problemId]);
+	
+							for (int j = 0; j < indicatorList_.length; j++) {
+								if (indicatorList_[j].equals("HV")) {
+									double value = indicators.getHypervolume(resultFront);
+									FileWriter os;
 									try {
+										os = new FileWriter(experimentDirectory + "/HV", true);
+										os.write("" + value + "\n");
 										os.close();
 									} catch (IOException ex) {
 										Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
 									}
 								}
-							}
-							if (indicatorList_[j].equals("IGD")) {
-								FileWriter os = null;
-								try {
-									double value = indicators.getIGD(resultFront);
-									os = new FileWriter(experimentDirectory + "/IGD", true);
-									os.write("" + value + "\n");
-									os.close();
-								} catch (IOException ex) {
-									Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
-								} finally {
+								if (indicatorList_[j].equals("SPREAD")) {
+									FileWriter os = null;
 									try {
+										double value = indicators.getSpread(resultFront);
+										os = new FileWriter(experimentDirectory + "/SPREAD", true);
+										os.write("" + value + "\n");
 										os.close();
 									} catch (IOException ex) {
 										Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+									} finally {
+										try {
+											os.close();
+										} catch (IOException ex) {
+											Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+										}
 									}
 								}
-							}
-							if (indicatorList_[j].equals("EPSILON")) {
-								FileWriter os = null;
-								try {
-									double value = indicators.getEpsilon(resultFront);
-									os = new FileWriter(experimentDirectory + "/EPSILON", true);
-									os.write("" + value + "\n");
-									os.close();
-								} catch (IOException ex) {
-									Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
-								} finally {
+								if (indicatorList_[j].equals("IGD")) {
+									FileWriter os = null;
 									try {
+										double value = indicators.getIGD(resultFront);
+										os = new FileWriter(experimentDirectory + "/IGD", true);
+										os.write("" + value + "\n");
 										os.close();
 									} catch (IOException ex) {
 										Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+									} finally {
+										try {
+											os.close();
+										} catch (IOException ex) {
+											Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+										}
 									}
 								}
-							}
-						} // for
+								if (indicatorList_[j].equals("EPSILON")) {
+									FileWriter os = null;
+									try {
+										double value = indicators.getEpsilon(resultFront);
+										os = new FileWriter(experimentDirectory + "/EPSILON", true);
+										os.write("" + value + "\n");
+										os.close();
+									} catch (IOException ex) {
+										Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+									} finally {
+										try {
+											os.close();
+										} catch (IOException ex) {
+											Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+										}
+									}
+								}
+							} // for
+						}
 					} // if
 				} // for
 			} // for
