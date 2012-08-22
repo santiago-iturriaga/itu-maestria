@@ -27,7 +27,7 @@ import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.JMException;
 import jmetal.util.listScheduling.RandomMCT;
 
-public class MEScheduling_MOAD_Settings extends Settings {
+public class MEScheduling_MOEAD_Settings extends Settings {
 	public double CR_;
 	public double F_;
 	public int populationSize_;
@@ -41,7 +41,7 @@ public class MEScheduling_MOAD_Settings extends Settings {
 	public int numberOfThreads; // Parameter used by the pMOEAD version
 	public String moeadVersion;
 
-	public MEScheduling_MOAD_Settings(String problemName)
+	public MEScheduling_MOEAD_Settings(String problemName)
 			throws ClassNotFoundException, IOException {
 		super(problemName);
 
