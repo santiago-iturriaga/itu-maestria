@@ -6,7 +6,7 @@
 #include "config.h"
 
 void create_empty_solution(struct solution *new_solution, struct scenario *s, struct etc_matrix *etc, struct energy_matrix *energy) {   
-    new_solution->initialized = 0;
+    new_solution->initialized = SOLUTION__EMPTY;
     new_solution->s = s;
     new_solution->etc = etc;
     new_solution->energy = energy;
