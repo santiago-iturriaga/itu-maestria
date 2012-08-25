@@ -35,12 +35,16 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
         ASSERT(n_pos < state->new_solutions_size);
         ASSERT(s_pos < state->population_size);
         
-        if (state->population[n_pos].initialized != SOLUTION__IN_USE) {
+        if (state->new_solutions[n_pos].initialized != SOLUTION__IN_USE) {
             n_pos++;
         } else {
             if (state->population[s_pos].initialized == SOLUTION__IN_USE) {
                 s_pos++;
             } else {
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Found empty spot in archive %d!!!", s_pos);
+                #endif
+                
                 if (state->population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
                     create_empty_solution(&state->population[s_pos],
                         state->new_solutions[n_pos].s, 
@@ -72,6 +76,10 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
         if (state->new_solutions[n_pos].initialized == SOLUTION__EMPTY) {
             n_pos++;
         } else {
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Trying to add new solution %d to archive\n", n_pos);
+            #endif
+            
             int to_replace;
             to_replace = -1;
 
@@ -98,6 +106,10 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
                 }
             }
 
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] > new solution %d is replacing solution %d\n", n_pos, to_replace);
+            #endif
+
             if (to_replace != -1)
             {
                 clone_solution(&state->population[to_replace], &state->new_solutions[n_pos]);
@@ -112,7 +124,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
                 // Cambio la asignación del square de la solución
                 state->grid_sol_loc[to_replace] = state->grid_sol_loc[n_pos + state->population_size];
 
-                state->population_count++;
+                //state->population_count++;
                 rc++;
             }
             else
@@ -128,23 +140,6 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
         }
     }
 
-    /*
-    double actual_best_makespan = INFINITY, actual_best_energy = INFINITY;
-
-    for (int i = 0; i < instance->population_max_size; i++) {
-        if (instance->population[i].status == SOLUTION__STATUS_READY) {
-            if (actual_best_makespan > get_makespan(&(instance->population[i]))) {
-                actual_best_makespan = get_makespan(&(instance->population[i]));
-            }
-
-            if (actual_best_energy > get_energy(&(instance->population[i]))) {
-                actual_best_energy = get_energy(&(instance->population[i]));
-            }
-        }
-    }
-    * */
-
-    //fprintf(stdout, ">>> Min makespan(%f) Min energy(%f)\n", actual_best_makespan, actual_best_energy);
     return rc;
 }
 
@@ -260,70 +255,46 @@ void update_grid(struct aga_state *state)
         }
     }
 
-    /*
-    double sse = 0;
-    double product = 1;
+    int square;
 
     for (a = 0; a < ARCHIVER__OBJECTIVES; a++)
     {
-        sse += ((state->gl_offset[a] - offset[a]) * (state->gl_offset[a] - offset[a]));
-        sse += ((state->gl_largest[a] - largest[a]) * (state->gl_largest[a] - largest[a]));
-        product *= state->gl_range[a];
+        state->gl_largest[a] = largest[a] + 0.2 * largest[a];
+        state->gl_offset[a] = offset[a] + 0.2 * offset[a];
+        state->gl_range[a] = state->gl_largest[a] - state->gl_offset[a];
     }
-    * */
 
-    //static int change = 0;
-    int square;
+    for (a = 0; a < state->max_locations; a++)
+    {
+        state->grid_pop[a] = 0;
+    }
 
-    // If the summed squared error (difference) between old and new
-    // minima and maxima in each of the objectives
-    // is bigger than 10 percent of the square of the size of the space
-    // then renormalise the space and recalculte grid locations
-    /*if (sse > (0.1 * product * product))
-    {*/
-        //change++;
-
-        for (a = 0; a < ARCHIVER__OBJECTIVES; a++)
-        {
-            state->gl_largest[a] = largest[a] + 0.2 * largest[a];
-            state->gl_offset[a] = offset[a] + 0.2 * offset[a];
-            state->gl_range[a] = state->gl_largest[a] - state->gl_offset[a];
-        }
-
-        for (a = 0; a < state->max_locations; a++)
-        {
-            state->grid_pop[a] = 0;
-        }
-
-        for (a = 0; a < state->population_size + state->new_solutions_size; a++)
-        {
-            if (a < state->population_size) {
-                if (state->population[a].initialized == SOLUTION__IN_USE) {
-                    square = find_loc(state, a);
-
-                    state->grid_sol_loc[a] = square;
-                    state->grid_pop[square]++;
-                }
-            } else {
-                if (state->new_solutions[a - state->new_solutions_size].initialized == SOLUTION__IN_USE) {
-                    square = find_loc(state, a);
-
-                    state->grid_sol_loc[a] = square;
-                    state->grid_pop[square]++;
-                }
-            }
-        }
-    /*} else {
-        for (a = 0; a < state->new_solutions_size; a++)
-        {
-            if (state->new_solutions[a].initialized != 0) {
-                square = find_loc(state, a + state->population_size);
-
-                state->grid_sol_loc[a + state->population_size] = square;
+    for (a = 0; a < state->population_size + state->new_solutions_size; a++)
+    {
+        if (a < state->population_size) {
+            if (state->population[a].initialized == SOLUTION__IN_USE) {
+                square = find_loc(state, a);
+                state->grid_sol_loc[a] = square;
                 state->grid_pop[square]++;
+                                
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Population %d of the archive is in square %d. Now there are %d sols in square %d.\n",
+                        a, square, state->grid_pop[square], square);
+                #endif
+            }
+        } else {
+            if (state->new_solutions[a - state->new_solutions_size].initialized == SOLUTION__IN_USE) {
+                square = find_loc(state, a);
+                state->grid_sol_loc[a] = square;
+                state->grid_pop[square]++;
+                
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Population %d of the new solutions is in square %d. Now there are %d sols in square %d.\n",
+                        a - state->new_solutions_size, square, state->grid_pop[square], square);
+                #endif
             }
         }
-    }*/
+    }
 }
 
 void archivers_aga_init(struct aga_state *state, int population_max_size,
@@ -399,6 +370,10 @@ int delete_dominated_solutions(struct aga_state *state) {
     
     int cant_new_solutions = 0;
     
+    #ifdef DEBUG_3
+        int current_archive_size = state->population_count;
+    #endif    
+    
     // Comparo la dominancia de las nuevas soluciones con las viejas soluciones.
     for (int n_pos = 0; n_pos < state->new_solutions_size; n_pos++)
     {
@@ -432,6 +407,10 @@ int delete_dominated_solutions(struct aga_state *state) {
             cant_new_solutions++;
         }
     }
+    
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] %d solutions were deleted form the archive\n", current_archive_size - state->population_count);
+    #endif  
     
     return cant_new_solutions;
 }
@@ -481,12 +460,17 @@ int archivers_aga(struct aga_state *state)
     #ifdef DEBUG_3
         fprintf(stderr, "> current solutions in archive: %d of %d\n", state->population_count, state->population_size);
     #endif    
-    if (new_solutions + state->population_count < state->population_size) {
+    if (new_solutions + state->population_count <= state->population_size) {
         #ifdef DEBUG_3
             fprintf(stderr, "> there is room in the archive for all gathered solutions\n");
         #endif    
         archive_add_all_new(state);
     } else {
+        #ifdef DEBUG_3
+            fprintf(stderr, "> %d new solutions, but there's only space for %d solutions\n", 
+                new_solutions, state->population_size - state->population_count);
+        #endif   
+        
         // Calculate grid location of mutant solution and renormalize archive if necessary.
         update_grid(state);
 
