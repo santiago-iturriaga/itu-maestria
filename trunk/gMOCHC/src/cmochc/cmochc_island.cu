@@ -145,6 +145,16 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         gather(instance);
 
         TIMMING_END(">> cmochc_gather", ts_gather);
+        
+        #ifdef CMOCHC_SYNC
+            /* Notifico a los esclavos que termió la operación de gather. */
+            rc = pthread_barrier_wait(&instance.sync_barrier);
+            if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+            {
+                printf("Could not wait on barrier\n");
+                exit(EXIT_FAILURE);
+            }
+        #endif
     }
 
     /* Bloqueo la ejecucion hasta que terminen todos los hilos. */
@@ -333,7 +343,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 }
 
 /* Obtiene los mejores elementos de cada población */
-void gather(struct cmochc &instance) {
+void gather(struct cmochc &instance) {   
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Gathering...\n");
         fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
@@ -816,7 +826,7 @@ void* slave_thread(void *data) {
                 #endif
 
                 #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Cataclysm %d!\n", generations_cataclysm_count[thread_id]);
+                    fprintf(stderr, "[DEBUG] Cataclysm!\n");
                 #endif
                 
                 int aux_index;
@@ -870,6 +880,16 @@ void* slave_thread(void *data) {
         for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
             clone_solution(&instance->global_elite_pop[thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i], &population[sorted_population[i]]);
         }
+        
+        #ifdef CMOCHC_SYNC
+            /* Espero a que el maestro ejecute la operación de gather. */
+            rc = pthread_barrier_wait(&instance->sync_barrier);
+            if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
+            {
+                printf("Could not wait on barrier\n");
+                exit(EXIT_FAILURE);
+            }
+        #endif
         
         /* *********************************************************************************************
          * Migro soluciones desde poblaciones elite vecinas

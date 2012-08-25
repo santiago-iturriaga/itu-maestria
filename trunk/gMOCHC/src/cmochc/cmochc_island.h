@@ -6,16 +6,18 @@
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
 
+/* For debugging purposes */
+//#define CMOCHC_SYNC
+
 #define CMOCHC_LOCAL__ITERATION_COUNT 50
 #define CMOCHC_LOCAL__BEST_SOLS_KEPT 3
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR 4
-/* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR 
- * local iterations without change */
+/* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR local iterations without change */
 #define CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR 15
 #define CMOCHC_LOCAL__MATING_CHANCE 2
 #define CMOCHC_LOCAL__MUTATE_CHANCE 3
 
-#define CMOCHC_ARCHIVE__MAX_SIZE 100
+#define CMOCHC_ARCHIVE__MAX_SIZE 50
 
 #define CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE 4
 
