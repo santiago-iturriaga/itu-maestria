@@ -3,7 +3,7 @@
 #include "../config.h"
 
 void compute_mct(struct solution *sol) {
-    #if defined(DEBUG_0)
+    #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] calculando MCT...\n");
     #endif
     
@@ -41,13 +41,13 @@ void compute_mct(struct solution *sol) {
     refresh_solution(sol);
     sol->initialized = 1;
     
-    #if defined(DEBUG_0)
+    #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);
     #endif
 }
 
 void compute_mct_random(struct solution *sol, int start, int direction) {
-    #if defined(DEBUG_0)
+    #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] calculando random MCT...\n");
     #endif
     
@@ -96,7 +96,7 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
     refresh_solution(sol);
     sol->initialized = 1;
 
-    #if defined(DEBUG_0)
+    #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);
     #endif
 }

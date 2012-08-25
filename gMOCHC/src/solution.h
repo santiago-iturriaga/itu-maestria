@@ -11,6 +11,9 @@
 #ifndef SOLUTION_H_
 #define SOLUTION_H_
 
+#define SOLUTION__NOT_INITIALIZED -1
+#define SOLUTION__EMPTY 0
+#define SOLUTION__IN_USE 1
 #define SOLUTION__TASK_NOT_ASSIGNED -1
 
 struct solution {

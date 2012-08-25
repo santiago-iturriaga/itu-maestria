@@ -35,13 +35,13 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
         ASSERT(n_pos < state->new_solutions_size);
         ASSERT(s_pos < state->population_size);
         
-        if (state->population[n_pos].initialized == 0) {
+        if (state->population[n_pos].initialized != SOLUTION__IN_USE) {
             n_pos++;
         } else {
-            if (state->population[s_pos].initialized == 1) {
+            if (state->population[s_pos].initialized == SOLUTION__IN_USE) {
                 s_pos++;
             } else {
-                if (state->population[s_pos].initialized == -1) {
+                if (state->population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
                     create_empty_solution(&state->population[s_pos],
                         state->new_solutions[n_pos].s, 
                         state->new_solutions[n_pos].etc, 
@@ -51,7 +51,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
                 clone_solution(&state->population[s_pos], &state->new_solutions[n_pos]);
                 
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
-                state->new_solutions[n_pos].initialized = 0;
+                state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                 
                 // Cambio la asignación del square de la solución
                 state->grid_sol_loc[s_pos] = state->grid_sol_loc[n_pos + state->population_size];
@@ -69,7 +69,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
     {
         ASSERT(n_pos < state->new_solutions_size);
         
-        if (state->new_solutions[n_pos].initialized == 0) {
+        if (state->new_solutions[n_pos].initialized == SOLUTION__EMPTY) {
             n_pos++;
         } else {
             int to_replace;
@@ -83,7 +83,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
 
             for (int i = 0; i < state->population_size; i++)
             {
-                if (state->population[i].initialized == 1) {
+                if (state->population[i].initialized == SOLUTION__IN_USE) {
                     int i_grid_pos;
                     i_grid_pos = state->grid_sol_loc[i];
 
@@ -101,9 +101,10 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
             if (to_replace != -1)
             {
                 clone_solution(&state->population[to_replace], &state->new_solutions[n_pos]);
+                state->population_origin[to_replace] = n_pos;
                 
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
-                state->new_solutions[n_pos].initialized = 0;
+                state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
 
                 // Decremento la población en el square de la solución que acabo de borrar
                 state->grid_pop[state->grid_sol_loc[to_replace]]--;
@@ -117,7 +118,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
             else
             {
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
-                state->new_solutions[n_pos].initialized = 0;
+                state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
 
                 // Decremento la población en el square de la solución que acabo de borrar
                 state->grid_pop[state->grid_sol_loc[n_pos + state->population_size]]--;
@@ -236,7 +237,7 @@ void update_grid(struct aga_state *state)
         for (a = 0; a < state->population_size + state->new_solutions_size; a++)
         {
             if (a < state->population_size) {
-                if (state->population[a].initialized != 0) {
+                if (state->population[a].initialized == SOLUTION__IN_USE) {
                     if (get_objective(&(state->population[a]), b) < offset[b]) {
                         offset[b] = get_objective(&(state->population[a]), b);
                     }
@@ -246,7 +247,7 @@ void update_grid(struct aga_state *state)
                     }
                 }
             } else {
-                if (state->new_solutions[a - state->population_size].initialized != 0) {
+                if (state->new_solutions[a - state->population_size].initialized == SOLUTION__IN_USE) {
                     if (get_objective(&(state->new_solutions[a - state->population_size]), b) < offset[b]) {
                         offset[b] = get_objective(&(state->new_solutions[a - state->population_size]), b);
                     }
@@ -297,14 +298,14 @@ void update_grid(struct aga_state *state)
         for (a = 0; a < state->population_size + state->new_solutions_size; a++)
         {
             if (a < state->population_size) {
-                if (state->population[a].initialized != 0) {
+                if (state->population[a].initialized == SOLUTION__IN_USE) {
                     square = find_loc(state, a);
 
                     state->grid_sol_loc[a] = square;
                     state->grid_pop[square]++;
                 }
             } else {
-                if (state->new_solutions[a - state->new_solutions_size].initialized != 0) {
+                if (state->new_solutions[a - state->new_solutions_size].initialized == SOLUTION__IN_USE) {
                     square = find_loc(state, a);
 
                     state->grid_sol_loc[a] = square;
@@ -329,11 +330,13 @@ void archivers_aga_init(struct aga_state *state, int population_max_size,
     struct solution *new_solutions, int new_solutions_size) {
         
     state->population = (struct solution*)(malloc(sizeof(struct solution) * population_max_size));
+    state->population_origin = (int*)(malloc(sizeof(int) * population_max_size));
     state->population_size = population_max_size;
     state->population_count = 0;
 
     for (int p = 0; p < state->population_size; p++) {
-        state->population[p].initialized = -1;
+        state->population[p].initialized = SOLUTION__NOT_INITIALIZED;
+        state->population_origin[p] = -1;
     }
 
     state->new_solutions = new_solutions;
@@ -361,6 +364,7 @@ void archivers_aga_init(struct aga_state *state, int population_max_size,
 }
 
 void archivers_aga_free(struct aga_state *state) {
+    free(state->population_origin);
     free(state->population);
     free(state->grid_pop);
     free(state->grid_sol_loc);
@@ -370,23 +374,23 @@ int delete_dominated_solutions(struct aga_state *state) {
     // Elimino las soluciones dominadas entre si de la población de nuevas soluciones.
     for (int n_pos = 0; n_pos < state->new_solutions_size; n_pos++)
     {
-        if (state->new_solutions[n_pos].initialized == 1) 
+        if (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
         {
             for (int n2_pos = n_pos+1; (n2_pos < state->new_solutions_size) && 
-                (state->new_solutions[n_pos].initialized == 1); n2_pos++)
+                (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE); n2_pos++)
             {
-                if (state->new_solutions[n2_pos].initialized == 1) 
+                if (state->new_solutions[n2_pos].initialized == SOLUTION__IN_USE) 
                 {
                     // Calculo no dominancia del elemento nuevo con el actual.
                     if ((state->new_solutions[n2_pos].makespan <= state->new_solutions[n_pos].makespan) && 
                         (state->new_solutions[n2_pos].energy_consumption <= state->new_solutions[n_pos].energy_consumption))
                     {                       
-                        state->new_solutions[n_pos].initialized = 0;
+                        state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                     }
                     else if ((state->new_solutions[n_pos].makespan <= state->new_solutions[n2_pos].makespan) && 
                         (state->new_solutions[n_pos].energy_consumption <= state->new_solutions[n2_pos].energy_consumption))
                     {
-                        state->new_solutions[n2_pos].initialized = 0;
+                        state->new_solutions[n2_pos].initialized = SOLUTION__EMPTY;
                     }
                 }
             }
@@ -398,32 +402,32 @@ int delete_dominated_solutions(struct aga_state *state) {
     // Comparo la dominancia de las nuevas soluciones con las viejas soluciones.
     for (int n_pos = 0; n_pos < state->new_solutions_size; n_pos++)
     {
-        if (state->new_solutions[n_pos].initialized == 1) 
+        if (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
         {
             for (int s_pos = 0; (s_pos < state->population_size) && 
-                (state->new_solutions[n_pos].initialized == 1); s_pos++)
+                (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE); s_pos++)
             {
-                if (state->population[s_pos].initialized == 1) 
+                if (state->population[s_pos].initialized == SOLUTION__IN_USE) 
                 {
                     // Calculo no dominancia del elemento nuevo con el actual.
                     if ((state->population[s_pos].makespan <= state->new_solutions[n_pos].makespan) && 
                         (state->population[s_pos].energy_consumption <= state->new_solutions[n_pos].energy_consumption))
                     {
                         // La nueva solucion es dominada por una ya existente.                        
-                        state->new_solutions[n_pos].initialized = 0;
+                        state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                     }
                     else if ((state->new_solutions[n_pos].makespan <= state->population[s_pos].makespan) && 
                         (state->new_solutions[n_pos].energy_consumption <= state->population[s_pos].energy_consumption))
                     {
                         // La nueva solucion domina a una ya existente.
-                        state->population[s_pos].initialized = 0;
+                        state->population[s_pos].initialized = SOLUTION__EMPTY;
                         state->population_count--;
                     }
                 }
             }
         }
         
-        if (state->new_solutions[n_pos].initialized == 1) 
+        if (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
         {
             cant_new_solutions++;
         }
@@ -435,17 +439,17 @@ int delete_dominated_solutions(struct aga_state *state) {
 void archive_add_all_new(struct aga_state *state) {
     for (int n_pos = 0; n_pos < state->new_solutions_size; n_pos++)
     {
-        if (state->new_solutions[n_pos].initialized == 1) {
+        if (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE) {           
             for (int s_pos = 0; (s_pos < state->population_size) && 
-                (state->new_solutions[n_pos].initialized == 1); s_pos++)
+                (state->new_solutions[n_pos].initialized == SOLUTION__IN_USE); s_pos++)
             {
-                if (state->population[s_pos].initialized != 1) 
+                if (state->population[s_pos].initialized != SOLUTION__IN_USE) 
                 {
                     #ifdef DEBUG_3
                         fprintf(stderr, "> found empty space in %d\n", s_pos);
                     #endif
                     
-                    if (state->population[s_pos].initialized == -1) {
+                    if (state->population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
                         create_empty_solution(&state->population[s_pos],
                             state->new_solutions[n_pos].s, 
                             state->new_solutions[n_pos].etc, 
@@ -453,8 +457,9 @@ void archive_add_all_new(struct aga_state *state) {
                     }
                     
                     clone_solution(&state->population[s_pos], &state->new_solutions[n_pos]);
+                    state->population_origin[s_pos] = n_pos;
                     state->population_count++;
-                    state->new_solutions[n_pos].initialized = 0;
+                    state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                 }
             }
         }
@@ -490,4 +495,33 @@ int archivers_aga(struct aga_state *state)
     }
     
     return new_solutions;
+}
+
+void archivers_aga_dump(struct aga_state *state) {
+    fprintf(stdout, "%d\n", state->population_count);
+    for (int i = 0; i < state->population_size; i++) {
+        if (state->population[i].initialized == SOLUTION__IN_USE) {
+            for (int task_id = 0; task_id < state->population[i].etc->tasks_count; task_id++) {
+                fprintf(stdout, "%d\n", state->population[i].task_assignment[task_id]);
+            }
+        }
+    }
+}
+
+void archivers_aga_show(struct aga_state *state) {
+    fprintf(stderr, "[DEBUG] ================================================\n");
+    fprintf(stderr, "[DEBUG] Elite archive solutions [makespan energy origin]\n");
+    fprintf(stderr, "[DEBUG] ================================================\n");
+
+    for (int i = 0; i < state->population_size; i++) {
+        if (state->population[i].initialized == SOLUTION__IN_USE) {
+            fprintf(stderr, "%f %f %d\n",
+                state->population[i].makespan, 
+                state->population[i].energy_consumption,
+                state->population_origin[i]);
+        }
+    }
+    fprintf(stderr, "[DEBUG] ================================================\n");
+    fprintf(stderr, "[DEBUG] Total solutions: %d\n", state->population_count);
+    fprintf(stderr, "[DEBUG] ================================================\n");
 }

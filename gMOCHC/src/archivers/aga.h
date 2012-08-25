@@ -25,6 +25,7 @@ struct aga_state {
     int *grid_sol_loc;
     
     struct solution *population;
+    int *population_origin;
     int population_size;
     int population_count;
     
@@ -33,9 +34,12 @@ struct aga_state {
 };
 
 void archivers_aga_init(struct aga_state *state, int population_max_size,
-    struct solution *new_solutions, int new_solutions_size);
-    
+    struct solution *new_solutions, int new_solutions_size);   
 void archivers_aga_free(struct aga_state *state);
+
 int archivers_aga(struct aga_state *state);
+
+void archivers_aga_show(struct aga_state *state);
+void archivers_aga_dump(struct aga_state *state);
 
 #endif // AGA__H_
