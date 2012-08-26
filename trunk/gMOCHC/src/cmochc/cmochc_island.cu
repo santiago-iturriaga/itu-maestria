@@ -44,12 +44,15 @@ struct cmochc {
     int *count_generations;
     int *count_at_least_one_children_inserted;
     int *count_improved_best_sol;
-    
+
     int *count_crossover;
     int *count_improved_crossover;
 
     int *count_cataclysm;
     int *count_improved_mutation;
+
+    int *count_migrations;
+    int *count_solutions_migrated;
 };
 
 struct cmochc_thread {
@@ -145,7 +148,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         gather(instance);
 
         TIMMING_END(">> cmochc_gather", ts_gather);
-        
+
         #ifdef CMOCHC_SYNC
             /* Notifico a los esclavos que termió la operación de gather. */
             rc = pthread_barrier_wait(&instance.sync_barrier);
@@ -198,31 +201,35 @@ void display_results(struct cmochc &instance) {
         int count_improved_crossover = 0;
         int count_cataclysm = 0;
         int count_improved_mutation = 0;
+        int count_migrations = 0;
+        int count_solutions_migrated = 0;
 
         int *count_pf_found;
         count_pf_found = (int*)(malloc(sizeof(int) * instance.input->thread_count));
 
         for (int t = 0; t < instance.input->thread_count; t++) {
             count_pf_found[t] = 0;
-            
+
             count_generations += instance.count_generations[t];
             count_at_least_one_children_inserted += instance.count_at_least_one_children_inserted[t];
             count_improved_best_sol += instance.count_improved_best_sol[t];
             count_crossover += instance.count_crossover[t];
             count_improved_crossover += instance.count_improved_crossover[t];
-            count_cataclysm = instance.count_cataclysm[t];
-            count_improved_mutation = instance.count_improved_mutation[t];
+            count_cataclysm += instance.count_cataclysm[t];
+            count_improved_mutation += instance.count_improved_mutation[t];
+            count_migrations += instance.count_migrations[t];
+            count_solutions_migrated += instance.count_solutions_migrated[t];
         }
-        
+
         for (int s = 0; s < instance.archiver.population_size; s++) {
             if (instance.archiver.population[s].initialized == SOLUTION__IN_USE) {
                 count_pf_found[instance.archiver.population_origin[s] / CMOCHC_LOCAL__BEST_SOLS_KEPT]++;
             }
         }
-        
+
         fprintf(stderr, "[INFO] == Statistics ==========================================\n");
         fprintf(stderr, "       count_generations                    : %d\n", count_generations);
-        fprintf(stderr, "       count_at_least_one_children_inserted : %d (%.2f %%)\n", count_at_least_one_children_inserted, 
+        fprintf(stderr, "       count_at_least_one_children_inserted : %d (%.2f %%)\n", count_at_least_one_children_inserted,
             ((float)count_at_least_one_children_inserted/(float)count_generations)*100);
         fprintf(stderr, "       count_improved_best_sol              : %d (%.2f %%)\n", count_improved_best_sol,
             ((float)count_improved_best_sol/(float)count_generations)*100);
@@ -232,12 +239,15 @@ void display_results(struct cmochc &instance) {
         fprintf(stderr, "       count_cataclysm                      : %d\n", count_cataclysm);
         fprintf(stderr, "       count_improved_mutation              : %d (%.2f %%)\n", count_improved_mutation,
             ((float)count_improved_mutation/(float)count_cataclysm)*100);
-            
+        fprintf(stderr, "       count_migrations                     : %d\n", count_migrations);
+        fprintf(stderr, "       count_solutions_migrated             : %d (%.2f %%)\n", count_solutions_migrated,
+            ((float)count_solutions_migrated/(float)count_migrations)*100);
+
         fprintf(stderr, "       pf solution count by deme:\n");
         for (int t = 0; t < instance.input->thread_count; t++) {
             fprintf(stderr, "          [%d] = %d\n", t, count_pf_found[t]);
         }
-            
+
         fprintf(stderr, "[INFO] ========================================================\n");
     #endif
 }
@@ -252,7 +262,23 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
-    
+
+
+    fprintf(stderr, "       CMOCHC_LOCAL__MUTATE_INITIAL_POP :");
+    #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
+        fprintf(stderr, " YES\n");
+    #else
+        fprintf(stderr, " NO\n");
+    #endif
+
+    fprintf(stderr, "       CMOCHC_LOCAL__FITNESS_NORM : ");
+    #ifdef CMOCHC_LOCAL__Z_FITNESS_NORM
+        fprintf(stderr, " Z\n");
+    #endif
+    #ifdef CMOCHC_LOCAL__ZN_FITNESS_NORM
+        fprintf(stderr, " ZN\n");
+    #endif
+
     fprintf(stderr, "       CMOCHC_ARCHIVE__MAX_SIZE                    : %d\n", CMOCHC_ARCHIVE__MAX_SIZE);
     fprintf(stderr, "       CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE      : %d\n", CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE);
     fprintf(stderr, "       CMOCHC_COLLABORATION__MIGRATION             : ");
@@ -274,7 +300,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     #endif
     #ifdef CMOCHC_COLLABORATION__MUTATE_NONE
         fprintf(stderr, "NONE\n");
-    #endif   
+    #endif
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Estado relacionado con el problema. */
@@ -298,6 +324,8 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     instance.count_improved_crossover = (int*)(malloc(sizeof(int) * input.thread_count));
     instance.count_cataclysm = (int*)(malloc(sizeof(int) * input.thread_count));
     instance.count_improved_mutation = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.count_migrations = (int*)(malloc(sizeof(int) * input.thread_count));
+    instance.count_solutions_migrated = (int*)(malloc(sizeof(int) * input.thread_count));
 
     /* Estado de la población de cada hilo. */
     instance.population = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
@@ -343,7 +371,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 }
 
 /* Obtiene los mejores elementos de cada población */
-void gather(struct cmochc &instance) {   
+void gather(struct cmochc &instance) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Gathering...\n");
         fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
@@ -382,6 +410,8 @@ void finalize(struct cmochc &instance, struct cmochc_thread *threads) {
     free(instance.count_improved_crossover);
     free(instance.count_cataclysm);
     free(instance.count_improved_mutation);
+    free(instance.count_migrations);
+    free(instance.count_solutions_migrated);
     free(instance.weights);
     free(instance.population);
     free(instance.sorted_population);
@@ -465,7 +495,7 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
     int current_task_index = 0;
     int tasks_count = seed->etc->tasks_count;
     int machines_count = seed->etc->machines_count;
-    
+
     double mut_prob = CMOCHC_LOCAL__MUTATE_CHANCE / (double)tasks_count;
 
     while (current_task_index < tasks_count) {
@@ -517,19 +547,34 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
 }
 
 inline float fitness(struct solution *population, float *fitness_population, float *weights,
-    float makespan_norm_value, float energy_norm_value, int index) {
+    float makespan_zenith_value, float energy_zenith_value,
+    float makespan_nadir_value, float energy_nadir_value,
+    int solution_index) {
 
-    if (isnan(fitness_population[index])) {
-        fitness_population[index] = ((population[index].makespan/makespan_norm_value) * weights[0]) +
-            ((population[index].energy_consumption/energy_norm_value) * weights[1]);
-    }
+    #ifdef CMOCHC_LOCAL__Z_FITNESS_NORM
+        if (isnan(fitness_population[solution_index])) {
+            fitness_population[solution_index] =
+                ((population[solution_index].makespan/makespan_zenith_value) * weights[0]) +
+                ((population[solution_index].energy_consumption/energy_zenith_value) * weights[1]);
+        }
+    #endif
+    #ifdef CMOCHC_LOCAL__ZN_FITNESS_NORM
+        if (isnan(fitness_population[solution_index])) {
+            fitness_population[solution_index] =
+                (((population[solution_index].makespan - makespan_zenith_value) /
+                    (makespan_nadir_value - makespan_zenith_value)) * weights[0]) +
+                (((population[solution_index].energy_consumption - energy_zenith_value) /
+                    (energy_nadir_value - energy_zenith_value)) * weights[1]);
+        }
+    #endif
 
-    return fitness_population[index];
+    return fitness_population[solution_index];
 }
 
 inline void merge_sort(struct solution *population, float *weights,
-    float makespan_norm_value, float energy_norm_value, int *sorted_population,
-    float *fitness_population, int population_size);
+    float makespan_zenith_value, float energy_zenith_value,
+    float makespan_nadir_value, float energy_nadir_value,
+    int *sorted_population, float *fitness_population, int population_size);
 
 /* Logica de los esclavos */
 void* slave_thread(void *data) {
@@ -543,6 +588,8 @@ void* slave_thread(void *data) {
     struct etc_matrix *etc = instance->etc;
     struct energy_matrix *energy = instance->energy;
 
+    struct solution *arhiver_pop = instance->archiver.population;
+
     RAND_STATE *rand_state = instance->rand_state;
 
     int *count_generations = instance->count_generations;
@@ -552,8 +599,8 @@ void* slave_thread(void *data) {
     int *count_improved_crossover = instance->count_improved_crossover;
     int *count_cataclysm = instance->count_cataclysm;
     int *count_improved_mutation = instance->count_improved_mutation;
-    
-    float makespan_norm_value, energy_norm_value;
+    int *count_migrations = instance->count_migrations;
+    int *count_solutions_migrated = instance->count_solutions_migrated;
 
     /* *********************************************************************************************
      * Inicializo el thread.
@@ -566,10 +613,16 @@ void* slave_thread(void *data) {
     count_improved_crossover[thread_id] = 0;
     count_cataclysm[thread_id] = 0;
     count_improved_mutation[thread_id] = 0;
-    
+    count_migrations[thread_id] = 0;
+    count_solutions_migrated[thread_id] = 0;
+
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id,rand_state[thread_id]);
     double random;
+
+    /* *********************************************************************************************
+     * Inicializo los pesos.
+     * *********************************************************************************************/
 
     /* Inicializo el peso asignado a este thread */
     instance->weights[thread_id] = (float*)(malloc(sizeof(float) * 2));
@@ -638,6 +691,10 @@ void* slave_thread(void *data) {
         //}
     #endif
 
+    /* *********************************************************************************************
+     * Inicializo la población.
+     * *********************************************************************************************/
+
     /* Inicializo la población de padres y limpio la de hijos */
     int max_pop_sols = 2 * input->population_size;
 
@@ -651,47 +708,83 @@ void* slave_thread(void *data) {
     float *fitness_population;
     fitness_population = (float*)(malloc(sizeof(float) * max_pop_sols));
 
+    int makespan_utopia_index, energy_utopia_index;
+    float makespan_utopia_value, energy_utopia_value;
+    float makespan_nadir_value, energy_nadir_value;
+
     for (int i = 0; i < max_pop_sols; i++) {
         // Random init.
         create_empty_solution(&(population[i]),current_scenario,etc,energy);
 
-        if (i > 0) {
-            random = RAND_GENERATE(rand_state[thread_id]);
-            int starting_pos;
-            starting_pos = (int)(floor(etc->tasks_count * random));
+        random = RAND_GENERATE(rand_state[thread_id]);
+        int starting_pos;
+        starting_pos = (int)(floor(etc->tasks_count * random));
 
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
-                    thread_id, i, starting_pos, i & 0x1);
-            #endif
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
+                thread_id, i, starting_pos, i & 0x1);
+        #endif
 
-            compute_mct_random(&(population[i]), starting_pos, i & 0x1);
-            
-            if (makespan_norm_value > population[i].makespan) makespan_norm_value = population[i].makespan;
-            if (energy_norm_value > population[i].energy_consumption) energy_norm_value = population[i].energy_consumption;
+        compute_mct_random(&(population[i]), starting_pos, i & 0x1);
+
+        if (i == 0) {
+            makespan_utopia_value = population[i].makespan;
+            makespan_nadir_value = makespan_utopia_value;
+            makespan_utopia_index = i;
+
+            energy_utopia_value = population[i].energy_consumption;
+            energy_nadir_value = energy_utopia_value;
+            energy_utopia_index = i;
         } else {
-            compute_mct(&(population[i]));
-
-            makespan_norm_value = population[i].makespan;
-            energy_norm_value = population[i].energy_consumption;
-
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Thread %d, makespan_norm_value=%f energy_norm_value=%f\n",
-                    thread_id, makespan_norm_value, energy_norm_value);
+            #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
+                mutate(rand_state[thread_id], &population[i], &population[i]);
             #endif
-        }
 
+            if (population[i].makespan < makespan_utopia_value) {
+                makespan_utopia_index = i;
+                makespan_utopia_value = population[i].makespan;
+
+                if (population[i].energy_consumption > energy_nadir_value) {
+                    energy_nadir_value = population[i].energy_consumption;
+                }
+            }
+            if (population[i].energy_consumption < energy_utopia_value) {
+                energy_utopia_index = i;
+                energy_utopia_value = population[i].energy_consumption;
+
+                if (population[i].makespan > makespan_nadir_value) {
+                    makespan_nadir_value = population[i].makespan;
+                }
+            }
+        }
+    }
+
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Normalization references\n");
+        fprintf(stderr, "> (makespan) best index=%d, zenith=%.2f, nadir=%.2f\n",
+            makespan_utopia_index, makespan_utopia_value, makespan_nadir_value);
+        fprintf(stderr, "> (energy) best index=%d, zenith=%.2f, nadir=%.2f\n",
+            energy_utopia_index, energy_utopia_value, energy_nadir_value);
+    #endif
+
+    for (int i = 0; i < max_pop_sols; i++) {
         sorted_population[i] = i;
         fitness_population[i] = NAN;
         fitness(population, fitness_population, weights,
-            makespan_norm_value, energy_norm_value, i);
+            makespan_utopia_value, energy_utopia_value, makespan_nadir_value, energy_nadir_value, i);
 
         #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, inicializado solution %d, fitness %f\n",
-                thread_id, i, fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, i));
+            fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f energy=%.2f fitness=%.2f\n",
+                thread_id, i, population[i].makespan, population[i].energy_consumption,
+                    fitness(population, fitness_population, weights,
+                        makespan_utopia_value, energy_utopia_value,
+                        makespan_nadir_value, energy_nadir_value, i));
         #endif
     }
+
+    merge_sort(population, weights, makespan_utopia_value, energy_utopia_value,
+        makespan_nadir_value, energy_nadir_value, sorted_population,
+        fitness_population, max_pop_sols);
 
     /* *********************************************************************************************
      * Main iteration
@@ -746,7 +839,7 @@ void* slave_thread(void *data) {
                     if (d > threshold) {
                         // Aplico HUX y creo dos hijos
                         count_crossover[thread_id]++;
-                        
+
                         c1_idx = sorted_population[next_avail_children];
                         c2_idx = sorted_population[next_avail_children+1];
 
@@ -758,16 +851,18 @@ void* slave_thread(void *data) {
                         fitness_population[c2_idx] = NAN;
 
                         fitness(population, fitness_population, weights,
-                            makespan_norm_value, energy_norm_value, c1_idx);
+                            makespan_utopia_value, energy_utopia_value,
+                            makespan_nadir_value, energy_nadir_value, c1_idx);
                         fitness(population, fitness_population, weights,
-                            makespan_norm_value, energy_norm_value, c2_idx);
+                            makespan_utopia_value, energy_utopia_value,
+                            makespan_nadir_value, energy_nadir_value, c2_idx);
 
                         #ifdef DEBUG_1
                             if ((fitness_population[c1_idx] < fitness_population[p1_idx])
                                 ||(fitness_population[c1_idx] < fitness_population[p2_idx])
                                 ||(fitness_population[c2_idx] < fitness_population[p1_idx])
                                 ||(fitness_population[c2_idx] < fitness_population[p2_idx])) {
-                                   
+
                                 count_improved_crossover[thread_id]++;
                             }
                         #endif
@@ -784,17 +879,21 @@ void* slave_thread(void *data) {
 
                 float best_parent;
                 best_parent = fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[0]);
+                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
+                    energy_nadir_value, sorted_population[0]);
 
                 float worst_parent;
                 worst_parent = fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[input->population_size-1]);
+                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
+                    energy_nadir_value, sorted_population[input->population_size-1]);
 
-                merge_sort(population, weights, makespan_norm_value, energy_norm_value,
-                    sorted_population, fitness_population, max_pop_sols);
+                merge_sort(population, weights, makespan_utopia_value, energy_utopia_value,
+                    makespan_nadir_value, energy_nadir_value, sorted_population,
+                    fitness_population, max_pop_sols);
 
                 if (worst_parent > fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[input->population_size-1])) {
+                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
+                    energy_nadir_value, sorted_population[input->population_size-1])) {
 
                     #ifdef DEBUG_1
                         count_at_least_one_children_inserted[thread_id]++;
@@ -804,7 +903,8 @@ void* slave_thread(void *data) {
                 }
 
                 if (best_parent > fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[0])) {
+                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
+                    energy_nadir_value, sorted_population[0])) {
 
                     #ifdef DEBUG_1
                         count_improved_best_sol[thread_id]++;
@@ -828,25 +928,27 @@ void* slave_thread(void *data) {
                 #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] Cataclysm!\n");
                 #endif
-                
+
                 int aux_index;
 
                 for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < max_pop_sols; i++) { /* No muto las mejores soluciones */
                     if (population[sorted_population[i]].initialized == SOLUTION__IN_USE) {
                         #ifdef DEBUG_1
                             count_cataclysm[thread_id]++;
-                            pre_mut_fitness = fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[i]);
+                            pre_mut_fitness = fitness(population, fitness_population, weights, makespan_utopia_value,
+                                energy_utopia_value, makespan_nadir_value, energy_nadir_value, sorted_population[i]);
                         #endif
-                    
+
                         aux_index = RAND_GENERATE(rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
-                        
-                        mutate(rand_state[thread_id], 
-                            &population[sorted_population[aux_index]], 
+
+                        mutate(rand_state[thread_id],
+                            &population[sorted_population[aux_index]],
                             &population[sorted_population[i]]);
 
                         fitness_population[sorted_population[i]] = NAN;
-                        fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, sorted_population[i]);
-                        
+                        fitness(population, fitness_population, weights, makespan_utopia_value, energy_utopia_value,
+                            makespan_nadir_value, energy_nadir_value, sorted_population[i]);
+
                         #ifdef DEBUG_1
                             if (fitness_population[sorted_population[i]] < pre_mut_fitness) {
                                 count_improved_mutation[thread_id]++;
@@ -856,14 +958,10 @@ void* slave_thread(void *data) {
                 }
 
                 /* Re-sort de population */
-                merge_sort(population, weights, makespan_norm_value, energy_norm_value,
-                    sorted_population, fitness_population, max_pop_sols);
+                merge_sort(population, weights, makespan_utopia_value, energy_utopia_value,
+                    makespan_nadir_value, energy_nadir_value, sorted_population,
+                    fitness_population, max_pop_sols);
             }
-        }
-
-        for (int i = 0; i < max_pop_sols; i++) {
-            if (makespan_norm_value > population[i].makespan) makespan_norm_value = population[i].makespan;
-            if (energy_norm_value > population[i].energy_consumption) energy_norm_value = population[i].energy_consumption;
         }
 
         /* *********************************************************************************************
@@ -880,7 +978,7 @@ void* slave_thread(void *data) {
         for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
             clone_solution(&instance->global_elite_pop[thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i], &population[sorted_population[i]]);
         }
-        
+
         #ifdef CMOCHC_SYNC
             /* Espero a que el maestro ejecute la operación de gather. */
             rc = pthread_barrier_wait(&instance->sync_barrier);
@@ -890,45 +988,56 @@ void* slave_thread(void *data) {
                 exit(EXIT_FAILURE);
             }
         #endif
-        
+
         /* *********************************************************************************************
          * Migro soluciones desde poblaciones elite vecinas
          * ********************************************************************************************* */
         int neigh_pop, migrated, source_index, next_solution;
         next_solution = CMOCHC_LOCAL__BEST_SOLS_KEPT;
+        
         while (next_solution < max_pop_sols) {
             migrated = 0;
             neigh_pop = next_solution - CMOCHC_LOCAL__BEST_SOLS_KEPT;
 
             #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+                count_migrations[thread_id]++;
+            
                 if (neigh_pop < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
                     if (n_closest_threads[neigh_pop] != -1) {
                         source_index = 0;
                         #ifdef CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
                             source_index = RAND_GENERATE(rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
                         #endif
-                        
+
                         #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
                             clone_solution(&population[sorted_population[next_solution]],
                                 &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]));
-                            
+
                             next_solution++;
+                            count_solutions_migrated[thread_id]++;
                         #endif
                         #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
                             if (next_solution+1 < max_pop_sols) {
-                                hux(rand_state[thread_id],
-                                    &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]), &population[sorted_population[0]],
-                                    &population[sorted_population[next_solution]],&population[sorted_population[next_solution+1]]);
-                                    
+                                float d = distance(&(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]),
+                                    &population[sorted_population[0]]);
+
+                                if (d > threshold_max) {
+                                    hux(rand_state[thread_id],
+                                        &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]), &population[sorted_population[0]],
+                                        &population[sorted_population[next_solution]],&population[sorted_population[next_solution+1]]);
+                                }
+
                                 next_solution += 2;
+                                count_solutions_migrated[thread_id]++;
                             }
                         #endif
-                        #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE                           
-                            mutate(rand_state[thread_id], 
-                                &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]), 
+                        #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
+                            mutate(rand_state[thread_id],
+                                &(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]),
                                 &population[sorted_population[next_solution]]);
-                            
-                            next_solution++;                        
+
+                            next_solution++;
+                            count_solutions_migrated[thread_id]++;
                         #endif
 
                         migrated = 1;
@@ -939,11 +1048,53 @@ void* slave_thread(void *data) {
             if (migrated == 0) {
                 random = RAND_GENERATE(rand_state[thread_id]);
 
-                mutate(rand_state[thread_id], 
-                    &population[sorted_population[(int)(random * CMOCHC_LOCAL__BEST_SOLS_KEPT)]], 
+                mutate(rand_state[thread_id],
+                    &population[sorted_population[(int)(random * CMOCHC_LOCAL__BEST_SOLS_KEPT)]],
                     &population[sorted_population[next_solution]]);
-                    
+
                 next_solution++;
+            }
+        }
+
+        /* Actualizo los puntos de normalización con la población local */
+        for (int i = 0; i < max_pop_sols; i++) {
+            if (population[i].makespan < makespan_utopia_value) {
+                makespan_utopia_index = i;
+                makespan_utopia_value = population[i].makespan;
+
+                if (population[i].energy_consumption > energy_nadir_value) {
+                    energy_nadir_value = population[i].energy_consumption;
+                }
+            }
+            if (population[i].energy_consumption < energy_utopia_value) {
+                energy_utopia_index = i;
+                energy_utopia_value = population[i].energy_consumption;
+
+                if (population[i].makespan > makespan_nadir_value) {
+                    makespan_nadir_value = population[i].makespan;
+                }
+            }
+        }
+
+        /* Actualizo los puntos de normalización con el archivo global */
+        for (int i = 0; i < instance->archiver.population_size; i++) {
+            if (arhiver_pop[i].initialized == SOLUTION__IN_USE) {
+                if (arhiver_pop[i].makespan < makespan_utopia_value) {
+                    makespan_utopia_index = i;
+                    makespan_utopia_value = arhiver_pop[i].makespan;
+
+                    if (arhiver_pop[i].energy_consumption > energy_nadir_value) {
+                        energy_nadir_value = arhiver_pop[i].energy_consumption;
+                    }
+                }
+                if (arhiver_pop[i].energy_consumption < energy_utopia_value) {
+                    energy_utopia_index = i;
+                    energy_utopia_value = arhiver_pop[i].energy_consumption;
+
+                    if (arhiver_pop[i].makespan > makespan_nadir_value) {
+                        makespan_nadir_value = arhiver_pop[i].makespan;
+                    }
+                }
             }
         }
 
@@ -975,18 +1126,20 @@ void* slave_thread(void *data) {
 
         /* *********************************************************************************************
          * Re-calculo el fitness de toda la población
-         *********************************************************************************************** */      
-        
+         *********************************************************************************************** */
+
         for (int i = 0; i < max_pop_sols; i++) {
             fitness_population[i] = NAN;
-            fitness(population, fitness_population, weights, makespan_norm_value, energy_norm_value, i);
+            fitness(population, fitness_population, weights, makespan_utopia_value, energy_utopia_value,
+                makespan_nadir_value, energy_nadir_value, i);
         }
 
         /* *********************************************************************************************
          * Re-sort de population
          *********************************************************************************************** */
-        merge_sort(population, weights, makespan_norm_value, energy_norm_value,
-            sorted_population, fitness_population, max_pop_sols);
+        merge_sort(population, weights, makespan_utopia_value, energy_utopia_value,
+            makespan_nadir_value, energy_nadir_value, sorted_population,
+            fitness_population, max_pop_sols);
 
         #ifdef DEBUG_3
             fprintf(stderr, "[DEBUG] Post-migration population\n");
@@ -1018,8 +1171,10 @@ void* slave_thread(void *data) {
 }
 
 inline void merge_sort(struct solution *population, float *weights,
-    float makespan_norm_value, float energy_norm_value, int *sorted_population,
-    float *fitness_population, int population_size) {
+    float makespan_zenith_value, float energy_zenith_value,
+    float makespan_nadir_value, float energy_nadir_value,
+    int *sorted_population, float *fitness_population,
+    int population_size) {
 
     int increment, l, l_max, r, r_max, current, i;
     int *tmp;
@@ -1040,9 +1195,13 @@ inline void merge_sort(struct solution *population, float *weights,
         while (current < population_size) {
             while (l <= l_max && r <= r_max) {
                 fitness_r = fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[r]);
+                    makespan_zenith_value, energy_zenith_value,
+                    makespan_nadir_value, energy_nadir_value,
+                    sorted_population[r]);
                 fitness_l = fitness(population, fitness_population, weights,
-                    makespan_norm_value, energy_norm_value, sorted_population[l]);
+                    makespan_zenith_value, energy_zenith_value,
+                    makespan_nadir_value, energy_nadir_value,
+                    sorted_population[l]);
 
                 /*fitness_r = fitness_population[sorted_population[r]];
                 fitness_l = fitness_population[sorted_population[l]];*/
