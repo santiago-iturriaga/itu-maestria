@@ -41,18 +41,18 @@ struct cmochc {
     pthread_barrier_t sync_barrier;
 
     /* Statistics */
-    int *count_generations;
-    int *count_at_least_one_children_inserted;
-    int *count_improved_best_sol;
-
-    int *count_crossover;
-    int *count_improved_crossover;
-
-    int *count_cataclysm;
-    int *count_improved_mutation;
-
-    int *count_migrations;
-    int *count_solutions_migrated;
+    #ifdef DEBUG_1
+        int *count_generations;
+        int *count_at_least_one_children_inserted;
+        int *count_improved_best_sol;
+        int *count_crossover;
+        int *count_improved_crossover;
+        int *count_cataclysm;
+        int *count_improved_mutation;
+        int *count_migrations;
+        int *count_solutions_migrated;
+        int *count_historic_weights;
+    #endif
 };
 
 struct cmochc_thread {
@@ -245,7 +245,7 @@ void display_results(struct cmochc &instance) {
 
         fprintf(stderr, "       pf solution count by deme:\n");
         for (int t = 0; t < instance.input->thread_count; t++) {
-            fprintf(stderr, "          [%d] = %d\n", t, count_pf_found[t]);
+            fprintf(stderr, "          [%d] = %d (%d)\n", t, count_pf_found[t], instance.count_historic_weights[t]);
         }
 
         fprintf(stderr, "[INFO] ========================================================\n");
@@ -317,15 +317,21 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     instance.weights = (float**)(malloc(sizeof(float*) * input.thread_count));
 
     /* Statistics */
-    instance.count_generations = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_at_least_one_children_inserted = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_improved_best_sol = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_crossover = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_improved_crossover = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_cataclysm = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_improved_mutation = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_migrations = (int*)(malloc(sizeof(int) * input.thread_count));
-    instance.count_solutions_migrated = (int*)(malloc(sizeof(int) * input.thread_count));
+    #ifdef DEBUG_1
+        instance.count_generations = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_at_least_one_children_inserted = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_improved_best_sol = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_crossover = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_improved_crossover = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_cataclysm = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_improved_mutation = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_migrations = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_solutions_migrated = (int*)(malloc(sizeof(int) * input.thread_count));
+        instance.count_historic_weights = (int*)(malloc(sizeof(int) * input.thread_count));
+        for (int t = 0; t < instance.input->thread_count; t++) {
+            instance.count_historic_weights[t] = 0;
+        }
+    #endif
 
     /* Estado de la población de cada hilo. */
     instance.population = (struct solution**)(malloc(sizeof(struct solution*) * input.thread_count));
@@ -395,6 +401,14 @@ void gather(struct cmochc &instance) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Total solutions gathered      = %d\n", new_solutions);
         fprintf(stderr, "[DEBUG] Current solutions in archiver = %d\n", instance.archiver.population_count);
+    #endif
+    
+    #ifdef DEBUG_1
+        for (int s = 0; s < instance.archiver.population_size; s++) {
+            if (instance.archiver.population[s].initialized == SOLUTION__IN_USE) {
+                instance.count_historic_weights[instance.archiver.population_origin[s] / CMOCHC_LOCAL__BEST_SOLS_KEPT]++;
+            }
+        }
     #endif
 }
 
