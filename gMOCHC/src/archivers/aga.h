@@ -1,3 +1,4 @@
+#include "../config.h"
 #include "../solution.h"
 
 #ifndef AGA__H_
@@ -17,9 +18,9 @@
 struct aga_state {
     int max_locations; // Number of locations in grid.
     
-    double gl_offset[ARCHIVER__OBJECTIVES]; // The range, offset etc of the grid.
-    double gl_range[ARCHIVER__OBJECTIVES];
-    double gl_largest[ARCHIVER__OBJECTIVES];
+    FLOAT gl_offset[ARCHIVER__OBJECTIVES]; // The range, offset etc of the grid.
+    FLOAT gl_range[ARCHIVER__OBJECTIVES];
+    FLOAT gl_largest[ARCHIVER__OBJECTIVES];
     
     int *grid_pop;
     int *grid_sol_loc;

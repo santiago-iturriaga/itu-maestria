@@ -14,11 +14,11 @@
 //#define CPU_MT
 
 /* Floating point precision */
-#define FLOAT float
-#define DISPLAY_PRECISION "float"
+//#define FLOAT float
+//#define DISPLAY_PRECISION "float"
 
-/*#define FLOAT double
-#define DISPLAY_PRECISION "double"*/
+#define FLOAT double
+#define DISPLAY_PRECISION "double"
 
 /* Debug level
  * 0 No debug

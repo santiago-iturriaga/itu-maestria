@@ -31,7 +31,7 @@ struct cmochc {
     struct solution *global_elite_pop;
     struct aga_state archiver;
 
-    float **weights;
+    FLOAT **weights;
     int **thread_assigned_weight;
     
     int stopping_condition;
@@ -241,18 +241,18 @@ void display_results(struct cmochc &instance) {
         fprintf(stderr, "[INFO] == Statistics ==========================================\n");
         fprintf(stderr, "       count_generations                    : %d\n", count_generations);
         fprintf(stderr, "       count_at_least_one_children_inserted : %d (%.2f %%)\n", count_at_least_one_children_inserted,
-            ((float)count_at_least_one_children_inserted/(float)count_generations)*100);
+            ((FLOAT)count_at_least_one_children_inserted/(FLOAT)count_generations)*100);
         fprintf(stderr, "       count_improved_best_sol              : %d (%.2f %%)\n", count_improved_best_sol,
-            ((float)count_improved_best_sol/(float)count_generations)*100);
+            ((FLOAT)count_improved_best_sol/(FLOAT)count_generations)*100);
         fprintf(stderr, "       count_crossover                      : %d\n", count_crossover);
         fprintf(stderr, "       count_improved_crossover             : %d (%.2f %%)\n", count_improved_crossover,
-            ((float)count_improved_crossover/(float)count_crossover)*100);
+            ((FLOAT)count_improved_crossover/(FLOAT)count_crossover)*100);
         fprintf(stderr, "       count_cataclysm                      : %d\n", count_cataclysm);
         fprintf(stderr, "       count_improved_mutation              : %d (%.2f %%)\n", count_improved_mutation,
-            ((float)count_improved_mutation/(float)count_cataclysm)*100);
+            ((FLOAT)count_improved_mutation/(FLOAT)count_cataclysm)*100);
         fprintf(stderr, "       count_migrations                     : %d\n", count_migrations);
         fprintf(stderr, "       count_solutions_migrated             : %d (%.2f %%)\n", count_solutions_migrated,
-            ((float)count_solutions_migrated/(float)count_migrations)*100);
+            ((FLOAT)count_solutions_migrated/(FLOAT)count_migrations)*100);
 
         fprintf(stderr, "       pf solution count by deme:\n");
         for (int t = 0; t < instance.input->thread_count; t++) {
@@ -276,27 +276,27 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
 
 
-    fprintf(stderr, "       CMOCHC_LOCAL__MUTATE_INITIAL_POP :");
+    fprintf(stderr, "       CMOCHC_LOCAL__MUTATE_INITIAL_POP            : ");
     #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
-        fprintf(stderr, " YES\n");
+        fprintf(stderr, "YES\n");
     #else
-        fprintf(stderr, " NO\n");
+        fprintf(stderr, "NO\n");
     #endif
 
-    fprintf(stderr, "       CMOCHC_LOCAL__FITNESS_NORM : ");
+    fprintf(stderr, "       CMOCHC_LOCAL__FITNESS_NORM                  : ");
     #ifdef CMOCHC_LOCAL__Z_FITNESS_NORM
-        fprintf(stderr, " Z\n");
+        fprintf(stderr, "Z (zenith)\n");
     #endif
     #ifdef CMOCHC_LOCAL__ZN_FITNESS_NORM
-        fprintf(stderr, " ZN\n");
+        fprintf(stderr, "ZN (zenith/nadir)\n");
     #endif
 
     fprintf(stderr, "       CMOCHC_PARETO_FRONT__PATCHES                : %d\n", CMOCHC_PARETO_FRONT__PATCHES);
     fprintf(stderr, "       CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN     : ");
     #ifdef CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN
-        fprintf(stderr, " YES\n");
+        fprintf(stderr, "YES\n");
     #else
-        fprintf(stderr, " NO\n");
+        fprintf(stderr, "NO\n");
     #endif
     fprintf(stderr, "       CMOCHC_ARCHIVE__MAX_SIZE                    : %d\n", CMOCHC_ARCHIVE__MAX_SIZE);
     
@@ -335,7 +335,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     instance.rand_state = (RAND_STATE*)(malloc(sizeof(RAND_STATE) * input.thread_count));
 
     /* Weights */
-    instance.weights = (float**)(malloc(sizeof(float*) * input.thread_count));
+    instance.weights = (FLOAT**)(malloc(sizeof(FLOAT*) * input.thread_count));
 
     /* Statistics */
     #ifdef DEBUG_1
@@ -463,11 +463,13 @@ inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
     for (int i = 0; i < s1->etc->tasks_count; i++) {
-        if (s1->task_assignment[i] != s2->task_assignment[i]) distance++;
+        if (s1->task_assignment[i] != s2->task_assignment[i]) {
+            distance++;
+        }
     }
 
     ASSERT(distance >= 0)
-    ASSERT(distance < s1->etc->tasks_count)
+    ASSERT(distance <= s1->etc->tasks_count)
 
     return distance;
 }
@@ -476,9 +478,9 @@ inline void hux(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
     struct solution *c1, struct solution *c2) {
 
-    double cross_prob = CMOCHC_LOCAL__MATING_CHANCE / (double)p1->etc->tasks_count;
+    FLOAT cross_prob = CMOCHC_LOCAL__MATING_CHANCE / (FLOAT)p1->etc->tasks_count;
 
-    double random;
+    FLOAT random;
     int current_task_index = 0;
 
     while (current_task_index < p1->etc->tasks_count) {
@@ -486,8 +488,8 @@ inline void hux(RAND_STATE &rand_state,
 
         int mask = 0x0;
         int mask_size = 256; // 8-bit mask
-        float base_step = 1.0/(double)mask_size;
-        float base = base_step;
+        FLOAT base_step = 1.0/(FLOAT)mask_size;
+        FLOAT base = base_step;
 
         while (random > base) {
             base += base_step;
@@ -533,16 +535,16 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
     int tasks_count = seed->etc->tasks_count;
     int machines_count = seed->etc->machines_count;
 
-    double mut_prob = CMOCHC_LOCAL__MUTATE_CHANCE / (double)tasks_count;
+    FLOAT mut_prob = CMOCHC_LOCAL__MUTATE_CHANCE / (FLOAT)tasks_count;
 
     while (current_task_index < tasks_count) {
-        double random;
+        FLOAT random;
         random = RAND_GENERATE(rand_state);
 
         int mask = 0x0;
         int mask_size = 256; // 8-bit mask
-        float base_step = 1.0/(double)mask_size;
-        float base = base_step;
+        FLOAT base_step = 1.0/(FLOAT)mask_size;
+        FLOAT base = base_step;
 
         while (random > base) {
             base += base_step;
@@ -583,9 +585,9 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
     refresh_solution(mutation);
 }
 
-inline float fitness(struct solution *population, float *fitness_population, float *weights,
-    float makespan_zenith_value, float energy_zenith_value,
-    float makespan_nadir_value, float energy_nadir_value,
+inline FLOAT fitness(struct solution *population, FLOAT *fitness_population, FLOAT *weights,
+    FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
+    FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
     int solution_index) {
 
     #ifdef CMOCHC_LOCAL__Z_FITNESS_NORM
@@ -608,10 +610,10 @@ inline float fitness(struct solution *population, float *fitness_population, flo
     return fitness_population[solution_index];
 }
 
-inline void merge_sort(struct solution *population, float *weights,
-    float makespan_zenith_value, float energy_zenith_value,
-    float makespan_nadir_value, float energy_nadir_value,
-    int *sorted_population, float *fitness_population, int population_size);
+inline void merge_sort(struct solution *population, FLOAT *weights,
+    FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
+    FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
+    int *sorted_population, FLOAT *fitness_population, int population_size);
 
 /* Logica de los esclavos */
 void* slave_thread(void *data) {
@@ -655,21 +657,21 @@ void* slave_thread(void *data) {
 
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id,rand_state[thread_id]);
-    double random;
+    FLOAT random;
 
     /* *********************************************************************************************
      * Inicializo los pesos.
      * *********************************************************************************************/
 
     /* Inicializo el peso asignado a este thread */
-    instance->weights[thread_id] = (float*)(malloc(sizeof(float) * 2));
-    float *weights = instance->weights[thread_id];
+    instance->weights[thread_id] = (FLOAT*)(malloc(sizeof(FLOAT) * 2));
+    FLOAT *weights = instance->weights[thread_id];
 
-    float thread_weight_step = 0.0;
+    FLOAT thread_weight_step = 0.0;
     if (input->thread_count > 1) {
-        thread_weight_step = 1.0 / (float)(input->thread_count-1);
+        thread_weight_step = 1.0 / (FLOAT)(input->thread_count-1);
 
-        weights[0] = (float)thread_id * thread_weight_step;
+        weights[0] = (FLOAT)thread_id * thread_weight_step;
         weights[1] = 1 - weights[0];
     } else {
         weights[0] = 0.5;
@@ -689,8 +691,8 @@ void* slave_thread(void *data) {
     int *n_closest_threads = (int*)malloc(sizeof(int) * CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE);
     for (int n = 0; n < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; n++) n_closest_threads[n] = -1;
 
-    float current_distance = thread_weight_step;
-    float upper_bound, lower_bound;
+    FLOAT current_distance = thread_weight_step;
+    FLOAT upper_bound, lower_bound;
     int upper_neigh, lower_neigh;
     int next_neigh = 0;
 
@@ -717,9 +719,9 @@ void* slave_thread(void *data) {
     #ifdef DEBUG_1
         //if (thread_id == 1) {
             fprintf(stderr, "[DEBUG] Thread %d, closest neighbours:\n", thread_id);
-            float w0,w1;
+            FLOAT w0,w1;
             for (int n = 0; n < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; n++) {
-                w0 = (float)n_closest_threads[n] * thread_weight_step;
+                w0 = (FLOAT)n_closest_threads[n] * thread_weight_step;
                 w1 = 1 - w0;
 
                 fprintf(stderr, "<%d> %d (%f,%f)\n", thread_id, n_closest_threads[n], w0, w1);
@@ -742,12 +744,12 @@ void* slave_thread(void *data) {
     instance->sorted_population[thread_id] = (int*)(malloc(sizeof(int) * max_pop_sols));
     int *sorted_population = instance->sorted_population[thread_id];
 
-    float *fitness_population;
-    fitness_population = (float*)(malloc(sizeof(float) * max_pop_sols));
+    FLOAT *fitness_population;
+    fitness_population = (FLOAT*)(malloc(sizeof(FLOAT) * max_pop_sols));
 
     int makespan_utopia_index, energy_utopia_index;
-    float makespan_utopia_value, energy_utopia_value;
-    float makespan_nadir_value, energy_nadir_value;
+    FLOAT makespan_utopia_value, energy_utopia_value;
+    FLOAT makespan_nadir_value, energy_nadir_value;
 
     for (int i = 0; i < max_pop_sols; i++) {
         // Random init.
@@ -853,7 +855,7 @@ void* slave_thread(void *data) {
              * ********************************************************************************************* */
             next_avail_children = input->population_size;
 
-            float d;
+            FLOAT d;
             int p1_idx, p2_idx;
             int p1_rand, p2_rand;
             int c1_idx, c2_idx;
@@ -914,12 +916,12 @@ void* slave_thread(void *data) {
                  * Sort parent+children population
                  * ********************************************************************************************* */
 
-                float best_parent;
+                FLOAT best_parent;
                 best_parent = fitness(population, fitness_population, weights,
                     makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
                     energy_nadir_value, sorted_population[0]);
 
-                float worst_parent;
+                FLOAT worst_parent;
                 worst_parent = fitness(population, fitness_population, weights,
                     makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
                     energy_nadir_value, sorted_population[input->population_size-1]);
@@ -959,7 +961,7 @@ void* slave_thread(void *data) {
                  * ********************************************************************************************* */
 
                 #ifdef DEBUG_1
-                    double pre_mut_fitness;
+                    FLOAT pre_mut_fitness;
                 #endif
 
                 #ifdef DEBUG_3
@@ -1055,7 +1057,7 @@ void* slave_thread(void *data) {
                         #endif
                         #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
                             if (next_solution+1 < max_pop_sols) {
-                                float d = distance(&(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]),
+                                FLOAT d = distance(&(instance->population[neigh_pop][instance->sorted_population[neigh_pop][source_index]]),
                                     &population[sorted_population[0]]);
 
                                 if (d > threshold_max) {
@@ -1114,7 +1116,7 @@ void* slave_thread(void *data) {
         }
 
         /* Actualizo los puntos de normalización con el archivo global */
-        for (int i = 0; i < instance->archiver.population_size; i++) {
+        /*for (int i = 0; i < instance->archiver.population_size; i++) {
             if (arhiver_pop[i].initialized == SOLUTION__IN_USE) {
                 if (arhiver_pop[i].makespan < makespan_utopia_value) {
                     makespan_utopia_index = i;
@@ -1133,7 +1135,7 @@ void* slave_thread(void *data) {
                     }
                 }
             }
-        }
+        }*/
 
         /* *********************************************************************************************
          * Espero a que los demas esclavos terminen.
@@ -1207,10 +1209,10 @@ void* slave_thread(void *data) {
     return 0;
 }
 
-inline void merge_sort(struct solution *population, float *weights,
-    float makespan_zenith_value, float energy_zenith_value,
-    float makespan_nadir_value, float energy_nadir_value,
-    int *sorted_population, float *fitness_population,
+inline void merge_sort(struct solution *population, FLOAT *weights,
+    FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
+    FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
+    int *sorted_population, FLOAT *fitness_population,
     int population_size) {
 
     int increment, l, l_max, r, r_max, current, i;
@@ -1219,7 +1221,7 @@ inline void merge_sort(struct solution *population, float *weights,
     increment = 1;
     tmp = (int*)malloc(sizeof(int) * population_size);
 
-    float fitness_r, fitness_l;
+    FLOAT fitness_r, fitness_l;
 
     while (increment < population_size) {
         l = 0;

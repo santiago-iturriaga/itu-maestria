@@ -13,21 +13,21 @@ void init_scenario(struct params *input, struct scenario *s) {
     #endif
     
     s->machines_count = input->machines_count;
-    s->idle_energy = (float*)malloc(sizeof(float) * input->machines_count);
+    s->idle_energy = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
 
     if (s->idle_energy == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el scenario->idle_energy.\n");
         exit(EXIT_FAILURE);
     }
 
-    s->max_energy = (float*)malloc(sizeof(float) * input->machines_count);
+    s->max_energy = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
 
     if (s->max_energy == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el scenario->max_energy.\n");
         exit(EXIT_FAILURE);
     }
 
-    s->ssj = (float*)malloc(sizeof(float) * input->machines_count);
+    s->ssj = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
 
     if (s->ssj == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el scenario->ssj.\n");
@@ -49,7 +49,7 @@ void free_scenario(struct scenario *s) {
     free(s->ssj);
 }
 
-void set_scenario_machine(struct scenario *s, int machine, int cores, float ssj, float idle_value, float max_value) {
+void set_scenario_machine(struct scenario *s, int machine, int cores, FLOAT ssj, FLOAT idle_value, FLOAT max_value) {
     s->cores[machine] = cores;
     s->ssj[machine] = ssj;
     s->idle_energy[machine] = idle_value;
@@ -60,15 +60,15 @@ int get_scenario_cores(struct scenario *s, int machine) {
     return s->cores[machine];
 }
 
-float get_scenario_energy_idle(struct scenario *s, int machine) {
+FLOAT get_scenario_energy_idle(struct scenario *s, int machine) {
     return s->idle_energy[machine];
 }
 
-float get_scenario_energy_max(struct scenario *s, int machine) {
+FLOAT get_scenario_energy_max(struct scenario *s, int machine) {
     return s->max_energy[machine];
 }
 
-float get_scenario_ssj(struct scenario *s, int machine) {
+FLOAT get_scenario_ssj(struct scenario *s, int machine) {
     return s->ssj[machine];
 }
 

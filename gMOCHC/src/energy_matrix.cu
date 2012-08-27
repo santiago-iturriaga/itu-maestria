@@ -14,7 +14,7 @@ void init_energy_matrix(struct params *input, struct energy_matrix *energy) {
     
     energy->tasks_count = input->tasks_count;
     energy->machines_count = input->machines_count;
-    energy->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
+    energy->data = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count * input->tasks_count);
 
     if (energy->data == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el energy_matrix->data.\n");
@@ -51,7 +51,7 @@ int get_matrix_coord(struct energy_matrix *energy, int machine, int task) {
     return energy->data_machine_index[machine] + task;
 }
 
-void set_energy_value(struct energy_matrix *energy, int machine, int task, float value) {
+void set_energy_value(struct energy_matrix *energy, int machine, int task, FLOAT value) {
     // TODO: Ojo! esto no debería ser válido. Pero queda comentado porque la instancia de 65536x2048 tiene 0.0.
     #if defined(DEBUG_1)
         assert(value > 0.0);
@@ -60,6 +60,6 @@ void set_energy_value(struct energy_matrix *energy, int machine, int task, float
     energy->data[get_matrix_coord(energy, machine, task)] = value;
 }
 
-float get_energy_value(struct energy_matrix *energy, int machine, int task) {
+FLOAT get_energy_value(struct energy_matrix *energy, int machine, int task) {
     return energy->data[get_matrix_coord(energy, machine, task)];
 }

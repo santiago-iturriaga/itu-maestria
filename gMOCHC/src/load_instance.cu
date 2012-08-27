@@ -47,14 +47,14 @@ int load_instance(struct params *input, struct scenario *s, struct etc_matrix *e
                 return EXIT_FAILURE;
             }
 
-            float task_etc;
+            FLOAT task_etc;
             task_etc = value / get_scenario_ssj(s, machine);
             
             set_etc_value(etc, machine, task, task_etc);
             
-            float idle_consumption;
+            FLOAT idle_consumption;
             idle_consumption = task_etc * get_scenario_energy_idle(s, machine);
-            float max_consumption;
+            FLOAT max_consumption;
             max_consumption = task_etc * get_scenario_energy_max(s, machine);            
             
             set_energy_value(energy, machine, task, max_consumption-idle_consumption);
