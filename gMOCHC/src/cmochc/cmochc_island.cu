@@ -32,6 +32,8 @@ struct cmochc {
     struct aga_state archiver;
 
     float **weights;
+    int **thread_assigned_weight;
+    
     int stopping_condition;
 
     /* Random generator de cada esclavo */
@@ -267,6 +269,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct etc_matrix &etc, struct energy_matrix &energy) {
 
     fprintf(stderr, "[INFO] == Global configuration constants ======================\n");
+    fprintf(stderr, "       CMOCHC_FLOATING_POINT_PRECISION             : %s\n", DISPLAY_PRECISION);
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
@@ -288,7 +291,16 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
         fprintf(stderr, " ZN\n");
     #endif
 
+    fprintf(stderr, "       CMOCHC_PARETO_FRONT__PATCHES                : %d\n", CMOCHC_PARETO_FRONT__PATCHES);
+    fprintf(stderr, "       CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN     : ");
+    #ifdef CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN
+        fprintf(stderr, " YES\n");
+    #else
+        fprintf(stderr, " NO\n");
+    #endif
     fprintf(stderr, "       CMOCHC_ARCHIVE__MAX_SIZE                    : %d\n", CMOCHC_ARCHIVE__MAX_SIZE);
+    
+    
     fprintf(stderr, "       CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE      : %d\n", CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE);
     fprintf(stderr, "       CMOCHC_COLLABORATION__MIGRATION             : ");
     #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
