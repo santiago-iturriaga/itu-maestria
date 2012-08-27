@@ -68,7 +68,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct etc_matrix &etc, struct energy_matrix &energy);
 
 /* Obtiene los mejores elementos de cada población */
-void gather(struct cmochc &instance);
+int gather(struct cmochc &instance);
 
 /* Muestra el resultado de la ejecución */
 void display_results(struct cmochc &instance);
@@ -111,6 +111,9 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     // Timming -----------------------------------------------------
 
     int rc;
+    int sols_gathered;
+    int last_iter_sols_gathered = 0;
+    
     for (int iteracion = 0; iteracion < input.max_iterations; iteracion++) {
         /* ************************************************** */
         /* Espero a que los esclavos terminen de evolucionar. */
@@ -145,7 +148,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
             fprintf(stderr, "[DEBUG] CPU CHC (islands): gather\n");
         #endif
 
-        gather(instance);
+        sols_gathered = gather(instance);
+        if (sols_gathered > 0) last_iter_sols_gathered = iteracion;
 
         TIMMING_END(">> cmochc_gather", ts_gather);
 
@@ -182,6 +186,11 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     #endif
 
     display_results(instance);
+    
+    #if defined(DEBUG_1)
+        fprintf(stderr, "[DEBUG] Last solution gathered on iteration = %d\n", last_iter_sols_gathered);
+    #endif
+    
     finalize(instance, threads);
 }
 
@@ -377,7 +386,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 }
 
 /* Obtiene los mejores elementos de cada población */
-void gather(struct cmochc &instance) {
+int gather(struct cmochc &instance) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Gathering...\n");
         fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
@@ -410,6 +419,8 @@ void gather(struct cmochc &instance) {
             }
         }
     #endif
+    
+    return new_solutions;
 }
 
 /* Libera los recursos pedidos y finaliza la ejecución */
