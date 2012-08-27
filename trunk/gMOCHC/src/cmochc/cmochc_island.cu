@@ -268,8 +268,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct params &input, struct scenario &current_scenario,
     struct etc_matrix &etc, struct energy_matrix &energy) {
 
-    fprintf(stderr, "[INFO] == Global configuration constants ======================\n");
-    fprintf(stderr, "       CMOCHC_FLOATING_POINT_PRECISION             : %s\n", DISPLAY_PRECISION);
+    fprintf(stderr, "[INFO] == CMOCHC/islands configuration constants ==============\n");
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
