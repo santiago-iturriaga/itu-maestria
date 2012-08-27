@@ -32,6 +32,33 @@
 
 int main(int argc, char** argv)
 {
+    fprintf(stderr, "[INFO] == Global configuration constants ======================\n");
+    fprintf(stderr, "       Debug level                  : %d\n", DEBUG_LEVEL);
+    fprintf(stderr, "       Floating point precision     : %s\n", DISPLAY_PRECISION);
+    fprintf(stderr, "       Log execution time           : ");
+    #ifdef TIMMING
+        fprintf(stderr, "YES\n");
+    #else
+        fprintf(stderr, "NO\n");
+    #endif
+    fprintf(stderr, "       Random number generator      : ");
+    #ifdef CPU_RAND
+        fprintf(stderr, "stdlib::rand_r\n");
+    #endif
+    #ifdef CPU_DRAND48
+        fprintf(stderr, "stdlib::drand48_r\n");
+    #endif
+    #ifdef CPU_MT
+        fprintf(stderr, "mersenne twister\n");
+    #endif
+    fprintf(stderr, "       Output solutions to stdout   : ");
+    #ifdef OUTPUT_SOLUTION
+        fprintf(stderr, "YES\n");
+    #else
+        fprintf(stderr, "NO\n");
+    #endif
+    fprintf(stderr, "[INFO] ========================================================\n");
+    
     // =============================================================
     // Loading input parameters
     // =============================================================

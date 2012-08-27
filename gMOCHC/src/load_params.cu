@@ -7,29 +7,31 @@
 
 int load_params(int argc, char **argv, struct params *input) {
     if (argc == 11) {
+        fprintf(stderr, "[INFO] == Command line arguments ==============================\n");
+        
         input->scenario_path = argv[1];
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] scenario path: %s\n", input->scenario_path);
+            fprintf(stderr, "       Scenario path                : %s\n", input->scenario_path);
         #endif
 
         input->workload_path = argv[2];
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] workload path: %s\n", input->workload_path);
+            fprintf(stderr, "       Workload path                : %s\n", input->workload_path);
         #endif
 
         input->tasks_count = atoi(argv[3]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] tasks count: %d\n", input->tasks_count);
+            fprintf(stderr, "       Tasks count                  : %d\n", input->tasks_count);
         #endif
         
         input->machines_count = atoi(argv[4]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] machines count: %d\n", input->machines_count);
+            fprintf(stderr, "       Machines count               : %d\n", input->machines_count);
         #endif
 
         input->algorithm = atoi(argv[5]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] algorithm: %d", input->algorithm);
+            fprintf(stderr, "       Algorithm                    : %d", input->algorithm);
         #endif
 
         #if defined(DEBUG_0)
@@ -50,33 +52,35 @@ int load_params(int argc, char **argv, struct params *input) {
 
         input->thread_count = atoi(argv[6]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] threads count: %d\n", input->thread_count);
+            fprintf(stderr, "       Thread count                 : %d\n", input->thread_count);
         #endif
 
         input->seed = atoi(argv[7]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] seed: %d\n", input->seed);
+            fprintf(stderr, "       Seed                         : %d\n", input->seed);
         #endif
 
         input->max_time_secs = atoi(argv[8]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] max. time (secs.): %d\n", input->max_time_secs);
+            fprintf(stderr, "       Max. execution time (s)      : %d\n", input->max_time_secs);
         #endif
         
         input->max_iterations = atoi(argv[9]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] max. iterations: %d\n", input->max_iterations);
+            fprintf(stderr, "       Max. iterations              : %d\n", input->max_iterations);
         #endif
 
         input->population_size = atoi(argv[10]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "[PARAMS] population size: %d\n", input->population_size);
+            fprintf(stderr, "       Population size              : %d\n", input->population_size);
         #endif
 
         if ((input->algorithm < 0)||(input->algorithm > 4)) {
             fprintf(stderr, "[ERROR] invalid algorithm.\n");
             return EXIT_FAILURE;
         }
+        
+        fprintf(stderr, "[INFO] ========================================================\n");
         
         return EXIT_SUCCESS;
     } else {
