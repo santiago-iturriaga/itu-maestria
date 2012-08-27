@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "config.h"
 #include "scenario.h"
 #include "etc_matrix.h"
 #include "energy_matrix.h"
@@ -25,11 +26,11 @@ struct solution {
     
     int *task_assignment;
     
-    float *machine_compute_time;
-    float makespan;
+    FLOAT *machine_compute_time;
+    FLOAT makespan;
     
-    float *machine_energy_consumption;
-    float energy_consumption;
+    FLOAT *machine_energy_consumption;
+    FLOAT energy_consumption;
 };
 
 void create_empty_solution(struct solution *new_solution, struct scenario *s, struct etc_matrix *etc, struct energy_matrix *energy);

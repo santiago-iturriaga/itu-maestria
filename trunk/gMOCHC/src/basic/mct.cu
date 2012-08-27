@@ -12,19 +12,19 @@ void compute_mct(struct solution *sol) {
     int tasks_count = sol->etc->tasks_count;
     int machines_count = sol->etc->machines_count;
     
-    float *machine_compute_time = sol->machine_compute_time;
+    FLOAT *machine_compute_time = sol->machine_compute_time;
     int *task_assignment = sol->task_assignment;
 
     for (int task = 0; task < tasks_count; task++) {
         int best_machine;
         best_machine = 0;
 
-        float best_etc_value;
+        FLOAT best_etc_value;
         best_etc_value = machine_compute_time[best_machine] 
             + get_etc_value(sol->etc, best_machine, task);
 
         for (int machine = 1; machine < machines_count; machine++) {
-            float etc_value;
+            FLOAT etc_value;
             etc_value = machine_compute_time[machine] 
                 + get_etc_value(sol->etc, machine, task);
 
@@ -56,7 +56,7 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
     int tasks_count = sol->etc->tasks_count;
     int machines_count = sol->etc->machines_count;
     
-    float *machine_compute_time = sol->machine_compute_time;
+    FLOAT *machine_compute_time = sol->machine_compute_time;
     int *task_assignment = sol->task_assignment;
 
     start = start % tasks_count;
@@ -74,12 +74,12 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
         int best_machine;
         best_machine = 0;
 
-        float best_etc_value;
+        FLOAT best_etc_value;
         best_etc_value = machine_compute_time[best_machine] 
             + get_etc_value(sol->etc, best_machine, task);
 
         for (int machine = 1; machine < machines_count; machine++) {
-            float etc_value;
+            FLOAT etc_value;
             etc_value = machine_compute_time[machine] 
                 + get_etc_value(sol->etc, machine, task);
 

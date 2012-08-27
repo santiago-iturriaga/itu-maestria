@@ -14,7 +14,7 @@ void init_etc_matrix(struct params *input, struct etc_matrix *etc) {
     
     etc->tasks_count = input->tasks_count;
     etc->machines_count = input->machines_count;
-    etc->data = (float*)malloc(sizeof(float) * input->machines_count * input->tasks_count);
+    etc->data = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count * input->tasks_count);
 
     if (etc->data == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el etc_matrix->data.\n");
@@ -51,7 +51,7 @@ int get_matrix_coord(struct etc_matrix *etc, int machine, int task) {
     return etc->data_machine_index[machine] + task;
 }
 
-void set_etc_value(struct etc_matrix *etc, int machine, int task, float value) {
+void set_etc_value(struct etc_matrix *etc, int machine, int task, FLOAT value) {
     // TODO: Ojo! esto no debería ser válido. Pero queda comentado porque la instancia de 65536x2048 tiene 0.0.
     #if defined(DEBUG_1)
         assert(value > 0.0);
@@ -60,7 +60,7 @@ void set_etc_value(struct etc_matrix *etc, int machine, int task, float value) {
     etc->data[get_matrix_coord(etc, machine, task)] = value;
 }
 
-float get_etc_value(struct etc_matrix *etc, int machine, int task) {
+FLOAT get_etc_value(struct etc_matrix *etc, int machine, int task) {
     return etc->data[get_matrix_coord(etc, machine, task)];
 }
 

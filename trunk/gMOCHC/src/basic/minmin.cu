@@ -18,7 +18,7 @@ void compute_minmin(struct solution *sol) {
     while (assigned_tasks_count < sol->etc->tasks_count) { // Mientras quede una tarea sin asignar.
         int best_task;
         int best_machine;
-        float best_cost;
+        FLOAT best_cost;
 
         best_task = -1;
         best_machine = -1;
@@ -31,13 +31,13 @@ void compute_minmin(struct solution *sol) {
                 int best_machine_for_task;
                 best_machine_for_task = 0;
 
-                float best_machine_cost_for_task;
+                FLOAT best_machine_cost_for_task;
 
                 best_machine_cost_for_task = sol->machine_compute_time[0] +
                     get_etc_value(sol->etc, 0, task_i);
 
                 for (int machine_x = 1; machine_x < sol->etc->machines_count; machine_x++) {
-                    float current_cost;
+                    FLOAT current_cost;
 
                     current_cost = sol->machine_compute_time[machine_x] +
                         get_etc_value(sol->etc, machine_x, task_i);

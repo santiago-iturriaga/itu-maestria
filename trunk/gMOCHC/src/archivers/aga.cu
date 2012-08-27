@@ -6,7 +6,7 @@
 #include "../config.h"
 #include "../utils.h"
 
-inline float get_objective(struct solution *s, int objective) {
+inline FLOAT get_objective(struct solution *s, int objective) {
     if (objective == 0) {
         return s->makespan;
     } else if (objective == 1) {
@@ -154,7 +154,7 @@ inline int find_loc(struct aga_state *state, int solution_pos)
     int i;
 
     int inc[ARCHIVER__OBJECTIVES];
-    double width[ARCHIVER__OBJECTIVES];
+    FLOAT width[ARCHIVER__OBJECTIVES];
 
     // if the solution is out of range on any objective, return 1 more than the maximum possible grid location number
     for (i = 0; i < ARCHIVER__OBJECTIVES; i++)
@@ -218,8 +218,8 @@ void update_grid(struct aga_state *state)
     // recalculate ranges for grid in the light of a new solution s
     int a, b;
 
-    double offset[ARCHIVER__OBJECTIVES];
-    double largest[ARCHIVER__OBJECTIVES];
+    FLOAT offset[ARCHIVER__OBJECTIVES];
+    FLOAT largest[ARCHIVER__OBJECTIVES];
 
     for (a = 0; a < ARCHIVER__OBJECTIVES; a++)
     {

@@ -20,7 +20,7 @@ inline void timming_end(const char *message, timespec &ts) {
         timespec ts_end;
         clock_gettime(CLOCK_REALTIME, &ts_end);
 
-        double elapsed;
+        FLOAT elapsed;
         elapsed = ((ts_end.tv_sec - ts.tv_sec) * 1000000.0) + ((ts_end.tv_nsec
                 - ts.tv_nsec) / 1000.0);
         fprintf(stderr, "[TIMER] %s: %f microsegs.\n", message, elapsed);

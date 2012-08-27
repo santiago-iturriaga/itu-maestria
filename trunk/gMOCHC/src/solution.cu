@@ -24,7 +24,7 @@ void create_empty_solution(struct solution *new_solution, struct scenario *s, st
 
     //=== Estructura de machine compute time.
     new_solution->makespan = 0.0;
-    new_solution->machine_compute_time = (float*)(malloc(sizeof(float) * etc->machines_count));
+    new_solution->machine_compute_time = (FLOAT*)(malloc(sizeof(FLOAT) * etc->machines_count));
 
     if (new_solution->machine_compute_time == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el new_solution->__machine_compute_time.\n");
@@ -37,7 +37,7 @@ void create_empty_solution(struct solution *new_solution, struct scenario *s, st
 
     //=== Estructura de energy.
     new_solution->energy_consumption = 0.0;
-    new_solution->machine_energy_consumption = (float*)(malloc(sizeof(float) * etc->machines_count));
+    new_solution->machine_energy_consumption = (FLOAT*)(malloc(sizeof(FLOAT) * etc->machines_count));
 
     if (new_solution->machine_energy_consumption == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el new_solution->__machine_energy_consumption.\n");
@@ -60,8 +60,8 @@ void clone_solution(struct solution *dst, struct solution *src) {
     dst->energy_consumption = src->energy_consumption;
     
     memcpy(dst->task_assignment, src->task_assignment, sizeof(int) * src->etc->tasks_count);
-    memcpy(dst->machine_compute_time, src->machine_compute_time, sizeof(float) * src->etc->machines_count);
-    memcpy(dst->machine_energy_consumption, src->machine_energy_consumption, sizeof(float) * src->etc->machines_count);
+    memcpy(dst->machine_compute_time, src->machine_compute_time, sizeof(FLOAT) * src->etc->machines_count);
+    memcpy(dst->machine_energy_consumption, src->machine_energy_consumption, sizeof(FLOAT) * src->etc->machines_count);
 }
 
 void free_solution(struct solution *sol) {
@@ -93,7 +93,7 @@ void refresh_solution(struct solution *sol) {
         sol->energy_consumption += sol->machine_energy_consumption[machine];
     }
     
-    double task_energy_consumption;
+    FLOAT task_energy_consumption;
     for (int task = 0; task < sol->etc->tasks_count; task++) {
         int machine = sol->task_assignment[task];
         
@@ -110,7 +110,7 @@ void validate_solution(struct solution *s) {
     fprintf(stderr, "[INFO] Makespan: %f.\n", s->makespan);
 
     {
-        float aux_makespan = 0.0;
+        FLOAT aux_makespan = 0.0;
 
         for (int machine = 0; machine < s->etc->machines_count; machine++) {
             if (aux_makespan < s->machine_compute_time[machine]) {
