@@ -215,6 +215,10 @@ check: src/main.cu \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.h \
 		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_evop.h \
+		src/cmochc/cmochc_island_evop.cu \
+		src/cmochc/cmochc_island_utils.h \
+		src/cmochc/cmochc_island_utils.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -226,6 +230,45 @@ check: src/main.cu \
 		src/basic/*.cu \
 		src/random/*.cu \
 		src/cmochc/*.cu
+
+valgrind: src/main.cu \
+		src/load_params.cu \
+		src/load_params.h \
+		src/load_instance.cu \
+		src/load_instance.h \
+		src/scenario.cu \
+		src/scenario.h \
+		src/etc_matrix.cu \
+		src/etc_matrix.h \
+		src/energy_matrix.cu \
+		src/energy_matrix.h \
+		src/solution.cu \
+		src/solution.h \
+		src/utils.cu \
+		src/utils.h \
+		src/random/cpu_rand.h \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.h \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_evop.h \
+		src/cmochc/cmochc_island_evop.cu \
+		src/cmochc/cmochc_island_utils.h \
+		src/cmochc/cmochc_island_utils.cu \
+		src/basic/mct.cu \
+		src/basic/mct.h \
+		src/basic/minmin.cu \
+		src/basic/minmin.h \
+		src/basic/pminmin.cu \
+		src/basic/pminmin.h 
+	valgrind -v --leak-check=full --show-possibly-lost=yes --track-origins=yes bin/gmochc_cpu \
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 \
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 500 12
 
 clean:
 	rm bin/*

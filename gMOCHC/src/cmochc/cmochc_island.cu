@@ -119,8 +119,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     int sols_gathered;
     int last_iter_sols_gathered = 0;
     
-    RAND_STATE *rand_state = &(instance.rand_state[input.thread_count]);
-    RAND_INIT(input.thread_count,*rand_state);
+    RAND_STATE rstate;
+    RAND_INIT(input.thread_count, rstate);
     
     FLOAT random;
     
@@ -145,8 +145,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         if (sols_gathered > 0) last_iter_sols_gathered = iteracion;
 
         for (int i = 0; i < input.thread_count; i++) {
-            random = RAND_GENERATE(*rand_state);
-            instance.thread_weight_assignment[i] = (int)(random * 16);
+            random = RAND_GENERATE(rstate);
+            instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
         }
 
         TIMMING_END(">> cmochc_gather", ts_gather);
@@ -166,6 +166,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
             exit(EXIT_FAILURE);
         }
     }
+
+    RAND_FINALIZE(rstate);
 
     /* Bloqueo la ejecucion hasta que terminen todos los hilos. */
     for(int i = 0; i < instance.input->thread_count; i++)
@@ -265,7 +267,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     instance.stopping_condition = 0;
 
     /* Estado del generador aleatorio. */
-    instance.rand_state = (RAND_STATE*)(malloc(sizeof(RAND_STATE) * input.thread_count + 1));
+    instance.rand_state = (RAND_STATE*)(malloc(sizeof(RAND_STATE) * input.thread_count));
 
     /* Weights */
     instance.weight_thread_assignment = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
@@ -318,8 +320,8 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
         instance.count_improved_mutation = (int*)(malloc(sizeof(int) * input.thread_count));
         instance.count_migrations = (int*)(malloc(sizeof(int) * input.thread_count));
         instance.count_solutions_migrated = (int*)(malloc(sizeof(int) * input.thread_count));
-        instance.count_historic_weights = (int*)(malloc(sizeof(int) * input.thread_count));
-        for (int t = 0; t < instance.input->thread_count; t++) {
+        instance.count_historic_weights = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
+        for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             instance.count_historic_weights[t] = 0;
         }
     #endif
@@ -393,9 +395,11 @@ int gather(struct cmochc &instance) {
     #endif
     
     #ifdef DEBUG_1
+        int current_tag;
         for (int s = 0; s < instance.archiver.population_size; s++) {
             if (instance.archiver.population[s].initialized == SOLUTION__IN_USE) {
-                instance.count_historic_weights[instance.archiver.population_tag[s]]++;
+                current_tag = instance.archiver.population_tag[s];
+                instance.count_historic_weights[current_tag]++;
             }
         }
     #endif
@@ -446,7 +450,7 @@ void* slave_thread(void *data) {
     count_solutions_migrated[thread_id] = 0;
 
     /* Inicialización del estado del generador aleatorio */
-    RAND_INIT(thread_id,rand_state[thread_id]);
+    RAND_INIT(thread_id, rand_state[thread_id]);
     FLOAT random;
 
     /* *********************************************************************************************
@@ -884,6 +888,7 @@ void* slave_thread(void *data) {
              
             int migrated, next_solution, source_index;
             next_solution = 0;
+            migrated = 0;
             
             for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < max_pop_sols; i++) {
                 source_index = i - CMOCHC_LOCAL__BEST_SOLS_KEPT;
@@ -1007,6 +1012,8 @@ void* slave_thread(void *data) {
     // Finalizo el thread.
     // ================================================================   
 
+    RAND_FINALIZE(rand_state[thread_id]);
+    
     free(population);
     free(sorted_population);
     free(fitness_population);
@@ -1034,7 +1041,7 @@ void display_results(struct cmochc &instance) {
         int count_solutions_migrated = 0;
 
         int *count_pf_found;
-        count_pf_found = (int*)(malloc(sizeof(int) * instance.input->thread_count));
+        count_pf_found = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
 
         for (int t = 0; t < instance.input->thread_count; t++) {
             count_pf_found[t] = 0;
