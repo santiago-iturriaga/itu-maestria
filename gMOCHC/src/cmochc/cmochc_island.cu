@@ -1085,6 +1085,8 @@ void display_results(struct cmochc &instance) {
         }
 
         fprintf(stderr, "[INFO] ========================================================\n");
+        
+        free(count_pf_found);
     #endif
 }
 
