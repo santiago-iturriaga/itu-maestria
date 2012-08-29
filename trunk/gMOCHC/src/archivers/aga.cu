@@ -113,7 +113,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
             if (to_replace != -1)
             {
                 clone_solution(&state->population[to_replace], &state->new_solutions[n_pos]);
-                state->population_origin[to_replace] = n_pos;
+                state->population_tag[to_replace] = state->new_solutions_tag[n_pos];
                 
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
                 state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
@@ -298,19 +298,20 @@ void update_grid(struct aga_state *state)
 }
 
 void archivers_aga_init(struct aga_state *state, int population_max_size,
-    struct solution *new_solutions, int new_solutions_size) {
+    struct solution *new_solutions, int *new_solutions_tag, int new_solutions_size) {
         
     state->population = (struct solution*)(malloc(sizeof(struct solution) * population_max_size));
-    state->population_origin = (int*)(malloc(sizeof(int) * population_max_size));
+    state->population_tag = (int*)(malloc(sizeof(int) * population_max_size));
     state->population_size = population_max_size;
     state->population_count = 0;
 
     for (int p = 0; p < state->population_size; p++) {
         state->population[p].initialized = SOLUTION__NOT_INITIALIZED;
-        state->population_origin[p] = -1;
+        state->population_tag[p] = -1;
     }
 
     state->new_solutions = new_solutions;
+    state->new_solutions_tag = new_solutions_tag;
     state->new_solutions_size = new_solutions_size;
 
     state->max_locations = pow(2, ARCHIVER__AGA_DEPTH * ARCHIVER__OBJECTIVES); // Number of locations in grid.
@@ -335,7 +336,7 @@ void archivers_aga_init(struct aga_state *state, int population_max_size,
 }
 
 void archivers_aga_free(struct aga_state *state) {
-    free(state->population_origin);
+    free(state->population_tag);
     free(state->population);
     free(state->grid_pop);
     free(state->grid_sol_loc);
@@ -436,7 +437,7 @@ void archive_add_all_new(struct aga_state *state) {
                     }
                     
                     clone_solution(&state->population[s_pos], &state->new_solutions[n_pos]);
-                    state->population_origin[s_pos] = n_pos;
+                    state->population_tag[s_pos] = state->new_solutions_tag[n_pos];
                     state->population_count++;
                     state->new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                 }
@@ -478,6 +479,19 @@ int archivers_aga(struct aga_state *state)
         new_solutions = archive_add_solution(state, new_solutions);
     }
     
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Current archive (%d):\n", state->population_count);
+        for (int i = 0; i < state->population_size; i++) {
+            if (state->population[i].initialized == SOLUTION__IN_USE) {
+                fprintf(stderr, "(%d) %f %f %d\n",
+                    i,
+                    state->population[i].makespan, 
+                    state->population[i].energy_consumption,
+                    state->population_tag[i]);
+            }
+        }
+    #endif
+    
     return new_solutions;
 }
 
@@ -502,7 +516,7 @@ void archivers_aga_show(struct aga_state *state) {
             fprintf(stderr, "%f %f %d\n",
                 state->population[i].makespan, 
                 state->population[i].energy_consumption,
-                state->population_origin[i]);
+                state->population_tag[i]);
         }
     }
     fprintf(stderr, "[DEBUG] ================================================\n");

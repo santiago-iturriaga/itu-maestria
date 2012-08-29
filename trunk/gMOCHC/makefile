@@ -52,6 +52,10 @@ cpu: src/main.cu \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.h \
 		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_evop.h \
+		src/cmochc/cmochc_island_evop.cu \
+		src/cmochc/cmochc_island_utils.h \
+		src/cmochc/cmochc_island_utils.cu \
 		src/archivers/aga.h \
 		src/archivers/aga.cu \
 		src/basic/mct.cu \
@@ -74,6 +78,8 @@ cpu: src/main.cu \
 		src/random/cpu_mt.cu \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_evop.cu \
+		src/cmochc/cmochc_island_utils.cu \
 		src/archivers/aga.cu \
 		src/basic/mct.cu \
 		src/basic/minmin.cu \
