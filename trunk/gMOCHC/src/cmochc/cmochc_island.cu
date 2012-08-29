@@ -144,10 +144,12 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         sols_gathered = gather(instance);
         if (sols_gathered > 0) last_iter_sols_gathered = iteracion;
 
-        for (int i = 0; i < input.thread_count; i++) {
-            random = RAND_GENERATE(rstate);
-            instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
-        }
+        #ifdef CMOCHC_PARETO_FRONT__ADAPT_WEIGHTS
+            for (int i = 0; i < input.thread_count; i++) {
+                random = RAND_GENERATE(rstate);
+                instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
+            }
+        #endif
 
         TIMMING_END(">> cmochc_gather", ts_gather);
 
@@ -1014,6 +1016,10 @@ void* slave_thread(void *data) {
 
     RAND_FINALIZE(rand_state[thread_id]);
     
+    for (int p = 0; p < max_pop_sols; p++) {
+        free_solution(&population[p]);
+    }
+    
     free(population);
     free(sorted_population);
     free(fitness_population);
@@ -1040,12 +1046,7 @@ void display_results(struct cmochc &instance) {
         int count_migrations = 0;
         int count_solutions_migrated = 0;
 
-        int *count_pf_found;
-        count_pf_found = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
-
         for (int t = 0; t < instance.input->thread_count; t++) {
-            count_pf_found[t] = 0;
-
             count_generations += instance.count_generations[t];
             count_at_least_one_children_inserted += instance.count_at_least_one_children_inserted[t];
             count_improved_best_sol += instance.count_improved_best_sol[t];
@@ -1055,6 +1056,13 @@ void display_results(struct cmochc &instance) {
             count_improved_mutation += instance.count_improved_mutation[t];
             count_migrations += instance.count_migrations[t];
             count_solutions_migrated += instance.count_solutions_migrated[t];
+        }
+
+        int *count_pf_found;
+        count_pf_found = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
+
+        for (int s = 0; s < CMOCHC_PARETO_FRONT__PATCHES; s++) {
+            count_pf_found[s] = 0;
         }
 
         for (int s = 0; s < instance.archiver.population_size; s++) {
@@ -1080,7 +1088,7 @@ void display_results(struct cmochc &instance) {
             ((FLOAT)count_solutions_migrated/(FLOAT)count_migrations)*100);
 
         fprintf(stderr, "       pf solution count by deme:\n");
-        for (int t = 0; t < instance.input->thread_count; t++) {
+        for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             fprintf(stderr, "          [%d] = %d (%d)\n", t, count_pf_found[t], instance.count_historic_weights[t]);
         }
 
@@ -1104,7 +1112,15 @@ void finalize(struct cmochc &instance, struct cmochc_thread *threads) {
     free(instance.count_improved_mutation);
     free(instance.count_migrations);
     free(instance.count_solutions_migrated);
+    free(instance.count_historic_weights);
+    
     free(instance.weights);
+    free(instance.thread_weight_assignment);
+    free(instance.weight_thread_assignment);
+        
+    for (int i = 0; i < (instance.input->thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
+        free_solution(&instance.iter_elite_pop[i]);
+    }
         
     free(instance.iter_elite_pop);
     free(instance.iter_elite_pop_tag);

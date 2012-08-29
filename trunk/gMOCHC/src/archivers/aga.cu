@@ -336,6 +336,12 @@ void archivers_aga_init(struct aga_state *state, int population_max_size,
 }
 
 void archivers_aga_free(struct aga_state *state) {
+    for (int p = 0; p < state->population_size; p++) {
+        if (state->population[p].initialized != SOLUTION__NOT_INITIALIZED) {
+            free_solution(&state->population[p]);
+        }
+    }
+    
     free(state->population_tag);
     free(state->population);
     free(state->grid_pop);
