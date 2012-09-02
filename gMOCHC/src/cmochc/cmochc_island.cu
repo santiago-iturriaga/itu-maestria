@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "cmochc_island.h"
 
@@ -121,9 +122,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     
     RAND_STATE rstate;
     RAND_INIT(input.thread_count, rstate);
-    
-    FLOAT random;
-    
+       
     for (int iteracion = 0; iteracion < input.max_iterations; iteracion++) {
         /* ************************************************ */
         /* Espero que los esclavos terminen de evolucionar  */
@@ -144,11 +143,15 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
         sols_gathered = gather(instance);
         if (sols_gathered > 0) last_iter_sols_gathered = iteracion;
 
-        #ifdef CMOCHC_PARETO_FRONT__ADAPT_WEIGHTS
-            for (int i = 0; i < input.thread_count; i++) {
-                random = RAND_GENERATE(rstate);
-                instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
-            }
+        #ifndef CMOCHC_PARETO_FRONT__FIXED_WEIGHTS
+            #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
+                FLOAT random;
+            
+                for (int i = 0; i < input.thread_count; i++) {
+                    random = RAND_GENERATE(rstate);
+                    instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
+                }
+            #endif
         #endif
 
         TIMMING_END(">> cmochc_gather", ts_gather);
@@ -229,16 +232,18 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     #endif
 
     fprintf(stderr, "       CMOCHC_PARETO_FRONT__PATCHES                : %d\n", CMOCHC_PARETO_FRONT__PATCHES);
-    fprintf(stderr, "       CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN     : ");
-    #ifdef CMOCHC_PARETO_FRONT__SYNC_WEIGHT_ASSIGN
-        fprintf(stderr, "YES\n");
-    #else
-        fprintf(stderr, "NO\n");
+    fprintf(stderr, "       CMOCHC_PARETO_FRONT__ADAPT_WEIGHTS          : ");    
+    #ifdef CMOCHC_PARETO_FRONT__FIXED_WEIGHTS
+        fprintf(stderr, "FIXED\n");
     #endif
+    #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
+        fprintf(stderr, "RANDOM\n");
+    #endif
+    
     fprintf(stderr, "       CMOCHC_ARCHIVE__MAX_SIZE                    : %d\n", CMOCHC_ARCHIVE__MAX_SIZE);
     
     
-    /*fprintf(stderr, "       CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE      : %d\n", CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE);
+    fprintf(stderr, "       CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE      : %d\n", CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE);
     fprintf(stderr, "       CMOCHC_COLLABORATION__MIGRATION             : ");
     #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
         fprintf(stderr, "BEST\n");
@@ -249,16 +254,6 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     #ifdef CMOCHC_COLLABORATION__MIGRATION_NONE
         fprintf(stderr, "NONE\n");
     #endif
-    fprintf(stderr, "       CMOCHC_COLLABORATION__MUTATE                : ");
-    #ifdef CMOCHC_COLLABORATION__MUTATE_BEST
-        fprintf(stderr, "BEST\n");
-    #endif
-    #ifdef CMOCHC_COLLABORATION__MUTATE_ALL_ELITE
-        fprintf(stderr, "ALL_ELITE\n");
-    #endif
-    #ifdef CMOCHC_COLLABORATION__MUTATE_NONE
-        fprintf(stderr, "NONE\n");
-    #endif*/
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Estado relacionado con el problema. */
@@ -285,9 +280,6 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
         #endif
     }
     
-    int *thread_weight_assignment;
-    int *weight_thread_assignment;
-
     instance.thread_weight_assignment = (int*)(malloc(sizeof(int) * input.thread_count));
     if (input.thread_count > 1) {
         for (int i = 0; i < input.thread_count; i++) {
@@ -423,7 +415,7 @@ void* slave_thread(void *data) {
        
     FLOAT *weights_array = instance->weights;
     int *thread_weight_assignment = instance->thread_weight_assignment;
-    int *weight_thread_assignment = instance->weight_thread_assignment;
+    //int *weight_thread_assignment = instance->weight_thread_assignment;
 
     RAND_STATE *rand_state = instance->rand_state;
 
@@ -475,7 +467,7 @@ void* slave_thread(void *data) {
     int *sorted_population = (int*)(malloc(sizeof(int) * max_pop_sols));
     FLOAT *fitness_population = (FLOAT*)(malloc(sizeof(FLOAT) * max_pop_sols));
 
-    int makespan_utopia_index, energy_utopia_index;
+    //int makespan_utopia_index, energy_utopia_index;
     FLOAT makespan_utopia_value, energy_utopia_value;
     FLOAT makespan_nadir_value, energy_nadir_value;
 
@@ -497,18 +489,18 @@ void* slave_thread(void *data) {
         if (i == 0) {
             makespan_utopia_value = population[i].makespan;
             makespan_nadir_value = makespan_utopia_value;
-            makespan_utopia_index = i;
+            //makespan_utopia_index = i;
 
             energy_utopia_value = population[i].energy_consumption;
             energy_nadir_value = energy_utopia_value;
-            energy_utopia_index = i;
+            //energy_utopia_index = i;
         } else {
             #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
                 mutate(rand_state[thread_id], &population[i], &population[i]);
             #endif
 
             if (population[i].makespan < makespan_utopia_value) {
-                makespan_utopia_index = i;
+                //makespan_utopia_index = i;
                 makespan_utopia_value = population[i].makespan;
 
                 if (population[i].energy_consumption > energy_nadir_value) {
@@ -516,7 +508,7 @@ void* slave_thread(void *data) {
                 }
             }
             if (population[i].energy_consumption < energy_utopia_value) {
-                energy_utopia_index = i;
+                //energy_utopia_index = i;
                 energy_utopia_value = population[i].energy_consumption;
 
                 if (population[i].makespan > makespan_nadir_value) {
@@ -570,6 +562,8 @@ void* slave_thread(void *data) {
         fprintf(stderr, "[DEBUG] Threshold Step %d.\n", threshold_step);
     #endif
 
+    int migration_global_pop_index[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
+    int migration_current_weight_distance[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
     int rc;
 
     while (instance->stopping_condition == 0) {
@@ -737,18 +731,7 @@ void* slave_thread(void *data) {
         /* Copio mis mejores soluciones a la población de intercambio principal */
         int iter_elite_pop_index;
         int local_best_index;
-
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Pre-copy population\n");
-            fprintf(stderr, "best>\n");
-            for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
-                fprintf(stderr, "%d[%.4f,%.4f]<%d>\n", sorted_population[i], 
-                    population[sorted_population[i]].makespan, 
-                    population[sorted_population[i]].energy_consumption, 
-                    population[sorted_population[i]].initialized);
-            }
-        #endif
-        
+      
         for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
             iter_elite_pop_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
             local_best_index = sorted_population[i];
@@ -761,31 +744,6 @@ void* slave_thread(void *data) {
             clone_solution(&instance->iter_elite_pop[iter_elite_pop_index], &population[local_best_index]);
             instance->iter_elite_pop_tag[iter_elite_pop_index] = thread_weight_assignment[thread_id];
         }
-        
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Post-copy population\n");
-            fprintf(stderr, "local_best>\n");
-            for (int i = 0; i < input->thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
-                fprintf(stderr, "%d[%.4f,%.4f]<%d>\n", i, 
-                    instance->iter_elite_pop[i].makespan, 
-                    instance->iter_elite_pop[i].energy_consumption, 
-                    instance->iter_elite_pop[i].initialized);
-            }
-        #endif
-        
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Post-migration population\n");
-            fprintf(stderr, "parents> ");
-            for (int i = 0; i < input->population_size; i++) {
-                fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], fitness_population[sorted_population[i]], population[sorted_population[i]].initialized);
-            }
-            fprintf(stderr, "\n");
-            fprintf(stderr, "childs > ");
-            for (int i = input->population_size; i < max_pop_sols; i++) {
-                fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], fitness_population[sorted_population[i]], population[sorted_population[i]].initialized);
-            }
-            fprintf(stderr, "\n");
-        #endif
 
         /* Le aviso al maestro que puede empezar con la operación de gather. */
         rc = pthread_barrier_wait(&instance->sync_barrier);
@@ -814,137 +772,218 @@ void* slave_thread(void *data) {
                     1 - weights_array[thread_weight_assignment[thread_id]]);
             #endif
             
-            int changed_assignment;
+            //int changed_assignment;
             
             if (currently_assigned_weight != thread_weight_assignment[thread_id]) {
-                changed_assignment = 1;
+                //changed_assignment = 1;
                 
                 weight_makespan = weights_array[thread_weight_assignment[thread_id]];
                 energy_makespan = 1 - weight_makespan;
             } else {
-                changed_assignment = 0;
+                //changed_assignment = 0;
             }
 
             /* *********************************************************************************************
              * Busco las mejores soluciones elite a importar
              * ********************************************************************************************* */
-            int best_index[3];
-            best_index[0] = -1;
-            best_index[1] = -1;
-            best_index[2] = -1;
-            
-            int current_index, sol_index;
-            current_index = 0;
-            sol_index = 0;
-                    
-            while ((current_index < instance->archiver.population_size)&&
-                (sol_index < instance->archiver.population_count)) {
-                    
-                if (instance->archiver.population[current_index].initialized == SOLUTION__IN_USE) {
-                    if (instance->archiver.population_tag[current_index] < thread_weight_assignment[thread_id]) {
-                        if (best_index[0] == -1) {
-                            best_index[0] = current_index;
-                        } else if (instance->archiver.population_tag[current_index] > instance->archiver.population_tag[best_index[0]]) {
-                            best_index[0] = current_index;
-                        }
-                    } else if (instance->archiver.population_tag[current_index] > thread_weight_assignment[thread_id]) {
-                        if (best_index[1] == -1) {
-                            best_index[1] = current_index;
-                        } else if (instance->archiver.population_tag[current_index] < instance->archiver.population_tag[best_index[1]]) {
-                            best_index[1] = current_index;
-                        }                    
-                    } else if (instance->archiver.population_tag[current_index] == thread_weight_assignment[thread_id]) {
-                        best_index[2] = current_index;
-                    }
-                    
-                    sol_index++;
+            #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+                for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+                    migration_global_pop_index[i] = -1;
                 }
                 
-                current_index++;
-            }
-            
-            #ifdef DEBUG_3        
-                if (best_index[0] != -1) {
-                    fprintf(stderr, "[DEBUG] Thread %d, Best previous solution found in %d (weight %d).\n", thread_id, 
-                        best_index[0], instance->archiver.population_tag[best_index[0]]);
-                } else {
-                    fprintf(stderr, "[DEBUG] Thread %d, No best previous solution found.\n", thread_id);
-                }
-                if (best_index[2] != -1) {
-                    fprintf(stderr, "[DEBUG] Thread %d, Best solution found in %d (weight %d).\n", thread_id, 
-                        best_index[2], instance->archiver.population_tag[best_index[2]]);
-                } else {
-                    fprintf(stderr, "[DEBUG] Thread %d, No best solution found.\n", thread_id);
-                }
-                if (best_index[1] != -1) {
-                    fprintf(stderr, "[DEBUG] Thread %d, Best next solution found in %d (weight %d).\n", thread_id, 
-                        best_index[1], instance->archiver.population_tag[best_index[1]]);
-                } else {
-                    fprintf(stderr, "[DEBUG] Thread %d, No best next solution found.\n", thread_id);
-                }            
+                int ep_current_index, ep_solution_index;
+                ep_current_index = 0;
+                ep_solution_index = 0;
+
+                #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
+                    int worst_distance, worst_index;
+                    int current_solution_distance;
+                            
+                    while ((ep_current_index < instance->archiver.population_size) &&
+                        (ep_solution_index < instance->archiver.population_count)) {
+                            
+                        if (instance->archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                            if (ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
+                                /* Aún no esta lleno el array con el vecindario */
+                                migration_global_pop_index[ep_solution_index] = ep_current_index;
+                                migration_current_weight_distance[ep_solution_index] = abs(thread_weight_assignment[thread_id] -
+                                    instance->archiver.population_tag[ep_current_index]);
+                                    
+                                if (ep_solution_index == 0) {
+                                    worst_distance = migration_current_weight_distance[ep_solution_index];
+                                    worst_index = ep_solution_index;
+                                } else {
+                                    if (worst_distance < migration_current_weight_distance[ep_solution_index]) {
+                                        worst_distance = migration_current_weight_distance[ep_solution_index];
+                                        worst_index = ep_solution_index;
+                                    }
+                                }
+                            } else {
+                                current_solution_distance = abs(thread_weight_assignment[thread_id] -
+                                    instance->archiver.population_tag[ep_current_index]);
+                                    
+                                if (current_solution_distance < worst_distance) {
+                                    worst_distance = current_solution_distance;
+                                    
+                                    migration_global_pop_index[worst_index] = ep_current_index;
+                                    migration_current_weight_distance[worst_index] = current_solution_distance;
+                                    
+                                    for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+                                        if (worst_distance < migration_current_weight_distance[i]) {
+                                            worst_distance = migration_current_weight_distance[i];
+                                            worst_index = i;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            ep_solution_index++;
+                        }
+                        
+                        ep_current_index++;
+                    }
+                #endif
+                #ifdef CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
+                    int current_ep_solution_index;
+                    current_ep_solution_index = 0;
+                    
+                    FLOAT selection_prob;
+                    selection_prob = 1 / instance->archiver.population_count;
+                
+                    while ((ep_current_index < instance->archiver.population_size) &&
+                        (ep_solution_index < instance->archiver.population_count) &&
+                        (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
+                            
+                        if (instance->archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                            if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
+                                /* Aún no esta lleno el array con el vecindario */
+                                migration_global_pop_index[current_ep_solution_index] = ep_current_index;
+                                migration_current_weight_distance[current_ep_solution_index] = 
+                                    abs(thread_weight_assignment[thread_id] -
+                                        instance->archiver.population_tag[ep_current_index]);
+                                
+                                current_ep_solution_index++;
+                            }
+                            
+                            ep_solution_index++;
+                        }
+                        
+                        ep_current_index++;
+                    }
+                #endif
+                
+                #ifdef DEBUG_3
+                    for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+                        if (migration_global_pop_index[i] != -1) {
+                            migration_global_pop_index[i] = -1;
+                            
+                            fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
+                                thread_id, 
+                                migration_global_pop_index[i], 
+                                instance->archiver.population_tag[migration_global_pop_index[i]],
+                                migration_current_weight_distance[i]);
+                        }
+                    } 
+                #endif
             #endif
 
             /* *********************************************************************************************
              * Migro soluciones desde la población elite
              * ********************************************************************************************* */
              
-            int migrated, next_solution, source_index;
-            next_solution = 0;
-            migrated = 0;
+            int migrated;
             
-            for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < max_pop_sols; i++) {
-                source_index = i - CMOCHC_LOCAL__BEST_SOLS_KEPT;
+            int migrated_solution_index;
+            migrated_solution_index = 0;
+            
+            int next_solution_index;
+            next_solution_index = 0;
+            
+            while (next_solution_index < max_pop_sols) {
+                migrated = 0;
                 
-                if (source_index < 3) {
-                    if (best_index[source_index] != -1) {
-                        #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+                #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+                    if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
+                        if (migration_global_pop_index[migrated_solution_index] != -1) {
                             count_migrations[thread_id]++;
                         
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
-                                clone_solution(&population[sorted_population[next_solution]],&instance->archiver.population[best_index[source_index]]);
-                                next_solution++;
+                                clone_solution(&population[next_solution_index],
+                                    &instance->archiver.population[migration_global_pop_index[migrated_solution_index]]);
+                                    
+                                next_solution_index++;
+                                migrated_solution_index++;
                                 count_solutions_migrated[thread_id]++;
+                                migrated = 1;
                             #endif
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
-                                if (next_solution + 1 < max_pop_sols) {
-                                    FLOAT d = distance(&instance->archiver.population[best_index[source_index]],&population[sorted_population[0]]);
+                                if (next_solution_index + 1 < max_pop_sols) {
+                                    random = RAND_GENERATE(rand_state[thread_id]);
+                                    
+                                    int migration_parent_index;
+                                    migration_parent_index = (int)(random * next_solution_index);
+                                    
+                                    FLOAT d = distance(
+                                        &instance->archiver.population[migration_global_pop_index[migrated_solution_index]],
+                                        &population[migration_parent_index]);
 
                                     if (d > threshold_max) {
                                         hux(rand_state[thread_id],
-                                            &instance->archiver.population[best_index[source_index]], &population[sorted_population[0]],
-                                            &population[sorted_population[next_solution]],&population[sorted_population[next_solution+1]]);
+                                            &instance->archiver.population[migration_global_pop_index[migrated_solution_index]], 
+                                            &population[migration_parent_index],
+                                            &population[sorted_population[next_solution_index]],
+                                            &population[sorted_population[next_solution_index+1]]);
+                                            
+                                        next_solution_index += 2;
+                                        migrated_solution_index++;
+                                        count_solutions_migrated[thread_id]++;
+                                        migrated = 1;
                                     }
-
-                                    next_solution += 2;
-                                    count_solutions_migrated[thread_id]++;
+                                }
+                                
+                                if (migrated == 0) {
+                                    mutate(
+                                        rand_state[thread_id],
+                                        &instance->archiver.population[migration_global_pop_index[migrated_solution_index]],
+                                        &population[next_solution_index]);
+                                        
+                                    next_solution_index++;
+                                    migrated_solution_index++;
+                                    count_solutions_migrated[thread_id]++; 
+                                    migrated = 1;
                                 }
                             #endif
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-                                mutate(rand_state[thread_id],&instance->archiver.population[best_index[source_index]],&population[sorted_population[next_solution]]);
-                                next_solution++;
+                                mutate(
+                                    rand_state[thread_id],
+                                    &instance->archiver.population[migration_global_pop_index[migrated_solution_index]],
+                                    &population[next_solution_index]);
+                                    
+                                next_solution_index++;
+                                migrated_solution_index++;
                                 count_solutions_migrated[thread_id]++;
+                                
+                                migrated = 1;
                             #endif
-
-                            migrated = 1;
-                        #endif
+                        }
                     }
-                }
+                #endif
                 
                 if (migrated == 0) {
                     random = RAND_GENERATE(rand_state[thread_id]);
 
                     mutate(rand_state[thread_id],
-                        &population[sorted_population[(int)(random * CMOCHC_LOCAL__BEST_SOLS_KEPT)]],
-                        &population[sorted_population[next_solution]]);
+                        &population[(int)(random * next_solution_index)],
+                        &population[next_solution_index]);
 
-                    next_solution++;
+                    next_solution_index++;
                 }
             }
-            
+           
             /* Actualizo los puntos de normalización con la población local */
             for (int i = 0; i < max_pop_sols; i++) {
                 if (population[i].makespan < makespan_utopia_value) {
-                    makespan_utopia_index = i;
+                    //makespan_utopia_index = i;
                     makespan_utopia_value = population[i].makespan;
 
                     if (population[i].energy_consumption > energy_nadir_value) {
@@ -952,7 +991,7 @@ void* slave_thread(void *data) {
                     }
                 }
                 if (population[i].energy_consumption < energy_utopia_value) {
-                    energy_utopia_index = i;
+                    //energy_utopia_index = i;
                     energy_utopia_value = population[i].energy_consumption;
 
                     if (population[i].makespan > makespan_nadir_value) {
@@ -960,22 +999,6 @@ void* slave_thread(void *data) {
                     }
                 }
             }
-
-            /* *********************************************************************************************
-             * Muto las soluciones no migradas?
-             *********************************************************************************************** */
-            #ifdef CMOCHC_COLLABORATION__MUTATE_BEST
-                for (int i = 0; i < 1; i++) {
-                    mutate(rand_state[thread_id], &population[sorted_population[i]], &population[sorted_population[i]]);
-                }
-            #endif
-            #ifdef CMOCHC_COLLABORATION__MUTATE_ALL_ELITE
-                for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
-                    mutate(rand_state[thread_id], &population[sorted_population[i]], &population[sorted_population[i]]);
-                }
-            #endif
-            #ifdef CMOCHC_COLLABORATION__MUTATE_BEST
-            #endif
 
             /* *********************************************************************************************
              * Re-calculo el fitness de toda la población
@@ -998,12 +1021,16 @@ void* slave_thread(void *data) {
                 fprintf(stderr, "[DEBUG] Post-migration population\n");
                 fprintf(stderr, "parents> ");
                 for (int i = 0; i < input->population_size; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], fitness_population[sorted_population[i]], population[sorted_population[i]].initialized);
+                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
+                        fitness_population[sorted_population[i]], 
+                        population[sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
                 fprintf(stderr, "childs > ");
                 for (int i = input->population_size; i < max_pop_sols; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], fitness_population[sorted_population[i]], population[sorted_population[i]].initialized);
+                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
+                        fitness_population[sorted_population[i]], 
+                        population[sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
             #endif
