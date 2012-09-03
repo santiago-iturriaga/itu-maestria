@@ -30,13 +30,18 @@ struct aga_state {
     int population_size;
     int population_count;
     
+    int tag_max;
+    int *tag_count;
+    
     struct solution *new_solutions;
     int *new_solutions_tag;
     int new_solutions_size;
 };
 
 void archivers_aga_init(struct aga_state *state, int population_max_size,
-    struct solution *new_solutions, int *new_solutions_tag, int new_solutions_size);   
+    struct solution *new_solutions, int *new_solutions_tag, int new_solutions_size,
+    int tag_max);   
+    
 void archivers_aga_free(struct aga_state *state);
 
 int archivers_aga(struct aga_state *state);
