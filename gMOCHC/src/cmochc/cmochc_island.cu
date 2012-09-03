@@ -76,6 +76,9 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 /* Obtiene los mejores elementos de cada población */
 int gather(struct cmochc &instance);
 
+/* Adapta los pesos de los threads */
+int adapt_weights_mod_a(struct cmochc &instance);
+
 /* Muestra el resultado de la ejecución */
 void display_results(struct cmochc &instance);
 
@@ -152,6 +155,9 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
                     instance.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
                 }
             #endif
+            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS) || defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
+                adapt_weights_mod_a(instance);
+            #endif
         #endif
 
         TIMMING_END(">> cmochc_gather", ts_gather);
@@ -204,6 +210,66 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     finalize(instance, threads);
 }
 
+int adapt_weights_mod_a(struct cmochc &instance) {
+    int *weight_gap_sorted = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
+    int *weight_gap_length = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
+    int *weight_gap_index = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
+    int *weight_gap_tmp = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
+    
+    int last_gap_index = 0;
+    int last_filled_patch = -1;
+    
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Archive tag count:\n");
+        for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
+            fprintf(stderr, "> [%d] = %d\n", t, instance.archiver.tag_count[t]);
+        }
+    #endif
+    
+    for (int i = 0; i < CMOCHC_PARETO_FRONT__PATCHES; i++) {
+        if (instance.archiver.tag_count[i] > 0) {
+            if (i > last_filled_patch + 1) {
+                weight_gap_index[last_gap_index] = i;
+                weight_gap_length[last_gap_index] = i - last_filled_patch - 1;
+                weight_gap_sorted[last_gap_index] = last_gap_index;
+                last_gap_index++;
+            }
+            
+            last_filled_patch = i;
+        }
+    }
+    
+    if (CMOCHC_PARETO_FRONT__PATCHES > last_filled_patch + 1) {
+        weight_gap_index[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES;
+        weight_gap_length[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES - last_filled_patch - 1;
+        weight_gap_sorted[last_gap_index] = last_gap_index;
+        last_gap_index++;
+    }
+    
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Found gaps:\n");
+        for (int i = 0; i < last_gap_index; i++) {
+            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, weight_gap_index[i], weight_gap_length[i]);
+        }
+    #endif
+    
+    gap_merge_sort(weight_gap_index, weight_gap_length, weight_gap_sorted, last_gap_index, weight_gap_tmp);
+
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Sorted found gaps:\n");
+        for (int i = 0; i < last_gap_index; i++) {
+            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, weight_gap_index[weight_gap_sorted[i]], weight_gap_length[weight_gap_sorted[i]]);
+        }
+    #endif
+    
+    
+    
+    free(weight_gap_sorted);
+    free(weight_gap_tmp);
+    free(weight_gap_length);
+    free(weight_gap_index);
+}
+
 /* Inicializa los hilos y las estructuras de datos */
 void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     struct params &input, struct scenario &current_scenario,
@@ -238,6 +304,12 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     #endif
     #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
         fprintf(stderr, "RANDOM\n");
+    #endif
+    #ifdef CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS
+        fprintf(stderr, "A-RANDOM\n");
+    #endif
+    #ifdef CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS
+        fprintf(stderr, "A-MIDDLE\n");
     #endif
     
     fprintf(stderr, "       CMOCHC_ARCHIVE__MAX_SIZE                    : %d\n", CMOCHC_ARCHIVE__MAX_SIZE);
@@ -358,7 +430,8 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 
     /* Inicializo el archivador */
     archivers_aga_init(&instance.archiver, CMOCHC_ARCHIVE__MAX_SIZE, instance.iter_elite_pop, 
-        instance.iter_elite_pop_tag, (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT));
+        instance.iter_elite_pop_tag, (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT), 
+        CMOCHC_PARETO_FRONT__PATCHES);
 }
 
 /* Obtiene los mejores elementos de cada población */
@@ -520,10 +593,10 @@ void* slave_thread(void *data) {
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Normalization references\n");
-        fprintf(stderr, "> (makespan) best index=%d, zenith=%.2f, nadir=%.2f\n",
-            makespan_utopia_index, makespan_utopia_value, makespan_nadir_value);
-        fprintf(stderr, "> (energy) best index=%d, zenith=%.2f, nadir=%.2f\n",
-            energy_utopia_index, energy_utopia_value, energy_nadir_value);
+        fprintf(stderr, "> (makespan) zenith=%.2f, nadir=%.2f\n",
+            makespan_utopia_value, makespan_nadir_value);
+        fprintf(stderr, "> (energy) zenith=%.2f, nadir=%.2f\n",
+            energy_utopia_value, energy_nadir_value);
     #endif
 
     for (int i = 0; i < max_pop_sols; i++) {
@@ -541,9 +614,12 @@ void* slave_thread(void *data) {
         #endif
     }
 
+    /* Merge sort tmp array */
+    int *merge_sort_tmp = (int*)malloc(sizeof(int) * max_pop_sols);
+
     merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
-        makespan_nadir_value, energy_nadir_value, sorted_population,
-        fitness_population, max_pop_sols);
+        makespan_nadir_value, energy_nadir_value, sorted_population, fitness_population, max_pop_sols,
+        merge_sort_tmp);
 
     /* *********************************************************************************************
      * Main iteration
@@ -564,6 +640,7 @@ void* slave_thread(void *data) {
 
     int migration_global_pop_index[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
     int migration_current_weight_distance[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
+    
     int rc;
 
     while (instance->stopping_condition == 0) {
@@ -648,7 +725,7 @@ void* slave_thread(void *data) {
 
                 merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
                     makespan_nadir_value, energy_nadir_value, sorted_population,
-                    fitness_population, max_pop_sols);
+                    fitness_population, max_pop_sols, merge_sort_tmp);
 
                 if (worst_parent > fitness(population, fitness_population, weight_makespan, energy_makespan,
                         makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
@@ -720,7 +797,7 @@ void* slave_thread(void *data) {
                 /* Re-sort de population */
                 merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
                     makespan_nadir_value, energy_nadir_value, sorted_population,
-                    fitness_population, max_pop_sols);
+                    fitness_population, max_pop_sols, merge_sort_tmp);
             }
         }
 
@@ -1015,7 +1092,7 @@ void* slave_thread(void *data) {
              *********************************************************************************************** */
             merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
                 makespan_nadir_value, energy_nadir_value, sorted_population,
-                fitness_population, max_pop_sols);
+                fitness_population, max_pop_sols, merge_sort_tmp);
 
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Post-migration population\n");
@@ -1047,6 +1124,7 @@ void* slave_thread(void *data) {
         free_solution(&population[p]);
     }
     
+    free(merge_sort_tmp);
     free(population);
     free(sorted_population);
     free(fitness_population);
@@ -1114,7 +1192,12 @@ void display_results(struct cmochc &instance) {
         fprintf(stderr, "       count_solutions_migrated             : %d (%.2f %%)\n", count_solutions_migrated,
             ((FLOAT)count_solutions_migrated/(FLOAT)count_migrations)*100);
 
-        fprintf(stderr, "       pf solution count by deme:\n");
+        fprintf(stderr, "       archive tag count:\n");
+        for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
+            fprintf(stderr, "          [%d] = %d\n", t, instance.archiver.tag_count[t]);
+        }
+
+        fprintf(stderr, "       historic archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             fprintf(stderr, "          [%d] = %d (%d)\n", t, count_pf_found[t], instance.count_historic_weights[t]);
         }

@@ -15,19 +15,63 @@
 #include "cmochc_island.h"
 #include "cmochc_island_evop.h"
 
+inline void gap_merge_sort(int *weight_gap_index, int *weight_gap_length,
+    int *weight_gap_sorted, int weight_gap_count, int *tmp) {
+
+    int increment, l, l_max, r, r_max, current, i;
+
+    increment = 1;
+    int gap_length_r, gap_length_l;
+
+    while (increment < weight_gap_count) {
+        l = 0;
+        r = increment;
+        l_max = r - 1;
+        r_max = (l_max + increment < weight_gap_count) ? l_max + increment : weight_gap_count - 1;
+
+        current = 0;
+
+        while (current < weight_gap_count) {
+            while (l <= l_max && r <= r_max) {
+                gap_length_r = weight_gap_length[weight_gap_sorted[r]];
+                gap_length_l = weight_gap_length[weight_gap_sorted[l]];
+
+                if (gap_length_r < gap_length_l) {
+                    tmp[current] = weight_gap_sorted[r++];
+                } else {
+                    tmp[current] = weight_gap_sorted[l++];
+                }
+
+                current++;
+            }
+
+            while (r <= r_max) tmp[current++] = weight_gap_sorted[r++];
+            while (l <= l_max) tmp[current++] = weight_gap_sorted[l++];
+
+            l = r;
+            r += increment;
+            l_max = r - 1;
+            r_max = (l_max + increment < weight_gap_count) ? l_max + increment : weight_gap_count - 1;
+        }
+
+        increment *= 2;
+
+        for (i = 0; i < weight_gap_count; i++) {
+            weight_gap_sorted[i] = tmp[i];
+        }
+    }
+}
+
 inline void merge_sort(struct solution *population, 
     FLOAT weight_makespan, FLOAT energy_makespan,
     FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
     FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
     int *sorted_population, FLOAT *fitness_population,
-    int population_size) {
+    int population_size, int *tmp) {
 
     int increment, l, l_max, r, r_max, current, i;
-    int *tmp;
 
     increment = 1;
-    tmp = (int*)malloc(sizeof(int) * population_size);
-
     FLOAT fitness_r, fitness_l;
 
     while (increment < population_size) {
@@ -80,8 +124,6 @@ inline void merge_sort(struct solution *population,
             sorted_population[i] = tmp[i];
         }
     }
-
-    free(tmp);
 }
 
 #endif // CMOCHC_ISLANDS_UTILS__H
