@@ -262,7 +262,9 @@ int adapt_weights_mod_a(struct cmochc &instance) {
         }
     #endif
     
-    
+    for (int t = 0; t < instance.input->thread_count; t++) {
+        
+    }
     
     free(weight_gap_sorted);
     free(weight_gap_tmp);
@@ -951,9 +953,7 @@ void* slave_thread(void *data) {
                 
                 #ifdef DEBUG_3
                     for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                        if (migration_global_pop_index[i] != -1) {
-                            migration_global_pop_index[i] = -1;
-                            
+                        if (migration_global_pop_index[i] != -1) {                           
                             fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
                                 thread_id, 
                                 migration_global_pop_index[i], 
