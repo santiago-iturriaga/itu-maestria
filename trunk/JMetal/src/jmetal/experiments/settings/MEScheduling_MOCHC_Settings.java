@@ -59,7 +59,7 @@ public class MEScheduling_MOCHC_Settings extends Settings {
 		convergenceValue_ = 3;
 		populationSize_ = 100;
 		maxEvaluations_ = 800000;
-		mutationProbability_ = 1.0 / problem_.getNumberOfVariables(); // = 0.35;
+		mutationProbability_ = 0.35;
 		crossoverProbability_ = 1.0;
 	}
 
