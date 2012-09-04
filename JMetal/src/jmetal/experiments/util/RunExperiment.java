@@ -147,12 +147,16 @@ public class RunExperiment extends Thread {
 			}
 
 			problem = algorithm[0].getProblem() ;
-			for (int runs = 0; runs < independentRuns_; runs++) {
+			for (int runs = 0; runs < independentRuns_; runs++) {							
 				System.out.println("Iruns: " + runs) ;
 				// STEP 4: configure the algorithms
 
 				// STEP 5: run the algorithms
 				for (int i = 0; i < numberOfAlgorithms; i++) {
+					// =====================================================================
+					long startTime = System.currentTimeMillis();
+					// =====================================================================
+					
 					System.out.println(algorithm[i].getClass()) ;
 					// STEP 6: create output directories
 					File experimentDirectory;
@@ -259,6 +263,10 @@ public class RunExperiment extends Thread {
 							} // for
 						}
 					} // if
+					// =====================================================================			
+					long endTime = System.currentTimeMillis();
+					System.out.println("That took " + (endTime - startTime) / 1000 + " seconds");
+					// =====================================================================
 				} // for
 			} // for
 		} //for
