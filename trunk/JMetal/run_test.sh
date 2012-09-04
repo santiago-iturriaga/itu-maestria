@@ -1,1 +1,1 @@
-java -classpath /home/santiago/workspace/JMetal/bin jmetal.experiments.NSGAIIStudy
+java -classpath /home/santiago/workspace/JMetal/bin jmetal.experiments.MESchedulingStudy
