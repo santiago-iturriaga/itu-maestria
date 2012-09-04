@@ -27,6 +27,7 @@ import jmetal.core.*;
 import jmetal.util.JMException;
 
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * This class implements the PAES algorithm. 
@@ -94,12 +95,26 @@ public class PAES extends Algorithm {
     evaluations = 0;
     archive     = new AdaptiveGridArchive(archiveSize,bisections,problem_.getNumberOfObjectives());        
     dominance = new DominanceComparator();           
-            
+    
+    Solution solution = null;
+    
+	List<Solution> initialPopulation = ((List<Solution>) getInputParameter("initialPopulation"));	
+	if (initialPopulation != null) {
+		if (initialPopulation.size() == 1) {
+			solution = new Solution(initialPopulation.get(0));
+			problem_.evaluate(solution);
+			problem_.evaluateConstraints(solution);
+			evaluations++;
+		}
+	}
+    
+	if (solution == null) {
     //-> Create the initial solution and evaluate it and his constraints
-    Solution solution = new Solution(problem_);
-    problem_.evaluate(solution);        
-    problem_.evaluateConstraints(solution);
-    evaluations++;
+		solution = new Solution(problem_);
+	    problem_.evaluate(solution);        
+	    problem_.evaluateConstraints(solution);
+	    evaluations++;
+	}
         
     // Add it to the archive
     archive.add(new Solution(solution));            
