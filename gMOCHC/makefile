@@ -22,6 +22,9 @@ BIN = gmochc
 LINK = -lcuda -lrt -lpthread -lm
 OPTS = --ptxas-options=-v
 
+###Release no debug
+###-DNDEBUG
+
 all: debug verificador
 
 verificador: verificador.c
