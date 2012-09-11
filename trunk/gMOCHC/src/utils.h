@@ -46,10 +46,4 @@ inline char* int_to_binary(int x) {
     return b;
 }
 
-#if defined(DEBUG_LEVEL)
-    #define ASSERT(a) assert(a);
-#else
-    #define ASSERT(a)
-#endif
-
 #endif // UTILS_H_

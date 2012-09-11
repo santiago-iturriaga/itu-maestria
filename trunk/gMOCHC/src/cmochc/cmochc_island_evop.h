@@ -25,8 +25,8 @@ inline int distance(struct solution *s1, struct solution *s2) {
         }
     }
 
-    ASSERT(distance >= 0)
-    ASSERT(distance <= s1->etc->tasks_count)
+    assert(distance >= 0);
+    assert(distance <= s1->etc->tasks_count);
 
     return distance;
 }
@@ -118,8 +118,8 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
                     random = RAND_GENERATE(rand_state);
                     destination_machine = (int)(floor(machines_count * random));
 
-                    ASSERT(destination_machine >= 0)
-                    ASSERT(destination_machine < machines_count)
+                    assert(destination_machine >= 0);
+                    assert(destination_machine < machines_count);
 
                     // Si la máscara vale 1 copio reubico aleariamente la tarea
                     mutation->task_assignment[current_task_index] = destination_machine;

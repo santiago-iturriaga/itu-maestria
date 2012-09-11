@@ -46,6 +46,12 @@ struct cmochc {
     /* Sync */
     pthread_barrier_t sync_barrier;
 
+    /* Aux master thread memory */
+    int *weight_gap_sorted;
+    int *weight_gap_length;
+    int *weight_gap_index;
+    int *weight_gap_tmp;
+
     /* Statistics */
     #ifdef DEBUG_1
         int *count_generations;
@@ -77,7 +83,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
 int gather(struct cmochc &instance);
 
 /* Adapta los pesos de los threads */
-int adapt_weights_mod_a(struct cmochc &instance);
+int adapt_weights_mod_arm(struct cmochc &instance, RAND_STATE rstate);
 
 /* Muestra el resultado de la ejecución */
 void display_results(struct cmochc &instance);
@@ -109,6 +115,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
 
     struct cmochc instance;
     struct cmochc_thread *threads;
+    
     init(instance, &threads, input, current_scenario, etc, energy);
 
     #if defined(DEBUG_1)
@@ -156,7 +163,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
                 }
             #endif
             #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS) || defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
-                adapt_weights_mod_a(instance);
+                adapt_weights_mod_arm(instance, rstate);
             #endif
         #endif
 
@@ -210,12 +217,8 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     finalize(instance, threads);
 }
 
-int adapt_weights_mod_a(struct cmochc &instance) {
-    int *weight_gap_sorted = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
-    int *weight_gap_length = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
-    int *weight_gap_index = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
-    int *weight_gap_tmp = (int*) malloc(sizeof(int) * (instance.archiver.population_size + instance.input->thread_count + 1));
-    
+int adapt_weights_mod_arm(struct cmochc &instance, RAND_STATE rstate) {
+   
     int last_gap_index = 0;
     int last_filled_patch = -1;
     
@@ -228,48 +231,149 @@ int adapt_weights_mod_a(struct cmochc &instance) {
     
     for (int i = 0; i < CMOCHC_PARETO_FRONT__PATCHES; i++) {
         if (instance.archiver.tag_count[i] > 0) {
-            if (i > last_filled_patch + 1) {
-                weight_gap_index[last_gap_index] = i;
-                weight_gap_length[last_gap_index] = i - last_filled_patch - 1;
-                weight_gap_sorted[last_gap_index] = last_gap_index;
-                last_gap_index++;
-            }
+            instance.weight_gap_index[last_gap_index] = i;
+            instance.weight_gap_length[last_gap_index] = i - last_filled_patch - 1;
+            instance.weight_gap_sorted[last_gap_index] = last_gap_index;
+            last_gap_index++;
             
             last_filled_patch = i;
         }
     }
     
     if (CMOCHC_PARETO_FRONT__PATCHES > last_filled_patch + 1) {
-        weight_gap_index[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES;
-        weight_gap_length[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES - last_filled_patch - 1;
-        weight_gap_sorted[last_gap_index] = last_gap_index;
+        instance.weight_gap_index[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES;
+        instance.weight_gap_length[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES - last_filled_patch - 1;
+        instance.weight_gap_sorted[last_gap_index] = last_gap_index;
         last_gap_index++;
     }
     
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Found gaps:\n");
         for (int i = 0; i < last_gap_index; i++) {
-            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, weight_gap_index[i], weight_gap_length[i]);
+            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, 
+                instance.weight_gap_index[i], instance.weight_gap_length[i]);
         }
     #endif
     
-    gap_merge_sort(weight_gap_index, weight_gap_length, weight_gap_sorted, last_gap_index, weight_gap_tmp);
+    gap_merge_sort(instance.weight_gap_index, instance.weight_gap_length, 
+        instance.weight_gap_sorted, last_gap_index, instance.weight_gap_tmp);
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Sorted found gaps:\n");
         for (int i = 0; i < last_gap_index; i++) {
-            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, weight_gap_index[weight_gap_sorted[i]], weight_gap_length[weight_gap_sorted[i]]);
+            fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, instance.weight_gap_sorted[i],
+                instance.weight_gap_index[instance.weight_gap_sorted[i]], instance.weight_gap_length[instance.weight_gap_sorted[i]]);
+        }
+    #endif
+       
+    double random;
+    int sel_patch_idx = -1;
+    int biggest_patch_index = instance.weight_gap_sorted[last_gap_index - 1];
+        
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] biggest_patch_index = %d\n", biggest_patch_index);
+    #endif
+       
+    for (int t = 0; t < instance.input->thread_count; t++) {
+        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
+            if (instance.weight_gap_length[biggest_patch_index] == 0) {
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index];
+            } else if (instance.weight_gap_length[biggest_patch_index] == 1) {
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index] - 1;
+            } else {
+                random = RAND_GENERATE(rstate);
+                
+                int random_length;
+                random_length = instance.weight_gap_length[biggest_patch_index] * random;
+                
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] instance.weight_gap_index=%d random_length=%d\n", 
+                        instance.weight_gap_index[biggest_patch_index], random_length);
+                #endif
+                
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index] - random_length - 1;
+                if (sel_patch_idx < 0) sel_patch_idx = 0;
+                if (sel_patch_idx >= CMOCHC_PARETO_FRONT__PATCHES) sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
+            }
+        #endif
+        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)            
+            if (instance.weight_gap_length[biggest_patch_index] == 0) {
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index];
+            } else if (instance.weight_gap_length[biggest_patch_index] == 1) {
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index] - 1;
+            } else {
+                sel_patch_idx = instance.weight_gap_index[biggest_patch_index]
+                    - (instance.weight_gap_length[biggest_patch_index] / 2) - 1;
+            }
+        #endif
+
+        assert(sel_patch_idx >= 0);
+        assert(sel_patch_idx < CMOCHC_PARETO_FRONT__PATCHES);
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] sel_patch_idx = %d\n", sel_patch_idx);
+        #endif
+
+        instance.thread_weight_assignment[t] = sel_patch_idx;
+        instance.weight_thread_assignment[sel_patch_idx] = t;
+
+        if (sel_patch_idx != instance.weight_gap_index[biggest_patch_index]) {
+            instance.weight_gap_index[last_gap_index] = sel_patch_idx;
+            instance.weight_gap_length[last_gap_index] = instance.weight_gap_length[biggest_patch_index] 
+                - instance.weight_gap_index[biggest_patch_index] + sel_patch_idx;
+            instance.weight_gap_sorted[last_gap_index] = last_gap_index;
+                
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] instance.weight_gap_length[last_gap_index=%d] = %d\n", last_gap_index, instance.weight_gap_length[last_gap_index]);
+                fprintf(stderr, "[DEBUG] instance.weight_gap_length[biggest_patch_index=%d] = %d\n", biggest_patch_index, instance.weight_gap_length[biggest_patch_index]);
+                fprintf(stderr, "[DEBUG] instance.weight_gap_index[biggest_patch_index=%d] = %d\n", biggest_patch_index, instance.weight_gap_index[biggest_patch_index]);
+            #endif
+                
+            assert(instance.weight_gap_length[last_gap_index] >= 0);
+            
+            last_gap_index++;
+
+            instance.weight_gap_length[biggest_patch_index] = 
+                instance.weight_gap_index[biggest_patch_index] - sel_patch_idx - 1;
+                
+            assert(instance.weight_gap_length[biggest_patch_index] >= 0);
+        }
+
+        for (int j = last_gap_index - 2; j < last_gap_index; j++) {
+            int pos = j;
+            int aux;
+            
+            while ((pos > 0) && (instance.weight_gap_length[instance.weight_gap_sorted[pos]] 
+                <= instance.weight_gap_length[instance.weight_gap_sorted[pos-1]])) {
+                    
+                aux = instance.weight_gap_sorted[pos-1];
+                instance.weight_gap_sorted[pos-1] = instance.weight_gap_sorted[pos];
+                instance.weight_gap_sorted[pos] = aux;
+                
+                pos--;
+            }
+        }
+
+        biggest_patch_index = instance.weight_gap_sorted[last_gap_index - 1];
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Assigned thread %d. New gaps:\n", t);
+            for (int i = 0; i < last_gap_index; i++) {
+                fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, instance.weight_gap_sorted[i],
+                    instance.weight_gap_index[instance.weight_gap_sorted[i]], 
+                    instance.weight_gap_length[instance.weight_gap_sorted[i]]);
+            }
+        #endif
+    }
+    
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Thread assignments:\n");
+        for (int t = 0; t < instance.input->thread_count; t++) {
+            fprintf(stderr, "> thread %d=%d\n", t, instance.thread_weight_assignment[t]);
         }
     #endif
     
-    for (int t = 0; t < instance.input->thread_count; t++) {
-        
-    }
-    
-    free(weight_gap_sorted);
-    free(weight_gap_tmp);
-    free(weight_gap_length);
-    free(weight_gap_index);
+    return 0;
 }
 
 /* Inicializa los hilos y las estructuras de datos */
@@ -343,7 +447,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     /* Weights */
     instance.weight_thread_assignment = (int*)(malloc(sizeof(int) * CMOCHC_PARETO_FRONT__PATCHES));
     instance.weights = (FLOAT*)(malloc(sizeof(FLOAT) * CMOCHC_PARETO_FRONT__PATCHES));
-    ASSERT(CMOCHC_PARETO_FRONT__PATCHES > 1)
+    assert(CMOCHC_PARETO_FRONT__PATCHES > 1);
 
     for (int patch_idx = 0; patch_idx < CMOCHC_PARETO_FRONT__PATCHES; patch_idx++) {
         instance.weights[patch_idx] = (FLOAT)(patch_idx+1) / (FLOAT)(CMOCHC_PARETO_FRONT__PATCHES+1);
@@ -358,7 +462,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     if (input.thread_count > 1) {
         for (int i = 0; i < input.thread_count; i++) {
             instance.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / input.thread_count);
-            ASSERT(instance.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES)
+            assert(instance.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES);
         
             instance.weight_thread_assignment[instance.thread_weight_assignment[i]] = i;
             
@@ -368,7 +472,7 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
         }
     } else {
         instance.thread_weight_assignment[0] = CMOCHC_PARETO_FRONT__PATCHES / 2;
-        ASSERT(instance.thread_weight_assignment[0] < CMOCHC_PARETO_FRONT__PATCHES)
+        assert(instance.thread_weight_assignment[0] < CMOCHC_PARETO_FRONT__PATCHES);
 
         instance.weight_thread_assignment[instance.thread_weight_assignment[0]] = 0;
         
@@ -434,6 +538,12 @@ void init(struct cmochc &instance, struct cmochc_thread **threads_data,
     archivers_aga_init(&instance.archiver, CMOCHC_ARCHIVE__MAX_SIZE, instance.iter_elite_pop, 
         instance.iter_elite_pop_tag, (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT), 
         CMOCHC_PARETO_FRONT__PATCHES);
+        
+    /* Memoria aux para gather */
+    instance.weight_gap_sorted = (int*) malloc(sizeof(int) * (instance.archiver.population_size + input.thread_count + 1));
+    instance.weight_gap_length = (int*) malloc(sizeof(int) * (instance.archiver.population_size + input.thread_count + 1));
+    instance.weight_gap_index = (int*) malloc(sizeof(int) * (instance.archiver.population_size + input.thread_count + 1));
+    instance.weight_gap_tmp = (int*) malloc(sizeof(int) * (instance.archiver.population_size + input.thread_count + 1));
 }
 
 /* Obtiene los mejores elementos de cada población */
@@ -452,7 +562,7 @@ int gather(struct cmochc &instance) {
                 instance.archiver.new_solutions[i].energy_consumption);
         }
 
-        ASSERT(cantidad > 0);
+        assert(cantidad > 0);
     #endif
 
     int new_solutions;
@@ -1223,6 +1333,11 @@ void finalize(struct cmochc &instance, struct cmochc_thread *threads) {
     free(instance.count_migrations);
     free(instance.count_solutions_migrated);
     free(instance.count_historic_weights);
+    
+    free(instance.weight_gap_sorted);
+    free(instance.weight_gap_tmp);
+    free(instance.weight_gap_length);
+    free(instance.weight_gap_index);
     
     free(instance.weights);
     free(instance.thread_weight_assignment);

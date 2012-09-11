@@ -12,7 +12,7 @@ inline FLOAT get_objective(struct solution *s, int objective) {
     } else if (objective == 1) {
         return s->energy_consumption;
     } else {
-        ASSERT(false)
+        assert(false);
     }
 }
 
@@ -32,8 +32,8 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
     int n_pos = 0;
     
     while ((new_solutions_count > 0)&&(state->population_count < state->population_size)) {
-        ASSERT(n_pos < state->new_solutions_size);
-        ASSERT(s_pos < state->population_size);
+        assert(n_pos < state->new_solutions_size);
+        assert(s_pos < state->population_size);
         
         if (state->new_solutions[n_pos].initialized != SOLUTION__IN_USE) {
             n_pos++;
@@ -73,7 +73,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
 
     while (new_solutions_count > 0)  // Some new solutions are non-dominated.
     {
-        ASSERT(n_pos < state->new_solutions_size);
+        assert(n_pos < state->new_solutions_size);
         
         if (state->new_solutions[n_pos].initialized == SOLUTION__EMPTY) {
             n_pos++;
