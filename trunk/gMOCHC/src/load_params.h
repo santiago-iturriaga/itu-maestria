@@ -20,7 +20,6 @@ struct params {
     
     int max_time_secs;
     int max_iterations;
-    int population_size;
 };
 
 int load_params(int argc, char **argv);

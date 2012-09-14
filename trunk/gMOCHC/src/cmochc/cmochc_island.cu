@@ -344,6 +344,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
 /* Inicializa los hilos y las estructuras de datos */
 void init(struct cmochc_thread *threads_data) {
     fprintf(stderr, "[INFO] == CMOCHC/islands configuration constants ==============\n");
+    fprintf(stderr, "       CMOCHC_LOCAL__POPULATION_SIZE               : %d\n", CMOCHC_LOCAL__POPULATION_SIZE);
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
@@ -517,10 +518,10 @@ void* slave_thread(void *data) {
     FLOAT random;
 
     /* Inicializo la población de padres y limpio la de hijos */
-    int max_pop_sols = 2 * INPUT.population_size;
+    int max_pop_sols = 2 * CMOCHC_LOCAL__POPULATION_SIZE;
 
     /* Merge sort tmp array */
-    int *merge_sort_tmp = (int*)malloc(sizeof(int) * max_pop_sols);
+    int merge_sort_tmp[2 * CMOCHC_LOCAL__POPULATION_SIZE];
 
     /* *********************************************************************************************
      * Inicializo los pesos.
@@ -535,9 +536,9 @@ void* slave_thread(void *data) {
      * *********************************************************************************************/
 
     /* Poblacion de cada esclavo */
-    struct solution *population = (struct solution*)(malloc(sizeof(struct solution) * max_pop_sols));
-    int *sorted_population = (int*)(malloc(sizeof(int) * max_pop_sols));
-    FLOAT *fitness_population = (FLOAT*)(malloc(sizeof(FLOAT) * max_pop_sols));
+    struct solution population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
+    int sorted_population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
+    FLOAT fitness_population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
 
     FLOAT makespan_utopia_value, energy_utopia_value;
     FLOAT makespan_nadir_value, energy_nadir_value;
@@ -620,7 +621,7 @@ void* slave_thread(void *data) {
      * Main iteration
      * ********************************************************************************************* */
     int next_avail_children;
-    int max_children = INPUT.population_size / 2;
+    int max_children = CMOCHC_LOCAL__POPULATION_SIZE / 2;
     int max_distance = INPUT.tasks_count;
 
     int threshold_max = max_distance / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
@@ -647,7 +648,7 @@ void* slave_thread(void *data) {
             /* *********************************************************************************************
              * Mating
              * ********************************************************************************************* */
-            next_avail_children = INPUT.population_size;
+            next_avail_children = CMOCHC_LOCAL__POPULATION_SIZE;
 
             FLOAT d;
             int p1_idx, p2_idx;
@@ -657,12 +658,12 @@ void* slave_thread(void *data) {
                 if (next_avail_children + 1 < max_pop_sols) {
                     // Padre aleatorio 1
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                    p1_rand = (int)(floor(INPUT.population_size * random));
+                    p1_rand = (int)(floor(CMOCHC_LOCAL__POPULATION_SIZE * random));
                     p1_idx = sorted_population[p1_rand];
 
                     // Padre aleatorio 2
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                    p2_rand = (int)(floor((INPUT.population_size - 1) * random));
+                    p2_rand = (int)(floor((CMOCHC_LOCAL__POPULATION_SIZE - 1) * random));
                     if (p2_rand >= p1_rand) p2_rand++;
                     p2_idx = sorted_population[p2_rand];
 
@@ -703,7 +704,7 @@ void* slave_thread(void *data) {
                 }
             }
 
-            if (next_avail_children > INPUT.population_size) {
+            if (next_avail_children > CMOCHC_LOCAL__POPULATION_SIZE) {
                 /* *********************************************************************************************
                  * Sort parent+children population
                  * ********************************************************************************************* */
@@ -716,7 +717,7 @@ void* slave_thread(void *data) {
                 FLOAT worst_parent;
                 worst_parent = fitness(population, fitness_population, weight_makespan, energy_makespan,
                     makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                    energy_nadir_value, sorted_population[INPUT.population_size-1]);
+                    energy_nadir_value, sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]);
 
                 merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
                     makespan_nadir_value, energy_nadir_value, sorted_population,
@@ -724,7 +725,7 @@ void* slave_thread(void *data) {
 
                 if (worst_parent > fitness(population, fitness_population, weight_makespan, energy_makespan,
                         makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                        energy_nadir_value, sorted_population[INPUT.population_size-1])) {
+                        energy_nadir_value, sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1])) {
 
                     #ifdef DEBUG_1
                         COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[thread_id]++;
@@ -1091,14 +1092,14 @@ void* slave_thread(void *data) {
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Post-migration population\n");
                 fprintf(stderr, "parents> ");
-                for (int i = 0; i < INPUT.population_size; i++) {
+                for (int i = 0; i < CMOCHC_LOCAL__POPULATION_SIZE; i++) {
                     fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
                         fitness_population[sorted_population[i]], 
                         population[sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
                 fprintf(stderr, "childs > ");
-                for (int i = INPUT.population_size; i < max_pop_sols; i++) {
+                for (int i = CMOCHC_LOCAL__POPULATION_SIZE; i < max_pop_sols; i++) {
                     fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
                         fitness_population[sorted_population[i]], 
                         population[sorted_population[i]].initialized);
@@ -1117,11 +1118,6 @@ void* slave_thread(void *data) {
     for (int p = 0; p < max_pop_sols; p++) {
         free_solution(&population[p]);
     }
-    
-    free(merge_sort_tmp);
-    free(population);
-    free(sorted_population);
-    free(fitness_population);
 
     return 0;
 }

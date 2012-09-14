@@ -8,7 +8,7 @@
 #include "global.h"
 
 int load_params(int argc, char **argv) {
-    if (argc == 11) {
+    if (argc == 10) {
         fprintf(stderr, "[INFO] == Command line arguments ==============================\n");
         
         INPUT.scenario_path = argv[1];
@@ -72,11 +72,6 @@ int load_params(int argc, char **argv) {
             fprintf(stderr, "       Max. iterations              : %d\n", INPUT.max_iterations);
         #endif
 
-        INPUT.population_size = atoi(argv[10]);
-        #if defined(DEBUG_0) 
-            fprintf(stderr, "       Population size              : %d\n", INPUT.population_size);
-        #endif
-
         if ((INPUT.algorithm < 0)||(INPUT.algorithm > 4)) {
             fprintf(stderr, "[ERROR] invalid algorithm.\n");
             return EXIT_FAILURE;
@@ -87,7 +82,7 @@ int load_params(int argc, char **argv) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");    
-        fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>\n\n", argv[0]);
+        fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations>\n\n", argv[0]);
         fprintf(stdout, "       Algorithms\n");
         fprintf(stdout, "           %d MCT\n",ALGORITHM_MCT);
         fprintf(stdout, "           %d MinMin\n",ALGORITHM_MINMIN);
