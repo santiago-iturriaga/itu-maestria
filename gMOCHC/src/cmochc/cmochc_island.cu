@@ -101,6 +101,10 @@ void finalize();
 void* slave_thread(void *data);
 
 void compute_cmochc_island() {
+    if (MAX_THREADS >= INPUT.thread_count) {
+        fprintf(stderr, "[ERROR] Max. number of threads is %d (< %d)\n", MAX_THREADS, INPUT.thread_count);
+    }
+    
     // ==============================================================================
     // CPU CHC (islands)
     // ==============================================================================
