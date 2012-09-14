@@ -6,6 +6,7 @@
 
 #include "../config.h"
 #include "../utils.h"
+#include "../global.h"
 
 struct thread_data {
     int t_i;
@@ -15,19 +16,19 @@ struct thread_data {
 
 void* compute_pminmin_thread(void *);
 
-void compute_pminmin(struct solution *sol, int nthreads) {
+void compute_pminmin(struct solution *sol) {
     #if defined(DEBUG_0)
         fprintf(stderr, "[DEBUG] calculando pMinMin/D...\n");
     #endif
     
-    pthread_t threads[nthreads];
+    pthread_t threads[INPUT.thread_count];
     int rc;
 
-    struct thread_data threadDataArray[nthreads];
+    struct thread_data threadDataArray[INPUT.thread_count];
 
     // Create the thread pool
-    int chunk = sol->etc->tasks_count/nthreads;
-    for (int i = 0; i < nthreads; i ++) {
+    int chunk = INPUT.tasks_count/INPUT.thread_count;
+    for (int i = 0; i < INPUT.thread_count; i ++) {
         threadDataArray[i].t_i = i*chunk;
         threadDataArray[i].t_f = (i+1)*chunk;
         threadDataArray[i].sol = sol;
@@ -41,7 +42,7 @@ void compute_pminmin(struct solution *sol, int nthreads) {
 
     //wait for completion
     void* status;
-    for (int k = 0; k < nthreads; k ++) {
+    for (int k = 0; k < INPUT.thread_count; k ++) {
         rc = pthread_join(threads[k], &status);
         if (rc) {
             fprintf(stderr, "[ERROR] return code from pthread_join() is %d\n", rc);
@@ -51,13 +52,13 @@ void compute_pminmin(struct solution *sol, int nthreads) {
 
     // Calcula el makespan de la solución.
     int m;
-    for (int i = 0; i < sol->etc->tasks_count; i++) {
+    for (int i = 0; i < INPUT.tasks_count; i++) {
         m = sol->task_assignment[i];
-        sol->machine_compute_time[m] += get_etc_value(sol->etc, m, i);
+        sol->machine_compute_time[m] += get_etc_value(m, i);
     }
 
     sol->makespan = sol->machine_compute_time[0];
-    for (int i = 1; i < sol->etc->machines_count; i++) {
+    for (int i = 1; i < INPUT.machines_count; i++) {
         if (sol->makespan < sol->machine_compute_time[i]) {
             sol->makespan = sol->machine_compute_time[i];
         }
@@ -67,7 +68,7 @@ void compute_pminmin(struct solution *sol, int nthreads) {
     sol->initialized = 1;
 
     #ifdef DEBUG_0
-        fprintf(stderr, "[DEBUG] pMinMin/D %d-threads: makespan=%f energy=%f.\n", nthreads, sol->makespan, sol->energy_consumption);
+        fprintf(stderr, "[DEBUG] pMinMin/D %d-threads: makespan=%f energy=%f.\n", INPUT.thread_count, sol->makespan, sol->energy_consumption);
     #endif
 }
 
@@ -87,8 +88,8 @@ void* compute_pminmin_thread(void *data) {
 
     int assigned_tasks_count = 0;
     
-    FLOAT *machine_compute_time = (FLOAT*)malloc(sizeof(FLOAT) * sol->etc->machines_count);
-    for (int i = 0; i < sol->etc->machines_count; i++) machine_compute_time[i] = 0.0;
+    FLOAT *machine_compute_time = (FLOAT*)malloc(sizeof(FLOAT) * INPUT.machines_count);
+    for (int i = 0; i < INPUT.machines_count; i++) machine_compute_time[i] = 0.0;
 
     while (assigned_tasks_count < nt) { // Mientras quede una tarea sin asignar.
         int best_task;
@@ -109,13 +110,13 @@ void* compute_pminmin_thread(void *data) {
                 FLOAT best_machine_cost_for_task;
 
                 best_machine_cost_for_task = machine_compute_time[0] +
-                    get_etc_value(sol->etc, 0, task_i);
+                    get_etc_value(0, task_i);
 
-                for (int machine_x = 1; machine_x < sol->etc->machines_count; machine_x++) {
+                for (int machine_x = 1; machine_x < INPUT.machines_count; machine_x++) {
                     FLOAT current_cost;
 
                     current_cost = machine_compute_time[machine_x] +
-                        get_etc_value(sol->etc, machine_x, task_i);
+                        get_etc_value(machine_x, task_i);
 
                     if (current_cost < best_machine_cost_for_task) {
                         best_machine_cost_for_task = current_cost;

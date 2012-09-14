@@ -5,6 +5,7 @@
 #include "cmochc_island.h"
 
 #include "../config.h"
+#include "../global.h"
 #include "../solution.h"
 #include "../load_params.h"
 #include "../scenario.h"
@@ -106,8 +107,7 @@ void finalize();
 /* Logica de los esclavos */
 void* slave_thread(void *data);
 
-void compute_cmochc_island(struct params &input, struct scenario &current_scenario,
-    struct etc_matrix &etc, struct energy_matrix &energy) {
+void compute_cmochc_island() {
 
     // ==============================================================================
     // CPU CHC (islands)
@@ -126,7 +126,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     #endif
 
     struct cmochc_thread threads[MAX_THREADS];
-    init(threads, input, current_scenario, etc, energy);
+    init(threads, INPUT, SCENARIO, ETC, ENERGY);
 
     #if defined(DEBUG_1)
         fprintf(stderr, " [OK]\n");
@@ -141,9 +141,9 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     int last_iter_sols_gathered = 0;
     
     RAND_STATE rstate;
-    RAND_INIT(input.thread_count, rstate);
+    RAND_INIT(INPUT.thread_count, rstate);
        
-    for (int iteracion = 0; iteracion < input.max_iterations; iteracion++) {
+    for (int iteracion = 0; iteracion < INPUT.max_iterations; iteracion++) {
         /* ************************************************ */
         /* Espero que los esclavos terminen de evolucionar  */
         /* ************************************************ */
@@ -167,7 +167,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
             #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
                 FLOAT random;
             
-                for (int i = 0; i < input.thread_count; i++) {
+                for (int i = 0; i < INPUT.thread_count; i++) {
                     random = RAND_GENERATE(rstate);
                     EA_INSTANCE.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
                 }
@@ -179,7 +179,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
 
         TIMMING_END(">> cmochc_gather", ts_gather);
 
-        if (iteracion + 1 >= input.max_iterations) {
+        if (iteracion + 1 >= INPUT.max_iterations) {
             /* Si esta es la úlitma iteracion, les aviso a los esclavos */
             EA_INSTANCE.stopping_condition = 1;
         }
@@ -198,7 +198,7 @@ void compute_cmochc_island(struct params &input, struct scenario &current_scenar
     RAND_FINALIZE(rstate);
 
     /* Bloqueo la ejecucion hasta que terminen todos los hilos. */
-    for(int i = 0; i < EA_INSTANCE.input->thread_count; i++)
+    for(int i = 0; i < INPUT.thread_count; i++)
     {
         if(pthread_join(EA_INSTANCE.threads[i], NULL))
         {
@@ -494,7 +494,7 @@ void init(struct cmochc_thread *threads_data,
 
     /* Estado de la población elite global */
     for (int i = 0; i < (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
-        create_empty_solution(&EA_INSTANCE.iter_elite_pop[i], &current_scenario, &etc, &energy);
+        create_empty_solution(&EA_INSTANCE.iter_elite_pop[i]);
     }
 
     /* Inicializo los hilos */
@@ -563,9 +563,6 @@ void* slave_thread(void *data) {
     int thread_id = t_data->thread_id;
 
     struct params *input = EA_INSTANCE.input;
-    struct scenario *current_scenario = EA_INSTANCE.current_scenario;
-    struct etc_matrix *etc = EA_INSTANCE.etc;
-    struct energy_matrix *energy = EA_INSTANCE.energy;
 
     /* *********************************************************************************************
      * Inicializo el thread.
@@ -603,11 +600,11 @@ void* slave_thread(void *data) {
 
     for (int i = 0; i < max_pop_sols; i++) {
         // Random init.
-        create_empty_solution(&(population[i]),current_scenario,etc,energy);
+        create_empty_solution(&(population[i]));
 
         random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
         int starting_pos;
-        starting_pos = (int)(floor(etc->tasks_count * random));
+        starting_pos = (int)(floor(INPUT.tasks_count * random));
 
         #ifdef DEBUG_3
             fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
@@ -680,7 +677,7 @@ void* slave_thread(void *data) {
      * ********************************************************************************************* */
     int next_avail_children;
     int max_children = input->population_size / 2;
-    int max_distance = etc->tasks_count;
+    int max_distance = INPUT.tasks_count;
 
     int threshold_max = max_distance / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     int threshold_step = threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;

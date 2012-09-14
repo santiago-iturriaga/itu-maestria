@@ -64,7 +64,6 @@
 #define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
 
-void compute_cmochc_island(struct params &input, struct scenario &current_scenario, 
-    struct etc_matrix &etc, struct energy_matrix &energy);
+void compute_cmochc_island();
 
 #endif // CMOCHC_ISLANDS__H

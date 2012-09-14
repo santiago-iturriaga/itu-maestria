@@ -1,21 +1,29 @@
-#include "config.h"
-#include "load_params.h"
-
 #ifndef ENERGY_MATRIX_H_
 #define ENERGY_MATRIX_H_
 
-struct energy_matrix {
-    int tasks_count;
-    int machines_count;
-    
-    FLOAT* data;
-    int* data_machine_index;
-};
+#include <assert.h>
 
-void init_energy_matrix(struct params *input, struct energy_matrix *energy);
-void free_energy_matrix(struct energy_matrix *energy);
+#include "energy_matrix_struct.h"
 
-void set_energy_value(struct energy_matrix *energy, int machine, int task, FLOAT value);
-FLOAT get_energy_value(struct energy_matrix *energy, int machine, int task);
+#include "config.h"
+#include "global.h"
+
+void init_energy_matrix();
+void free_energy_matrix();
+
+void set_energy_value(int machine, int task, FLOAT value);
+
+inline int get_energy_coord(int machine, int task) {
+    assert(machine < INPUT.machines_count);
+    assert(machine >= 0);
+    assert(task < INPUT.tasks_count);
+    assert(task >= 0);
+
+    return ENERGY.data_machine_index[machine] + task;
+}
+
+inline FLOAT get_energy_value(int machine, int task) {
+    return ENERGY.data[get_energy_coord(machine, task)];
+}
 
 #endif /* ENERGY_MATRIX_H_ */

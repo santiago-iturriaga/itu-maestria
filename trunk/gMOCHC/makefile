@@ -37,10 +37,13 @@ cpu: src/main.cu \
 		src/load_instance.h \
 		src/scenario.cu \
 		src/scenario.h \
+		src/scenario_struct.h \
 		src/etc_matrix.cu \
 		src/etc_matrix.h \
+		src/etc_matrix_struct.h \
 		src/energy_matrix.cu \
 		src/energy_matrix.h \
+		src/energy_matrix_struct.h \
 		src/solution.cu \
 		src/solution.h \
 		src/utils.cu \

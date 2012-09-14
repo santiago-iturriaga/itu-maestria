@@ -1,27 +1,30 @@
-#include "config.h"
-#include "load_params.h"
-
 #ifndef SCENARIO_H_
 #define SCENARIO_H_
 
-struct scenario {
-    int machines_count;
+#include "config.h"
+#include "global.h"
+#include "scenario_struct.h"
 
-    int *cores;
-    FLOAT *ssj;
-    FLOAT *idle_energy;
-    FLOAT *max_energy;
-};
+void init_scenario();
+void free_scenario();
+void show_scenario();
 
-void init_scenario(struct params *input, struct scenario *s);
-void free_scenario(struct scenario *s);
-void show_scenario(struct scenario *s);
+void set_scenario_machine(int machine, int cores, FLOAT ssj, FLOAT idle_value, FLOAT max_value);
 
-void set_scenario_machine(struct scenario *s, int machine, int cores, FLOAT ssj, FLOAT idle_value, FLOAT max_value);
+inline int get_scenario_cores(int machine) {
+    return SCENARIO.cores[machine];
+}
 
-FLOAT get_scenario_ssj(struct scenario *s, int machine);
-FLOAT get_scenario_energy_idle(struct scenario *s, int machine);
-FLOAT get_scenario_energy_max(struct scenario *s, int machine);
-int get_scenario_cores(struct scenario *s, int machine);
+inline FLOAT get_scenario_energy_idle(int machine) {
+    return SCENARIO.idle_energy[machine];
+}
+
+inline FLOAT get_scenario_energy_max(int machine) {
+    return SCENARIO.max_energy[machine];
+}
+
+inline FLOAT get_scenario_ssj(int machine) {
+    return SCENARIO.ssj[machine];
+}
 
 #endif /* SCENARIO_H_ */
