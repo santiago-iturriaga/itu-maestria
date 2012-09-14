@@ -50,7 +50,7 @@
 /* ************************************* */
 /* Muta la población inicial creada con MCT */
 #define CMOCHC_LOCAL__MUTATE_INITIAL_POP
-//#define CMOCHC_LOCAL__POPULATION_SIZE       12
+#define CMOCHC_LOCAL__POPULATION_SIZE       12
 #define CMOCHC_LOCAL__ITERATION_COUNT       50
 #define CMOCHC_LOCAL__BEST_SOLS_KEPT        3
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  4
