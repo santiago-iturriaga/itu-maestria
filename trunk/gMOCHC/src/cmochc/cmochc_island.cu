@@ -4,18 +4,6 @@
 
 #include "cmochc_island.h"
 
-#include "../config.h"
-#include "../global.h"
-#include "../solution.h"
-#include "../load_params.h"
-#include "../scenario.h"
-#include "../etc_matrix.h"
-#include "../energy_matrix.h"
-#include "../utils.h"
-#include "../basic/mct.h"
-#include "../random/random.h"
-#include "../archivers/aga.h"
-
 #include "cmochc_island_utils.h"
 #include "cmochc_island_chc.h"
 
@@ -45,37 +33,7 @@
     int COUNT_HISTORIC_WEIGHTS[CMOCHC_PARETO_FRONT__PATCHES] = {0}; 
 #endif
 
-struct cmochc {
-    /* Coleccion de esclavos */
-    pthread_t threads[MAX_THREADS];
-
-    /* Poblacion elite global mantenida por el master */
-    struct solution iter_elite_pop[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];
-    int iter_elite_pop_tag[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];   
-    
-    struct aga_state archiver;
-
-    /* Descomposición del frente de pareto */
-    FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];
-    int thread_weight_assignment[MAX_THREADS];
-    int weight_thread_assignment[CMOCHC_PARETO_FRONT__PATCHES];
-    
-    int stopping_condition;
-
-    /* Random generator de cada esclavo y para el master */
-    RAND_STATE rand_state[MAX_THREADS+1];
-
-    /* Sync */
-    pthread_barrier_t sync_barrier;
-
-    /* Aux master thread memory */
-    int weight_gap_sorted[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_length[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_index[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_tmp[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-};
-
-static struct cmochc EA_INSTANCE;
+struct cmochc_island EA_INSTANCE;
 
 struct cmochc_thread {
     /* Id del esclavo */
@@ -224,7 +182,7 @@ void compute_cmochc_island() {
 }
 
 int adapt_weights_mod_arm(RAND_STATE rstate) {
-    int last_gap_index = 0;
+    EA_INSTANCE.weight_gap_count = 0;
     int last_filled_patch = -1;
     
     #ifdef DEBUG_3
@@ -236,36 +194,35 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     
     for (int i = 0; i < CMOCHC_PARETO_FRONT__PATCHES; i++) {
         if (EA_INSTANCE.archiver.tag_count[i] > 0) {
-            EA_INSTANCE.weight_gap_index[last_gap_index] = i;
-            EA_INSTANCE.weight_gap_length[last_gap_index] = i - last_filled_patch - 1;
-            EA_INSTANCE.weight_gap_sorted[last_gap_index] = last_gap_index;
-            last_gap_index++;
+            EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = i;
+            EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] = i - last_filled_patch - 1;
+            EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_count;
+            EA_INSTANCE.weight_gap_count++;
             
             last_filled_patch = i;
         }
     }
     
     if (CMOCHC_PARETO_FRONT__PATCHES > last_filled_patch + 1) {
-        EA_INSTANCE.weight_gap_index[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES;
-        EA_INSTANCE.weight_gap_length[last_gap_index] = CMOCHC_PARETO_FRONT__PATCHES - last_filled_patch - 1;
-        EA_INSTANCE.weight_gap_sorted[last_gap_index] = last_gap_index;
-        last_gap_index++;
+        EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = CMOCHC_PARETO_FRONT__PATCHES;
+        EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] = CMOCHC_PARETO_FRONT__PATCHES - last_filled_patch - 1;
+        EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_count;
+        EA_INSTANCE.weight_gap_count++;
     }
     
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Found gaps:\n");
-        for (int i = 0; i < last_gap_index; i++) {
+        for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
             fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i, 
                 EA_INSTANCE.weight_gap_index[i], EA_INSTANCE.weight_gap_length[i]);
         }
     #endif
     
-    gap_merge_sort(EA_INSTANCE.weight_gap_index, EA_INSTANCE.weight_gap_length, 
-        EA_INSTANCE.weight_gap_sorted, last_gap_index, EA_INSTANCE.weight_gap_tmp);
+    gap_merge_sort();
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Sorted found gaps:\n");
-        for (int i = 0; i < last_gap_index; i++) {
+        for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
             fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, EA_INSTANCE.weight_gap_sorted[i],
                 EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_sorted[i]], EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[i]]);
         }
@@ -276,7 +233,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     #endif
     
     int sel_patch_idx = -1;
-    int biggest_patch_index = EA_INSTANCE.weight_gap_sorted[last_gap_index - 1];
+    int biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
         
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] biggest_patch_index = %d\n", biggest_patch_index);
@@ -326,20 +283,20 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         EA_INSTANCE.weight_thread_assignment[sel_patch_idx] = t;
 
         if (sel_patch_idx != EA_INSTANCE.weight_gap_index[biggest_patch_index]) {
-            EA_INSTANCE.weight_gap_index[last_gap_index] = sel_patch_idx;
-            EA_INSTANCE.weight_gap_length[last_gap_index] = EA_INSTANCE.weight_gap_length[biggest_patch_index] 
+            EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = sel_patch_idx;
+            EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_length[biggest_patch_index] 
                 - EA_INSTANCE.weight_gap_index[biggest_patch_index] + sel_patch_idx;
-            EA_INSTANCE.weight_gap_sorted[last_gap_index] = last_gap_index;
+            EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_count;
                 
             #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] weight_gap_length[last_gap_index=%d] = %d\n", last_gap_index, EA_INSTANCE.weight_gap_length[last_gap_index]);
+                fprintf(stderr, "[DEBUG] weight_gap_length[last_gap_index=%d] = %d\n", EA_INSTANCE.weight_gap_count, EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count]);
                 fprintf(stderr, "[DEBUG] weight_gap_length[biggest_patch_index=%d] = %d\n", biggest_patch_index, EA_INSTANCE.weight_gap_length[biggest_patch_index]);
                 fprintf(stderr, "[DEBUG] weight_gap_index[biggest_patch_index=%d] = %d\n", biggest_patch_index, EA_INSTANCE.weight_gap_index[biggest_patch_index]);
             #endif
                 
-            assert(EA_INSTANCE.weight_gap_length[last_gap_index] >= 0);
+            assert(EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] >= 0);
             
-            last_gap_index++;
+            EA_INSTANCE.weight_gap_count++;
 
             EA_INSTANCE.weight_gap_length[biggest_patch_index] = 
                 EA_INSTANCE.weight_gap_index[biggest_patch_index] - sel_patch_idx - 1;
@@ -347,7 +304,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
             assert(EA_INSTANCE.weight_gap_length[biggest_patch_index] >= 0);
         }
 
-        for (int j = last_gap_index - 2; j < last_gap_index; j++) {
+        for (int j = EA_INSTANCE.weight_gap_count - 2; j < EA_INSTANCE.weight_gap_count; j++) {
             int pos = j;
             int aux;
             
@@ -362,11 +319,11 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
             }
         }
 
-        biggest_patch_index = EA_INSTANCE.weight_gap_sorted[last_gap_index - 1];
+        biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
 
         #ifdef DEBUG_3
             fprintf(stderr, "[DEBUG] Assigned thread %d. New gaps:\n", t);
-            for (int i = 0; i < last_gap_index; i++) {
+            for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
                 fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, EA_INSTANCE.weight_gap_sorted[i],
                     EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_sorted[i]], 
                     EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[i]]);

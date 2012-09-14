@@ -6,6 +6,13 @@
 #include "../scenario.h"
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
+#include "../config.h"
+#include "../global.h"
+#include "../solution.h"
+#include "../utils.h"
+#include "../basic/mct.h"
+#include "../random/random.h"
+#include "../archivers/aga.h"
 
 /* Max. supported number of threads */
 #define MAX_THREADS 64
@@ -66,5 +73,38 @@
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
 
 void compute_cmochc_island();
+
+struct cmochc_island {
+    /* Coleccion de esclavos */
+    pthread_t threads[MAX_THREADS];
+
+    /* Poblacion elite global mantenida por el master */
+    struct solution iter_elite_pop[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];
+    int iter_elite_pop_tag[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];   
+    
+    struct aga_state archiver;
+
+    /* Descomposición del frente de pareto */
+    FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];
+    int thread_weight_assignment[MAX_THREADS];
+    int weight_thread_assignment[CMOCHC_PARETO_FRONT__PATCHES];
+    
+    int stopping_condition;
+
+    /* Random generator de cada esclavo y para el master */
+    RAND_STATE rand_state[MAX_THREADS+1];
+
+    /* Sync */
+    pthread_barrier_t sync_barrier;
+
+    /* Aux master thread memory */
+    int weight_gap_count;
+    int weight_gap_sorted[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_length[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_index[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_tmp[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
+};
+
+extern struct cmochc_island EA_INSTANCE;
 
 #endif // CMOCHC_ISLANDS__H
