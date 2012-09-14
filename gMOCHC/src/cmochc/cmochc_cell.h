@@ -6,7 +6,6 @@
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
 
-void compute_cmochc_cell(struct params &input, struct scenario &current_scenario, 
-    struct etc_matrix &etc, struct energy_matrix &energy);
+void compute_cmochc_cell();
 
 #endif // CMOCHC_CELL__H

@@ -1,6 +1,7 @@
 #include "mct.h"
 
 #include "../config.h"
+#include "../global.h"
 
 void compute_mct(struct solution *sol) {
     #if defined(DEBUG_3)
@@ -9,8 +10,8 @@ void compute_mct(struct solution *sol) {
     
     sol->makespan = 0.0;
 
-    int tasks_count = sol->etc->tasks_count;
-    int machines_count = sol->etc->machines_count;
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
     
     FLOAT *machine_compute_time = sol->machine_compute_time;
     int *task_assignment = sol->task_assignment;
@@ -21,12 +22,12 @@ void compute_mct(struct solution *sol) {
 
         FLOAT best_etc_value;
         best_etc_value = machine_compute_time[best_machine] 
-            + get_etc_value(sol->etc, best_machine, task);
+            + get_etc_value(best_machine, task);
 
         for (int machine = 1; machine < machines_count; machine++) {
             FLOAT etc_value;
             etc_value = machine_compute_time[machine] 
-                + get_etc_value(sol->etc, machine, task);
+                + get_etc_value(machine, task);
 
             if (etc_value < best_etc_value) {
                 best_etc_value = etc_value;
@@ -53,8 +54,8 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
     
     sol->makespan = 0.0;
 
-    int tasks_count = sol->etc->tasks_count;
-    int machines_count = sol->etc->machines_count;
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
     
     FLOAT *machine_compute_time = sol->machine_compute_time;
     int *task_assignment = sol->task_assignment;
@@ -76,12 +77,12 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
 
         FLOAT best_etc_value;
         best_etc_value = machine_compute_time[best_machine] 
-            + get_etc_value(sol->etc, best_machine, task);
+            + get_etc_value(best_machine, task);
 
         for (int machine = 1; machine < machines_count; machine++) {
             FLOAT etc_value;
             etc_value = machine_compute_time[machine] 
-                + get_etc_value(sol->etc, machine, task);
+                + get_etc_value(machine, task);
 
             if (etc_value < best_etc_value) {
                 best_etc_value = etc_value;

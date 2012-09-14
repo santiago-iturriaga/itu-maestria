@@ -23,6 +23,6 @@ struct params {
     int population_size;
 };
 
-int load_params(int argc, char **argv, struct params *input);
+int load_params(int argc, char **argv);
 
 #endif /* LOAD_PARAMS_H_ */

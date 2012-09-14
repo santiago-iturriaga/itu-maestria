@@ -7,76 +7,60 @@
 #include "load_params.h"
 #include "config.h"
 
-void init_scenario(struct params *input, struct scenario *s) {
+void init_scenario() {
     #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] init_scenario\n");
     #endif
     
-    s->machines_count = input->machines_count;
-    s->idle_energy = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
+    SCENARIO.idle_energy = (FLOAT*)malloc(sizeof(FLOAT) * INPUT.machines_count);
 
-    if (s->idle_energy == NULL) {
+    if (SCENARIO.idle_energy == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el scenario->idle_energy.\n");
         exit(EXIT_FAILURE);
     }
 
-    s->max_energy = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
+    SCENARIO.max_energy = (FLOAT*)malloc(sizeof(FLOAT) * INPUT.machines_count);
 
-    if (s->max_energy == NULL) {
+    if (SCENARIO.max_energy == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el scenario->max_energy.\n");
         exit(EXIT_FAILURE);
     }
 
-    s->ssj = (FLOAT*)malloc(sizeof(FLOAT) * input->machines_count);
+    SCENARIO.ssj = (FLOAT*)malloc(sizeof(FLOAT) * INPUT.machines_count);
 
-    if (s->ssj == NULL) {
+    if (SCENARIO.ssj == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el scenario->ssj.\n");
         exit(EXIT_FAILURE);
     }
 
-    s->cores = (int*)malloc(sizeof(int) * input->machines_count);
+    SCENARIO.cores = (int*)malloc(sizeof(int) * INPUT.machines_count);
 
-    if (s->cores == NULL) {
+    if (SCENARIO.cores == NULL) {
         fprintf(stderr, "[ERROR] Solicitando memoria para el scenario->cores.\n");
         exit(EXIT_FAILURE);
     }
 }
 
-void free_scenario(struct scenario *s) {
-    free(s->cores);
-    free(s->idle_energy);
-    free(s->max_energy);
-    free(s->ssj);
+void free_scenario() {
+    free(SCENARIO.cores);
+    free(SCENARIO.idle_energy);
+    free(SCENARIO.max_energy);
+    free(SCENARIO.ssj);
 }
 
-void set_scenario_machine(struct scenario *s, int machine, int cores, FLOAT ssj, FLOAT idle_value, FLOAT max_value) {
-    s->cores[machine] = cores;
-    s->ssj[machine] = ssj;
-    s->idle_energy[machine] = idle_value;
-    s->max_energy[machine] = max_value;
+void set_scenario_machine(int machine, int cores, FLOAT ssj, FLOAT idle_value, FLOAT max_value) {
+    SCENARIO.cores[machine] = cores;
+    SCENARIO.ssj[machine] = ssj;
+    SCENARIO.idle_energy[machine] = idle_value;
+    SCENARIO.max_energy[machine] = max_value;
 }
 
-int get_scenario_cores(struct scenario *s, int machine) {
-    return s->cores[machine];
-}
-
-FLOAT get_scenario_energy_idle(struct scenario *s, int machine) {
-    return s->idle_energy[machine];
-}
-
-FLOAT get_scenario_energy_max(struct scenario *s, int machine) {
-    return s->max_energy[machine];
-}
-
-FLOAT get_scenario_ssj(struct scenario *s, int machine) {
-    return s->ssj[machine];
-}
-
-void show_scenario(struct scenario *s) {
+void show_scenario() {
     fprintf(stderr, "[INFO] Scenario =========================== \n");
-    for (int machine = 0; machine < s->machines_count; machine++) {
+    for (int machine = 0; machine < INPUT.machines_count; machine++) {
         fprintf(stderr, "    Machine %d > CORES=%d SSJ=%f IDLE=%f MAX=%f\n", machine, 
-            s->cores[machine], s->ssj[machine], s->idle_energy[machine], s->max_energy[machine]);
+            SCENARIO.cores[machine], SCENARIO.ssj[machine], SCENARIO.idle_energy[machine], 
+            SCENARIO.max_energy[machine]);
     }
     fprintf(stderr, "[INFO] ==================================== \n");
 }

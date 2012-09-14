@@ -46,10 +46,7 @@ int archive_add_solution(struct aga_state *state, int new_solutions_count)
                 #endif
                 
                 if (state->population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
-                    create_empty_solution(&state->population[s_pos],
-                        state->new_solutions[n_pos].s, 
-                        state->new_solutions[n_pos].etc, 
-                        state->new_solutions[n_pos].energy);
+                    create_empty_solution(&state->population[s_pos]);
                 }
                 
                 clone_solution(&state->population[s_pos], &state->new_solutions[n_pos]);
@@ -450,10 +447,7 @@ void archive_add_all_new(struct aga_state *state) {
                     #endif
                     
                     if (state->population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
-                        create_empty_solution(&state->population[s_pos],
-                            state->new_solutions[n_pos].s, 
-                            state->new_solutions[n_pos].etc, 
-                            state->new_solutions[n_pos].energy);
+                        create_empty_solution(&state->population[s_pos]);
                     }
                     
                     clone_solution(&state->population[s_pos], &state->new_solutions[n_pos]);
@@ -521,7 +515,7 @@ void archivers_aga_dump(struct aga_state *state) {
     fprintf(stdout, "%d\n", state->population_count);
     for (int i = 0; i < state->population_size; i++) {
         if (state->population[i].initialized == SOLUTION__IN_USE) {
-            for (int task_id = 0; task_id < state->population[i].etc->tasks_count; task_id++) {
+            for (int task_id = 0; task_id < INPUT.tasks_count; task_id++) {
                 fprintf(stdout, "%d\n", state->population[i].task_assignment[task_id]);
             }
         }

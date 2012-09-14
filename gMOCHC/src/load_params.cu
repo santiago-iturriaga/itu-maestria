@@ -2,80 +2,82 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "config.h"
 #include "load_params.h"
 
-int load_params(int argc, char **argv, struct params *input) {
+#include "config.h"
+#include "global.h"
+
+int load_params(int argc, char **argv) {
     if (argc == 11) {
         fprintf(stderr, "[INFO] == Command line arguments ==============================\n");
         
-        input->scenario_path = argv[1];
+        INPUT.scenario_path = argv[1];
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Scenario path                : %s\n", input->scenario_path);
+            fprintf(stderr, "       Scenario path                : %s\n", INPUT.scenario_path);
         #endif
 
-        input->workload_path = argv[2];
+        INPUT.workload_path = argv[2];
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Workload path                : %s\n", input->workload_path);
+            fprintf(stderr, "       Workload path                : %s\n", INPUT.workload_path);
         #endif
 
-        input->tasks_count = atoi(argv[3]);
+        INPUT.tasks_count = atoi(argv[3]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Tasks count                  : %d\n", input->tasks_count);
+            fprintf(stderr, "       Tasks count                  : %d\n", INPUT.tasks_count);
         #endif
         
-        input->machines_count = atoi(argv[4]);
+        INPUT.machines_count = atoi(argv[4]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Machines count               : %d\n", input->machines_count);
+            fprintf(stderr, "       Machines count               : %d\n", INPUT.machines_count);
         #endif
 
-        input->algorithm = atoi(argv[5]);
+        INPUT.algorithm = atoi(argv[5]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Algorithm                    : %d", input->algorithm);
+            fprintf(stderr, "       Algorithm                    : %d", INPUT.algorithm);
         #endif
 
         #if defined(DEBUG_0)
-            if (input->algorithm == ALGORITHM_MCT) {
+            if (INPUT.algorithm == ALGORITHM_MCT) {
                 fprintf(stderr, " MCT\n");
-            } else if (input->algorithm == ALGORITHM_MINMIN) {
+            } else if (INPUT.algorithm == ALGORITHM_MINMIN) {
                 fprintf(stderr, " MinMin\n");
-            } else if (input->algorithm == ALGORITHM_PMINMIND) {
+            } else if (INPUT.algorithm == ALGORITHM_PMINMIND) {
                 fprintf(stderr, " pMinMin/D\n");
-            } else if (input->algorithm == ALGORITHM_CMOCHCISLAND) {
+            } else if (INPUT.algorithm == ALGORITHM_CMOCHCISLAND) {
                 fprintf(stderr, " cMOCHC/islands\n");
-            } else if (input->algorithm == ALGORITHM_CMOCHCCELL) {
+            } else if (INPUT.algorithm == ALGORITHM_CMOCHCCELL) {
                 fprintf(stderr, " cMOCHC/cellular\n");
             } else {
                 fprintf(stderr, " unknown!?\n");
             }
         #endif
 
-        input->thread_count = atoi(argv[6]);
+        INPUT.thread_count = atoi(argv[6]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Thread count                 : %d\n", input->thread_count);
+            fprintf(stderr, "       Thread count                 : %d\n", INPUT.thread_count);
         #endif
 
-        input->seed = atoi(argv[7]);
+        INPUT.seed = atoi(argv[7]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Seed                         : %d\n", input->seed);
+            fprintf(stderr, "       Seed                         : %d\n", INPUT.seed);
         #endif
 
-        input->max_time_secs = atoi(argv[8]);
+        INPUT.max_time_secs = atoi(argv[8]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Max. execution time (s)      : %d\n", input->max_time_secs);
+            fprintf(stderr, "       Max. execution time (s)      : %d\n", INPUT.max_time_secs);
         #endif
         
-        input->max_iterations = atoi(argv[9]);
+        INPUT.max_iterations = atoi(argv[9]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Max. iterations              : %d\n", input->max_iterations);
+            fprintf(stderr, "       Max. iterations              : %d\n", INPUT.max_iterations);
         #endif
 
-        input->population_size = atoi(argv[10]);
+        INPUT.population_size = atoi(argv[10]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Population size              : %d\n", input->population_size);
+            fprintf(stderr, "       Population size              : %d\n", INPUT.population_size);
         #endif
 
-        if ((input->algorithm < 0)||(input->algorithm > 4)) {
+        if ((INPUT.algorithm < 0)||(INPUT.algorithm > 4)) {
             fprintf(stderr, "[ERROR] invalid algorithm.\n");
             return EXIT_FAILURE;
         }
