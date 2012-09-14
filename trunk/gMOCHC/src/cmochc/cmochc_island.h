@@ -7,6 +7,7 @@
 #include "../etc_matrix.h"
 #include "../energy_matrix.h"
 
+/* Max. supported number of threads */
 #define MAX_THREADS 64
 
 /* ************************************************** */
