@@ -15,49 +15,48 @@
 #include "cmochc_island.h"
 #include "cmochc_island_chc.h"
 
-inline void gap_merge_sort(int *weight_gap_index, int *weight_gap_length,
-    int *weight_gap_sorted, int weight_gap_count, int *tmp) {
-
+/* Ordena los elementos cmochc_island.weight_gap */
+inline void gap_merge_sort() {
     int increment, l, l_max, r, r_max, current, i;
 
     increment = 1;
     int gap_length_r, gap_length_l;
 
-    while (increment < weight_gap_count) {
+    while (increment < EA_INSTANCE.weight_gap_count) {
         l = 0;
         r = increment;
         l_max = r - 1;
-        r_max = (l_max + increment < weight_gap_count) ? l_max + increment : weight_gap_count - 1;
+        r_max = (l_max + increment < EA_INSTANCE.weight_gap_count) ? l_max + increment : EA_INSTANCE.weight_gap_count - 1;
 
         current = 0;
 
-        while (current < weight_gap_count) {
+        while (current < EA_INSTANCE.weight_gap_count) {
             while (l <= l_max && r <= r_max) {
-                gap_length_r = weight_gap_length[weight_gap_sorted[r]];
-                gap_length_l = weight_gap_length[weight_gap_sorted[l]];
+                gap_length_r = EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[r]];
+                gap_length_l = EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[l]];
 
                 if (gap_length_r < gap_length_l) {
-                    tmp[current] = weight_gap_sorted[r++];
+                    EA_INSTANCE.weight_gap_tmp[current] = EA_INSTANCE.weight_gap_sorted[r++];
                 } else {
-                    tmp[current] = weight_gap_sorted[l++];
+                    EA_INSTANCE.weight_gap_tmp[current] = EA_INSTANCE.weight_gap_sorted[l++];
                 }
 
                 current++;
             }
 
-            while (r <= r_max) tmp[current++] = weight_gap_sorted[r++];
-            while (l <= l_max) tmp[current++] = weight_gap_sorted[l++];
+            while (r <= r_max) EA_INSTANCE.weight_gap_tmp[current++] = EA_INSTANCE.weight_gap_sorted[r++];
+            while (l <= l_max) EA_INSTANCE.weight_gap_tmp[current++] = EA_INSTANCE.weight_gap_sorted[l++];
 
             l = r;
             r += increment;
             l_max = r - 1;
-            r_max = (l_max + increment < weight_gap_count) ? l_max + increment : weight_gap_count - 1;
+            r_max = (l_max + increment < EA_INSTANCE.weight_gap_count) ? l_max + increment : EA_INSTANCE.weight_gap_count - 1;
         }
 
         increment *= 2;
 
-        for (i = 0; i < weight_gap_count; i++) {
-            weight_gap_sorted[i] = tmp[i];
+        for (i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
+            EA_INSTANCE.weight_gap_sorted[i] = EA_INSTANCE.weight_gap_tmp[i];
         }
     }
 }
