@@ -46,11 +46,6 @@
 #endif
 
 struct cmochc {
-    struct params *input;
-    struct scenario *current_scenario;
-    struct etc_matrix *etc;
-    struct energy_matrix *energy;
-
     /* Coleccion de esclavos */
     pthread_t threads[MAX_THREADS];
 
@@ -88,9 +83,7 @@ struct cmochc_thread {
 };
 
 /* Inicializa los hilos y las estructuras de datos */
-void init(struct cmochc_thread *threads_data,
-    struct params &input, struct scenario &current_scenario,
-    struct etc_matrix &etc, struct energy_matrix &energy);
+void init(struct cmochc_thread *threads_data);
 
 /* Obtiene los mejores elementos de cada población */
 int gather();
@@ -108,7 +101,6 @@ void finalize();
 void* slave_thread(void *data);
 
 void compute_cmochc_island() {
-
     // ==============================================================================
     // CPU CHC (islands)
     // ==============================================================================
@@ -126,7 +118,7 @@ void compute_cmochc_island() {
     #endif
 
     struct cmochc_thread threads[MAX_THREADS];
-    init(threads, INPUT, SCENARIO, ETC, ENERGY);
+    init(threads);
 
     #if defined(DEBUG_1)
         fprintf(stderr, " [OK]\n");
@@ -234,7 +226,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
-            fprintf(stderr, "> [%d] = %d\n", t, instance.archiver.tag_count[t]);
+            fprintf(stderr, "> [%d] = %d\n", t, EA_INSTANCE.archiver.tag_count[t]);
         }
     #endif
     
@@ -286,7 +278,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         fprintf(stderr, "[DEBUG] biggest_patch_index = %d\n", biggest_patch_index);
     #endif
        
-    for (int t = 0; t < EA_INSTANCE.input->thread_count; t++) {
+    for (int t = 0; t < INPUT.thread_count; t++) {
         #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
             if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
                 sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
@@ -380,7 +372,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Thread assignments:\n");
-        for (int t = 0; t < EA_INSTANCE.input->thread_count; t++) {
+        for (int t = 0; t < INPUT.thread_count; t++) {
             fprintf(stderr, "> thread %d=%d\n", t, EA_INSTANCE.thread_weight_assignment[t]);
         }
     #endif
@@ -389,10 +381,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
 }
 
 /* Inicializa los hilos y las estructuras de datos */
-void init(struct cmochc_thread *threads_data,
-    struct params &input, struct scenario &current_scenario,
-    struct etc_matrix &etc, struct energy_matrix &energy) {
-
+void init(struct cmochc_thread *threads_data) {
     fprintf(stderr, "[INFO] == CMOCHC/islands configuration constants ==============\n");
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
@@ -445,10 +434,6 @@ void init(struct cmochc_thread *threads_data,
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Estado relacionado con el problema. */
-    EA_INSTANCE.input = &input;
-    EA_INSTANCE.current_scenario = &current_scenario;
-    EA_INSTANCE.etc = &etc;
-    EA_INSTANCE.energy = &energy;
     EA_INSTANCE.stopping_condition = 0;
 
     /* Weights */
@@ -463,9 +448,9 @@ void init(struct cmochc_thread *threads_data,
         #endif
     }
     
-    if (input.thread_count > 1) {
-        for (int i = 0; i < input.thread_count; i++) {
-            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / input.thread_count);
+    if (INPUT.thread_count > 1) {
+        for (int i = 0; i < INPUT.thread_count; i++) {
+            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
             assert(EA_INSTANCE.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES);
         
             EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[i]] = i;
@@ -486,19 +471,19 @@ void init(struct cmochc_thread *threads_data,
     }
 
     /* Sync */
-    if (pthread_barrier_init(&(EA_INSTANCE.sync_barrier), NULL, input.thread_count + 1))
+    if (pthread_barrier_init(&(EA_INSTANCE.sync_barrier), NULL, INPUT.thread_count + 1))
     {
         fprintf(stderr, "[ERROR] could not create a sync barrier.\n");
         exit(EXIT_FAILURE);
     }
 
     /* Estado de la población elite global */
-    for (int i = 0; i < (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
+    for (int i = 0; i < (INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
         create_empty_solution(&EA_INSTANCE.iter_elite_pop[i]);
     }
 
     /* Inicializo los hilos */
-    for (int i = 0; i < input.thread_count; i++)
+    for (int i = 0; i < INPUT.thread_count; i++)
     {
         struct cmochc_thread *t_data;
         t_data = &(threads_data[i]);
@@ -513,7 +498,7 @@ void init(struct cmochc_thread *threads_data,
 
     /* Inicializo el archivador */
     archivers_aga_init(&EA_INSTANCE.archiver, CMOCHC_ARCHIVE__MAX_SIZE, EA_INSTANCE.iter_elite_pop, 
-        EA_INSTANCE.iter_elite_pop_tag, (input.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT), 
+        EA_INSTANCE.iter_elite_pop_tag, (INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT), 
         CMOCHC_PARETO_FRONT__PATCHES);
 }
 
@@ -562,8 +547,6 @@ void* slave_thread(void *data) {
     struct cmochc_thread *t_data = (struct cmochc_thread*)data;
     int thread_id = t_data->thread_id;
 
-    struct params *input = EA_INSTANCE.input;
-
     /* *********************************************************************************************
      * Inicializo el thread.
      * *********************************************************************************************/
@@ -573,7 +556,7 @@ void* slave_thread(void *data) {
     FLOAT random;
 
     /* Inicializo la población de padres y limpio la de hijos */
-    int max_pop_sols = 2 * input->population_size;
+    int max_pop_sols = 2 * INPUT.population_size;
 
     /* Merge sort tmp array */
     int *merge_sort_tmp = (int*)malloc(sizeof(int) * max_pop_sols);
@@ -676,7 +659,7 @@ void* slave_thread(void *data) {
      * Main iteration
      * ********************************************************************************************* */
     int next_avail_children;
-    int max_children = input->population_size / 2;
+    int max_children = INPUT.population_size / 2;
     int max_distance = INPUT.tasks_count;
 
     int threshold_max = max_distance / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
@@ -703,7 +686,7 @@ void* slave_thread(void *data) {
             /* *********************************************************************************************
              * Mating
              * ********************************************************************************************* */
-            next_avail_children = input->population_size;
+            next_avail_children = INPUT.population_size;
 
             FLOAT d;
             int p1_idx, p2_idx;
@@ -713,12 +696,12 @@ void* slave_thread(void *data) {
                 if (next_avail_children + 1 < max_pop_sols) {
                     // Padre aleatorio 1
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                    p1_rand = (int)(floor(input->population_size * random));
+                    p1_rand = (int)(floor(INPUT.population_size * random));
                     p1_idx = sorted_population[p1_rand];
 
                     // Padre aleatorio 2
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                    p2_rand = (int)(floor((input->population_size - 1) * random));
+                    p2_rand = (int)(floor((INPUT.population_size - 1) * random));
                     if (p2_rand >= p1_rand) p2_rand++;
                     p2_idx = sorted_population[p2_rand];
 
@@ -759,7 +742,7 @@ void* slave_thread(void *data) {
                 }
             }
 
-            if (next_avail_children > input->population_size) {
+            if (next_avail_children > INPUT.population_size) {
                 /* *********************************************************************************************
                  * Sort parent+children population
                  * ********************************************************************************************* */
@@ -772,7 +755,7 @@ void* slave_thread(void *data) {
                 FLOAT worst_parent;
                 worst_parent = fitness(population, fitness_population, weight_makespan, energy_makespan,
                     makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                    energy_nadir_value, sorted_population[input->population_size-1]);
+                    energy_nadir_value, sorted_population[INPUT.population_size-1]);
 
                 merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
                     makespan_nadir_value, energy_nadir_value, sorted_population,
@@ -780,7 +763,7 @@ void* slave_thread(void *data) {
 
                 if (worst_parent > fitness(population, fitness_population, weight_makespan, energy_makespan,
                         makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                        energy_nadir_value, sorted_population[input->population_size-1])) {
+                        energy_nadir_value, sorted_population[INPUT.population_size-1])) {
 
                     #ifdef DEBUG_1
                         COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[thread_id]++;
@@ -898,7 +881,7 @@ void* slave_thread(void *data) {
                     thread_id, currently_assigned_weight, weight_makespan, energy_makespan, 
                     EA_INSTANCE.thread_weight_assignment[thread_id], 
                     EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]], 
-                    1 - EA_INSTANCE.weights[thread_weight_assignment[thread_id]]);
+                    1 - EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]]);
             #endif
             
             //int changed_assignment;
@@ -977,19 +960,19 @@ void* slave_thread(void *data) {
                     current_ep_solution_index = 0;
                     
                     FLOAT selection_prob;
-                    selection_prob = 1 / instance->archiver.population_count;
+                    selection_prob = 1 / EA_INSTANCE.archiver.population_count;
                 
-                    while ((ep_current_index < instance->archiver.population_size) &&
-                        (ep_solution_index < instance->archiver.population_count) &&
+                    while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
+                        (ep_solution_index < EA_INSTANCE.archiver.population_count) &&
                         (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
                             
-                        if (instance->archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                        if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
                             if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
                                 /* Aún no esta lleno el array con el vecindario */
                                 migration_global_pop_index[current_ep_solution_index] = ep_current_index;
                                 migration_current_weight_distance[current_ep_solution_index] = 
                                     abs(thread_weight_assignment[thread_id] -
-                                        instance->archiver.population_tag[ep_current_index]);
+                                        EA_INSTANCE.archiver.population_tag[ep_current_index]);
                                 
                                 current_ep_solution_index++;
                             }
@@ -1007,7 +990,7 @@ void* slave_thread(void *data) {
                             fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
                                 thread_id, 
                                 migration_global_pop_index[i], 
-                                instance->archiver.population_tag[migration_global_pop_index[i]],
+                                EA_INSTANCE.archiver.population_tag[migration_global_pop_index[i]],
                                 migration_current_weight_distance[i]);
                         }
                     } 
@@ -1036,7 +1019,7 @@ void* slave_thread(void *data) {
                         
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
                                 clone_solution(&population[next_solution_index],
-                                    &instance->archiver.population[migration_global_pop_index[migrated_solution_index]]);
+                                    &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]]);
                                     
                                 next_solution_index++;
                                 migrated_solution_index++;
@@ -1147,14 +1130,14 @@ void* slave_thread(void *data) {
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Post-migration population\n");
                 fprintf(stderr, "parents> ");
-                for (int i = 0; i < input->population_size; i++) {
+                for (int i = 0; i < INPUT.population_size; i++) {
                     fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
                         fitness_population[sorted_population[i]], 
                         population[sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
                 fprintf(stderr, "childs > ");
-                for (int i = input->population_size; i < max_pop_sols; i++) {
+                for (int i = INPUT.population_size; i < max_pop_sols; i++) {
                     fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
                         fitness_population[sorted_population[i]], 
                         population[sorted_population[i]].initialized);
@@ -1201,7 +1184,7 @@ void display_results() {
         int count_migrations = 0;
         int count_solutions_migrated = 0;
 
-        for (int t = 0; t < EA_INSTANCE.input->thread_count; t++) {
+        for (int t = 0; t < INPUT.thread_count; t++) {
             count_generations += COUNT_GENERATIONS[t];
             count_at_least_one_children_inserted += COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[t];
             count_improved_best_sol += COUNT_IMPROVED_BEST_SOL[t];
@@ -1263,7 +1246,7 @@ void finalize() {
     archivers_aga_free(&EA_INSTANCE.archiver);
     pthread_barrier_destroy(&(EA_INSTANCE.sync_barrier));
         
-    for (int i = 0; i < (EA_INSTANCE.input->thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
+    for (int i = 0; i < (INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {
         free_solution(&EA_INSTANCE.iter_elite_pop[i]);
     }
 }
