@@ -13,7 +13,7 @@
 #include "../archivers/aga.h"
 
 #include "cmochc_island.h"
-#include "cmochc_island_evop.h"
+#include "cmochc_island_chc.h"
 
 inline void gap_merge_sort(int *weight_gap_index, int *weight_gap_length,
     int *weight_gap_sorted, int weight_gap_count, int *tmp) {
