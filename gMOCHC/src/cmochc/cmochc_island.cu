@@ -1065,7 +1065,7 @@ void* slave_thread(void *data) {
                             #endif
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
                                 mutate(
-                                    rand_state[thread_id],
+                                    EA_INSTANCE.rand_state[thread_id],
                                     &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]],
                                     &population[next_solution_index]);
                                     
