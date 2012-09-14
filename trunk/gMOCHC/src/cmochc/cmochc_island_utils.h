@@ -61,66 +61,56 @@ inline void gap_merge_sort() {
     }
 }
 
-inline void merge_sort(struct solution *population, 
-    FLOAT weight_makespan, FLOAT energy_makespan,
-    FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
-    FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
-    int *sorted_population, FLOAT *fitness_population,
-    int population_size, int *tmp) {
-
+inline void merge_sort(int thread_id) {
     int increment, l, l_max, r, r_max, current, i;
 
     increment = 1;
     FLOAT fitness_r, fitness_l;
 
-    while (increment < population_size) {
+    while (increment < MAX_POP_SOLS) {
         l = 0;
         r = increment;
         l_max = r - 1;
-        r_max = (l_max + increment < population_size) ? l_max + increment : population_size - 1;
+        r_max = (l_max + increment < MAX_POP_SOLS) ? l_max + increment : MAX_POP_SOLS - 1;
 
         current = 0;
 
-        while (current < population_size) {
+        while (current < MAX_POP_SOLS) {
             while (l <= l_max && r <= r_max) {
-                fitness_r = fitness(population, fitness_population, weight_makespan, energy_makespan,
-                    makespan_zenith_value, energy_zenith_value, makespan_nadir_value, energy_nadir_value,
-                    sorted_population[r]);
-                fitness_l = fitness(population, fitness_population, weight_makespan, energy_makespan,
-                    makespan_zenith_value, energy_zenith_value, makespan_nadir_value, energy_nadir_value,
-                    sorted_population[l]);
+                fitness_r = fitness(thread_id, EA_THREADS[thread_id].sorted_population[r]);
+                fitness_l = fitness(thread_id, EA_THREADS[thread_id].sorted_population[l]);
 
                 if (!isnan(fitness_r) && !isnan(fitness_l)) {
                     if (fitness_r < fitness_l) {
-                        tmp[current] = sorted_population[r++];
+                        EA_THREADS[thread_id].merge_sort_tmp[current] = EA_THREADS[thread_id].sorted_population[r++];
                     } else {
-                        tmp[current] = sorted_population[l++];
+                        EA_THREADS[thread_id].merge_sort_tmp[current] = EA_THREADS[thread_id].sorted_population[l++];
                     }
                 } else if (!isnan(fitness_r) && isnan(fitness_l)) {
-                    tmp[current] = sorted_population[r++];
+                    EA_THREADS[thread_id].merge_sort_tmp[current] = EA_THREADS[thread_id].sorted_population[r++];
                 } else if (isnan(fitness_r) && !isnan(fitness_l)) {
-                    tmp[current] = sorted_population[l++];
+                    EA_THREADS[thread_id].merge_sort_tmp[current] = EA_THREADS[thread_id].sorted_population[l++];
                 } else {
                     /* Ambos son NAN, no importa */
-                    tmp[current] = sorted_population[l++];
+                    EA_THREADS[thread_id].merge_sort_tmp[current] = EA_THREADS[thread_id].sorted_population[l++];
                 }
 
                 current++;
             }
 
-            while (r <= r_max) tmp[current++] = sorted_population[r++];
-            while (l <= l_max) tmp[current++] = sorted_population[l++];
+            while (r <= r_max) EA_THREADS[thread_id].merge_sort_tmp[current++] = EA_THREADS[thread_id].sorted_population[r++];
+            while (l <= l_max) EA_THREADS[thread_id].merge_sort_tmp[current++] = EA_THREADS[thread_id].sorted_population[l++];
 
             l = r;
             r += increment;
             l_max = r - 1;
-            r_max = (l_max + increment < population_size) ? l_max + increment : population_size - 1;
+            r_max = (l_max + increment < MAX_POP_SOLS) ? l_max + increment : MAX_POP_SOLS - 1;
         }
 
         increment *= 2;
 
-        for (i = 0; i < population_size; i++) {
-            sorted_population[i] = tmp[i];
+        for (i = 0; i < MAX_POP_SOLS; i++) {
+            EA_THREADS[thread_id].sorted_population[i] = EA_THREADS[thread_id].merge_sort_tmp[i];
         }
     }
 }

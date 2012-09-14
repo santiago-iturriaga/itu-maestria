@@ -74,6 +74,34 @@
 
 void compute_cmochc_island();
 
+// Cantidad máxima de soluciones (padres+hijos)
+#define MAX_POP_SOLS 2*CMOCHC_LOCAL__POPULATION_SIZE
+
+struct cmochc_thread {
+    /* Id del esclavo */
+    int thread_id;
+    
+    /* Poblacion de cada esclavo */
+    struct solution population[MAX_POP_SOLS];
+    int sorted_population[MAX_POP_SOLS];
+    FLOAT fitness_population[MAX_POP_SOLS];
+
+    /* Merge sort tmp array */
+    int merge_sort_tmp[MAX_POP_SOLS];
+
+    int currently_assigned_weight;
+    FLOAT weight_makespan;
+    FLOAT energy_makespan;
+
+    FLOAT makespan_zenith_value, energy_zenith_value;
+    FLOAT makespan_nadir_value, energy_nadir_value;
+    
+    int migration_global_pop_index[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
+    int migration_current_weight_distance[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
+};
+
+extern struct cmochc_thread EA_THREADS[MAX_THREADS];
+
 struct cmochc_island {
     /* Coleccion de esclavos */
     pthread_t threads[MAX_THREADS];

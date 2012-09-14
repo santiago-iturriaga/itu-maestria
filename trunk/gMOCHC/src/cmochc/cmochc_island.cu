@@ -34,14 +34,10 @@
 #endif
 
 struct cmochc_island EA_INSTANCE;
-
-struct cmochc_thread {
-    /* Id del esclavo */
-    int thread_id;
-};
+struct cmochc_thread EA_THREADS[MAX_THREADS];
 
 /* Inicializa los hilos y las estructuras de datos */
-void init(struct cmochc_thread *threads_data);
+void init();
 
 /* Obtiene los mejores elementos de cada población */
 int gather();
@@ -79,8 +75,7 @@ void compute_cmochc_island() {
         fprintf(stderr, "[DEBUG] CPU CHC (islands): init\n");
     #endif
 
-    struct cmochc_thread threads[MAX_THREADS];
-    init(threads);
+    init();
 
     #if defined(DEBUG_1)
         fprintf(stderr, " [OK]\n");
@@ -342,7 +337,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
 }
 
 /* Inicializa los hilos y las estructuras de datos */
-void init(struct cmochc_thread *threads_data) {
+void init() {
     fprintf(stderr, "[INFO] == CMOCHC/islands configuration constants ==============\n");
     fprintf(stderr, "       CMOCHC_LOCAL__POPULATION_SIZE               : %d\n", CMOCHC_LOCAL__POPULATION_SIZE);
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
@@ -448,7 +443,7 @@ void init(struct cmochc_thread *threads_data) {
     for (int i = 0; i < INPUT.thread_count; i++)
     {
         struct cmochc_thread *t_data;
-        t_data = &(threads_data[i]);
+        t_data = &(EA_THREADS[i]);
         t_data->thread_id = i;
 
         if (pthread_create(&(EA_INSTANCE.threads[i]), NULL, slave_thread, (void*) t_data))
@@ -517,105 +512,20 @@ void* slave_thread(void *data) {
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
     FLOAT random;
 
-    /* Inicializo la población de padres y limpio la de hijos */
-    int max_pop_sols = 2 * CMOCHC_LOCAL__POPULATION_SIZE;
-
-    /* Merge sort tmp array */
-    int merge_sort_tmp[2 * CMOCHC_LOCAL__POPULATION_SIZE];
-
     /* *********************************************************************************************
      * Inicializo los pesos.
      * *********************************************************************************************/
 
-    int currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
-    FLOAT weight_makespan = EA_INSTANCE.weights[currently_assigned_weight];
-    FLOAT energy_makespan = 1 - weight_makespan;
+    EA_THREADS[thread_id].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
+    EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_THREADS[thread_id].currently_assigned_weight];
+    EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
 
     /* *********************************************************************************************
      * Inicializo la población.
      * *********************************************************************************************/
 
-    /* Poblacion de cada esclavo */
-    struct solution population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
-    int sorted_population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
-    FLOAT fitness_population[2 * CMOCHC_LOCAL__POPULATION_SIZE];
-
-    FLOAT makespan_utopia_value, energy_utopia_value;
-    FLOAT makespan_nadir_value, energy_nadir_value;
-
-    for (int i = 0; i < max_pop_sols; i++) {
-        // Random init.
-        create_empty_solution(&(population[i]));
-
-        random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-        int starting_pos;
-        starting_pos = (int)(floor(INPUT.tasks_count * random));
-
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
-                thread_id, i, starting_pos, i & 0x1);
-        #endif
-
-        compute_mct_random(&(population[i]), starting_pos, i & 0x1);
-
-        if (i == 0) {
-            makespan_utopia_value = population[i].makespan;
-            makespan_nadir_value = makespan_utopia_value;
-            //makespan_utopia_index = i;
-
-            energy_utopia_value = population[i].energy_consumption;
-            energy_nadir_value = energy_utopia_value;
-            //energy_utopia_index = i;
-        } else {
-            #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
-                mutate(EA_INSTANCE.rand_state[thread_id], &population[i], &population[i]);
-            #endif
-
-            if (population[i].makespan < makespan_utopia_value) {
-                //makespan_utopia_index = i;
-                makespan_utopia_value = population[i].makespan;
-
-                if (population[i].energy_consumption > energy_nadir_value) {
-                    energy_nadir_value = population[i].energy_consumption;
-                }
-            }
-            if (population[i].energy_consumption < energy_utopia_value) {
-                //energy_utopia_index = i;
-                energy_utopia_value = population[i].energy_consumption;
-
-                if (population[i].makespan > makespan_nadir_value) {
-                    makespan_nadir_value = population[i].makespan;
-                }
-            }
-        }
-    }
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Normalization references\n");
-        fprintf(stderr, "> (makespan) zenith=%.2f, nadir=%.2f\n",
-            makespan_utopia_value, makespan_nadir_value);
-        fprintf(stderr, "> (energy) zenith=%.2f, nadir=%.2f\n",
-            energy_utopia_value, energy_nadir_value);
-    #endif
-
-    for (int i = 0; i < max_pop_sols; i++) {
-        sorted_population[i] = i;
-        fitness_population[i] = NAN;
-        fitness(population, fitness_population, weight_makespan, energy_makespan,
-            makespan_utopia_value, energy_utopia_value, makespan_nadir_value, energy_nadir_value, i);
-
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f energy=%.2f fitness=%.2f\n",
-                thread_id, i, population[i].makespan, population[i].energy_consumption,
-                    fitness(population, fitness_population, weight_makespan, energy_makespan,
-                        makespan_utopia_value, energy_utopia_value, makespan_nadir_value, 
-                        energy_nadir_value, i));
-        #endif
-    }
-
-    merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
-        makespan_nadir_value, energy_nadir_value, sorted_population, fitness_population, max_pop_sols,
-        merge_sort_tmp);
+    population_init(thread_id);
+    merge_sort(thread_id);
 
     /* *********************************************************************************************
      * Main iteration
@@ -633,10 +543,7 @@ void* slave_thread(void *data) {
         fprintf(stderr, "[DEBUG] Threshold Max %d.\n", threshold_max);
         fprintf(stderr, "[DEBUG] Threshold Step %d.\n", threshold_step);
     #endif
-
-    int migration_global_pop_index[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
-    int migration_current_weight_distance[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
-    
+   
     int rc;
 
     while (EA_INSTANCE.stopping_condition == 0) {
@@ -654,46 +561,46 @@ void* slave_thread(void *data) {
             int p1_idx, p2_idx;
             int p1_rand, p2_rand;
             int c1_idx, c2_idx;
+            
             for (int child = 0; child < max_children; child++) {
-                if (next_avail_children + 1 < max_pop_sols) {
+                if (next_avail_children + 1 < MAX_POP_SOLS) {
                     // Padre aleatorio 1
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
                     p1_rand = (int)(floor(CMOCHC_LOCAL__POPULATION_SIZE * random));
-                    p1_idx = sorted_population[p1_rand];
+                    p1_idx = EA_THREADS[thread_id].sorted_population[p1_rand];
 
                     // Padre aleatorio 2
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
                     p2_rand = (int)(floor((CMOCHC_LOCAL__POPULATION_SIZE - 1) * random));
                     if (p2_rand >= p1_rand) p2_rand++;
-                    p2_idx = sorted_population[p2_rand];
+                    p2_idx = EA_THREADS[thread_id].sorted_population[p2_rand];
 
                     // Chequeo la distancia entre padres
-                    d = distance(&population[p1_idx],&population[p2_idx]);
+                    d = distance(&EA_THREADS[thread_id].population[p1_idx],
+                        &EA_THREADS[thread_id].population[p2_idx]);
 
                     if (d > threshold) {
                         // Aplico HUX y creo dos hijos
                         COUNT_CROSSOVER[thread_id]++;
 
-                        c1_idx = sorted_population[next_avail_children];
-                        c2_idx = sorted_population[next_avail_children+1];
+                        c1_idx = EA_THREADS[thread_id].sorted_population[next_avail_children];
+                        c2_idx = EA_THREADS[thread_id].sorted_population[next_avail_children+1];
 
                         hux(EA_INSTANCE.rand_state[thread_id],
-                            &population[p1_idx],&population[p2_idx],
-                            &population[c1_idx],&population[c2_idx]);
+                            &EA_THREADS[thread_id].population[p1_idx],&EA_THREADS[thread_id].population[p2_idx],
+                            &EA_THREADS[thread_id].population[c1_idx],&EA_THREADS[thread_id].population[c2_idx]);
 
-                        fitness_population[c1_idx] = NAN;
-                        fitness_population[c2_idx] = NAN;
+                        EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
+                        EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
 
-                        fitness(population, fitness_population, weight_makespan, energy_makespan,
-                            makespan_utopia_value, energy_utopia_value, makespan_nadir_value, energy_nadir_value, c1_idx);
-                        fitness(population, fitness_population, weight_makespan, energy_makespan,
-                            makespan_utopia_value, energy_utopia_value, makespan_nadir_value, energy_nadir_value, c2_idx);
+                        fitness(thread_id, c1_idx);
+                        fitness(thread_id, c2_idx);
 
                         #ifdef DEBUG_1
-                            if ((fitness_population[c1_idx] < fitness_population[p1_idx])
-                                ||(fitness_population[c1_idx] < fitness_population[p2_idx])
-                                ||(fitness_population[c2_idx] < fitness_population[p1_idx])
-                                ||(fitness_population[c2_idx] < fitness_population[p2_idx])) {
+                            if ((EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])) {
 
                                 COUNT_IMPROVED_CROSSOVER[thread_id]++;
                             }
@@ -708,24 +615,15 @@ void* slave_thread(void *data) {
                 /* *********************************************************************************************
                  * Sort parent+children population
                  * ********************************************************************************************* */
-
                 FLOAT best_parent;
-                best_parent = fitness(population, fitness_population, weight_makespan, energy_makespan,
-                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                    energy_nadir_value, sorted_population[0]);
+                best_parent = fitness(thread_id, EA_THREADS[thread_id].sorted_population[0]);
 
                 FLOAT worst_parent;
-                worst_parent = fitness(population, fitness_population, weight_makespan, energy_makespan,
-                    makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                    energy_nadir_value, sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]);
+                worst_parent = fitness(thread_id, EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]);
 
-                merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
-                    makespan_nadir_value, energy_nadir_value, sorted_population,
-                    fitness_population, max_pop_sols, merge_sort_tmp);
+                merge_sort(thread_id);
 
-                if (worst_parent > fitness(population, fitness_population, weight_makespan, energy_makespan,
-                        makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                        energy_nadir_value, sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1])) {
+                if (worst_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1])) {
 
                     #ifdef DEBUG_1
                         COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[thread_id]++;
@@ -734,9 +632,7 @@ void* slave_thread(void *data) {
                     threshold -= threshold_step;
                 }
 
-                if (best_parent > fitness(population, fitness_population, weight_makespan, energy_makespan,
-                        makespan_utopia_value, energy_utopia_value, makespan_nadir_value,
-                        energy_nadir_value, sorted_population[0])) {
+                if (best_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[0])) {
 
                     #ifdef DEBUG_1
                         COUNT_IMPROVED_BEST_SOL[thread_id]++;
@@ -763,27 +659,24 @@ void* slave_thread(void *data) {
 
                 int aux_index;
 
-                for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < max_pop_sols; i++) { /* No muto las mejores soluciones */
-                    if (population[sorted_population[i]].initialized == SOLUTION__IN_USE) {
+                for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < MAX_POP_SOLS; i++) { /* No muto las mejores soluciones */
+                    if (EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized == SOLUTION__IN_USE) {
                         #ifdef DEBUG_1
                             COUNT_CATACLYSM[thread_id]++;
-                            pre_mut_fitness = fitness(population, fitness_population, weight_makespan, energy_makespan, 
-                                makespan_utopia_value, energy_utopia_value, makespan_nadir_value, energy_nadir_value, 
-                                sorted_population[i]);
+                            pre_mut_fitness = fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
                         #endif
 
                         aux_index = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
 
                         mutate(EA_INSTANCE.rand_state[thread_id],
-                            &population[sorted_population[aux_index]],
-                            &population[sorted_population[i]]);
+                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[aux_index]],
+                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]]);
 
-                        fitness_population[sorted_population[i]] = NAN;
-                        fitness(population, fitness_population, weight_makespan, energy_makespan, makespan_utopia_value, 
-                            energy_utopia_value, makespan_nadir_value, energy_nadir_value, sorted_population[i]);
+                        EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] = NAN;
+                        fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
 
                         #ifdef DEBUG_1
-                            if (fitness_population[sorted_population[i]] < pre_mut_fitness) {
+                            if (EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] < pre_mut_fitness) {
                                 COUNT_IMPOVED_CATACLYSM[thread_id]++;
                             }
                         #endif
@@ -791,9 +684,7 @@ void* slave_thread(void *data) {
                 }
 
                 /* Re-sort de population */
-                merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
-                    makespan_nadir_value, energy_nadir_value, sorted_population,
-                    fitness_population, max_pop_sols, merge_sort_tmp);
+                merge_sort(thread_id);
             }
         }
 
@@ -807,14 +698,14 @@ void* slave_thread(void *data) {
       
         for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
             iter_elite_pop_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
-            local_best_index = sorted_population[i];
+            local_best_index = EA_THREADS[thread_id].sorted_population[i];
         
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n", 
                     thread_id, local_best_index, iter_elite_pop_index);
             #endif
         
-            clone_solution(&EA_INSTANCE.iter_elite_pop[iter_elite_pop_index], &population[local_best_index]);
+            clone_solution(&EA_INSTANCE.iter_elite_pop[iter_elite_pop_index], &EA_THREADS[thread_id].population[local_best_index]);
             EA_INSTANCE.iter_elite_pop_tag[iter_elite_pop_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
         }
 
@@ -840,7 +731,7 @@ void* slave_thread(void *data) {
             /* Actualizo la nueva asignación de pesos y vecindad */
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f), new weights=%d (%.4f,%.4f)\n",
-                    thread_id, currently_assigned_weight, weight_makespan, energy_makespan, 
+                    thread_id, EA_THREADS[thread_id].currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan, 
                     EA_INSTANCE.thread_weight_assignment[thread_id], 
                     EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]], 
                     1 - EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]]);
@@ -848,11 +739,11 @@ void* slave_thread(void *data) {
             
             //int changed_assignment;
             
-            if (currently_assigned_weight != EA_INSTANCE.thread_weight_assignment[thread_id]) {
+            if (EA_THREADS[thread_id].currently_assigned_weight != EA_INSTANCE.thread_weight_assignment[thread_id]) {
                 //changed_assignment = 1;
                 
-                weight_makespan = EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]];
-                energy_makespan = 1 - weight_makespan;
+                EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]];
+                EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
             } else {
                 //changed_assignment = 0;
             }
@@ -862,7 +753,7 @@ void* slave_thread(void *data) {
              * ********************************************************************************************* */
             #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
                 for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                    migration_global_pop_index[i] = -1;
+                    EA_THREADS[thread_id].migration_global_pop_index[i] = -1;
                 }
                 
                 int ep_current_index, ep_solution_index;
@@ -879,32 +770,34 @@ void* slave_thread(void *data) {
                         if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
                             if (ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
                                 /* Aún no esta lleno el array con el vecindario */
-                                migration_global_pop_index[ep_solution_index] = ep_current_index;
-                                migration_current_weight_distance[ep_solution_index] = abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                    EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                                EA_THREADS[thread_id].migration_global_pop_index[ep_solution_index] = ep_current_index;
+                                EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index] = 
+                                    abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
+                                        EA_INSTANCE.archiver.population_tag[ep_current_index]);
                                     
                                 if (ep_solution_index == 0) {
-                                    worst_distance = migration_current_weight_distance[ep_solution_index];
+                                    worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
                                     worst_index = ep_solution_index;
                                 } else {
-                                    if (worst_distance < migration_current_weight_distance[ep_solution_index]) {
-                                        worst_distance = migration_current_weight_distance[ep_solution_index];
+                                    if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index]) {
+                                        worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
                                         worst_index = ep_solution_index;
                                     }
                                 }
                             } else {
-                                current_solution_distance = abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
+                                current_solution_distance = abs(
+                                    EA_INSTANCE.thread_weight_assignment[thread_id] -
                                     EA_INSTANCE.archiver.population_tag[ep_current_index]);
                                     
                                 if (current_solution_distance < worst_distance) {
                                     worst_distance = current_solution_distance;
                                     
-                                    migration_global_pop_index[worst_index] = ep_current_index;
-                                    migration_current_weight_distance[worst_index] = current_solution_distance;
+                                    EA_THREADS[thread_id].migration_global_pop_index[worst_index] = ep_current_index;
+                                    EA_THREADS[thread_id].migration_current_weight_distance[worst_index] = current_solution_distance;
                                     
                                     for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                                        if (worst_distance < migration_current_weight_distance[i]) {
-                                            worst_distance = migration_current_weight_distance[i];
+                                        if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[i]) {
+                                            worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[i];
                                             worst_index = i;
                                         }
                                     }
@@ -931,9 +824,9 @@ void* slave_thread(void *data) {
                         if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
                             if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
                                 /* Aún no esta lleno el array con el vecindario */
-                                migration_global_pop_index[current_ep_solution_index] = ep_current_index;
-                                migration_current_weight_distance[current_ep_solution_index] = 
-                                    abs(thread_weight_assignment[thread_id] -
+                                EA_THREADS[thread_id].migration_global_pop_index[current_ep_solution_index] = ep_current_index;
+                                EA_THREADS[thread_id].migration_current_weight_distance[current_ep_solution_index] = 
+                                    abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
                                         EA_INSTANCE.archiver.population_tag[ep_current_index]);
                                 
                                 current_ep_solution_index++;
@@ -948,12 +841,12 @@ void* slave_thread(void *data) {
                 
                 #ifdef DEBUG_3
                     for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                        if (migration_global_pop_index[i] != -1) {                           
+                        if (EA_THREADS[thread_id].migration_global_pop_index[i] != -1) {                           
                             fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
                                 thread_id, 
-                                migration_global_pop_index[i], 
-                                EA_INSTANCE.archiver.population_tag[migration_global_pop_index[i]],
-                                migration_current_weight_distance[i]);
+                                EA_THREADS[thread_id].migration_global_pop_index[i], 
+                                EA_INSTANCE.archiver.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
+                                EA_THREADS[thread_id].migration_current_weight_distance[i]);
                         }
                     } 
                 #endif
@@ -971,17 +864,18 @@ void* slave_thread(void *data) {
             int next_solution_index;
             next_solution_index = 0;
             
-            while (next_solution_index < max_pop_sols) {
+            while (next_solution_index < MAX_POP_SOLS) {
                 migrated = 0;
                 
                 #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
                     if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
-                        if (migration_global_pop_index[migrated_solution_index] != -1) {
+                        if (EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index] != -1) {
                             COUNT_MIGRATIONS[thread_id]++;
                         
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
-                                clone_solution(&population[next_solution_index],
-                                    &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]]);
+                                clone_solution(
+                                    &EA_THREADS[thread_id].population[next_solution_index],
+                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]]);
                                     
                                 next_solution_index++;
                                 migrated_solution_index++;
@@ -989,22 +883,22 @@ void* slave_thread(void *data) {
                                 migrated = 1;
                             #endif
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
-                                if (next_solution_index + 1 < max_pop_sols) {
+                                if (next_solution_index + 1 < MAX_POP_SOLS) {
                                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
                                     
                                     int migration_parent_index;
                                     migration_parent_index = (int)(random * next_solution_index);
                                     
                                     FLOAT d = distance(
-                                        &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]],
-                                        &population[migration_parent_index]);
+                                        &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                        &EA_THREADS[thread_id].population[migration_parent_index]);
 
                                     if (d > threshold_max) {
                                         hux(EA_INSTANCE.rand_state[thread_id],
-                                            &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]], 
-                                            &population[migration_parent_index],
-                                            &population[sorted_population[next_solution_index]],
-                                            &population[sorted_population[next_solution_index+1]]);
+                                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]], 
+                                            &EA_THREADS[thread_id].population[migration_parent_index],
+                                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index]],
+                                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]]);
                                             
                                         next_solution_index += 2;
                                         migrated_solution_index++;
@@ -1016,8 +910,8 @@ void* slave_thread(void *data) {
                                 if (migrated == 0) {
                                     mutate(
                                         EA_INSTANCE.rand_state[thread_id],
-                                        &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]],
-                                        &population[next_solution_index]);
+                                        &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                        &EA_THREADS[thread_id].population[next_solution_index]);
                                         
                                     next_solution_index++;
                                     migrated_solution_index++;
@@ -1028,8 +922,8 @@ void* slave_thread(void *data) {
                             #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
                                 mutate(
                                     EA_INSTANCE.rand_state[thread_id],
-                                    &EA_INSTANCE.archiver.population[migration_global_pop_index[migrated_solution_index]],
-                                    &population[next_solution_index]);
+                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                    &EA_THREADS[thread_id].population[next_solution_index]);
                                     
                                 next_solution_index++;
                                 migrated_solution_index++;
@@ -1045,29 +939,29 @@ void* slave_thread(void *data) {
                     random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
 
                     mutate(EA_INSTANCE.rand_state[thread_id],
-                        &population[(int)(random * next_solution_index)],
-                        &population[next_solution_index]);
+                        &EA_THREADS[thread_id].population[(int)(random * next_solution_index)],
+                        &EA_THREADS[thread_id].population[next_solution_index]);
 
                     next_solution_index++;
                 }
             }
            
             /* Actualizo los puntos de normalización con la población local */
-            for (int i = 0; i < max_pop_sols; i++) {
-                if (population[i].makespan < makespan_utopia_value) {
+            for (int i = 0; i < MAX_POP_SOLS; i++) {
+                if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
                     //makespan_utopia_index = i;
-                    makespan_utopia_value = population[i].makespan;
+                    EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
 
-                    if (population[i].energy_consumption > energy_nadir_value) {
-                        energy_nadir_value = population[i].energy_consumption;
+                    if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
                     }
                 }
-                if (population[i].energy_consumption < energy_utopia_value) {
+                if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
                     //energy_utopia_index = i;
-                    energy_utopia_value = population[i].energy_consumption;
+                    EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
 
-                    if (population[i].makespan > makespan_nadir_value) {
-                        makespan_nadir_value = population[i].makespan;
+                    if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
                     }
                 }
             }
@@ -1076,33 +970,30 @@ void* slave_thread(void *data) {
              * Re-calculo el fitness de toda la población
              *********************************************************************************************** */
 
-            for (int i = 0; i < max_pop_sols; i++) {
-                fitness_population[i] = NAN;
-                fitness(population, fitness_population, weight_makespan, energy_makespan, makespan_utopia_value, 
-                    energy_utopia_value, makespan_nadir_value, energy_nadir_value, i);
+            for (int i = 0; i < MAX_POP_SOLS; i++) {
+                EA_THREADS[thread_id].fitness_population[i] = NAN;
+                fitness(thread_id, i);
             }
 
             /* *********************************************************************************************
              * Re-sort de population
              *********************************************************************************************** */
-            merge_sort(population, weight_makespan, energy_makespan, makespan_utopia_value, energy_utopia_value,
-                makespan_nadir_value, energy_nadir_value, sorted_population,
-                fitness_population, max_pop_sols, merge_sort_tmp);
+            merge_sort(thread_id);
 
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Post-migration population\n");
                 fprintf(stderr, "parents> ");
                 for (int i = 0; i < CMOCHC_LOCAL__POPULATION_SIZE; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
-                        fitness_population[sorted_population[i]], 
-                        population[sorted_population[i]].initialized);
+                    fprintf(stderr, "%d(%f)<%d>  ", EA_THREADS[thread_id].sorted_population[i], 
+                        EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]], 
+                        EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
                 fprintf(stderr, "childs > ");
-                for (int i = CMOCHC_LOCAL__POPULATION_SIZE; i < max_pop_sols; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", sorted_population[i], 
-                        fitness_population[sorted_population[i]], 
-                        population[sorted_population[i]].initialized);
+                for (int i = CMOCHC_LOCAL__POPULATION_SIZE; i < MAX_POP_SOLS; i++) {
+                    fprintf(stderr, "%d(%f)<%d>  ", EA_THREADS[thread_id].sorted_population[i], 
+                        EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]], 
+                        EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized);
                 }
                 fprintf(stderr, "\n");
             #endif
@@ -1115,8 +1006,8 @@ void* slave_thread(void *data) {
 
     RAND_FINALIZE(EA_INSTANCE.rand_state[thread_id]);
     
-    for (int p = 0; p < max_pop_sols; p++) {
-        free_solution(&population[p]);
+    for (int p = 0; p < MAX_POP_SOLS; p++) {
+        free_solution(&EA_THREADS[thread_id].population[p]);
     }
 
     return 0;

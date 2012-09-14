@@ -1,4 +1,4 @@
-#if !defined(CMOCHC_ISLANDS_CHC__H)
+#ifndef CMOCHC_ISLANDS_CHC__H
 #define CMOCHC_ISLANDS_CHC__H
 
 #include <math.h>
@@ -143,30 +143,29 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
     refresh_solution(mutation);
 }
 
-inline FLOAT fitness(struct solution *population, FLOAT *fitness_population, 
-    FLOAT weight_makespan, FLOAT energy_makespan,
-    FLOAT makespan_zenith_value, FLOAT energy_zenith_value,
-    FLOAT makespan_nadir_value, FLOAT energy_nadir_value,
-    int solution_index) {
-
+inline FLOAT fitness(int thread_id, int solution_index) {
     #ifdef CMOCHC_LOCAL__Z_FITNESS_NORM
-        if (isnan(fitness_population[solution_index])) {
-            fitness_population[solution_index] =
-                ((population[solution_index].makespan/makespan_zenith_value) * weight_makespan) +
-                ((population[solution_index].energy_consumption/energy_zenith_value) * energy_makespan);
+        if (isnan(EA_THREADS[thread_id].fitness_population[solution_index])) {
+            EA_THREADS[thread_id].fitness_population[solution_index] =
+                ((EA_THREADS[thread_id].population[solution_index].makespan /
+                    EA_THREADS[thread_id].makespan_zenith_value) * EA_THREADS[thread_id].weight_makespan) +
+                ((EA_THREADS[thread_id].population[solution_index].energy_consumption /
+                    EA_THREADS[thread_id].energy_zenith_value) * EA_THREADS[thread_id].energy_makespan);
         }
     #endif
     #ifdef CMOCHC_LOCAL__ZN_FITNESS_NORM
-        if (isnan(fitness_population[solution_index])) {
-            fitness_population[solution_index] =
-                (((population[solution_index].makespan - makespan_zenith_value) /
-                    (makespan_nadir_value - makespan_zenith_value)) * weight_makespan) +
-                (((population[solution_index].energy_consumption - energy_zenith_value) /
-                    (energy_nadir_value - energy_zenith_value)) * energy_makespan);
+        if (isnan(EA_THREADS[thread_id].fitness_population[solution_index])) {
+            EA_THREADS[thread_id].fitness_population[solution_index] =
+                (((EA_THREADS[thread_id].population[solution_index].makespan - EA_THREADS[thread_id].makespan_zenith_value) /
+                    (EA_THREADS[thread_id].makespan_nadir_value - EA_THREADS[thread_id].makespan_zenith_value)) * EA_THREADS[thread_id].weight_makespan) +
+                (((EA_THREADS[thread_id].population[solution_index].energy_consumption - EA_THREADS[thread_id].energy_zenith_value) /
+                    (EA_THREADS[thread_id].energy_nadir_value - EA_THREADS[thread_id].energy_zenith_value)) * EA_THREADS[thread_id].energy_makespan);
         }
     #endif
 
-    return fitness_population[solution_index];
+    return EA_THREADS[thread_id].fitness_population[solution_index];
 }
+
+void population_init(int thread_id);
 
 #endif // CMOCHC_ISLANDS_CHC__H
