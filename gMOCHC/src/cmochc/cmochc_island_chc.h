@@ -1,9 +1,10 @@
-#if !defined(CMOCHC_ISLANDS_EVOP__H)
-#define CMOCHC_ISLANDS_EVOP__H
+#if !defined(CMOCHC_ISLANDS_CHC__H)
+#define CMOCHC_ISLANDS_CHC__H
 
 #include <math.h>
 
 #include "../config.h"
+#include "../global.h"
 #include "../solution.h"
 #include "../load_params.h"
 #include "../scenario.h"
@@ -19,14 +20,14 @@
 inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
-    for (int i = 0; i < s1->etc->tasks_count; i++) {
+    for (int i = 0; i < INPUT.tasks_count; i++) {
         if (s1->task_assignment[i] != s2->task_assignment[i]) {
             distance++;
         }
     }
 
     assert(distance >= 0);
-    assert(distance <= s1->etc->tasks_count);
+    assert(distance <= INPUT.tasks_count);
 
     return distance;
 }
@@ -35,12 +36,12 @@ inline void hux(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
     struct solution *c1, struct solution *c2) {
 
-    FLOAT cross_prob = CMOCHC_LOCAL__MATING_CHANCE / (FLOAT)p1->etc->tasks_count;
+    FLOAT cross_prob = CMOCHC_LOCAL__MATING_CHANCE / (FLOAT)INPUT.tasks_count;
 
     FLOAT random;
     int current_task_index = 0;
 
-    while (current_task_index < p1->etc->tasks_count) {
+    while (current_task_index < INPUT.tasks_count) {
         random = RAND_GENERATE(rand_state);
 
         int mask = 0x0;
@@ -54,7 +55,7 @@ inline void hux(RAND_STATE &rand_state,
         }
 
         int mask_index = 0x1;
-        while ((mask_index < mask_size) && (current_task_index < p1->etc->tasks_count)) {
+        while ((mask_index < mask_size) && (current_task_index < INPUT.tasks_count)) {
             if ((mask & 0x1) == 1) {
                 random = RAND_GENERATE(rand_state);
 
@@ -89,8 +90,8 @@ inline void hux(RAND_STATE &rand_state,
 
 inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
     int current_task_index = 0;
-    int tasks_count = seed->etc->tasks_count;
-    int machines_count = seed->etc->machines_count;
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
 
     FLOAT mut_prob = CMOCHC_LOCAL__MUTATE_CHANCE / (FLOAT)tasks_count;
 
@@ -168,4 +169,4 @@ inline FLOAT fitness(struct solution *population, FLOAT *fitness_population,
     return fitness_population[solution_index];
 }
 
-#endif // CMOCHC_ISLANDS_EVOP__H
+#endif // CMOCHC_ISLANDS_CHC__H
