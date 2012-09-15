@@ -25,8 +25,10 @@
 /* ************************************************************************ */
 //#define CMOCHC_PARETO_FRONT__PATCHES        8
 //#define CMOCHC_PARETO_FRONT__PATCHES        12
-#define CMOCHC_PARETO_FRONT__PATCHES        24
-//#define CMOCHC_PARETO_FRONT__PATCHES        48
+//#define CMOCHC_PARETO_FRONT__PATCHES        24
+//#define CMOCHC_PARETO_FRONT__PATCHES        32
+#define CMOCHC_PARETO_FRONT__PATCHES        48
+//#define CMOCHC_PARETO_FRONT__PATCHES        64
 
 /* ******************************************************** */
 /* Define la forma de asignación de los pesos a los workers */
