@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#include "cmochc_island.h"
+
 #include "../config.h"
 #include "../global.h"
 #include "../solution.h"
@@ -14,8 +16,6 @@
 #include "../basic/mct.h"
 #include "../random/random.h"
 #include "../archivers/aga.h"
-
-#include "cmochc_island.h"
 
 inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
@@ -166,6 +166,7 @@ inline FLOAT fitness(int thread_id, int solution_index) {
     return EA_THREADS[thread_id].fitness_population[solution_index];
 }
 
-void population_init(int thread_id);
+void chc_population_init(int thread_id);
+void chc_evolution(int thread_id);
 
 #endif // CMOCHC_ISLANDS_CHC__H

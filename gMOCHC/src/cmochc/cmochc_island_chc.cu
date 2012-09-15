@@ -2,3 +2,226 @@
 #include <math.h>
 
 #include "cmochc_island_chc.h"
+#include "cmochc_island_utils.h"
+
+void chc_population_init(int thread_id) {
+    FLOAT random;
+    
+    for (int i = 0; i < MAX_POP_SOLS; i++) {
+        // Random init.
+        create_empty_solution(&(EA_THREADS[thread_id].population[i]));
+
+        random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+        
+        int starting_pos;
+        starting_pos = (int)(floor(INPUT.tasks_count * random));
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
+                thread_id, i, starting_pos, i & 0x1);
+        #endif
+
+        compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
+
+        if (i == 0) {
+            EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
+            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].makespan_zenith_value;
+            //makespan_utopia_index = i;
+
+            EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
+            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].energy_zenith_value;
+            //energy_utopia_index = i;
+        } else {
+            #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
+                mutate(EA_INSTANCE.rand_state[thread_id], &EA_THREADS[thread_id].population[i], &EA_THREADS[thread_id].population[i]);
+            #endif
+
+            if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                //makespan_utopia_index = i;
+                EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
+
+                if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                    EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
+                }
+            }
+            if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                //energy_utopia_index = i;
+                EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
+
+                if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                    EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
+                }
+            }
+        }
+    }
+
+    #ifdef DEBUG_3
+        fprintf(stderr, "[DEBUG] Normalization references\n");
+        fprintf(stderr, "> (makespan) zenith=%.2f, nadir=%.2f\n",
+            EA_THREADS[thread_id].makespan_zenith_value, EA_THREADS[thread_id].makespan_nadir_value);
+        fprintf(stderr, "> (energy) zenith=%.2f, nadir=%.2f\n",
+            EA_THREADS[thread_id].energy_zenith_value, EA_THREADS[thread_id].energy_nadir_value);
+    #endif
+
+    for (int i = 0; i < MAX_POP_SOLS; i++) {
+        EA_THREADS[thread_id].sorted_population[i] = i;
+        EA_THREADS[thread_id].fitness_population[i] = NAN;
+        fitness(thread_id, i);
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f energy=%.2f fitness=%.2f\n",
+                thread_id, i, EA_THREADS[thread_id].population[i].makespan, 
+                EA_THREADS[thread_id].population[i].energy_consumption, fitness(thread_id, i));
+        #endif
+    }
+}
+
+void chc_evolution(int thread_id) {
+    FLOAT random;
+
+    int threshold;
+    int next_avail_children;
+
+    FLOAT d;
+    int p1_idx, p2_idx;
+    int p1_rand, p2_rand;
+    int c1_idx, c2_idx;
+    
+    threshold = EA_THREADS[thread_id].threshold_max;
+    
+    for (int iteracion = 0; iteracion < CMOCHC_LOCAL__ITERATION_COUNT; iteracion++) {
+        #ifdef DEBUG_1
+            COUNT_GENERATIONS[thread_id]++;
+        #endif
+
+        /* *********************************************************************************************
+         * Mating
+         * ********************************************************************************************* */
+        next_avail_children = CMOCHC_LOCAL__POPULATION_SIZE;
+        
+        for (int child = 0; child < CMOCHC_LOCAL__POPULATION_SIZE / 2; child++) {
+            if (next_avail_children + 1 < MAX_POP_SOLS) {
+                // Padre aleatorio 1
+                random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+                p1_rand = (int)(floor(CMOCHC_LOCAL__POPULATION_SIZE * random));
+                p1_idx = EA_THREADS[thread_id].sorted_population[p1_rand];
+
+                // Padre aleatorio 2
+                random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+                p2_rand = (int)(floor((CMOCHC_LOCAL__POPULATION_SIZE - 1) * random));
+                if (p2_rand >= p1_rand) p2_rand++;
+                p2_idx = EA_THREADS[thread_id].sorted_population[p2_rand];
+
+                // Chequeo la distancia entre padres
+                d = distance(&EA_THREADS[thread_id].population[p1_idx],
+                    &EA_THREADS[thread_id].population[p2_idx]);
+
+                if (d > threshold) {
+                    // Aplico HUX y creo dos hijos
+                    COUNT_CROSSOVER[thread_id]++;
+
+                    c1_idx = EA_THREADS[thread_id].sorted_population[next_avail_children];
+                    c2_idx = EA_THREADS[thread_id].sorted_population[next_avail_children+1];
+
+                    hux(EA_INSTANCE.rand_state[thread_id],
+                        &EA_THREADS[thread_id].population[p1_idx],&EA_THREADS[thread_id].population[p2_idx],
+                        &EA_THREADS[thread_id].population[c1_idx],&EA_THREADS[thread_id].population[c2_idx]);
+
+                    EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
+                    EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
+
+                    fitness(thread_id, c1_idx);
+                    fitness(thread_id, c2_idx);
+
+                    #ifdef DEBUG_1
+                        if ((EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                            ||(EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])
+                            ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                            ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])) {
+
+                            COUNT_IMPROVED_CROSSOVER[thread_id]++;
+                        }
+                    #endif
+
+                    next_avail_children += 2;
+                }
+            }
+        }
+
+        if (next_avail_children > CMOCHC_LOCAL__POPULATION_SIZE) {
+            /* *********************************************************************************************
+             * Sort parent+children population
+             * ********************************************************************************************* */
+            FLOAT best_parent;
+            best_parent = fitness(thread_id, EA_THREADS[thread_id].sorted_population[0]);
+
+            FLOAT worst_parent;
+            worst_parent = fitness(thread_id, EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]);
+
+            merge_sort(thread_id);
+
+            if (worst_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1])) {
+
+                #ifdef DEBUG_1
+                    COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[thread_id]++;
+                #endif
+            } else {
+                threshold -= EA_THREADS[thread_id].threshold_step;
+            }
+
+            if (best_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[0])) {
+
+                #ifdef DEBUG_1
+                    COUNT_IMPROVED_BEST_SOL[thread_id]++;
+                #endif
+            }
+        } else {
+            threshold -= EA_THREADS[thread_id].threshold_step;
+        }
+
+        if (threshold < 0) {
+            threshold = EA_THREADS[thread_id].threshold_max;
+
+            /* *********************************************************************************************
+             * Cataclysm
+             * ********************************************************************************************* */
+
+            #ifdef DEBUG_1
+                FLOAT pre_mut_fitness;
+            #endif
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] Cataclysm (thread=%d)!\n", thread_id);
+            #endif
+
+            int aux_index;
+
+            for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < MAX_POP_SOLS; i++) { /* No muto las mejores soluciones */
+                if (EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized == SOLUTION__IN_USE) {
+                    #ifdef DEBUG_1
+                        COUNT_CATACLYSM[thread_id]++;
+                        pre_mut_fitness = fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
+                    #endif
+
+                    aux_index = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
+
+                    mutate(EA_INSTANCE.rand_state[thread_id],
+                        &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[aux_index]],
+                        &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]]);
+
+                    EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] = NAN;
+                    fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
+
+                    #ifdef DEBUG_1
+                        if (EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] < pre_mut_fitness) {
+                            COUNT_IMPOVED_CATACLYSM[thread_id]++;
+                        }
+                    #endif
+                }
+            }
+
+            /* Re-sort de population */
+            merge_sort(thread_id);
+        }
+    }
+}
