@@ -62,6 +62,7 @@ int main(int argc, char** argv)
     #else
         fprintf(stderr, "NO\n");
     #endif
+    fprintf(stderr, "       Max. number of threads       : %d\n", MAX_THREADS);
     fprintf(stderr, "[INFO] ========================================================\n");
     
     // =============================================================
