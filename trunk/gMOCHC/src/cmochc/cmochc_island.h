@@ -98,6 +98,9 @@ struct cmochc_thread {
     
     int migration_global_pop_index[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
     int migration_current_weight_distance[CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE];
+    
+    int threshold_max;
+    int threshold_step;
 };
 
 extern struct cmochc_thread EA_THREADS[MAX_THREADS];
@@ -134,5 +137,31 @@ struct cmochc_island {
 };
 
 extern struct cmochc_island EA_INSTANCE;
+
+/* Statistics */
+#ifdef DEBUG_1
+    extern int COUNT_GENERATIONS[MAX_THREADS];
+    
+    /* Al menos una nueva solución fue agregada a la población de 
+     * padres del CHC del deme luego de aplicar una iteración de crossovers */
+    extern int COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[MAX_THREADS]; 
+    /* Cantidad de veces que el CHC del deme mejoró la mejor solución que tenía */
+    extern int COUNT_IMPROVED_BEST_SOL[MAX_THREADS]; 
+    /* Cantidad de crossovers aplicados */
+    extern int COUNT_CROSSOVER[MAX_THREADS]; 
+    /* Cantidad de crossovers que produjeron al menos uno de los hijos 
+     * mejor a alguno de sus padres */
+    extern int COUNT_IMPROVED_CROSSOVER[MAX_THREADS]; 
+    /* Cantidad de soluciones mutadas en cataclismos */
+    extern int COUNT_CATACLYSM[MAX_THREADS]; 
+    /* Cantidad de soluciones mejoradas durante cataclismos */
+    extern int COUNT_IMPOVED_CATACLYSM[MAX_THREADS]; 
+    /* Cantidad de ejecuciones del método de migracion */
+    extern int COUNT_MIGRATIONS[MAX_THREADS]; 
+    /* Cantidad de soluciones migradas */
+    extern int COUNT_SOLUTIONS_MIGRATED[MAX_THREADS]; 
+    /* Cantidad histórica de ocurrencias de cada peso en el archivo AGA */
+    extern int COUNT_HISTORIC_WEIGHTS[CMOCHC_PARETO_FRONT__PATCHES]; 
+#endif
 
 #endif // CMOCHC_ISLANDS__H
