@@ -20,6 +20,9 @@
 #define FLOAT double
 #define DISPLAY_PRECISION "double"
 
+/* Max. supported number of threads */
+#define MAX_THREADS 64
+
 /* Debug level
  * 0 No debug
  * 1 Minimal debug

@@ -1,4 +1,4 @@
-#if !defined(CMOCHC_ISLANDS__H)
+#ifndef CMOCHC_ISLANDS__H
 #define CMOCHC_ISLANDS__H
 
 #include "../config.h"
@@ -13,9 +13,6 @@
 #include "../basic/mct.h"
 #include "../random/random.h"
 #include "../archivers/aga.h"
-
-/* Max. supported number of threads */
-#define MAX_THREADS 64
 
 /* ************************************************** */
 /* Define el método de normalización de los objetivos */
@@ -38,12 +35,6 @@
 //#define CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
 //#define CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS
 #define CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS
-
-/* ******************************** */
-/* Configuración del archivador AGA */
-/* ******************************** */
-//#define CMOCHC_ARCHIVE__MAX_SIZE            25
-#define CMOCHC_ARCHIVE__MAX_SIZE            50
 
 /* ************************************* */
 /* Configuración del EA CHC de cada deme */
@@ -108,10 +99,6 @@ extern struct cmochc_thread EA_THREADS[MAX_THREADS];
 struct cmochc_island {
     /* Coleccion de esclavos */
     pthread_t threads[MAX_THREADS];
-
-    /* Poblacion elite global mantenida por el master */
-    struct solution iter_elite_pop[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];
-    int iter_elite_pop_tag[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];   
     
     /* Descomposición del frente de pareto */
     FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];
@@ -128,15 +115,13 @@ struct cmochc_island {
 
     /* Aux master thread memory */
     int weight_gap_count;
-    int weight_gap_sorted[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_length[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_index[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
-    int weight_gap_tmp[CMOCHC_ARCHIVE__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_sorted[ARCHIVER__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_length[ARCHIVER__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_index[ARCHIVER__MAX_SIZE + MAX_THREADS + 1];
+    int weight_gap_tmp[ARCHIVER__MAX_SIZE + MAX_THREADS + 1];
 };
 
 extern struct cmochc_island EA_INSTANCE;
-
-extern struct aga_state EA_ARCHIVER;
 
 /* Statistics */
 #ifdef DEBUG_1
