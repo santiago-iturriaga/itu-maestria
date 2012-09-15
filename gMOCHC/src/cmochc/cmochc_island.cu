@@ -499,6 +499,208 @@ int gather() {
     return new_solutions;
 }
 
+void solution_migration(int thread_id) {
+    FLOAT random;
+    
+    /* *********************************************************************************************
+     * Busco las mejores soluciones elite a importar
+     * ********************************************************************************************* */
+    #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+        for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+            EA_THREADS[thread_id].migration_global_pop_index[i] = -1;
+        }
+        
+        int ep_current_index, ep_solution_index;
+        ep_current_index = 0;
+        ep_solution_index = 0;
+
+        #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
+            int worst_distance = 0, worst_index;
+            int current_solution_distance;
+                    
+            while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
+                (ep_solution_index < EA_INSTANCE.archiver.population_count)) {
+                    
+                if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                    if (ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
+                        /* Aún no esta lleno el array con el vecindario */
+                        EA_THREADS[thread_id].migration_global_pop_index[ep_solution_index] = ep_current_index;
+                        EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index] = 
+                            abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
+                                EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                            
+                        if (ep_solution_index == 0) {
+                            worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
+                            worst_index = ep_solution_index;
+                        } else {
+                            if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index]) {
+                                worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
+                                worst_index = ep_solution_index;
+                            }
+                        }
+                    } else {
+                        current_solution_distance = abs(
+                            EA_INSTANCE.thread_weight_assignment[thread_id] -
+                            EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                            
+                        if (current_solution_distance < worst_distance) {
+                            worst_distance = current_solution_distance;
+                            
+                            EA_THREADS[thread_id].migration_global_pop_index[worst_index] = ep_current_index;
+                            EA_THREADS[thread_id].migration_current_weight_distance[worst_index] = current_solution_distance;
+                            
+                            for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+                                if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[i]) {
+                                    worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[i];
+                                    worst_index = i;
+                                }
+                            }
+                        }
+                    }
+                    
+                    ep_solution_index++;
+                }
+                
+                ep_current_index++;
+            }
+        #endif
+        #ifdef CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
+            int current_ep_solution_index;
+            current_ep_solution_index = 0;
+            
+            FLOAT selection_prob;
+            selection_prob = 1 / EA_INSTANCE.archiver.population_count;
+        
+            while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
+                (ep_solution_index < EA_INSTANCE.archiver.population_count) &&
+                (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
+                    
+                if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                    if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
+                        /* Aún no esta lleno el array con el vecindario */
+                        EA_THREADS[thread_id].migration_global_pop_index[current_ep_solution_index] = ep_current_index;
+                        EA_THREADS[thread_id].migration_current_weight_distance[current_ep_solution_index] = 
+                            abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
+                                EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                        
+                        current_ep_solution_index++;
+                    }
+                    
+                    ep_solution_index++;
+                }
+                
+                ep_current_index++;
+            }
+        #endif
+        
+        #ifdef DEBUG_3
+            for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
+                if (EA_THREADS[thread_id].migration_global_pop_index[i] != -1) {                           
+                    fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
+                        thread_id, 
+                        EA_THREADS[thread_id].migration_global_pop_index[i], 
+                        EA_INSTANCE.archiver.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
+                        EA_THREADS[thread_id].migration_current_weight_distance[i]);
+                }
+            } 
+        #endif
+    #endif
+
+    /* *********************************************************************************************
+     * Migro soluciones desde la población elite
+     * ********************************************************************************************* */
+     
+    int migrated;
+    
+    int migrated_solution_index;
+    migrated_solution_index = 0;
+    
+    int next_solution_index;
+    next_solution_index = 0;
+    
+    while (next_solution_index < MAX_POP_SOLS) {
+        migrated = 0;
+        
+        #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
+            if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
+                if (EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index] != -1) {
+                    COUNT_MIGRATIONS[thread_id]++;
+                
+                    #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
+                        clone_solution(
+                            &EA_THREADS[thread_id].population[next_solution_index],
+                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]]);
+                            
+                        next_solution_index++;
+                        migrated_solution_index++;
+                        count_solutions_migrated[thread_id]++;
+                        migrated = 1;
+                    #endif
+                    #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
+                        if (next_solution_index + 1 < MAX_POP_SOLS) {
+                            random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+                            
+                            int migration_parent_index;
+                            migration_parent_index = (int)(random * next_solution_index);
+                            
+                            FLOAT d = distance(
+                                &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                &EA_THREADS[thread_id].population[migration_parent_index]);
+
+                            if (d > EA_THREADS[thread_id].threshold_max) {
+                                hux(EA_INSTANCE.rand_state[thread_id],
+                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]], 
+                                    &EA_THREADS[thread_id].population[migration_parent_index],
+                                    &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index]],
+                                    &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]]);
+                                    
+                                next_solution_index += 2;
+                                migrated_solution_index++;
+                                COUNT_SOLUTIONS_MIGRATED[thread_id] += 2;
+                                migrated = 1;
+                            }
+                        }
+                        
+                        if (migrated == 0) {
+                            mutate(
+                                EA_INSTANCE.rand_state[thread_id],
+                                &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                &EA_THREADS[thread_id].population[next_solution_index]);
+                                
+                            next_solution_index++;
+                            migrated_solution_index++;
+                            COUNT_SOLUTIONS_MIGRATED[thread_id]++; 
+                            migrated = 1;
+                        }
+                    #endif
+                    #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
+                        mutate(
+                            EA_INSTANCE.rand_state[thread_id],
+                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                            &EA_THREADS[thread_id].population[next_solution_index]);
+                            
+                        next_solution_index++;
+                        migrated_solution_index++;
+                        COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                        
+                        migrated = 1;
+                    #endif
+                }
+            }
+        #endif
+        
+        if (migrated == 0) {
+            random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+
+            mutate(EA_INSTANCE.rand_state[thread_id],
+                &EA_THREADS[thread_id].population[(int)(random * next_solution_index)],
+                &EA_THREADS[thread_id].population[next_solution_index]);
+
+            next_solution_index++;
+        }
+    }
+}
+
 /* Logica de los esclavos */
 void* slave_thread(void *data) {
     struct cmochc_thread *t_data = (struct cmochc_thread*)data;
@@ -510,7 +712,6 @@ void* slave_thread(void *data) {
 
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
-    FLOAT random;
 
     /* *********************************************************************************************
      * Inicializo los pesos.
@@ -609,205 +810,14 @@ void* slave_thread(void *data) {
                 //changed_assignment = 0;
             }
 
-            /* *********************************************************************************************
-             * Busco las mejores soluciones elite a importar
-             * ********************************************************************************************* */
-            #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
-                for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                    EA_THREADS[thread_id].migration_global_pop_index[i] = -1;
-                }
-                
-                int ep_current_index, ep_solution_index;
-                ep_current_index = 0;
-                ep_solution_index = 0;
-
-                #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
-                    int worst_distance, worst_index;
-                    int current_solution_distance;
-                            
-                    while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
-                        (ep_solution_index < EA_INSTANCE.archiver.population_count)) {
-                            
-                        if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
-                            if (ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
-                                /* Aún no esta lleno el array con el vecindario */
-                                EA_THREADS[thread_id].migration_global_pop_index[ep_solution_index] = ep_current_index;
-                                EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index] = 
-                                    abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                        EA_INSTANCE.archiver.population_tag[ep_current_index]);
-                                    
-                                if (ep_solution_index == 0) {
-                                    worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
-                                    worst_index = ep_solution_index;
-                                } else {
-                                    if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index]) {
-                                        worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
-                                        worst_index = ep_solution_index;
-                                    }
-                                }
-                            } else {
-                                current_solution_distance = abs(
-                                    EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                    EA_INSTANCE.archiver.population_tag[ep_current_index]);
-                                    
-                                if (current_solution_distance < worst_distance) {
-                                    worst_distance = current_solution_distance;
-                                    
-                                    EA_THREADS[thread_id].migration_global_pop_index[worst_index] = ep_current_index;
-                                    EA_THREADS[thread_id].migration_current_weight_distance[worst_index] = current_solution_distance;
-                                    
-                                    for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                                        if (worst_distance < EA_THREADS[thread_id].migration_current_weight_distance[i]) {
-                                            worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[i];
-                                            worst_index = i;
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            ep_solution_index++;
-                        }
-                        
-                        ep_current_index++;
-                    }
-                #endif
-                #ifdef CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
-                    int current_ep_solution_index;
-                    current_ep_solution_index = 0;
-                    
-                    FLOAT selection_prob;
-                    selection_prob = 1 / EA_INSTANCE.archiver.population_count;
-                
-                    while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
-                        (ep_solution_index < EA_INSTANCE.archiver.population_count) &&
-                        (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
-                            
-                        if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
-                            if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
-                                /* Aún no esta lleno el array con el vecindario */
-                                EA_THREADS[thread_id].migration_global_pop_index[current_ep_solution_index] = ep_current_index;
-                                EA_THREADS[thread_id].migration_current_weight_distance[current_ep_solution_index] = 
-                                    abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                        EA_INSTANCE.archiver.population_tag[ep_current_index]);
-                                
-                                current_ep_solution_index++;
-                            }
-                            
-                            ep_solution_index++;
-                        }
-                        
-                        ep_current_index++;
-                    }
-                #endif
-                
-                #ifdef DEBUG_3
-                    for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                        if (EA_THREADS[thread_id].migration_global_pop_index[i] != -1) {                           
-                            fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
-                                thread_id, 
-                                EA_THREADS[thread_id].migration_global_pop_index[i], 
-                                EA_INSTANCE.archiver.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
-                                EA_THREADS[thread_id].migration_current_weight_distance[i]);
-                        }
-                    } 
-                #endif
-            #endif
-
-            /* *********************************************************************************************
-             * Migro soluciones desde la población elite
-             * ********************************************************************************************* */
-             
-            int migrated;
-            
-            int migrated_solution_index;
-            migrated_solution_index = 0;
-            
-            int next_solution_index;
-            next_solution_index = 0;
-            
-            while (next_solution_index < MAX_POP_SOLS) {
-                migrated = 0;
-                
-                #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
-                    if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
-                        if (EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index] != -1) {
-                            COUNT_MIGRATIONS[thread_id]++;
-                        
-                            #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
-                                clone_solution(
-                                    &EA_THREADS[thread_id].population[next_solution_index],
-                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]]);
-                                    
-                                next_solution_index++;
-                                migrated_solution_index++;
-                                count_solutions_migrated[thread_id]++;
-                                migrated = 1;
-                            #endif
-                            #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
-                                if (next_solution_index + 1 < MAX_POP_SOLS) {
-                                    random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                                    
-                                    int migration_parent_index;
-                                    migration_parent_index = (int)(random * next_solution_index);
-                                    
-                                    FLOAT d = distance(
-                                        &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
-                                        &EA_THREADS[thread_id].population[migration_parent_index]);
-
-                                    if (d > EA_THREADS[thread_id].threshold_max) {
-                                        hux(EA_INSTANCE.rand_state[thread_id],
-                                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]], 
-                                            &EA_THREADS[thread_id].population[migration_parent_index],
-                                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index]],
-                                            &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]]);
-                                            
-                                        next_solution_index += 2;
-                                        migrated_solution_index++;
-                                        COUNT_SOLUTIONS_MIGRATED[thread_id] += 2;
-                                        migrated = 1;
-                                    }
-                                }
-                                
-                                if (migrated == 0) {
-                                    mutate(
-                                        EA_INSTANCE.rand_state[thread_id],
-                                        &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
-                                        &EA_THREADS[thread_id].population[next_solution_index]);
-                                        
-                                    next_solution_index++;
-                                    migrated_solution_index++;
-                                    COUNT_SOLUTIONS_MIGRATED[thread_id]++; 
-                                    migrated = 1;
-                                }
-                            #endif
-                            #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-                                mutate(
-                                    EA_INSTANCE.rand_state[thread_id],
-                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
-                                    &EA_THREADS[thread_id].population[next_solution_index]);
-                                    
-                                next_solution_index++;
-                                migrated_solution_index++;
-                                COUNT_SOLUTIONS_MIGRATED[thread_id]++;
-                                
-                                migrated = 1;
-                            #endif
-                        }
-                    }
-                #endif
-                
-                if (migrated == 0) {
-                    random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-
-                    mutate(EA_INSTANCE.rand_state[thread_id],
-                        &EA_THREADS[thread_id].population[(int)(random * next_solution_index)],
-                        &EA_THREADS[thread_id].population[next_solution_index]);
-
-                    next_solution_index++;
-                }
-            }
+            /* ********************************* */
+            /* Migro soluciones desde el archivo */
+            /* ********************************* */
+            solution_migration(thread_id);
            
+            /* ************************************************************ */
             /* Actualizo los puntos de normalización con la población local */
+            /* ************************************************************ */
             for (int i = 0; i < MAX_POP_SOLS; i++) {
                 if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
                     //makespan_utopia_index = i;

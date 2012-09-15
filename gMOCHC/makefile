@@ -22,15 +22,12 @@ BIN = gmochc
 LINK = -lcuda -lrt -lpthread -lm
 OPTS = --ptxas-options=-v
 
-###Release no debug
-###-DNDEBUG
-
 all: debug verificador
 
 verificador: verificador.c
 	$(CC) $(CPU_OPTS) -g verificador.c -o bin/verificador
 
-cpu: src/main.cu \
+cpu_d: src/main.cu \
 		src/load_params.cu \
 		src/load_params.h \
 		src/load_instance.cu \
@@ -71,6 +68,68 @@ cpu: src/main.cu \
 		src/basic/pminmin.cu \
 		src/basic/pminmin.h 
 	$(CC) $(CPU_OPTS) -g -x c++ \
+		src/main.cu \
+		src/load_instance.cu \
+		src/load_params.cu \
+		src/scenario.cu \
+		src/etc_matrix.cu \
+		src/energy_matrix.cu \
+		src/solution.cu \
+		src/utils.cu \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.cu \
+		src/basic/mct.cu \
+		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
+		$(CPU_LINK) -o bin/$(CPU_BIN)
+
+cpu_r: src/main.cu \
+		src/load_params.cu \
+		src/load_params.h \
+		src/load_instance.cu \
+		src/load_instance.h \
+		src/scenario.cu \
+		src/scenario.h \
+		src/scenario_struct.h \
+		src/etc_matrix.cu \
+		src/etc_matrix.h \
+		src/etc_matrix_struct.h \
+		src/energy_matrix.cu \
+		src/energy_matrix.h \
+		src/energy_matrix_struct.h \
+		src/solution.cu \
+		src/solution.h \
+		src/utils.cu \
+		src/utils.h \
+		src/random/cpu_rand.h \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.h \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_chc.h \
+		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_utils.h \
+		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.h \
+		src/archivers/aga.cu \
+		src/basic/mct.cu \
+		src/basic/mct.h \
+		src/basic/minmin.cu \
+		src/basic/minmin.h \
+		src/basic/pminmin.cu \
+		src/basic/pminmin.h 
+	$(CC) $(CPU_OPTS) -DNDEBUG -O3 -x c++ \
 		src/main.cu \
 		src/load_instance.cu \
 		src/load_params.cu \

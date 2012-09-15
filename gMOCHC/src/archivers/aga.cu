@@ -11,9 +11,10 @@ inline FLOAT get_objective(struct solution *s, int objective) {
         return s->makespan;
     } else if (objective == 1) {
         return s->energy_consumption;
-    } else {
-        assert(false);
     }
+    
+    assert(false);
+    return 0;
 }
 
 int archive_add_solution(struct aga_state *state, int new_solutions_count)
