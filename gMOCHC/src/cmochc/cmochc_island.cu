@@ -35,6 +35,7 @@
 
 struct cmochc_island EA_INSTANCE;
 struct cmochc_thread EA_THREADS[MAX_THREADS];
+struct aga_state EA_ARCHIVER;
 
 /* Inicializa los hilos y las estructuras de datos */
 void init();
@@ -183,12 +184,12 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
-            fprintf(stderr, "> [%d] = %d\n", t, EA_INSTANCE.archiver.tag_count[t]);
+            fprintf(stderr, "> [%d] = %d\n", t, EA_ARCHIVER.tag_count[t]);
         }
     #endif
     
     for (int i = 0; i < CMOCHC_PARETO_FRONT__PATCHES; i++) {
-        if (EA_INSTANCE.archiver.tag_count[i] > 0) {
+        if (EA_ARCHIVER.tag_count[i] > 0) {
             EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = i;
             EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] = i - last_filled_patch - 1;
             EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_count;
@@ -454,7 +455,7 @@ void init() {
     }
 
     /* Inicializo el archivador */
-    archivers_aga_init(&EA_INSTANCE.archiver, CMOCHC_ARCHIVE__MAX_SIZE, EA_INSTANCE.iter_elite_pop, 
+    archivers_aga_init(&EA_ARCHIVER, CMOCHC_ARCHIVE__MAX_SIZE, EA_INSTANCE.iter_elite_pop, 
         EA_INSTANCE.iter_elite_pop_tag, (INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT), 
         CMOCHC_PARETO_FRONT__PATCHES);
 }
@@ -466,31 +467,31 @@ int gather() {
         fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
 
         int cantidad = 0;
-        for (int i = 0; i < EA_INSTANCE.archiver.new_solutions_size; i++) {
-            if (EA_INSTANCE.archiver.new_solutions[i].initialized == 1) cantidad++;
+        for (int i = 0; i < EA_ARCHIVER.new_solutions_size; i++) {
+            if (EA_ARCHIVER.new_solutions[i].initialized == 1) cantidad++;
 
             fprintf(stderr, "> %d state=%d makespan=%f energy=%f\n",
-                i, EA_INSTANCE.archiver.new_solutions[i].initialized,
-                EA_INSTANCE.archiver.new_solutions[i].makespan,
-                EA_INSTANCE.archiver.new_solutions[i].energy_consumption);
+                i, EA_ARCHIVER.new_solutions[i].initialized,
+                EA_ARCHIVER.new_solutions[i].makespan,
+                EA_ARCHIVER.new_solutions[i].energy_consumption);
         }
 
         assert(cantidad > 0);
     #endif
 
     int new_solutions;
-    new_solutions = archivers_aga(&EA_INSTANCE.archiver);
+    new_solutions = archivers_aga(&EA_ARCHIVER);
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Total solutions gathered      = %d\n", new_solutions);
-        fprintf(stderr, "[DEBUG] Current solutions in archiver = %d\n", EA_INSTANCE.archiver.population_count);
+        fprintf(stderr, "[DEBUG] Current solutions in archiver = %d\n", EA_ARCHIVER.population_count);
     #endif
     
     #ifdef DEBUG_1
         int current_tag;
-        for (int s = 0; s < EA_INSTANCE.archiver.population_size; s++) {
-            if (EA_INSTANCE.archiver.population[s].initialized == SOLUTION__IN_USE) {
-                current_tag = EA_INSTANCE.archiver.population_tag[s];
+        for (int s = 0; s < EA_ARCHIVER.population_size; s++) {
+            if (EA_ARCHIVER.population[s].initialized == SOLUTION__IN_USE) {
+                current_tag = EA_ARCHIVER.population_tag[s];
                 COUNT_HISTORIC_WEIGHTS[current_tag]++;
             }
         }
@@ -518,16 +519,16 @@ void solution_migration(int thread_id) {
             int worst_distance = 0, worst_index;
             int current_solution_distance;
                     
-            while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
-                (ep_solution_index < EA_INSTANCE.archiver.population_count)) {
+            while ((ep_current_index < EA_ARCHIVER.population_size) &&
+                (ep_solution_index < EA_ARCHIVER.population_count)) {
                     
-                if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                if (EA_ARCHIVER.population[ep_current_index].initialized == SOLUTION__IN_USE) {
                     if (ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
                         /* Aún no esta lleno el array con el vecindario */
                         EA_THREADS[thread_id].migration_global_pop_index[ep_solution_index] = ep_current_index;
                         EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index] = 
                             abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                                EA_ARCHIVER.population_tag[ep_current_index]);
                             
                         if (ep_solution_index == 0) {
                             worst_distance = EA_THREADS[thread_id].migration_current_weight_distance[ep_solution_index];
@@ -541,7 +542,7 @@ void solution_migration(int thread_id) {
                     } else {
                         current_solution_distance = abs(
                             EA_INSTANCE.thread_weight_assignment[thread_id] -
-                            EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                            EA_ARCHIVER.population_tag[ep_current_index]);
                             
                         if (current_solution_distance < worst_distance) {
                             worst_distance = current_solution_distance;
@@ -569,19 +570,19 @@ void solution_migration(int thread_id) {
             current_ep_solution_index = 0;
             
             FLOAT selection_prob;
-            selection_prob = 1 / EA_INSTANCE.archiver.population_count;
+            selection_prob = 1 / EA_ARCHIVER.population_count;
         
-            while ((ep_current_index < EA_INSTANCE.archiver.population_size) &&
-                (ep_solution_index < EA_INSTANCE.archiver.population_count) &&
+            while ((ep_current_index < EA_ARCHIVER.population_size) &&
+                (ep_solution_index < EA_ARCHIVER.population_count) &&
                 (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
                     
-                if (EA_INSTANCE.archiver.population[ep_current_index].initialized == SOLUTION__IN_USE) {
+                if (EA_ARCHIVER.population[ep_current_index].initialized == SOLUTION__IN_USE) {
                     if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
                         /* Aún no esta lleno el array con el vecindario */
                         EA_THREADS[thread_id].migration_global_pop_index[current_ep_solution_index] = ep_current_index;
                         EA_THREADS[thread_id].migration_current_weight_distance[current_ep_solution_index] = 
                             abs(EA_INSTANCE.thread_weight_assignment[thread_id] -
-                                EA_INSTANCE.archiver.population_tag[ep_current_index]);
+                                EA_ARCHIVER.population_tag[ep_current_index]);
                         
                         current_ep_solution_index++;
                     }
@@ -599,7 +600,7 @@ void solution_migration(int thread_id) {
                     fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n", 
                         thread_id, 
                         EA_THREADS[thread_id].migration_global_pop_index[i], 
-                        EA_INSTANCE.archiver.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
+                        EA_ARCHIVER.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
                         EA_THREADS[thread_id].migration_current_weight_distance[i]);
                 }
             } 
@@ -629,7 +630,7 @@ void solution_migration(int thread_id) {
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
                         clone_solution(
                             &EA_THREADS[thread_id].population[next_solution_index],
-                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]]);
+                            &EA_ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]]);
                             
                         next_solution_index++;
                         migrated_solution_index++;
@@ -644,12 +645,12 @@ void solution_migration(int thread_id) {
                             migration_parent_index = (int)(random * next_solution_index);
                             
                             FLOAT d = distance(
-                                &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                &EA_ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                 &EA_THREADS[thread_id].population[migration_parent_index]);
 
                             if (d > EA_THREADS[thread_id].threshold_max) {
                                 hux(EA_INSTANCE.rand_state[thread_id],
-                                    &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]], 
+                                    &EA_ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]], 
                                     &EA_THREADS[thread_id].population[migration_parent_index],
                                     &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index]],
                                     &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]]);
@@ -664,7 +665,7 @@ void solution_migration(int thread_id) {
                         if (migrated == 0) {
                             mutate(
                                 EA_INSTANCE.rand_state[thread_id],
-                                &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                &EA_ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                 &EA_THREADS[thread_id].population[next_solution_index]);
                                 
                             next_solution_index++;
@@ -676,7 +677,7 @@ void solution_migration(int thread_id) {
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
                         mutate(
                             EA_INSTANCE.rand_state[thread_id],
-                            &EA_INSTANCE.archiver.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                            &EA_ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                             &EA_THREADS[thread_id].population[next_solution_index]);
                             
                         next_solution_index++;
@@ -887,11 +888,11 @@ void* slave_thread(void *data) {
 void display_results() {
     /* Show solutions */
     #if defined(OUTPUT_SOLUTION)
-        archivers_aga_dump(&EA_INSTANCE.archiver);
+        archivers_aga_dump(&EA_ARCHIVER);
     #endif
 
     #ifdef DEBUG_1
-        archivers_aga_show(&EA_INSTANCE.archiver);
+        archivers_aga_show(&EA_ARCHIVER);
 
         int count_generations = 0;
         int count_at_least_one_children_inserted = 0;
@@ -922,9 +923,9 @@ void display_results() {
             count_pf_found[s] = 0;
         }
 
-        for (int s = 0; s < EA_INSTANCE.archiver.population_size; s++) {
-            if (EA_INSTANCE.archiver.population[s].initialized == SOLUTION__IN_USE) {
-                count_pf_found[EA_INSTANCE.archiver.population_tag[s]]++;
+        for (int s = 0; s < EA_ARCHIVER.population_size; s++) {
+            if (EA_ARCHIVER.population[s].initialized == SOLUTION__IN_USE) {
+                count_pf_found[EA_ARCHIVER.population_tag[s]]++;
             }
         }
 
@@ -946,7 +947,7 @@ void display_results() {
 
         fprintf(stderr, "       archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
-            fprintf(stderr, "          [%d] = %d\n", t, EA_INSTANCE.archiver.tag_count[t]);
+            fprintf(stderr, "          [%d] = %d\n", t, EA_ARCHIVER.tag_count[t]);
         }
 
         fprintf(stderr, "       historic archive tag count:\n");
@@ -962,7 +963,7 @@ void display_results() {
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize() {
-    archivers_aga_free(&EA_INSTANCE.archiver);
+    archivers_aga_free(&EA_ARCHIVER);
     pthread_barrier_destroy(&(EA_INSTANCE.sync_barrier));
         
     for (int i = 0; i < (INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT); i++) {

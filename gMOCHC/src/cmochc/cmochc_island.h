@@ -113,8 +113,6 @@ struct cmochc_island {
     struct solution iter_elite_pop[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];
     int iter_elite_pop_tag[MAX_THREADS * CMOCHC_LOCAL__BEST_SOLS_KEPT];   
     
-    struct aga_state archiver;
-
     /* Descomposición del frente de pareto */
     FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];
     int thread_weight_assignment[MAX_THREADS];
@@ -137,6 +135,8 @@ struct cmochc_island {
 };
 
 extern struct cmochc_island EA_INSTANCE;
+
+extern struct aga_state EA_ARCHIVER;
 
 /* Statistics */
 #ifdef DEBUG_1
