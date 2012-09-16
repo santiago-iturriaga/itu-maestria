@@ -647,7 +647,7 @@ void solution_migration(int thread_id) {
                 (current_ep_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE)) {
 
                 if (ARCHIVER.population[ep_current_index].initialized == SOLUTION__IN_USE) {
-                    if (RAND_GENERATE(rand_state[thread_id]) <= selection_prob) {
+                    if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) <= selection_prob) {
                         /* Aún no esta lleno el array con el vecindario */
                         EA_THREADS[thread_id].migration_global_pop_index[current_ep_solution_index] = ep_current_index;
                         EA_THREADS[thread_id].migration_current_weight_distance[current_ep_solution_index] =
@@ -920,8 +920,7 @@ void* slave_thread(void *data) {
                 local_best_index = EA_THREADS[thread_id].sorted_population[i];
 
                 #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n",
-                        thread_id, local_best_index, new_sol_index);
+                    fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n", thread_id, local_best_index, new_sol_index);
                 #endif
 
                 clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
@@ -948,9 +947,6 @@ void* slave_thread(void *data) {
 
                 #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] <thread:%d> IDLE! EA_INSTANCE.thread_status[%d] = %d\n", thread_id, thread_id, EA_INSTANCE.thread_status[thread_id]);
-                #endif
-
-                #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] <thread:%d> pthread_cond_signal(&EA_INSTANCE.master_status_cond)\n", thread_id);
                 #endif
                 
