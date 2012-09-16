@@ -94,7 +94,7 @@ struct cmochc_thread {
     /* Merge sort tmp array */
     int merge_sort_tmp[MAX_POP_SOLS];
 
-    int currently_assigned_weight;
+    //int currently_assigned_weight;
     FLOAT weight_makespan;
     FLOAT energy_makespan;
 
@@ -116,6 +116,7 @@ struct cmochc_island {
 
     /* Estado de cada hilo */
     int thread_status[MAX_THREADS];
+    int thread_idle_count;
     
     /* Descomposición del frente de pareto */
     FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];

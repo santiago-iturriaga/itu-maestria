@@ -154,7 +154,30 @@ inline FLOAT fitness(int thread_id, int solution_index) {
         }
     #endif
     #ifdef CMOCHC_LOCAL__ZN_FITNESS_NORM
-        if (isnan(EA_THREADS[thread_id].fitness_population[solution_index])) {
+        if (isnan(EA_THREADS[thread_id].fitness_population[solution_index])) {           
+            /*FLOAT makespan = EA_THREADS[thread_id].population[solution_index].makespan;
+            FLOAT zenith_makespan = EA_THREADS[thread_id].makespan_zenith_value;
+            FLOAT nadir_makespan = EA_THREADS[thread_id].makespan_nadir_value;
+            FLOAT weight_makespan = EA_THREADS[thread_id].weight_makespan;
+            
+            FLOAT energy = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+            FLOAT zenith_energy = EA_THREADS[thread_id].energy_zenith_value;
+            FLOAT nadir_energy = EA_THREADS[thread_id].energy_nadir_value;
+            FLOAT weight_energy = EA_THREADS[thread_id].energy_makespan;
+                       
+            FLOAT norm_makespan = (makespan - zenith_makespan) / (nadir_makespan - makespan);
+            FLOAT norm_energy = (energy - zenith_energy) / (nadir_energy - energy);
+                        
+            EA_THREADS[thread_id].fitness_population[solution_index] = (norm_makespan * weight_makespan) + (norm_energy * weight_energy);
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] (makespan - zenith_makespan) / (nadir_makespan - makespan) = (%.2f - %.2f) / (%.2f - %.2f)\n", makespan, zenith_makespan, nadir_makespan, makespan);
+                fprintf(stderr, "[DEBUG] (energy - zenith_energy) / (nadir_energy - energy) = (%.2f - %.2f) / (%.2f - %.2f)\n", energy, zenith_energy, nadir_energy, energy);
+                fprintf(stderr, "[DEBUG] (norm_makespan * weight_makespan) = (%.2f * %.2f)\n", norm_makespan, weight_makespan);
+                fprintf(stderr, "[DEBUG] (norm_energy * weight_energy) = (%.2f * %.2f)\n", norm_energy, weight_energy);            
+                fprintf(stderr, "[DEBUG] fitness = %.2f\n", EA_THREADS[thread_id].fitness_population[solution_index]);
+            #endif*/
+            
             EA_THREADS[thread_id].fitness_population[solution_index] =
                 (((EA_THREADS[thread_id].population[solution_index].makespan - EA_THREADS[thread_id].makespan_zenith_value) /
                     (EA_THREADS[thread_id].makespan_nadir_value - EA_THREADS[thread_id].makespan_zenith_value)) * EA_THREADS[thread_id].weight_makespan) +
@@ -164,6 +187,20 @@ inline FLOAT fitness(int thread_id, int solution_index) {
     #endif
 
     return EA_THREADS[thread_id].fitness_population[solution_index];
+}
+
+inline void fitness_all(int thread_id) {
+    for (int i = 0; i < MAX_POP_SOLS; i++) {
+        if (isnan(EA_THREADS[thread_id].fitness_population[i])) {
+            fitness(thread_id, i);
+        }
+    }
+}
+
+inline void fitness_reset(int thread_id) {
+    for (int i = 0; i < MAX_POP_SOLS; i++) {
+        EA_THREADS[thread_id].fitness_population[i] = NAN;
+    }
 }
 
 void chc_population_init(int thread_id);

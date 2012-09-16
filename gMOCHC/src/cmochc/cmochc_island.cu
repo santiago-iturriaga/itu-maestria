@@ -85,7 +85,6 @@ void compute_cmochc_island() {
     TIMMING_END(">> cmochc_init", ts_init);
     // Timming -----------------------------------------------------
 
-    int workers_idle = 0;
     int last_iter_sols_gathered = 0;
 
     RAND_STATE rstate;
@@ -101,28 +100,9 @@ void compute_cmochc_island() {
         
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
 
-            workers_idle = 0;
-
-            while (workers_idle == 0) {
-                workers_idle = 1;
-
-                for (int i = 0; (i < INPUT.thread_count) && (workers_idle == 1); i++) {
+            while (EA_INSTANCE.thread_idle_count < INPUT.thread_count) {
                     #ifdef DEBUG_3
-                        fprintf(stderr, "[DEBUG] <master> EA_INSTANCE.thread_status[%d] = %d\n", i, EA_INSTANCE.thread_status[i]);
-                    #endif
-                    
-                    if (EA_INSTANCE.thread_status[i] != CMOCHC_THREAD_STATUS__IDLE) {
-                        workers_idle = 0;
-                    }
-                }
-
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] <master> workers_idle = %d\n", workers_idle);
-                #endif
-
-                if (workers_idle == 0) {
-                    #ifdef DEBUG_3
-                        fprintf(stderr, "[DEBUG] <master> [INICIO] pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex)\n");
+                        fprintf(stderr, "[DEBUG] <master> workers_idle = %d\n", EA_INSTANCE.thread_idle_count);
                     #endif
                     
                     pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex);
@@ -130,7 +110,6 @@ void compute_cmochc_island() {
                     #ifdef DEBUG_3
                         fprintf(stderr, "[DEBUG] <master> [FIN] pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex)\n");
                     #endif
-                }
             }
 
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
@@ -204,6 +183,8 @@ void compute_cmochc_island() {
         /* ******************************************************* */
         
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
+
+            EA_INSTANCE.thread_idle_count = 0;
 
             for (int i = 0; i < INPUT.thread_count; i++) {
                 EA_INSTANCE.thread_status[i] = worker_status;
@@ -475,13 +456,15 @@ void init() {
         #endif
     }
 
+    EA_INSTANCE.thread_idle_count = 0;
+
     if (INPUT.thread_count > 1) {
         for (int i = 0; i < INPUT.thread_count; i++) {
-            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
-            assert(EA_INSTANCE.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES);
-            
-            EA_THREADS[i].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[i];
+            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);           
+            //EA_THREADS[i].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[i];
             EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[i]] = i;
+
+            assert(EA_INSTANCE.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES);
 
             #ifdef DEBUG_2
                 fprintf(stderr, "[DEBUG] thread[%d] assigned to patch %d\n", i, EA_INSTANCE.thread_weight_assignment[i]);
@@ -491,10 +474,10 @@ void init() {
         }
     } else {
         EA_INSTANCE.thread_weight_assignment[0] = CMOCHC_PARETO_FRONT__PATCHES / 2;
-        assert(EA_INSTANCE.thread_weight_assignment[0] < CMOCHC_PARETO_FRONT__PATCHES);
-
-        EA_THREADS[0].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[0];
+        //EA_THREADS[0].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[0];
         EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[0]] = 0;
+
+        assert(EA_INSTANCE.thread_weight_assignment[0] < CMOCHC_PARETO_FRONT__PATCHES);
 
         #ifdef DEBUG_2
             fprintf(stderr, "[DEBUG] thread[%d] assigned to patch %d\n", 0, EA_INSTANCE.thread_weight_assignment[0]);
@@ -808,6 +791,7 @@ void* slave_thread(void *data) {
     if (EA_THREADS[thread_id].threshold_step == 0) EA_THREADS[thread_id].threshold_step = 1;
 
     int status = CMOCHC_THREAD_STATUS__IDLE;
+    int currently_assigned_weight;
     
     while (status != CMOCHC_THREAD_STATUS__STOP) {
 
@@ -832,6 +816,19 @@ void* slave_thread(void *data) {
             #endif
 
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
+
+        /* *********************************************************************************************
+         * Actualizo la asignación de pesos y vecindad.
+         * *********************************************************************************************/
+
+        currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
+        EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[currently_assigned_weight];
+        EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f)\n",
+                thread_id, currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan);
+        #endif
         
         /* ****************** */
         /* Proceso el trabajo */
@@ -840,25 +837,6 @@ void* slave_thread(void *data) {
             
             if (status == CMOCHC_THREAD_STATUS__CHC_FROM_NEW) {
                 
-                /* *********************************************************************************************
-                 * Inicializo los pesos.
-                 * *********************************************************************************************/
-
-                /* Actualizo la nueva asignación de pesos y vecindad */
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f), new weights=%d (%.4f,%.4f)\n",
-                        thread_id, EA_THREADS[thread_id].currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan,
-                        EA_INSTANCE.thread_weight_assignment[thread_id],
-                        EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]],
-                        1 - EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]]);
-                #endif
-
-                if (EA_THREADS[thread_id].currently_assigned_weight != EA_INSTANCE.thread_weight_assignment[thread_id]) {
-                    EA_THREADS[thread_id].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
-                    EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]];
-                    EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
-                }
-
                 /* *********************************************************************************************
                  * Inicializo la población.
                  * *********************************************************************************************/
@@ -875,31 +853,32 @@ void* slave_thread(void *data) {
                 /* ************************************************************ */
                 /* Actualizo los puntos de normalización con la población local */
                 /* ************************************************************ */
-                for (int i = 0; i < MAX_POP_SOLS; i++) {
+                EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[0].makespan;
+                EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[0].makespan;
+                EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[0].energy_consumption;
+                EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[0].energy_consumption;
+
+                for (int i = 1; i < MAX_POP_SOLS; i++) {
                     if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
                         EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
-
-                        if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-                            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
-                        }
                     }
+                    if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
+                    }
+
                     if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
                         EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
-
-                        if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-                            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
-                        }
+                    }
+                    if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
                     }
                 }
 
                 /* *********************************************************************************************
                  * Re-calculo el fitness de toda la población
                  *********************************************************************************************** */
-
-                for (int i = 0; i < MAX_POP_SOLS; i++) {
-                    EA_THREADS[thread_id].fitness_population[i] = NAN;
-                    fitness(thread_id, i);
-                }
+                fitness_reset(thread_id);
+                fitness_all(thread_id);
             }
 
             /* *********************************************************************************************
@@ -947,6 +926,8 @@ void* slave_thread(void *data) {
             /* *************************** */
             
             pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
+
+                EA_INSTANCE.thread_idle_count++;
 
                 EA_INSTANCE.thread_status[thread_id] = CMOCHC_THREAD_STATUS__IDLE;
                 status = CMOCHC_THREAD_STATUS__IDLE;
