@@ -50,7 +50,7 @@ void chc_population_init(int thread_id) {
                 EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
             }
             
-            //#ifdef DEBUG_3            
+            #ifdef DEBUG_3            
                 fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f[z=%.2f|n=%.2f] energy=%.2f[z=%.2f|n=%.2f]\n",
                     thread_id, i, 
                     EA_THREADS[thread_id].population[i].makespan, 
@@ -59,7 +59,7 @@ void chc_population_init(int thread_id) {
                     EA_THREADS[thread_id].population[i].energy_consumption,
                     EA_THREADS[thread_id].energy_zenith_value,
                     EA_THREADS[thread_id].energy_nadir_value);
-            //#endif
+            #endif
         }
     }
 

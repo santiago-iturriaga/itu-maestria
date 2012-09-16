@@ -61,14 +61,16 @@ void compute_cmochc_island();
 /* Configuración de la migración de elementos desde el archivo al deme */
 /* ******************************************************************* */
 #define CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE  4
+
 /* Define qué elementos son migrados */
 #define CMOCHC_COLLABORATION__MIGRATION_BEST
 //#define CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
 //#define CMOCHC_COLLABORATION__MIGRATION_NONE
-//#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
+
 /* Define cómo son incluidos los ementos al deme */
 #define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
+//#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
 
 // Cantidad máxima de soluciones (padres+hijos)
 #define MAX_POP_SOLS 2*CMOCHC_LOCAL__POPULATION_SIZE
