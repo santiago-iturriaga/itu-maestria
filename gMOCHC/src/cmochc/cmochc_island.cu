@@ -85,7 +85,9 @@ void compute_cmochc_island() {
     TIMMING_END(">> cmochc_init", ts_init);
     // Timming -----------------------------------------------------
 
+    #if defined(DEBUG_1)
     int last_iter_sols_gathered = 0;
+    #endif
 
     RAND_STATE rstate;
     RAND_INIT(INPUT.thread_count, rstate);
@@ -126,7 +128,9 @@ void compute_cmochc_island() {
             #endif
 
             if (gather() > 0) {
+                #if defined(DEBUG_1)
                 last_iter_sols_gathered = iteracion;
+                #endif
             }
 
             TIMMING_END(">> cmochc_gather", ts_gather);
@@ -691,7 +695,9 @@ void solution_migration(int thread_id) {
         #ifndef CMOCHC_COLLABORATION__MIGRATION_NONE
             if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
                 if (EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index] != -1) {
+                    #if defined(DEBUG_1)
                     COUNT_MIGRATIONS[thread_id]++;
+                    #endif
 
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
                         clone_solution(
@@ -700,7 +706,9 @@ void solution_migration(int thread_id) {
 
                         next_solution_index++;
                         migrated_solution_index++;
-                        count_solutions_migrated[thread_id]++;
+                        #if defined(DEBUG_1)
+                        COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                        #endif
                         migrated = 1;
                     #endif
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MATE
@@ -723,7 +731,9 @@ void solution_migration(int thread_id) {
 
                                 next_solution_index += 2;
                                 migrated_solution_index++;
+                                #if defined(DEBUG_1)
                                 COUNT_SOLUTIONS_MIGRATED[thread_id] += 2;
+                                #endif
                                 migrated = 1;
                             }
                         }
@@ -736,7 +746,9 @@ void solution_migration(int thread_id) {
 
                             next_solution_index++;
                             migrated_solution_index++;
+                            #if defined(DEBUG_1)
                             COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                            #endif
                             migrated = 1;
                         }
                     #endif
@@ -748,7 +760,9 @@ void solution_migration(int thread_id) {
 
                         next_solution_index++;
                         migrated_solution_index++;
+                        #if defined(DEBUG_1)
                         COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                        #endif
 
                         migrated = 1;
                     #endif
