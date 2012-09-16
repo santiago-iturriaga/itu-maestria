@@ -15,6 +15,11 @@
 #include "../archivers/aga.h"
 
 /* ************************************************** */
+/* Función que comienza la ejecución del algoritmo    */
+/* ************************************************** */
+void compute_cmochc_island();
+
+/* ************************************************** */
 /* Define el método de normalización de los objetivos */
 /* ************************************************** */
 //#define CMOCHC_LOCAL__Z_FITNESS_NORM
@@ -65,15 +70,22 @@
 #define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
 
-void compute_cmochc_island();
-
 // Cantidad máxima de soluciones (padres+hijos)
 #define MAX_POP_SOLS 2*CMOCHC_LOCAL__POPULATION_SIZE
+
+#define CMOCHC_THREAD_STATUS__IDLE 0
+#define CMOCHC_THREAD_STATUS__CHC_FROM_NEW 1
+#define CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE 2
+#define CMOCHC_THREAD_STATUS__LS 3
+#define CMOCHC_THREAD_STATUS__STOP 4
+
+#define CMOCHC_MASTER_STATUS__CHC 0
+#define CMOCHC_MASTER_STATUS__LS 1
 
 struct cmochc_thread {
     /* Id del esclavo */
     int thread_id;
-    
+       
     /* Poblacion de cada esclavo */
     struct solution population[MAX_POP_SOLS];
     int sorted_population[MAX_POP_SOLS];
@@ -101,19 +113,23 @@ extern struct cmochc_thread EA_THREADS[MAX_THREADS];
 struct cmochc_island {
     /* Coleccion de esclavos */
     pthread_t threads[MAX_THREADS];
+
+    /* Estado de cada hilo */
+    int thread_status[MAX_THREADS];
     
     /* Descomposición del frente de pareto */
     FLOAT weights[CMOCHC_PARETO_FRONT__PATCHES];
     int thread_weight_assignment[MAX_THREADS];
     int weight_thread_assignment[CMOCHC_PARETO_FRONT__PATCHES];
     
-    int stopping_condition;
-
     /* Random generator de cada esclavo y para el master */
     RAND_STATE rand_state[MAX_THREADS+1];
 
     /* Sync */
     pthread_barrier_t sync_barrier;
+    pthread_mutex_t status_cond_mutex;
+    pthread_cond_t worker_status_cond;
+    pthread_cond_t master_status_cond;
 
     /* Aux master thread memory */
     int weight_gap_count;

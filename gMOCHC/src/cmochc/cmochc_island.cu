@@ -85,63 +85,138 @@ void compute_cmochc_island() {
     TIMMING_END(">> cmochc_init", ts_init);
     // Timming -----------------------------------------------------
 
-    int rc;
-    int sols_gathered;
+    int workers_idle = 0;
     int last_iter_sols_gathered = 0;
 
     RAND_STATE rstate;
     RAND_INIT(INPUT.thread_count, rstate);
 
+    int master_status = CMOCHC_MASTER_STATUS__CHC;
+    int worker_status = 0;
+
     for (int iteracion = 0; iteracion < INPUT.max_iterations; iteracion++) {
-        /* ************************************************ */
-        /* Espero que los esclavos terminen de evolucionar  */
-        /* ************************************************ */
-        rc = pthread_barrier_wait(&EA_INSTANCE.sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
-        }
+        /* ******************************** */
+        /* Espero que los esclavos terminen */
+        /* ******************************** */
+        
+        pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
 
-        /* Incorporo las mejores soluciones al repositorio de soluciones */
-        TIMMING_START(ts_gather);
-        #if defined(DEBUG_3)
-            fprintf(stderr, "[DEBUG] CPU CHC (islands): gather\n");
-        #endif
+            workers_idle = 0;
 
-        sols_gathered = gather();
-        if (sols_gathered > 0) last_iter_sols_gathered = iteracion;
+            while (workers_idle == 0) {
+                workers_idle = 1;
 
-        #ifndef CMOCHC_PARETO_FRONT__FIXED_WEIGHTS
-            #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
-                FLOAT random;
-
-                for (int i = 0; i < INPUT.thread_count; i++) {
-                    random = RAND_GENERATE(rstate);
-                    EA_INSTANCE.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
+                for (int i = 0; (i < INPUT.thread_count) && (workers_idle == 1); i++) {
+                    #ifdef DEBUG_3
+                        fprintf(stderr, "[DEBUG] <master> EA_INSTANCE.thread_status[%d] = %d\n", i, EA_INSTANCE.thread_status[i]);
+                    #endif
+                    
+                    if (EA_INSTANCE.thread_status[i] != CMOCHC_THREAD_STATUS__IDLE) {
+                        workers_idle = 0;
+                    }
                 }
-            #endif
-            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS) || defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
-                adapt_weights_mod_arm(rstate);
-            #endif
-        #endif
 
-        TIMMING_END(">> cmochc_gather", ts_gather);
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] <master> workers_idle = %d\n", workers_idle);
+                #endif
 
+                if (workers_idle == 0) {
+                    #ifdef DEBUG_3
+                        fprintf(stderr, "[DEBUG] <master> [INICIO] pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex)\n");
+                    #endif
+                    
+                    pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex);
+                    
+                    #ifdef DEBUG_3
+                        fprintf(stderr, "[DEBUG] <master> [FIN] pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex)\n");
+                    #endif
+                }
+            }
+
+        pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
+
+        /* ************************************** */
+        /* Proceso el resultado del estado actual */
+        /* ************************************** */
+        if (master_status == CMOCHC_MASTER_STATUS__CHC) {
+
+            /* Incorporo las mejores soluciones al repositorio de soluciones */
+            TIMMING_START(ts_gather);
+            #if defined(DEBUG_3)
+                fprintf(stderr, "[DEBUG] CPU CHC (islands): gather\n");
+            #endif
+
+            if (gather() > 0) {
+                last_iter_sols_gathered = iteracion;
+            }
+
+            TIMMING_END(">> cmochc_gather", ts_gather);
+
+        } else if (master_status == CMOCHC_MASTER_STATUS__LS) {
+            
+            // TODO: .....
+            
+        }
+
+        /* ***************************** */
+        /* Configuro el siguiente estado */
+        /* ***************************** */
         if (iteracion + 1 >= INPUT.max_iterations) {
-            /* Si esta es la úlitma iteracion, les aviso a los esclavos */
-            EA_INSTANCE.stopping_condition = 1;
-        }
 
-        /* *********************************************************** */
-        /* Notifico a los esclavos que terminó la operación de gather  */
-        /* *********************************************************** */
-        rc = pthread_barrier_wait(&EA_INSTANCE.sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
+            /* Si esta es la última iteracion, les aviso a los esclavos */
+            worker_status = CMOCHC_THREAD_STATUS__STOP;
+            
+        } else {
+
+            master_status = CMOCHC_MASTER_STATUS__CHC;
+
+            if (master_status == CMOCHC_MASTER_STATUS__CHC) {
+                /* Re-configuro los pesos de búsqueda para el algoritmo CHC */
+                TIMMING_START(ts_weights);
+
+                #ifndef CMOCHC_PARETO_FRONT__FIXED_WEIGHTS
+                    #ifdef CMOCHC_PARETO_FRONT__RANDOM_WEIGHTS
+                        FLOAT random;
+
+                        for (int i = 0; i < INPUT.thread_count; i++) {
+                            random = RAND_GENERATE(rstate);
+                            EA_INSTANCE.thread_weight_assignment[i] = (int)(random * CMOCHC_PARETO_FRONT__PATCHES);
+                        }
+                    #endif
+                    #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS) || defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
+                        adapt_weights_mod_arm(rstate);
+                    #endif
+                #endif
+
+                TIMMING_END(">> ts_weights", ts_weights);
+                
+                worker_status = CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE;
+                
+            } else if (master_status == CMOCHC_MASTER_STATUS__LS) {
+                
+                // TODO: .....
+                
+            }
         }
+        
+        /* ******************************************************* */
+        /* Notifico a los esclavos que esta pronto el nuevo estado */
+        /* ******************************************************* */
+        
+        pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
+
+            for (int i = 0; i < INPUT.thread_count; i++) {
+                EA_INSTANCE.thread_status[i] = worker_status;
+            }
+
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] <master> pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond)\n");
+            #endif
+
+            pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond);
+
+        pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
+       
     }
 
     RAND_FINALIZE(rstate);
@@ -388,9 +463,6 @@ void init() {
     #endif
     fprintf(stderr, "[INFO] ========================================================\n");
 
-    /* Estado relacionado con el problema. */
-    EA_INSTANCE.stopping_condition = 0;
-
     /* Weights */
     assert(CMOCHC_PARETO_FRONT__PATCHES > 1);
 
@@ -407,28 +479,49 @@ void init() {
         for (int i = 0; i < INPUT.thread_count; i++) {
             EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
             assert(EA_INSTANCE.thread_weight_assignment[i] < CMOCHC_PARETO_FRONT__PATCHES);
-
+            
+            EA_THREADS[i].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[i];
             EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[i]] = i;
 
             #ifdef DEBUG_2
                 fprintf(stderr, "[DEBUG] thread[%d] assigned to patch %d\n", i, EA_INSTANCE.thread_weight_assignment[i]);
             #endif
+
+            EA_INSTANCE.thread_status[i] = CMOCHC_THREAD_STATUS__CHC_FROM_NEW;
         }
     } else {
         EA_INSTANCE.thread_weight_assignment[0] = CMOCHC_PARETO_FRONT__PATCHES / 2;
         assert(EA_INSTANCE.thread_weight_assignment[0] < CMOCHC_PARETO_FRONT__PATCHES);
 
+        EA_THREADS[0].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[0];
         EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[0]] = 0;
 
         #ifdef DEBUG_2
             fprintf(stderr, "[DEBUG] thread[%d] assigned to patch %d\n", 0, EA_INSTANCE.thread_weight_assignment[0]);
         #endif
+
+        EA_INSTANCE.thread_status[0] = CMOCHC_THREAD_STATUS__CHC_FROM_NEW;
     }
 
     /* Sync */
     if (pthread_barrier_init(&(EA_INSTANCE.sync_barrier), NULL, INPUT.thread_count + 1))
     {
-        fprintf(stderr, "[ERROR] could not create a sync barrier.\n");
+        fprintf(stderr, "[ERROR] could not create sync_barrier.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_mutex_init(&(EA_INSTANCE.status_cond_mutex), NULL))
+    {
+        fprintf(stderr, "[ERROR] could not create status_cond_mutex.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_cond_init(&(EA_INSTANCE.worker_status_cond), NULL))
+    {
+        fprintf(stderr, "[ERROR] could not create worker_status_cond.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_cond_init(&(EA_INSTANCE.master_status_cond), NULL))
+    {
+        fprintf(stderr, "[ERROR] could not create master_status_cond.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -704,163 +797,173 @@ void* slave_thread(void *data) {
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
 
-    /* *********************************************************************************************
-     * Inicializo los pesos.
-     * *********************************************************************************************/
-
-    EA_THREADS[thread_id].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
-    EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_THREADS[thread_id].currently_assigned_weight];
-    EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
-
-    /* *********************************************************************************************
-     * Inicializo la población.
-     * *********************************************************************************************/
-
-    chc_population_init(thread_id);
-    merge_sort(thread_id);
-
-    /* *********************************************************************************************
-     * Main iteration
-     * ********************************************************************************************* */
-
     #ifdef DEBUG_1
         fprintf(stderr, "[DEBUG] Threshold Max %d.\n", EA_THREADS[thread_id].threshold_max);
         fprintf(stderr, "[DEBUG] Threshold Step %d.\n", EA_THREADS[thread_id].threshold_step);
     #endif
-
-    int rc;
 
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
     if (EA_THREADS[thread_id].threshold_step == 0) EA_THREADS[thread_id].threshold_step = 1;
 
-    while (EA_INSTANCE.stopping_condition == 0) {
-        /* *********************************************************************************************
-         * CHC local
-         * ********************************************************************************************* */
-        chc_evolution(thread_id);
+    int status = CMOCHC_THREAD_STATUS__IDLE;
+    
+    while (status != CMOCHC_THREAD_STATUS__STOP) {
 
-        /* *********************************************************************************************
-         * Fin de iteracion local
-         * ********************************************************************************************* */
+        /* ***************************** */
+        /* Espero que me asignen trabajo */
+        /* ***************************** */
+        
+        pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
 
-        /* Copio mis mejores soluciones a la población de intercambio principal */
-        int new_sol_index;
-        int local_best_index;
-
-        for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
-            new_sol_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
-            local_best_index = EA_THREADS[thread_id].sorted_population[i];
-
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n",
-                    thread_id, local_best_index, new_sol_index);
-            #endif
-
-            clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
-            ARCHIVER.new_solutions_tag[new_sol_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
-        }
-
-        /* Le aviso al maestro que puede empezar con la operación de gather. */
-        rc = pthread_barrier_wait(&EA_INSTANCE.sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
-        }
-
-        // ..................
-
-        /* Espero a que el maestro ejecute la operación de gather. */
-        rc = pthread_barrier_wait(&EA_INSTANCE.sync_barrier);
-        if(rc != 0 && rc != PTHREAD_BARRIER_SERIAL_THREAD)
-        {
-            printf("Could not wait on barrier\n");
-            exit(EXIT_FAILURE);
-        }
-
-        if (EA_INSTANCE.stopping_condition == 0) {
-            /* Actualizo la nueva asignación de pesos y vecindad */
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f), new weights=%d (%.4f,%.4f)\n",
-                    thread_id, EA_THREADS[thread_id].currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan,
-                    EA_INSTANCE.thread_weight_assignment[thread_id],
-                    EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]],
-                    1 - EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]]);
-            #endif
-
-            //int changed_assignment;
-
-            if (EA_THREADS[thread_id].currently_assigned_weight != EA_INSTANCE.thread_weight_assignment[thread_id]) {
-                //changed_assignment = 1;
-
-                EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]];
-                EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
-            } else {
-                //changed_assignment = 0;
+            while (EA_INSTANCE.thread_status[thread_id] == CMOCHC_THREAD_STATUS__IDLE) {
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] <thread:%d> pthread_cond_wait(&EA_INSTANCE.worker_status_cond, &EA_INSTANCE.status_cond_mutex)\n", thread_id);
+                #endif
+                
+                pthread_cond_wait(&EA_INSTANCE.worker_status_cond, &EA_INSTANCE.status_cond_mutex);
             }
+            
+            status = EA_INSTANCE.thread_status[thread_id];
 
-            /* ********************************* */
-            /* Migro soluciones desde el archivo */
-            /* ********************************* */
-            solution_migration(thread_id);
+            #ifdef DEBUG_3
+                fprintf(stderr, "[DEBUG] <thread:%d> EA_INSTANCE.thread_status[%d] = %d\n", thread_id, thread_id, EA_INSTANCE.thread_status[thread_id]);
+            #endif
 
-            /* ************************************************************ */
-            /* Actualizo los puntos de normalización con la población local */
-            /* ************************************************************ */
-            for (int i = 0; i < MAX_POP_SOLS; i++) {
-                if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
-                    //makespan_utopia_index = i;
-                    EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
+        pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
+        
+        /* ****************** */
+        /* Proceso el trabajo */
+        /* ****************** */            
+        if ((status == CMOCHC_THREAD_STATUS__CHC_FROM_NEW)||(status == CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE)) {
+            
+            if (status == CMOCHC_THREAD_STATUS__CHC_FROM_NEW) {
+                
+                /* *********************************************************************************************
+                 * Inicializo los pesos.
+                 * *********************************************************************************************/
 
-                    if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
+                /* Actualizo la nueva asignación de pesos y vecindad */
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f), new weights=%d (%.4f,%.4f)\n",
+                        thread_id, EA_THREADS[thread_id].currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan,
+                        EA_INSTANCE.thread_weight_assignment[thread_id],
+                        EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]],
+                        1 - EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]]);
+                #endif
+
+                if (EA_THREADS[thread_id].currently_assigned_weight != EA_INSTANCE.thread_weight_assignment[thread_id]) {
+                    EA_THREADS[thread_id].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
+                    EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[EA_INSTANCE.thread_weight_assignment[thread_id]];
+                    EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
+                }
+
+                /* *********************************************************************************************
+                 * Inicializo la población.
+                 * *********************************************************************************************/
+
+                chc_population_init(thread_id);
+                
+            } else if (status == CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE) {
+
+                /* ********************************* */
+                /* Migro soluciones desde el archivo */
+                /* ********************************* */
+                solution_migration(thread_id);
+
+                /* ************************************************************ */
+                /* Actualizo los puntos de normalización con la población local */
+                /* ************************************************************ */
+                for (int i = 0; i < MAX_POP_SOLS; i++) {
+                    if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
+
+                        if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
+                        }
+                    }
+                    if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
+
+                        if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
+                        }
                     }
                 }
-                if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
-                    //energy_utopia_index = i;
-                    EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
 
-                    if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
-                    }
+                /* *********************************************************************************************
+                 * Re-calculo el fitness de toda la población
+                 *********************************************************************************************** */
+
+                for (int i = 0; i < MAX_POP_SOLS; i++) {
+                    EA_THREADS[thread_id].fitness_population[i] = NAN;
+                    fitness(thread_id, i);
                 }
             }
 
             /* *********************************************************************************************
-             * Re-calculo el fitness de toda la población
+             * Sort the population
              *********************************************************************************************** */
-
-            for (int i = 0; i < MAX_POP_SOLS; i++) {
-                EA_THREADS[thread_id].fitness_population[i] = NAN;
-                fitness(thread_id, i);
-            }
-
-            /* *********************************************************************************************
-             * Re-sort de population
-             *********************************************************************************************** */
+             
             merge_sort(thread_id);
+            
+            /* *********************************************************************************************
+             * CHC evolution
+             * ********************************************************************************************* */
+             
+            chc_evolution(thread_id);
+            
+            /* *********************************************************************************************
+             * Fin de la evolución
+             * ********************************************************************************************* */
 
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Post-migration population\n");
-                fprintf(stderr, "parents> ");
-                for (int i = 0; i < CMOCHC_LOCAL__POPULATION_SIZE; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", EA_THREADS[thread_id].sorted_population[i],
-                        EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]],
-                        EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized);
-                }
-                fprintf(stderr, "\n");
-                fprintf(stderr, "childs > ");
-                for (int i = CMOCHC_LOCAL__POPULATION_SIZE; i < MAX_POP_SOLS; i++) {
-                    fprintf(stderr, "%d(%f)<%d>  ", EA_THREADS[thread_id].sorted_population[i],
-                        EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]],
-                        EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized);
-                }
-                fprintf(stderr, "\n");
-            #endif
+            /* Copio mis mejores soluciones a la población de intercambio principal */
+            int new_sol_index;
+            int local_best_index;
+
+            for (int i = 0; i < CMOCHC_LOCAL__BEST_SOLS_KEPT; i++) {
+                new_sol_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
+                local_best_index = EA_THREADS[thread_id].sorted_population[i];
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n",
+                        thread_id, local_best_index, new_sol_index);
+                #endif
+
+                clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
+                ARCHIVER.new_solutions_tag[new_sol_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
+            }
+            
+        } else if (status == CMOCHC_THREAD_STATUS__LS) {
+            
+            // TODO: ............
+            
+        } 
+        
+        if (status != CMOCHC_THREAD_STATUS__STOP) {
+            /* *************************** */
+            /* Aviso al master que terminé */
+            /* *************************** */
+            
+            pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
+
+                EA_INSTANCE.thread_status[thread_id] = CMOCHC_THREAD_STATUS__IDLE;
+                status = CMOCHC_THREAD_STATUS__IDLE;
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] <thread:%d> IDLE! EA_INSTANCE.thread_status[%d] = %d\n", thread_id, thread_id, EA_INSTANCE.thread_status[thread_id]);
+                #endif
+
+                #ifdef DEBUG_3
+                    fprintf(stderr, "[DEBUG] <thread:%d> pthread_cond_signal(&EA_INSTANCE.master_status_cond)\n", thread_id);
+                #endif
+                
+                pthread_cond_signal(&EA_INSTANCE.master_status_cond);
+
+            pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
         }
-    }
+    }          
 
     // ================================================================
     // Finalizo el thread.
