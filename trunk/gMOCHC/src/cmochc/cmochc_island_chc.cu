@@ -23,35 +23,43 @@ void chc_population_init(int thread_id) {
 
         compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
 
+        EA_THREADS[thread_id].fitness_population[i] = NAN;
+
         if (i == 0) {
             EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
             EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].makespan_zenith_value;
-            //makespan_utopia_index = i;
 
             EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
             EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].energy_zenith_value;
-            //energy_utopia_index = i;
         } else {
             #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
                 mutate(EA_INSTANCE.rand_state[thread_id], &EA_THREADS[thread_id].population[i], &EA_THREADS[thread_id].population[i]);
             #endif
 
             if (EA_THREADS[thread_id].population[i].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
-                //makespan_utopia_index = i;
                 EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
-
-                if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-                    EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
-                }
             }
+            if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
+            }
+
             if (EA_THREADS[thread_id].population[i].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
-                //energy_utopia_index = i;
                 EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
-
-                if (EA_THREADS[thread_id].population[i].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-                    EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[i].makespan;
-                }
             }
+            if (EA_THREADS[thread_id].population[i].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[i].energy_consumption;
+            }
+            
+            //#ifdef DEBUG_3            
+                fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f[z=%.2f|n=%.2f] energy=%.2f[z=%.2f|n=%.2f]\n",
+                    thread_id, i, 
+                    EA_THREADS[thread_id].population[i].makespan, 
+                    EA_THREADS[thread_id].makespan_zenith_value,
+                    EA_THREADS[thread_id].makespan_nadir_value,
+                    EA_THREADS[thread_id].population[i].energy_consumption,
+                    EA_THREADS[thread_id].energy_zenith_value,
+                    EA_THREADS[thread_id].energy_nadir_value);
+            //#endif
         }
     }
 
@@ -71,7 +79,8 @@ void chc_population_init(int thread_id) {
         #ifdef DEBUG_3
             fprintf(stderr, "[DEBUG] Thread %d, solution=%d makespan=%.2f energy=%.2f fitness=%.2f\n",
                 thread_id, i, EA_THREADS[thread_id].population[i].makespan, 
-                EA_THREADS[thread_id].population[i].energy_consumption, fitness(thread_id, i));
+                EA_THREADS[thread_id].population[i].energy_consumption, 
+                fitness(thread_id, i));
         #endif
     }
 }
@@ -79,6 +88,7 @@ void chc_population_init(int thread_id) {
 void chc_evolution(int thread_id) {
     FLOAT random;
 
+    int ref_point_changed;
     int threshold;
     int next_avail_children;
 
@@ -88,6 +98,7 @@ void chc_evolution(int thread_id) {
     int c1_idx, c2_idx;
     
     threshold = EA_THREADS[thread_id].threshold_max;
+    ref_point_changed = 0;
     
     for (int iteracion = 0; iteracion < CMOCHC_LOCAL__ITERATION_COUNT; iteracion++) {
         #ifdef DEBUG_1
@@ -130,10 +141,59 @@ void chc_evolution(int thread_id) {
                     EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
                     EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
 
-                    fitness(thread_id, c1_idx);
-                    fitness(thread_id, c2_idx);
+                    // Evalúo el cambio en el pto. de referencia (Zenith/Nadir)
+                    if (EA_THREADS[thread_id].population[p1_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p1_idx].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p1_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p1_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p1_idx].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p1_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p2_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p2_idx].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p2_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p2_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p2_idx].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[p2_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
+                        ref_point_changed = 1;
+                    }
 
                     #ifdef DEBUG_1
+                        // Si cambió el punto de referencia, actualizo todos los fitness
+                        if (ref_point_changed == 0) {
+                            fitness(thread_id, c1_idx);
+                            fitness(thread_id, c2_idx);
+                        } else {
+                            ref_point_changed = 0;
+                            
+                            fitness_reset(thread_id);
+                            fitness_all(thread_id);
+                        }
+                    
                         if ((EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
                             ||(EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])
                             ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
@@ -149,6 +209,16 @@ void chc_evolution(int thread_id) {
         }
 
         if (next_avail_children > CMOCHC_LOCAL__POPULATION_SIZE) {
+            // Si cambió el punto de referencia, actualizo todos los fitness
+            if (ref_point_changed == 1) {
+                ref_point_changed = 0;
+                
+                fitness_reset(thread_id);
+                fitness_all(thread_id);
+            } else {
+                fitness_all(thread_id);
+            }
+            
             /* *********************************************************************************************
              * Sort parent+children population
              * ********************************************************************************************* */
@@ -194,30 +264,71 @@ void chc_evolution(int thread_id) {
                 fprintf(stderr, "[DEBUG] Cataclysm (thread=%d)!\n", thread_id);
             #endif
 
-            int aux_index;
+            int aux_index, current_index;
+            ref_point_changed = 0;
 
             for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT; i < MAX_POP_SOLS; i++) { /* No muto las mejores soluciones */
-                if (EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]].initialized == SOLUTION__IN_USE) {
+                current_index = EA_THREADS[thread_id].sorted_population[i];
+            
+                if (EA_THREADS[thread_id].population[current_index].initialized == SOLUTION__IN_USE) {
                     #ifdef DEBUG_1
                         COUNT_CATACLYSM[thread_id]++;
-                        pre_mut_fitness = fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
+                        pre_mut_fitness = fitness(thread_id, current_index);
                     #endif
 
                     aux_index = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
 
+                    /* Muto la solución */
                     mutate(EA_INSTANCE.rand_state[thread_id],
                         &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[aux_index]],
-                        &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[i]]);
+                        &EA_THREADS[thread_id].population[current_index]);
 
-                    EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] = NAN;
-                    fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]);
+                    EA_THREADS[thread_id].fitness_population[current_index] = NAN;
+                    
+                    /* Chequeo si cambió el punto de referencia */
+                    if (EA_THREADS[thread_id].population[current_index].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[current_index].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[current_index].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[current_index].energy_consumption;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[current_index].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[current_index].makespan;
+                        ref_point_changed = 1;
+                    }
+                    
+                    if (EA_THREADS[thread_id].population[current_index].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[current_index].energy_consumption;
+                        ref_point_changed = 1;
+                    }
 
                     #ifdef DEBUG_1
-                        if (EA_THREADS[thread_id].fitness_population[EA_THREADS[thread_id].sorted_population[i]] < pre_mut_fitness) {
+                        if (ref_point_changed == 0) {
+                            fitness(thread_id, current_index);
+                        } else {
+                            fitness_reset(thread_id);
+                            fitness_all(thread_id);
+                        }
+                    
+                        if (EA_THREADS[thread_id].fitness_population[current_index] <= pre_mut_fitness) {
                             COUNT_IMPOVED_CATACLYSM[thread_id]++;
                         }
                     #endif
                 }
+            }
+
+            // Si cambió el punto de referencia, actualizo todos los fitness
+            if (ref_point_changed == 1) {
+                ref_point_changed = 0;
+                
+                fitness_reset(thread_id);
+                fitness_all(thread_id);
+            } else {
+                fitness_all(thread_id);
             }
 
             /* Re-sort de population */
