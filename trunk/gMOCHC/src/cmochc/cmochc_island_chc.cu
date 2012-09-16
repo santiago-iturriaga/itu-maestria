@@ -129,7 +129,9 @@ void chc_evolution(int thread_id) {
 
                 if (d > threshold) {
                     // Aplico HUX y creo dos hijos
+                    #if defined(DEBUG_1)
                     COUNT_CROSSOVER[thread_id]++;
+                    #endif
 
                     c1_idx = EA_THREADS[thread_id].sorted_population[next_avail_children];
                     c2_idx = EA_THREADS[thread_id].sorted_population[next_avail_children+1];
