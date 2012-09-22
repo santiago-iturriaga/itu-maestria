@@ -40,14 +40,15 @@ struct aga_state {
     
     struct solution new_solutions[ARCHIVER__MAX_NEW_SOLS];
     int new_solutions_tag[ARCHIVER__MAX_NEW_SOLS];
-    int new_solutions_size;
 };
 
 extern struct aga_state ARCHIVER;
 
-void archivers_aga_init(int new_solutions_size, int tag_size);
-void archivers_aga_free();
-int archivers_aga();
+void archivers_aga_init(int tag_size);
+void archivers_aga_free(int new_solutions_size);
+
+int archivers_aga(int new_solutions_size);
+
 void archivers_aga_show();
 void archivers_aga_dump();
 

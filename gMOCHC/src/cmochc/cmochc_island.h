@@ -54,7 +54,9 @@ void compute_cmochc_island();
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  4
 /* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR local iterations without change */
 #define CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR 15
+//#define CMOCHC_LOCAL__MATING_CHANCE         256
 #define CMOCHC_LOCAL__MATING_CHANCE         2
+//#define CMOCHC_LOCAL__MUTATE_CHANCE         256 
 #define CMOCHC_LOCAL__MUTATE_CHANCE         4
 
 /* ******************************************************************* */
@@ -98,7 +100,7 @@ struct cmochc_thread {
 
     //int currently_assigned_weight;
     FLOAT weight_makespan;
-    FLOAT energy_makespan;
+    FLOAT weight_energy;
 
     FLOAT makespan_zenith_value, energy_zenith_value;
     FLOAT makespan_nadir_value, energy_nadir_value;
@@ -127,6 +129,9 @@ struct cmochc_island {
     
     /* Random generator de cada esclavo y para el master */
     RAND_STATE rand_state[MAX_THREADS+1];
+    
+    /* Archiver */
+    int arhiver_new_pop_size;
 
     /* Sync */
     pthread_barrier_t sync_barrier;

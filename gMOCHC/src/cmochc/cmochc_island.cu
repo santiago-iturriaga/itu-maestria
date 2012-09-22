@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "cmochc_island.h"
-
+#include "cmochc_island_pals.h"
 #include "cmochc_island_utils.h"
 #include "cmochc_island_chc.h"
 
@@ -446,6 +446,10 @@ void init() {
     #ifdef CMOCHC_COLLABORATION__MIGRATION_NONE
         fprintf(stderr, "NONE\n");
     #endif
+
+    fprintf(stderr, "       PALS__MAX_TASK_SEL_DIV                      : %d\n", PALS__MAX_TASK_SEL_DIV);
+    fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);
+    
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Weights */
@@ -527,7 +531,9 @@ void init() {
     }
 
     /* Inicializo el archivador */
-    archivers_aga_init(INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT, CMOCHC_PARETO_FRONT__PATCHES);
+    EA_INSTANCE.arhiver_new_pop_size = INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT;
+    
+    archivers_aga_init(CMOCHC_PARETO_FRONT__PATCHES);
 }
 
 /* Obtiene los mejores elementos de cada población */
@@ -537,20 +543,22 @@ int gather() {
         fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
 
         int cantidad = 0;
-        for (int i = 0; i < ARCHIVER.new_solutions_size; i++) {
-            if (ARCHIVER.new_solutions[i].initialized == 1) cantidad++;
+        for (int i = 0; i < ARCHIVER__MAX_NEW_SOLS; i++) {
+            if (ARCHIVER.new_solutions[i].initialized == 1) {
+                cantidad++;
 
-            fprintf(stderr, "> %d state=%d makespan=%f energy=%f\n",
-                i, ARCHIVER.new_solutions[i].initialized,
-                ARCHIVER.new_solutions[i].makespan,
-                ARCHIVER.new_solutions[i].energy_consumption);
+                fprintf(stderr, "> %d state=%d makespan=%f energy=%f\n",
+                    i, ARCHIVER.new_solutions[i].initialized,
+                    ARCHIVER.new_solutions[i].makespan,
+                    ARCHIVER.new_solutions[i].energy_consumption);
+            }
         }
 
         assert(cantidad > 0);
     #endif
 
     int new_solutions;
-    new_solutions = archivers_aga();
+    new_solutions = archivers_aga(EA_INSTANCE.arhiver_new_pop_size);
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Total solutions gathered      = %d\n", new_solutions);
@@ -799,6 +807,9 @@ void* slave_thread(void *data) {
         fprintf(stderr, "[DEBUG] Threshold Step %d.\n", EA_THREADS[thread_id].threshold_step);
     #endif
 
+    /* Inicializo la busqueda local */
+    pals_init(thread_id);
+
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
@@ -837,11 +848,11 @@ void* slave_thread(void *data) {
 
         currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
         EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[currently_assigned_weight];
-        EA_THREADS[thread_id].energy_makespan = 1 - EA_THREADS[thread_id].weight_makespan;
+        EA_THREADS[thread_id].weight_energy = 1 - EA_THREADS[thread_id].weight_makespan;
 
         #ifdef DEBUG_3
             fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f)\n",
-                thread_id, currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].energy_makespan);
+                thread_id, currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].weight_energy);
         #endif
         
         /* ****************** */
@@ -960,7 +971,11 @@ void* slave_thread(void *data) {
     // Finalizo el thread.
     // ================================================================
 
+    /* Finalizo el generador de numeros aleatorios */
     RAND_FINALIZE(EA_INSTANCE.rand_state[thread_id]);
+    
+    /* Finalizo la búsqueda local */
+    pals_free(thread_id);
 
     for (int p = 0; p < MAX_POP_SOLS; p++) {
         free_solution(&EA_THREADS[thread_id].population[p]);
@@ -977,6 +992,23 @@ void display_results() {
 
     #ifdef DEBUG_1
         archivers_aga_show();
+        
+        FLOAT aux;
+        for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
+            if (ARCHIVER.population[i].initialized == 1) {
+                aux = ARCHIVER.population[i].machine_compute_time[0];
+                for (int j = 1; j < INPUT.machines_count; j++) {
+                    if (ARCHIVER.population[i].machine_compute_time[j] > aux) {
+                        aux = ARCHIVER.population[i].machine_compute_time[j];
+                    }
+                }
+                
+                fprintf(stderr, "> %d state=%d makespan=%f(%f) energy=%f\n",
+                    i, ARCHIVER.new_solutions[i].initialized,
+                    ARCHIVER.population[i].makespan, aux,
+                    ARCHIVER.population[i].energy_consumption);
+            }
+        }
 
         int count_generations = 0;
         int count_at_least_one_children_inserted = 0;
@@ -987,6 +1019,9 @@ void display_results() {
         int count_improved_mutation = 0;
         int count_migrations = 0;
         int count_solutions_migrated = 0;
+        int count_pals = 0;
+        int count_pals_improv = 0;
+        int count_pals_decline = 0;
 
         for (int t = 0; t < INPUT.thread_count; t++) {
             count_generations += COUNT_GENERATIONS[t];
@@ -998,6 +1033,9 @@ void display_results() {
             count_improved_mutation += COUNT_IMPOVED_CATACLYSM[t];
             count_migrations += COUNT_MIGRATIONS[t];
             count_solutions_migrated += COUNT_SOLUTIONS_MIGRATED[t];
+            count_pals += CHC_PALS_COUNT_EXECUTIONS[t];
+            count_pals_improv += CHC_PALS_COUNT_FITNESS_IMPROV[t];
+            count_pals_decline += CHC_PALS_COUNT_FITNESS_DECLINE[t];
         }
 
         int *count_pf_found;
@@ -1028,7 +1066,12 @@ void display_results() {
         fprintf(stderr, "       count_migrations                     : %d\n", count_migrations);
         fprintf(stderr, "       count_solutions_migrated             : %d (%.2f %%)\n", count_solutions_migrated,
             ((FLOAT)count_solutions_migrated/(FLOAT)count_migrations)*100);
-
+        fprintf(stderr, "       count_pals                           : %d\n", count_pals);
+        fprintf(stderr, "       count_pals_improvments               : %d (%.2f %%)\n", count_pals_improv,
+            ((FLOAT)count_pals_improv/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_decline                   : %d (%.2f %%)\n", count_pals_decline,
+            ((FLOAT)count_pals_decline/(FLOAT)count_pals)*100);
+                        
         fprintf(stderr, "       archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             fprintf(stderr, "          [%d] = %d\n", t, ARCHIVER.tag_count[t]);
@@ -1047,6 +1090,6 @@ void display_results() {
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize() {
-    archivers_aga_free();
+    archivers_aga_free(EA_INSTANCE.arhiver_new_pop_size);
     pthread_barrier_destroy(&(EA_INSTANCE.sync_barrier));
 }
