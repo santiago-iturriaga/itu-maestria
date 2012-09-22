@@ -16,6 +16,7 @@
 #define SOLUTION__NOT_INITIALIZED -1
 #define SOLUTION__EMPTY 0
 #define SOLUTION__IN_USE 1
+
 #define SOLUTION__TASK_NOT_ASSIGNED -1
 
 struct solution {
@@ -57,9 +58,21 @@ inline void refresh_solution(struct solution *sol) {
 
     for (int machine = 0; machine < INPUT.machines_count; machine++) {
         sol->machine_energy_consumption[machine] = sol->makespan * get_scenario_energy_idle(machine);
+        sol->machine_energy_consumption[machine] += sol->machine_compute_time[machine] * 
+            (get_scenario_energy_max(machine) - get_scenario_energy_idle(machine));
+        
         sol->energy_consumption += sol->machine_energy_consumption[machine];
     }
-
+    
+    #ifdef DEBUG_3
+        FLOAT aux;
+        aux = 0;
+        for (int m = 0; m < INPUT.machines_count; m++) {
+            aux += sol->machine_energy_consumption[m];
+        }
+        assert(sol->energy_consumption == aux);
+    #endif
+    /*
     FLOAT task_energy_consumption;
     for (int task = 0; task < INPUT.tasks_count; task++) {
         int machine = sol->task_assignment[task];
@@ -69,6 +82,7 @@ inline void refresh_solution(struct solution *sol) {
         sol->machine_energy_consumption[machine] += task_energy_consumption;
         sol->energy_consumption += task_energy_consumption;
     }
+    * */
 }
 
 #endif
