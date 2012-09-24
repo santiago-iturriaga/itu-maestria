@@ -15,141 +15,142 @@
 int main(int argc, char *argv[])
 {
 
-	if (argc < 6)
-	{
-		printf("Sintaxis: %s <scenario> <workload> <archivo_sol> <#tasks> <#machines>\n", argv[0]);
-		exit(1);
-	}
+    if (argc < 6)
+    {
+        printf("Sintaxis: %s <scenario> <workload> <archivo_sol> <#tasks> <#machines>\n", argv[0]);
+        exit(1);
+    }
 
-	char *arch_scenario = argv[1];
-	char *arch_workload = argv[2];
-	char *arch_sol = argv[3];
-	int NT = atoi(argv[4]);
-	int NM = atoi(argv[5]);
+    char *arch_scenario = argv[1];
+    char *arch_workload = argv[2];
+    char *arch_sol = argv[3];
+    int NT = atoi(argv[4]);
+    int NM = atoi(argv[5]);
 
-	FILE *fscenario, *fworkload, *fsolucion;
-	
-	if((fscenario = fopen(arch_scenario, "r"))==NULL)
-	{
-		printf("No se puede leer archivo de scenario %s\n", arch_scenario);
-		exit(1);
-	}
-	
-	if((fworkload = fopen(arch_workload, "r"))==NULL)
-	{
-		printf("No se puede leer archivo de workload %s\n", arch_workload);
-		exit(1);
-	}
+    FILE *fscenario, *fworkload, *fsolucion;
 
-	if((fsolucion = fopen(arch_sol, "r"))==NULL)
-	{
-		printf("No se puede leer archivo de solucion %s\n", arch_sol);
-		exit(1);
-	}
+    if((fscenario = fopen(arch_scenario, "r"))==NULL)
+    {
+        printf("No se puede leer archivo de scenario %s\n", arch_scenario);
+        exit(1);
+    }
 
-	int i,j;
-	int solution_count;
+    if((fworkload = fopen(arch_workload, "r"))==NULL)
+    {
+        printf("No se puede leer archivo de workload %s\n", arch_workload);
+        exit(1);
+    }
 
-	fscanf(fsolucion,"%d",&solution_count);
-	//printf("#solutions: %d\n",solution_count);
+    if((fsolucion = fopen(arch_sol, "r"))==NULL)
+    {
+        printf("No se puede leer archivo de solucion %s\n", arch_sol);
+        exit(1);
+    }
 
-	float **ETC = (float **) malloc(sizeof(float *)*NT);
+    int i,j;
+    int solution_count;
 
-	if (ETC == NULL)
-	{
-		printf("Error al reservar memoria para ETC, dimensiones %dx%d\n",NT,NM);
-		exit(2);
-	}
+    fscanf(fsolucion,"%d",&solution_count);
+    //printf("#solutions: %d\n",solution_count);
 
-	for (i=0;i<NT;i++)
-	{
-		ETC[i] = (float *) malloc(sizeof(float)*NM);
-		if (ETC[i] == NULL)
-		{
-			printf("Error al reservar memoria para fila %d de ETC\n",i);
-			exit(2);
-		}
-	}
+    float **ETC = (float **) malloc(sizeof(float *)*NT);
 
-	int *cores = (int*)malloc(sizeof(int) * NM);
-	float *ssj = (float*)malloc(sizeof(float) * NM);
-	float *energy_idle = (float*)malloc(sizeof(float) * NM);
-	float *energy_max = (float*)malloc(sizeof(float) * NM);
+    if (ETC == NULL)
+    {
+        printf("Error al reservar memoria para ETC, dimensiones %dx%d\n",NT,NM);
+        exit(2);
+    }
 
-	for (j=0;j<NM;j++)
-	{
-		fscanf(fscenario,"%d %f %f %f\n",&cores[j],&ssj[j],&energy_idle[j],&energy_max[j]);
-	}
+    for (i=0;i<NT;i++)
+    {
+        ETC[i] = (float *) malloc(sizeof(float)*NM);
+        if (ETC[i] == NULL)
+        {
+            printf("Error al reservar memoria para fila %d de ETC\n",i);
+            exit(2);
+        }
+    }
 
-	float aux_etc;
-	
-	for (i=0;i<NT;i++)
-	{
-		for (j=0;j<NM;j++)
-		{
-			fscanf(fworkload,"%f",&aux_etc);
-            ETC[i][j] = aux_etc / (ssj[j] / (cores[j] * 1000));
-		}
-	}
+    int *cores = (int*)malloc(sizeof(int) * NM);
+    float *ssj = (float*)malloc(sizeof(float) * NM);
+    float *energy_idle = (float*)malloc(sizeof(float) * NM);
+    float *energy_max = (float*)malloc(sizeof(float) * NM);
 
-	fclose(fworkload);
-	fclose(fscenario);
+    for (j=0;j<NM;j++)
+    {
+        fscanf(fscenario,"%d %f %f %f\n",&cores[j],&ssj[j],&energy_idle[j],&energy_max[j]);
+    }
 
-	int *asig= (int*) malloc(sizeof(float)*NT);
-	float *mach = (float *) malloc(sizeof(float)*NM);
-	
-	for (int s_idx = 0; s_idx < solution_count; s_idx++) {
-		// Array de maquinas, almacena el MAT
-		for (j=0;j<NM;j++)
-		{
-			mach[j]=0.0;
-		}
+    float aux_etc;
 
-		// Array de asignaciones
-		for (i=0;i<NT;i++)
-		{
-			asig[i]=NO_ASIG;
-		}
-		
-		for (i=0;i<NT;i++)
-		{
-			fscanf(fsolucion,"%d ",&asig[i]);
-		}
+    for (i=0;i<NT;i++)
+    {
+        for (j=0;j<NM;j++)
+        {
+            fscanf(fworkload,"%f",&aux_etc);
+            //ETC[i][j] = aux_etc / (ssj[j] / (cores[j] * 1000));
+            ETC[i][j] = aux_etc / ssj[j];
+        }
+    }
 
-		for (i=0;i<NT;i++)
-		{
-			if (asig[i]==NO_ASIG)
-			{
-				printf("ERROR!!! tarea %d no asignada!!!\n", i);
-				exit(1);
-			}
-		}
+    fclose(fworkload);
+    fclose(fscenario);
 
-		int maq;
+    int *asig= (int*) malloc(sizeof(float)*NT);
+    float *mach = (float *) malloc(sizeof(float)*NM);
 
-		for(i=0;i<NT;i++)
-		{
-			maq = asig[i];
-			mach[maq] = mach[maq]+ETC[i][maq];
-		}
+    for (int s_idx = 0; s_idx < solution_count; s_idx++) {
+        // Array de maquinas, almacena el MAT
+        for (j=0;j<NM;j++)
+        {
+            mach[j]=0.0;
+        }
 
-		float makespan = 0.0;
-		for (j=0;j<NM;j++)
-		{
-			if (mach[j]>makespan)
-			{
-				makespan = mach[j];
-			}
-		}
-		
-		float energy = 0.0;
-		for (j=0;j<NM;j++)
-		{
-			energy += (mach[j] * energy_max[j]) + ((makespan - mach[j]) * energy_idle[j]);
-		}		
+        // Array de asignaciones
+        for (i=0;i<NT;i++)
+        {
+            asig[i]=NO_ASIG;
+        }
 
-		printf("%f %f\n",makespan, energy);
-	}
-	
-	fclose(fsolucion);
+        for (i=0;i<NT;i++)
+        {
+            fscanf(fsolucion,"%d ",&asig[i]);
+        }
+
+        for (i=0;i<NT;i++)
+        {
+            if (asig[i]==NO_ASIG)
+            {
+                printf("ERROR!!! tarea %d no asignada!!!\n", i);
+                exit(1);
+            }
+        }
+
+        int maq;
+
+        for(i=0;i<NT;i++)
+        {
+            maq = asig[i];
+            mach[maq] = mach[maq]+ETC[i][maq];
+        }
+
+        float makespan = 0.0;
+        for (j=0;j<NM;j++)
+        {
+            if (mach[j]>makespan)
+            {
+                makespan = mach[j];
+            }
+        }
+
+        float energy = 0.0;
+        for (j=0;j<NM;j++)
+        {
+            energy += (mach[j] * energy_max[j]) + ((makespan - mach[j]) * energy_idle[j]);
+        }
+
+        printf("%f %f\n",makespan, energy);
+    }
+
+    fclose(fsolucion);
 }
