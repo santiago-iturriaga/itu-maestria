@@ -337,9 +337,7 @@ def full_dimensiones():
 
         for j in range(len(SCENARIOS)):
             #print str(SCENARIOS[j]) + " ",
-            
-            print "%s %s" % (len(aga[i][2][j]), len(adhoc[i][2][j]))
-            
+                       
             kw = kruskalwallis.kruskalwallis([aga[i][2][j],adhoc[i][2][j]], ignoreties = False)
         
             index = len(chi2_g1)-1
@@ -353,7 +351,6 @@ def full_dimensiones():
             
             if h0_rechazada:
                 #print "(se rechaza H0 con un p-value %f)" % (chi2_g1[index][0])
-                
                 if mean(aga[i][2][j]) > mean(adhoc[i][2][j]):
                     best_aga = best_aga + 1
                 else:
