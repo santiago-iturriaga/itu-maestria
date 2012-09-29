@@ -14,7 +14,6 @@ struct cpu_mt_state {
     unsigned long long mt[NN];
     /* mti==NN+1 means mt[NN] is not initialized */
     int mti;
-
 };
 
 void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state);

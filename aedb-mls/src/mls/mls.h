@@ -1,92 +1,54 @@
 #include <pthread.h>
-#include <semaphore.h>
 
 #include "../config.h"
 #include "../solution.h"
+#include "../random/cpu_mt.h"
 
 #ifndef MLS__H_
 #define MLS__H_
 
 // Configuracion
-#define MLS__THREAD_ITERATIONS       650
-#define MLS__THREAD_RE_WORK_FACTOR   14
+#define MLS__THREAD_FIXED_ITERS     250
+#define MLS__THREAD_RANDOM_ITERS    250
 
 // Constantes
-#define MLS__INIT                0
-#define MLS__SEARCH              1
-#define MLS__EXIT                3
+#define MLS__INIT       0
+#define MLS__SEARCH     1
+#define MLS__EXIT       3
 
 struct mls_instance {
     // Referencia a los threads del disponibles.
-    pthread_t *threads;
-    struct mls_thread_arg *threads_args;
+    pthread_t threads[MLS__MAX_THREADS];
+    int threads_id[MLS__MAX_THREADS];
+    int work_type[MLS__MAX_THREADS];
 
-    struct solution *population;
-    int population_count;
-    int population_max_size;
+    struct solution population[MLS__MAX_THREADS];
 
-    struct aga_state *archiver_state;
-
-    int work_type;
-    int global_total_iterations;
-
-    pthread_mutex_t     population_mutex;
-    pthread_barrier_t   sync_barrier;
+    pthread_mutex_t work_type_mutex[MLS__MAX_THREADS];
+    pthread_barrier_t sync_barrier;
 
     // Estado de los generadores aleatorios.
-    struct cpu_mt_state *random_states;
+    struct cpu_mt_state random_states[MLS__MAX_THREADS];
+
+    // Condicion de parada
+    int max_iterations;
 
     // Parámetros de ejecución.
     int count_threads;
-};
-
-struct mls_thread_arg {
-    // Id del thread actual.
-    int thread_idx;
-
-    int count_threads;
-    int *work_type;
-    int *global_total_iterations;
-    int max_iterations;
-
-    // Comunicación con el thread actual.
-    struct solution *population;
-    int *population_count;
-    int population_max_size;
-
-    struct aga_state *archiver_state;
-
-    pthread_mutex_t     *population_mutex;
-    pthread_barrier_t   *sync_barrier;
-
-    // Estado del generador aleatorio para el thread actual.
-    struct cpu_mt_state *thread_random_state;
 
     // Statics
-    int total_iterations;
-    int total_soluciones_no_evolucionadas;
-    int total_soluciones_evolucionadas_dominadas;
-    int total_re_iterations;
+    int total_iterations[MLS__MAX_THREADS];
+    
+    // MPI
+    int mpi_buffer_size;
+    char *mpi_recv_buffer;
 };
+
+extern struct mls_instance MLS;
 
 /*
  * Ejecuta el algoritmo.
  */
 void mls();
-
-/*
- * Reserva e inicializa la memoria con los datos del problema.
- */
-void mls_init(int seed, struct mls_instance &empty_instance);
-
-/*
- * Libera la memoria pedida durante la inicialización.
- */
-void mls_finalize(struct mls_instance &instance);
-
-/*
- * Ejecuta un hilo de la búsqueda.
- */
-void* mls_thread(void *thread_arg);
 
 #endif /* MLS__H_ */

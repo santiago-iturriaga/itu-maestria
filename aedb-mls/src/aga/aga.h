@@ -1,5 +1,5 @@
+#include "../config.h"
 #include "../solution.h"
-#include "../mls/mls.h"
 
 #ifndef AGA__H_
 #define AGA__H_
@@ -13,6 +13,8 @@
 /* About the maximum size of an integer for your compiler. */
 #define ARCHIVER__AGA_LARGE 2000000000
 
+#define ARCHIVER__AGA_MAX_LOCATIONS (ARCHIVER__AGA_DEPTH * OBJECTIVES) * (ARCHIVER__AGA_DEPTH * OBJECTIVES)
+
 struct aga_state {
     int max_locations; // Number of locations in grid.
     
@@ -20,12 +22,18 @@ struct aga_state {
     double gl_range[OBJECTIVES];
     double gl_largest[OBJECTIVES];
     
-    int *grid_pop;
-    int *grid_sol_loc;
+    int grid_pop[ARCHIVER__AGA_MAX_LOCATIONS+1];
+    int grid_sol_loc[AGA__MAX_ARCHIVE_SIZE];
+    
+    struct solution population[AGA__MAX_ARCHIVE_SIZE];
+    int population_count;
 };
 
-void archivers_aga_init(struct mls_instance *instance);
-void archivers_aga_free(struct mls_instance *instance);
-int archivers_aga(struct mls_thread_arg *instance, int new_solution_pos);
+extern struct aga_state AGA;
 
+/*
+ * Ejecuta el algoritmo.
+ */
+void archivers_aga();
+    
 #endif // AGA__H_
