@@ -49,6 +49,6 @@ extern struct mls_instance MLS;
 /*
  * Ejecuta el algoritmo.
  */
-void mls();
+void mls(int seed);
 
 #endif /* MLS__H_ */

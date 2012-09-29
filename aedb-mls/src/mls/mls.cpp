@@ -30,10 +30,8 @@ void mls_finalize();
  */
 void* mls_thread(void *data);
 
-void mls()
+void mls(int seed)
 {
-    int seed = 0;
-
     // Inicializo la memoria y los hilos de ejecucion.
     mls_init(seed);
 
@@ -79,11 +77,11 @@ void mls_init(int seed)
 
     // =========================================================================
     // Inicializo MPI
-    MLS.mpi_buffer_size = sizeof(struct solution) * (MLS.count_threads+1) * MPI_BSEND_OVERHEAD;
+    MLS.mpi_buffer_size = sizeof(struct solution) * (2 * MLS.count_threads) * MPI_BSEND_OVERHEAD;
     MLS.mpi_recv_buffer = (char*)malloc(MLS.mpi_buffer_size);
     
     #ifndef NDEBUG
-        fprintf(stderr, "[INFO][%d] MPI buffer = %d bytes\n", world_rank, MLS.mpi_buffer_size);
+        fprintf(stderr, "[INFO][%d] MPI buffer = %d soluciones (%d bytes)\n", world_rank, MLS.count_threads+1, MLS.mpi_buffer_size);
     #endif
     
     MPI_Buffer_attach(MLS.mpi_recv_buffer, MLS.mpi_buffer_size);
@@ -164,13 +162,16 @@ void* mls_thread(void *data)
             // =================================================================
             // Inicializo un individuo con una heurística.
             // ... debería inicializar el individuo thread_id con cada hilo.
+            
+            // INVENTO!!! ===============
             MLS.population[thread_id].borders_threshold = 0;
             MLS.population[thread_id].margin_forwarding = 0;
             MLS.population[thread_id].delay = 0;
             MLS.population[thread_id].neighbors_threshold = 0;
-            MLS.population[thread_id].energy = 0;
-            MLS.population[thread_id].coverage = 0;
-            MLS.population[thread_id].nforwardings = 0;
+            MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
+            MLS.population[thread_id].coverage = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+            MLS.population[thread_id].nforwardings = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+            // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
             MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
@@ -196,6 +197,12 @@ void* mls_thread(void *data)
                 // =================================================================
                 // Busco y aplico el mejor movimiento en el vecindario de turno
                 // ... para el invididuo MLS.population[thread_id]
+                
+                // INVENTO!!! ===============
+                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].coverage = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].nforwardings = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+                // INVENTO!!! ===============
             }
 
             // Solamente si logro mejorar la solucion, intento agregarla al archivo.

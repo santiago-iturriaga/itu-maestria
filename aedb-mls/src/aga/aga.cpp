@@ -33,16 +33,28 @@ void archivers_aga() {
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][AGA] New solution received\n");
             #endif
+            
             MPI_Recv(&input_buffer, 1, mpi_solution_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             input_buffer.status = SOLUTION__STATUS_NEW;
+
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][AGA] received (%.2f / %d / %d)\n", 
+                    input_buffer.energy, input_buffer.coverage, input_buffer.nforwardings);
+            #endif
 
             int sol_idx = -1;
             for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (sol_idx < AGA.population_count) && (input_buffer.status == SOLUTION__STATUS_NEW); i++) {
                 if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
                     // Encontré una posición libre. Agrego la solución al archivo acá.
                     clone_solution(&AGA.population[i], &input_buffer);
-                    input_buffer.status = SOLUTION__STATUS_EMPTY;
-                    archivers_aga_add(i);
+                    if (archivers_aga_add(i) > 0) {
+                        fprintf(stderr, "[DEBUG][AGA] solution was added.\n");
+                    } else {
+                        fprintf(stderr, "[DEBUG][AGA] solution was discarded.\n");
+                    }
+                    
+                    input_buffer.status = SOLUTION__STATUS_EMPTY;                    
+                    
                 } else if (AGA.population[i].status == SOLUTION__STATUS_READY) {
                     // Posición ocupada, sigo buscando.
                     sol_idx++;
@@ -65,6 +77,21 @@ void archivers_aga() {
             fprintf(stderr, "[ERROR][AGA] Unknown TAG %d\n", status.MPI_TAG);
             MPI_Finalize();
             exit(EXIT_FAILURE);
+        }
+    }
+
+    fprintf(stderr, "[INFO] AGA information ================= \n");
+    fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
+    fprintf(stderr, "[INFO] [Population]\n");
+    for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
+        if (AGA.population[i].status == SOLUTION__STATUS_READY) {
+            fprintf(stderr, "(%d) borders_threshold   = %.2f\n", i, AGA.population[i].borders_threshold);
+            fprintf(stderr, "    margin_forwarding   = %.2f\n", AGA.population[i].margin_forwarding);
+            fprintf(stderr, "    delay               = %d\n", AGA.population[i].delay);
+            fprintf(stderr, "    neighbors_threshold = %d\n", AGA.population[i].neighbors_threshold);
+            fprintf(stderr, "    energy              = %.2f\n", AGA.population[i].energy);
+            fprintf(stderr, "    coverage            = %d\n", AGA.population[i].coverage);
+            fprintf(stderr, "    nforwardings        = %d\n", AGA.population[i].nforwardings);
         }
     }
 
