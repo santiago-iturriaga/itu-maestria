@@ -102,7 +102,7 @@ int main(int argc, char** argv)
         // =============================================================
         // Solving the problem.
         // =============================================================
-        mls();
+        mls(0);
         
         // Espero a que todos los MLS terminen.
         MPI_Barrier(mls_comm);
