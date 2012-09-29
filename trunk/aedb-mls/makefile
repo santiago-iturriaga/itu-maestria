@@ -13,7 +13,7 @@ mls-gdb: src/main.cpp src/config.h \
 		src/aga/aga.h \
 		src/aga/aga.cpp \
 		src/mls/mls.h \
-		src/mls/mls.cpp 
+		src/mls/mls.cpp  
 	$(CX) -g src/main.cpp \
 		src/solution.cpp \
 		src/random/cpu_mt.cpp \
@@ -30,7 +30,7 @@ mls: src/main.cpp src/config.h \
 		src/aga/aga.cpp \
 		src/mls/mls.h \
 		src/mls/mls.cpp  
-	$(CX) -O3 src/main.cpp \
+	$(CX) -O3 -DNDEBUG src/main.cpp \
 		src/solution.cpp \
 		src/random/cpu_mt.cpp \
 		src/aga/aga.cpp \
