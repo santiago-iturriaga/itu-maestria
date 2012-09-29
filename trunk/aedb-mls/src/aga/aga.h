@@ -15,6 +15,8 @@
 
 #define ARCHIVER__AGA_MAX_LOCATIONS (ARCHIVER__AGA_DEPTH * OBJECTIVES) * (ARCHIVER__AGA_DEPTH * OBJECTIVES)
 
+#define ARCHIVER__MAX_INPUT_BUFFER MLS__MAX_THREADS
+
 struct aga_state {
     int max_locations; // Number of locations in grid.
     

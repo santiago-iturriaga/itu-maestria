@@ -20,52 +20,70 @@ void archivers_aga() {
     archivers_aga_init();
 
     MPI_Status status;
-    int finalize = 0, aux;
-    struct solution input_buffer;
+    int finalize = 0, aux, msg_count, iteration = 0;
+    struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
         #ifndef NDEBUG
+            iteration++;
+            fprintf(stderr, "[DEBUG][AGA] ITERATION %d ==================================\n", iteration);
+            fprintf(stderr, "[DEBUG][AGA] Current population = %d\n", AGA.population_count);
             fprintf(stderr, "[DEBUG][AGA] Waiting for a message.\n");
         #endif
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        #ifndef NDEBUG
+            fprintf(stderr, "[DEBUG][AGA] Probed!\n");
+        #endif
 
         if (status.MPI_TAG == AGA__NEW_SOL_MSG) {
+            MPI_Get_count(&status, mpi_solution_type, &msg_count);
+            
             #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG][AGA] New solution received\n");
+                fprintf(stderr, "[DEBUG][AGA] New solution received (count=%d)\n", msg_count);
             #endif
             
-            MPI_Recv(&input_buffer, 1, mpi_solution_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            input_buffer.status = SOLUTION__STATUS_NEW;
+            MPI_Recv(input_buffer, msg_count, mpi_solution_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            
+            for (int s = 0; s < msg_count; s++) {
+                input_buffer[s].status = SOLUTION__STATUS_NEW;
 
-            #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG][AGA] received (%.2f / %d / %d)\n", 
-                    input_buffer.energy, input_buffer.coverage, input_buffer.nforwardings);
-            #endif
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][AGA] received (%.2f / %d / %d)\n", 
+                        input_buffer[s].energy, input_buffer[s].coverage, input_buffer[s].nforwardings);
+                #endif
 
-            int sol_idx = -1;
-            for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (sol_idx < AGA.population_count) && (input_buffer.status == SOLUTION__STATUS_NEW); i++) {
-                if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
-                    // Encontré una posición libre. Agrego la solución al archivo acá.
-                    clone_solution(&AGA.population[i], &input_buffer);
-                    if (archivers_aga_add(i) > 0) {
-                        fprintf(stderr, "[DEBUG][AGA] solution was added.\n");
-                    } else {
-                        fprintf(stderr, "[DEBUG][AGA] solution was discarded.\n");
+                int sol_idx = -1;
+                for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (sol_idx < AGA.population_count) && (input_buffer[s].status == SOLUTION__STATUS_NEW); i++) {
+                    if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
+                        // Encontré una posición libre. Agrego la solución al archivo acá.
+                        clone_solution(&AGA.population[i], &input_buffer[s]);
+                        
+                        #ifndef NDEBUG
+                            if (archivers_aga_add(i) > 0) {
+                                fprintf(stderr, "[DEBUG][AGA] solution in %d was added.\n", i);
+                            } else {
+                                fprintf(stderr, "[DEBUG][AGA] solution in %d was discarded.\n", i);
+                            }
+                        #endif
+                        
+                        input_buffer[s].status = SOLUTION__STATUS_EMPTY;                    
+                        
+                    } else if (AGA.population[i].status == SOLUTION__STATUS_READY) {
+                        // Posición ocupada, sigo buscando.
+                        sol_idx++;
+                        
                     }
-                    
-                    input_buffer.status = SOLUTION__STATUS_EMPTY;                    
-                    
-                } else if (AGA.population[i].status == SOLUTION__STATUS_READY) {
-                    // Posición ocupada, sigo buscando.
-                    sol_idx++;
                 }
-            }
 
-            assert(input_buffer.status == SOLUTION__STATUS_EMPTY);
-            assert(AGA.population_count > 0);
+                assert(input_buffer[s].status == SOLUTION__STATUS_EMPTY);
+            }
             
+            assert(AGA.population_count > 0);
         } else if (status.MPI_TAG == AGA__EXIT_MSG) {
+            MPI_Get_count(&status, mpi_solution_type, &msg_count);
+            
             #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][AGA] New solution received (count=%d)\n", msg_count);
                 fprintf(stderr, "[DEBUG][AGA] Terminate message received\n");
             #endif
             MPI_Recv(&aux, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -137,13 +155,13 @@ int archivers_aga_add(int new_solution_pos)
             // Calculo no dominancia del elemento nuevo con el actual.
             for (int i = 0; i < OBJECTIVES; i++)
             {
-                obj_new[i] = get_objective(&(AGA.population[s_pos]), i);
+                obj_current[i] = get_objective(&(AGA.population[s_pos]), i);
 
-                if ((obj_current[i] > obj_new[i]) && (aux_is_dominated == 1)) {
+                if (obj_current[i] > obj_new[i]) {
                     aux_is_dominated = 0;
                 }
 
-                if ((obj_current[i] < obj_new[i]) && (aux_dominates == 1)) {
+                if (obj_current[i] < obj_new[i]) {
                     aux_dominates = 0;
                 }
             }
@@ -152,12 +170,20 @@ int archivers_aga_add(int new_solution_pos)
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
+                
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG] New solution is dominated by %d\n", s_pos);
+                #endif
             }
             else if (aux_dominates == 1)
             {
                 // La nueva solucion domina a una ya existente.
                 solutions_deleted++;
                 AGA.population[s_pos].status = SOLUTION__STATUS_EMPTY;
+                
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG] New solution dominates %d\n", s_pos);
+                #endif
             }
         }
     }

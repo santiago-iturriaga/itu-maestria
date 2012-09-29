@@ -1,13 +1,18 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+//#define MPI_MODE_STANDARD
+#define MPI_MODE_SYNC
+//#define MPI_MODE_BUFFERED
+#define MLS__BUFFER_SIZE        100
+
 #define MLS__MAX_THREADS        64
 
 #define AGA__PROCESS_RANK       0
 #define AGA__NEW_SOL_MSG        0
 #define AGA__EXIT_MSG           1
-#define AGA__MAX_ARCHIVE_SIZE   2
-//#define AGA__MAX_ARCHIVE_SIZE   50
+//#define AGA__MAX_ARCHIVE_SIZE   5
+#define AGA__MAX_ARCHIVE_SIZE   50
 
 extern int world_rank, world_size;
 extern char machine_name[180];
