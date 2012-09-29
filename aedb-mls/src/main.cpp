@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     MLS.count_threads = 2;
     
     // Condicion de parada
-    MLS.max_iterations = 100;
+    MLS.max_iterations = 10000;
     
     if (MLS.count_threads > MLS__MAX_THREADS) {
         fprintf(stderr, "[ERROR][%d] La cantidad máxima de hilos en cada proceso MPI es de %d.\n", world_rank, MLS__MAX_THREADS);
@@ -81,6 +81,23 @@ int main(int argc, char** argv)
     MPI_Group_excl(world_group, 1, aga_rank, &mls_group);
     MPI_Comm_create(MPI_COMM_WORLD, mls_group, &mls_comm);
     
+    #ifdef MPI_MODE_BUFFERED
+        int mpi_buffer_size;
+        char *mpi_recv_buffer;
+    
+        int solutions_in_buffer = MLS__BUFFER_SIZE * MLS.count_threads;
+        
+        MPI_Pack_size(solutions_in_buffer, mpi_solution_type, MPI_COMM_WORLD, &mpi_buffer_size);
+        mpi_buffer_size += MLS__BUFFER_SIZE * MPI_BSEND_OVERHEAD;
+        mpi_recv_buffer = (char*)malloc(mpi_buffer_size);
+        
+        #ifndef NDEBUG
+            fprintf(stderr, "[INFO][%d] MPI buffer = %d soluciones (%d bytes)\n", world_rank, solutions_in_buffer, mpi_buffer_size);
+        #endif
+        
+        MPI_Buffer_attach(mpi_recv_buffer, mpi_buffer_size);
+    #endif
+    
     if (world_rank == 0) {
         // =============================================================
         // Proceso AGA
@@ -102,7 +119,9 @@ int main(int argc, char** argv)
         // =============================================================
         // Solving the problem.
         // =============================================================
-        mls(0);
+        int seed = 0;
+        
+        mls(seed + world_rank);
         
         // Espero a que todos los MLS terminen.
         MPI_Barrier(mls_comm);
@@ -112,10 +131,26 @@ int main(int argc, char** argv)
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][%d] Sending terminate message to process AGA\n", world_rank);
             #endif
-            MPI_Send(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+                        
+            #ifdef MPI_MODE_STANDARD
+                MPI_Send(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+            #endif
+            
+            #ifdef MPI_MODE_SYNC
+                MPI_Ssend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+            #endif
+            
+            #ifdef MPI_MODE_BUFFERED
+                MPI_Bsend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+            #endif
         }
     }
-
+   
+    #ifdef MPI_MODE_BUFFERED
+        MPI_Buffer_detach(mpi_recv_buffer, &mpi_buffer_size);
+        free(mpi_recv_buffer);
+    #endif
+    
     MPI_Finalize();
 
     return EXIT_SUCCESS;

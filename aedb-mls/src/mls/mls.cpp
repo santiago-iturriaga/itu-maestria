@@ -76,17 +76,6 @@ void mls_init(int seed)
     }
 
     // =========================================================================
-    // Inicializo MPI
-    MLS.mpi_buffer_size = sizeof(struct solution) * (2 * MLS.count_threads) * MPI_BSEND_OVERHEAD;
-    MLS.mpi_recv_buffer = (char*)malloc(MLS.mpi_buffer_size);
-    
-    #ifndef NDEBUG
-        fprintf(stderr, "[INFO][%d] MPI buffer = %d soluciones (%d bytes)\n", world_rank, MLS.count_threads+1, MLS.mpi_buffer_size);
-    #endif
-    
-    MPI_Buffer_attach(MLS.mpi_recv_buffer, MLS.mpi_buffer_size);
-
-    // =========================================================================
     // Creo e inicializo los threads y los mecanismos de sincronizacion.
 
     for (int i = 0; i < MLS.count_threads; i++) {
@@ -117,10 +106,7 @@ void mls_init(int seed)
 }
 
 void mls_finalize()
-{
-    MPI_Buffer_detach(MLS.mpi_recv_buffer, &MLS.mpi_buffer_size);
-    free(MLS.mpi_recv_buffer);
-    
+{   
     for (int i = 0; i < MLS.count_threads; i++) {
         pthread_mutex_destroy(&(MLS.work_type_mutex[i]));
     }
@@ -174,7 +160,17 @@ void* mls_thread(void *data)
             // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
-            MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+            #ifdef MPI_MODE_STANDARD
+                MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+            #endif
+            
+            #ifdef MPI_MODE_SYNC
+                MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+            #endif
+            
+            #ifdef MPI_MODE_BUFFERED
+                MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+            #endif
 
             MLS.total_iterations[thread_id] = 0;
 
@@ -208,7 +204,17 @@ void* mls_thread(void *data)
             // Solamente si logro mejorar la solucion, intento agregarla al archivo.
             if (1 == 1) // TODO!!!
             {
-                MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #ifdef MPI_MODE_STANDARD
+                    MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #endif
+                
+                #ifdef MPI_MODE_SYNC
+                    MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #endif
+                
+                #ifdef MPI_MODE_BUFFERED
+                    MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #endif
             }
        }
     }

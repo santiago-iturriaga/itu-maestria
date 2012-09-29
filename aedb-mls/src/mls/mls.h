@@ -38,10 +38,6 @@ struct mls_instance {
 
     // Statics
     int total_iterations[MLS__MAX_THREADS];
-    
-    // MPI
-    int mpi_buffer_size;
-    char *mpi_recv_buffer;
 };
 
 extern struct mls_instance MLS;
