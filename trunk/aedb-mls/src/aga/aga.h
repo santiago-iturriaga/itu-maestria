@@ -13,8 +13,6 @@
 /* About the maximum size of an integer for your compiler. */
 #define ARCHIVER__AGA_LARGE 2000000000
 
-#define ARCHIVER__AGA_MAX_LOCATIONS (ARCHIVER__AGA_DEPTH * OBJECTIVES) * (ARCHIVER__AGA_DEPTH * OBJECTIVES)
-
 #define ARCHIVER__MAX_INPUT_BUFFER MLS__MAX_THREADS
 
 struct aga_state {
@@ -24,7 +22,7 @@ struct aga_state {
     double gl_range[OBJECTIVES];
     double gl_largest[OBJECTIVES];
     
-    int grid_pop[ARCHIVER__AGA_MAX_LOCATIONS+1];
+    int *grid_pop;
     int grid_sol_loc[AGA__MAX_ARCHIVE_SIZE];
     
     struct solution population[AGA__MAX_ARCHIVE_SIZE];

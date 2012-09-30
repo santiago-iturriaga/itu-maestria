@@ -21,6 +21,8 @@ void archivers_aga() {
 
     MPI_Status status;
     int finalize = 0, aux, msg_count, iteration = 0;
+    int rc;
+    
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
@@ -48,7 +50,7 @@ void archivers_aga() {
                 input_buffer[s].status = SOLUTION__STATUS_NEW;
 
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG][AGA] received (%.2f / %d / %d)\n", 
+                    fprintf(stderr, "[DEBUG][AGA] Received (%.2f / %d / %d)\n", 
                         input_buffer[s].energy, input_buffer[s].coverage, input_buffer[s].nforwardings);
                 #endif
 
@@ -57,12 +59,13 @@ void archivers_aga() {
                     if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
                         // Encontré una posición libre. Agrego la solución al archivo acá.
                         clone_solution(&AGA.population[i], &input_buffer[s]);
-                        
+                                               
+                        rc = archivers_aga_add(i);
                         #ifndef NDEBUG
-                            if (archivers_aga_add(i) > 0) {
-                                fprintf(stderr, "[DEBUG][AGA] solution in %d was added.\n", i);
+                            if (rc > 0) {
+                                fprintf(stderr, "[DEBUG][AGA] Solution in %d was added.\n", i);
                             } else {
-                                fprintf(stderr, "[DEBUG][AGA] solution in %d was discarded.\n", i);
+                                fprintf(stderr, "[DEBUG][AGA] Solution in %d was discarded.\n", i);
                             }
                         #endif
                         
@@ -75,6 +78,11 @@ void archivers_aga() {
                     }
                 }
 
+                #ifndef NDEBUG
+                    if (input_buffer[s].status != SOLUTION__STATUS_EMPTY) {
+                        fprintf(stderr, "[DEBUG][AGA] No es SOLUTION__STATUS_EMPTY?!\n");
+                    }
+                #endif
                 assert(input_buffer[s].status == SOLUTION__STATUS_EMPTY);
             }
             
@@ -249,7 +257,8 @@ int archivers_aga_add(int new_solution_pos)
 }
 
 void archivers_aga_init() {
-    AGA.max_locations = ARCHIVER__AGA_MAX_LOCATIONS; // Number of locations in grid.
+    AGA.max_locations = pow(2, ARCHIVER__AGA_DEPTH * OBJECTIVES); // Number of locations in grid.
+    AGA.grid_pop = (int*)(malloc(sizeof(int) * (AGA.max_locations + 1)));
 
     for (int i = 0; i < OBJECTIVES; i++) {
         AGA.gl_offset[i] = 0.0;
@@ -267,11 +276,13 @@ void archivers_aga_init() {
 }
 
 void archivers_aga_free() {
-
+    free(AGA.grid_pop);
 }
 
 inline int find_loc(int solution_pos)
 {
+    fprintf(stderr, "[DEBUG] find_loc_0\n");
+    
     // Find the grid location of a solution given a vector of its objective values.
     int loc = 0;
 
@@ -292,12 +303,16 @@ inline int find_loc(int solution_pos)
             return AGA.max_locations;
     }
 
+    fprintf(stderr, "[DEBUG] find_loc_1\n");
+
     for (i = 0; i < OBJECTIVES; i++)
     {
         inc[i] = n;
         n *=2;
         width[i] = AGA.gl_range[i];
     }
+
+    fprintf(stderr, "[DEBUG] find_loc_2\n");
 
     for (d = 1; d <= ARCHIVER__AGA_DEPTH; d++)
     {
@@ -314,6 +329,8 @@ inline int find_loc(int solution_pos)
             width[i] /= 2;
         }
     }
+    
+    fprintf(stderr, "[DEBUG] find_loc_3\n");
 
     return loc;
 }
@@ -381,9 +398,7 @@ inline void update_grid(int new_solution_pos)
 
         for (a = 0; a < AGA__MAX_ARCHIVE_SIZE; a++)
         {
-            if ((AGA.population[a].status > SOLUTION__STATUS_EMPTY) ||
-                (a == new_solution_pos)) {
-
+            if ((AGA.population[a].status > SOLUTION__STATUS_EMPTY) || (a == new_solution_pos)) {
                 square = find_loc(a);
 
                 AGA.grid_sol_loc[a] = square;

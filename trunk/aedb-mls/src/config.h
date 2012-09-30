@@ -2,8 +2,8 @@
 #define CONFIG_H_
 
 //#define MPI_MODE_STANDARD
-#define MPI_MODE_SYNC
-//#define MPI_MODE_BUFFERED
+//#define MPI_MODE_SYNC
+#define MPI_MODE_BUFFERED
 #define MLS__BUFFER_SIZE        100
 
 #define MLS__MAX_THREADS        64
