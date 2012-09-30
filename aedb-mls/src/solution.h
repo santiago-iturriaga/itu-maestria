@@ -52,6 +52,7 @@ inline double get_objective(struct solution *s, int obj_index) {
         return (double)(s->nforwardings);
     } else {
         assert(false);
+        return 0;
     }
 }
 

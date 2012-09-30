@@ -20,8 +20,12 @@ void archivers_aga() {
     archivers_aga_init();
 
     MPI_Status status;
-    int finalize = 0, aux, msg_count, iteration = 0;
+    int finalize = 0, aux, msg_count;
     int rc;
+    
+    #ifndef NDEBUG
+        int iteration = 0;
+    #endif
     
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
@@ -61,6 +65,7 @@ void archivers_aga() {
                         clone_solution(&AGA.population[i], &input_buffer[s]);
                                                
                         rc = archivers_aga_add(i);
+                        
                         #ifndef NDEBUG
                             if (rc > 0) {
                                 fprintf(stderr, "[DEBUG][AGA] Solution in %d was added.\n", i);
@@ -281,8 +286,6 @@ void archivers_aga_free() {
 
 inline int find_loc(int solution_pos)
 {
-    fprintf(stderr, "[DEBUG] find_loc_0\n");
-    
     // Find the grid location of a solution given a vector of its objective values.
     int loc = 0;
 
@@ -303,16 +306,12 @@ inline int find_loc(int solution_pos)
             return AGA.max_locations;
     }
 
-    fprintf(stderr, "[DEBUG] find_loc_1\n");
-
     for (i = 0; i < OBJECTIVES; i++)
     {
         inc[i] = n;
         n *=2;
         width[i] = AGA.gl_range[i];
     }
-
-    fprintf(stderr, "[DEBUG] find_loc_2\n");
 
     for (d = 1; d <= ARCHIVER__AGA_DEPTH; d++)
     {
@@ -329,8 +328,6 @@ inline int find_loc(int solution_pos)
             width[i] /= 2;
         }
     }
-    
-    fprintf(stderr, "[DEBUG] find_loc_3\n");
 
     return loc;
 }
