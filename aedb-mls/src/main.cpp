@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     // Loading input parameters
     // =============================================================
     // Cantidad max. de hilos por procesos MPI
-    MLS.count_threads = 2;
+    MLS.count_threads = 1;
     
     // Condicion de parada
     MLS.max_iterations = 10000;
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
         // =============================================================
         int seed = 0;
         
-        mls(seed + world_rank);
+        mls(seed + world_rank, &mls_comm);
         
         // Espero a que todos los MLS terminen.
         MPI_Barrier(mls_comm);

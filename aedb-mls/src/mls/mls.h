@@ -38,6 +38,9 @@ struct mls_instance {
 
     // Statics
     int total_iterations[MLS__MAX_THREADS];
+    
+    // MPI
+    MPI_Comm *mls_comm;
 };
 
 extern struct mls_instance MLS;
@@ -45,6 +48,6 @@ extern struct mls_instance MLS;
 /*
  * Ejecuta el algoritmo.
  */
-void mls(int seed);
+void mls(int seed, MPI_Comm *mls_comm);
 
 #endif /* MLS__H_ */

@@ -30,9 +30,10 @@ void mls_finalize();
  */
 void* mls_thread(void *data);
 
-void mls(int seed)
+void mls(int seed, MPI_Comm *mls_comm)
 {
     // Inicializo la memoria y los hilos de ejecucion.
+    MLS.mls_comm = mls_comm;
     mls_init(seed);
 
     // Mientras los hilos buscan no tengo nada mas que hacer.
@@ -122,13 +123,12 @@ void* mls_thread(void *data)
         fprintf(stderr, "[DEBUG][%d] Thread id: %d\n", world_rank, thread_id);
     #endif
 
+    MLS.total_iterations[thread_id] = 0;
+
     int terminate = 0;
-    
     int work_iteration_size;
     int search_iteration;
-
     double random = 0;
-
     int work_type;
 
     while ((terminate == 0) && (MLS.total_iterations[thread_id] < MLS.max_iterations))
@@ -216,7 +216,7 @@ void* mls_thread(void *data)
                     MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
                 #endif
             }
-       }
+        }
     }
 
     return NULL;
