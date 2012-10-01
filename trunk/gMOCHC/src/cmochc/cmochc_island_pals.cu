@@ -51,7 +51,7 @@ void pals_search(int thread_id, int solution_index) {
         FLOAT energy_mov_score = 0;
         FLOAT mov_score = 0;
 
-        int dst_task, best_dst_task;
+        int dst_task, best_dst_task = 0;
         int dst_machine;
 
         for (int i = 0; i < PALS__MAX_INTENTOS; i++) {

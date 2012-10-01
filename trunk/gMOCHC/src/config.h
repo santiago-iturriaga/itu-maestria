@@ -10,8 +10,8 @@
 
 /* Random number generator */
 //#define CPU_RAND
-#define CPU_DRAND48
-//#define CPU_MT
+//#define CPU_DRAND48
+#define CPU_MT
 
 /* Floating point precision */
 //#define FLOAT float
