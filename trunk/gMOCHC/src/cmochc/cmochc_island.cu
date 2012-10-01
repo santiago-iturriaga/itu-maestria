@@ -447,9 +447,7 @@ void init() {
         fprintf(stderr, "NONE\n");
     #endif
 
-    fprintf(stderr, "       PALS__MAX_TASK_SEL_DIV                      : %d\n", PALS__MAX_TASK_SEL_DIV);
-    fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);
-    
+    fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);    
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Weights */
