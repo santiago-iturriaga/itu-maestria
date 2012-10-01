@@ -122,6 +122,8 @@ cpu_r: src/main.cu \
 		src/cmochc/cmochc_island.cu \
 		src/cmochc/cmochc_island_chc.h \
 		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_pals.h \
+		src/cmochc/cmochc_island_pals.cu \
 		src/cmochc/cmochc_island_utils.h \
 		src/cmochc/cmochc_island_utils.cu \
 		src/archivers/aga.h \
@@ -146,6 +148,7 @@ cpu_r: src/main.cu \
 		src/random/cpu_mt.cu \
 		src/cmochc/cmochc_cell.cu \
 		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_pals.cu \
 		src/cmochc/cmochc_island_chc.cu \
 		src/cmochc/cmochc_island_utils.cu \
 		src/archivers/aga.cu \
