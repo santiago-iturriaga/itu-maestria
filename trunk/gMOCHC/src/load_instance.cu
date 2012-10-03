@@ -12,7 +12,7 @@ int load_instance() {
     #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] load_instance\n");
     #endif
-    
+
     FILE *scenario_file;
 
     if ((scenario_file = fopen(INPUT.scenario_path, "r")) == NULL) {
@@ -54,13 +54,13 @@ int load_instance() {
                 fprintf(stderr, "[ERROR] leyendo dato de workload de la tarea %d para la máquina %d.\n", task, machine);
                 return EXIT_FAILURE;
             }
-            
+
             task_etc = value / get_scenario_ssj(machine);
             set_etc_value(machine, task, task_etc);
-            
+
             idle_consumption = task_etc * get_scenario_energy_idle(machine);
-            max_consumption = task_etc * get_scenario_energy_max(machine);            
-            
+            max_consumption = task_etc * get_scenario_energy_max(machine);
+
             set_energy_value(machine, task, max_consumption-idle_consumption);
         }
     }
