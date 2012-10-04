@@ -4,9 +4,11 @@
 //#define MPI_MODE_STANDARD
 //#define MPI_MODE_SYNC
 #define MPI_MODE_BUFFERED
-#define MLS__BUFFER_SIZE        100
+#define MLS__BUFFER_SIZE        10
+//#define MLS__BUFFER_SIZE        100
 
-#define MLS__MAX_THREADS        64
+#define MLS__MAX_THREADS        1
+//#define MLS__MAX_THREADS        64
 
 #define AGA__PROCESS_RANK       0
 #define AGA__NEW_SOL_MSG        0

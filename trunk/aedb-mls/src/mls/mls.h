@@ -12,8 +12,8 @@
 #define MLS__H_
 
 // Configuracion
-#define MLS__THREAD_FIXED_ITERS     250
-#define MLS__THREAD_RANDOM_ITERS    250
+#define MLS__THREAD_FIXED_ITERS     1
+#define MLS__THREAD_RANDOM_ITERS    5
 
 // Constantes
 #define MLS__INIT       0
