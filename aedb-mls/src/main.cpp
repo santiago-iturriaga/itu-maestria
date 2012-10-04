@@ -63,6 +63,24 @@ int main(int argc, char** argv)
         MPI_Finalize();
         exit(EXIT_FAILURE);
     }
+    
+    // Config. NS3
+    // 25 for 100 devices/km^2 density, 50 for 200, and 75 for 300
+    MLS.number_devices = 25;
+    // Number of independent runs of the simulator, if > 1, the results given are averaged over all the runs
+    MLS.simul_runs = 1;
+    
+    // Dominio de las variables de búsqueda.
+    MLS.lbound_min_delay = 0;
+    MLS.ubound_min_delay = 1;
+    MLS.lbound_max_delay = 0;
+    MLS.ubound_max_delay = 5;
+    MLS.lbound_border_threshold = -95;
+    MLS.ubound_border_threshold = -70;
+    MLS.lbound_margin_threshold = 0;
+    MLS.ubound_margin_threshold = 3;
+    MLS.lbound_neighbors_threshold = 0;
+    MLS.ubound_neighbors_threshold = 50;
 
     // =============================================================
     // Inicializo MPI

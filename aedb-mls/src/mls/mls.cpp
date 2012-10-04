@@ -149,14 +149,33 @@ void* mls_thread(void *data)
             // Inicializo un individuo con una heurística.
             // ... debería inicializar el individuo thread_id con cada hilo.
 
-            // INVENTO!!! ===============
-            MLS.population[thread_id].borders_threshold = 0;
-            MLS.population[thread_id].margin_forwarding = 0;
-            MLS.population[thread_id].min_delay = 0;
-            MLS.population[thread_id].neighbors_threshold = 0;
-            MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
-            MLS.population[thread_id].coverage = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
-            MLS.population[thread_id].nforwardings = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+            // INVENTO!!! ===============           
+            MLS.population[thread_id].borders_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_border_threshold - MLS.lbound_border_threshold) + MLS.lbound_border_threshold;
+            MLS.population[thread_id].margin_forwarding = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_margin_threshold - MLS.lbound_margin_threshold) + MLS.lbound_margin_threshold;
+            MLS.population[thread_id].min_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_min_delay - MLS.lbound_min_delay) + MLS.lbound_min_delay;
+            MLS.population[thread_id].max_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_max_delay - MLS.lbound_max_delay) + MLS.lbound_max_delay;
+            MLS.population[thread_id].neighbors_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold) + MLS.lbound_neighbors_threshold;
+            
+            #ifndef LOCAL
+                // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
+                double *aux;
+                aux = exp.RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs, 
+                    MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay, 
+                    MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding, 
+                    MLS.population[thread_id].neighbors_threshold);
+            
+                MLS.population[thread_id].energy = aux[0];
+                MLS.population[thread_id].coverage = aux[1];
+                MLS.population[thread_id].nforwardings = aux[2];
+                MLS.population[thread_id].time = aux[3];
+                
+                free(aux);
+            #else
+                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+            #endif
             // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
@@ -196,7 +215,8 @@ void* mls_thread(void *data)
                 //
                 // RUSO
                 //
-                rand_op = cpu_mt_generate_int(MLS.random_states[thread_id],NUM_LS_OPERATORS-1);
+                //rand_op = cpu_mt_generate_int(MLS.random_states[thread_id],NUM_LS_OPERATORS-1);
+                rand_op = cpu_mt_generate(MLS.random_states[thread_id]) * NUM_LS_OPERATORS;
                 
                 switch(rand_op){
                     case LS_ENERGY :
