@@ -133,12 +133,6 @@ unsigned long long genrand64_int64(struct cpu_mt_state &state)
     return x;
 }
 
-// RUSO
-// A ver si Santiago aprende a generar enteros de manera EFICIENTE !
-int cpu_mt_generate_int(struct cpu_mt_state &state, int rank){
-      return (genrand64_real2(state) & rank);
-}
-
 /* generates a random number on [0, 2^63-1]-interval */
 long long genrand64_int63(struct cpu_mt_state &state)
 {
@@ -161,6 +155,14 @@ double genrand64_real2(struct cpu_mt_state &state)
 double genrand64_real3(struct cpu_mt_state &state)
 {
     return ((genrand64_int64(state) >> 12) + 0.5) * (1.0/4503599627370496.0);
+}
+
+// RUSO
+// A ver si Santiago aprende a generar enteros de manera EFICIENTE !
+int cpu_mt_generate_int(struct cpu_mt_state &state, int rank){
+    // A ver si el Ruso me deja algo que (al menos) compile!!!
+    // return (genrand64_real2(state) & rank);
+    return genrand64_real2(state) * rank;
 }
 
 void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state) { 

@@ -54,7 +54,7 @@ void archivers_aga() {
                 input_buffer[s].status = SOLUTION__STATUS_NEW;
 
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG][AGA] Received (%.2f / %d / %d)\n", 
+                    fprintf(stderr, "[DEBUG][AGA] Received (%.2f / %.2f / %.2f)\n", 
                         input_buffer[s].energy, input_buffer[s].coverage, input_buffer[s].nforwardings);
                 #endif
 
@@ -118,11 +118,13 @@ void archivers_aga() {
         if (AGA.population[i].status == SOLUTION__STATUS_READY) {
             fprintf(stderr, "(%d) borders_threshold   = %.2f\n", i, AGA.population[i].borders_threshold);
             fprintf(stderr, "    margin_forwarding   = %.2f\n", AGA.population[i].margin_forwarding);
-            fprintf(stderr, "    delay               = %d\n", AGA.population[i].delay);
+            fprintf(stderr, "    min_delay           = %.2f\n", AGA.population[i].min_delay);
+            fprintf(stderr, "    max_delay           = %.2f\n", AGA.population[i].max_delay);
             fprintf(stderr, "    neighbors_threshold = %d\n", AGA.population[i].neighbors_threshold);
             fprintf(stderr, "    energy              = %.2f\n", AGA.population[i].energy);
-            fprintf(stderr, "    coverage            = %d\n", AGA.population[i].coverage);
-            fprintf(stderr, "    nforwardings        = %d\n", AGA.population[i].nforwardings);
+            fprintf(stderr, "    coverage            = %.2f\n", AGA.population[i].coverage);
+            fprintf(stderr, "    nforwardings        = %.2f\n", AGA.population[i].nforwardings);
+            fprintf(stderr, "    time                = %.2f\n", AGA.population[i].time);
         }
     }
 
