@@ -152,9 +152,9 @@ void* mls_thread(void *data)
         }
         else if (work_type == MLS__INIT)
         {
-        #ifndef NDEBUG
-        fprintf(stderr, "[DEBUG] MLS__INIT\n");
-        #endif
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG] MLS__INIT\n");
+            #endif
 
             // Inicializo el NS3 para este thread.
             #ifndef LOCAL
@@ -163,9 +163,6 @@ void* mls_thread(void *data)
 
             // =================================================================
             // Inicializo un individuo con una heurística.
-            // ... debería inicializar el individuo thread_id con cada hilo.
-
-            // INVENTO!!! ===============
             MLS.population[thread_id].borders_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_border_threshold - MLS.lbound_border_threshold) + MLS.lbound_border_threshold;
             MLS.population[thread_id].margin_forwarding = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_margin_threshold - MLS.lbound_margin_threshold) + MLS.lbound_margin_threshold;
             MLS.population[thread_id].min_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_min_delay - MLS.lbound_min_delay) + MLS.lbound_min_delay;
@@ -192,7 +189,6 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
             #endif
-            // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
             pthread_mutex_lock(&MLS.mpi_mutex);
@@ -225,7 +221,7 @@ void* mls_thread(void *data)
                  fprintf(stderr, "[DEBUG] MLS__SEARCH\n");
             #endif
 
-      double delta;
+            double delta;
             double alfa = 0.2;
             int rand_op;
 
@@ -238,10 +234,8 @@ void* mls_thread(void *data)
                 MLS.total_iterations[thread_id]++;
 
                 // =================================================================
-                //
                 // RUSO
 
-                /*
                 //rand_op = cpu_mt_generate_int(MLS.random_states[thread_id],NUM_LS_OPERATORS-1);
                 rand_op = cpu_mt_generate(MLS.random_states[thread_id]) * NUM_LS_OPERATORS;
 
@@ -249,7 +243,9 @@ void* mls_thread(void *data)
                     case LS_ENERGY :
                     case LS_FORWARDING :
                         // Reduce borders_threshold
-                        delta = MLS.population[thread_id+MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
+                        //delta = MLS.population[thread_id+MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
+                        delta = MLS.population[thread_id].borders_threshold * 0.1;
+                        
                         if (delta > 0){
                             MLS.population[thread_id].borders_threshold -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         } else {
@@ -265,7 +261,9 @@ void* mls_thread(void *data)
                         break;
                     case LS_COVERAGE :
                         // Augment neighbors_threshold
-                        delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+                        //delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+                        delta = MLS.population[thread_id].neighbors_threshold * 0.1;
+                        
                         if (delta > 0){
                             MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         } else {
@@ -274,6 +272,7 @@ void* mls_thread(void *data)
                         break;
                     case LS_TIME :
                         delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay;
+                        
                         if ( cpu_mt_generate(MLS.random_states[thread_id]) < 0.5 ){
                             // Reduce max delay
                             MLS.population[thread_id].max_delay -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
@@ -282,7 +281,28 @@ void* mls_thread(void *data)
                             MLS.population[thread_id].min_delay += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         }
                         break;
-                }*/
+                }
+                
+                #ifndef LOCAL
+                    // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
+                    double *aux;
+                    aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
+                        MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
+                        MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
+                        MLS.population[thread_id].neighbors_threshold);
+
+                    MLS.population[thread_id].energy = aux[0];
+                    MLS.population[thread_id].coverage = aux[1];
+                    MLS.population[thread_id].nforwardings = aux[2];
+                    MLS.population[thread_id].time = aux[3];
+                    
+                    free(aux);
+                #else
+                    MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
+                    MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
+                    MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
+                    MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+                #endif
             }
 
             // Solamente si logro mejorar la solucion, intento agregarla al archivo.
