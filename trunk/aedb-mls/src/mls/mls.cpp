@@ -158,7 +158,7 @@ void* mls_thread(void *data)
 
             // Inicializo el NS3 para este thread.
             #ifndef LOCAL
-                //MLS.simul[thread_id] = ns3AEDBRestrictedCall();
+                MLS.simul[thread_id] = ns3AEDBRestrictedCall();
             #endif
 
             // =================================================================
@@ -172,26 +172,26 @@ void* mls_thread(void *data)
             MLS.population[thread_id].max_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_max_delay - MLS.lbound_max_delay) + MLS.lbound_max_delay;
             MLS.population[thread_id].neighbors_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold) + MLS.lbound_neighbors_threshold;
 
-            //#ifndef LOCAL
+            #ifndef LOCAL
                 // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
-                /*double *aux;
+                double *aux;
                 aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
                     MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
                     MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
-                    MLS.population[thread_id].neighbors_threshold);*/
+                    MLS.population[thread_id].neighbors_threshold);
 
-               /* MLS.population[thread_id].energy = aux[0];
+                MLS.population[thread_id].energy = aux[0];
                 MLS.population[thread_id].coverage = aux[1];
                 MLS.population[thread_id].nforwardings = aux[2];
                 MLS.population[thread_id].time = aux[3];
-                */
+                
                 //free(aux);
-            //#else
+            #else
                 MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
-            //#endif
+            #endif
             // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
