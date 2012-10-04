@@ -4,6 +4,10 @@
 #include "../solution.h"
 #include "../random/cpu_mt.h"
 
+#ifndef LOCAL
+    #include "ns3/ns3AEDBRestrictedCall.h"
+#endif
+
 #ifndef MLS__H_
 #define MLS__H_
 

@@ -13,10 +13,6 @@
 #include "../config.h"
 #include "../random/cpu_mt.h"
 
-#ifndef LOCAL
-    #include "ns3/ns3AEDBRestrictedCall.h"
-#endif
-
 struct mls_instance MLS;
 
 /*
@@ -168,7 +164,7 @@ void* mls_thread(void *data)
             #ifndef LOCAL
                 // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
                 double *aux;
-                aux = exp.RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs, 
+                aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs, 
                     MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay, 
                     MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding, 
                     MLS.population[thread_id].neighbors_threshold);
