@@ -47,6 +47,7 @@ struct mls_instance {
     int ubound_neighbors_threshold;
         
     // Sync
+    pthread_mutex_t mpi_mutex;
     pthread_mutex_t work_type_mutex[MLS__MAX_THREADS];
     pthread_barrier_t sync_barrier;
 
