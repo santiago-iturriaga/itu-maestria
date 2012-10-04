@@ -52,6 +52,7 @@ int main(int argc, char** argv)
     // =============================================================
     // Loading input parameters
     // =============================================================
+        
     // Cantidad max. de hilos por procesos MPI
     MLS.count_threads = 6;
     
@@ -81,6 +82,18 @@ int main(int argc, char** argv)
     MLS.ubound_margin_threshold = 3;
     MLS.lbound_neighbors_threshold = 0;
     MLS.ubound_neighbors_threshold = 50;
+
+    if (world_rank == 0) {
+        fprintf(stderr, "===========================================================\n");
+        fprintf(stderr, "Configuración\n");
+        fprintf(stderr, "===========================================================\n");
+        fprintf(stderr, "   MPI size           = %d\n", world_size);
+        fprintf(stderr, "   MLS.count_threads  = %d\n", MLS.count_threads);
+        fprintf(stderr, "   MLS.max_iterations = %d\n", MLS.max_iterations);
+        fprintf(stderr, "   MLS.number_devices = %d\n", MLS.number_devices);
+        fprintf(stderr, "   MLS.simul_runs     = %d\n", MLS.simul_runs);
+        fprintf(stderr, "===========================================================\n");
+    }
 
     // =============================================================
     // Inicializo MPI
