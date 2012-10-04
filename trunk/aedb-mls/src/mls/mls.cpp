@@ -152,7 +152,7 @@ void* mls_thread(void *data)
             // INVENTO!!! ===============
             MLS.population[thread_id].borders_threshold = 0;
             MLS.population[thread_id].margin_forwarding = 0;
-            MLS.population[thread_id].delay = 0;
+            MLS.population[thread_id].min_delay = 0;
             MLS.population[thread_id].neighbors_threshold = 0;
             MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
             MLS.population[thread_id].coverage = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
@@ -179,25 +179,81 @@ void* mls_thread(void *data)
                 MLS.work_type[thread_id] = MLS__SEARCH;
             pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
         }
-        else if (work_type == MLS__SEARCH)
-        {
+        else if (work_type == MLS__SEARCH) {
+	    // double g_min, g_max
+	    // double left_h, right_h;
+	    double delta; 
+	    double alfa = 0.2;
+	    double* aux;
+	    aux = (double*)malloc(4*sizeof(double));
+	    int thread_mate, rand_op;
+
             // =================================================================
             // Empiezo con la busqueda
             random = cpu_mt_generate(MLS.random_states[thread_id]);
             work_iteration_size = (int)(MLS__THREAD_FIXED_ITERS + (random * MLS__THREAD_RANDOM_ITERS));
 
-            for (search_iteration = 0; search_iteration < work_iteration_size; search_iteration++)
-            {
+            for (search_iteration = 0; search_iteration < work_iteration_size; search_iteration++) {
                 MLS.total_iterations[thread_id]++;
 
                 // =================================================================
-                // Busco y aplico el mejor movimiento en el vecindario de turno
-                // ... para el invididuo MLS.population[thread_id]
-                
-                // INVENTO!!! ===============
-                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].coverage = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].nforwardings = 10000 * cpu_mt_generate(MLS.random_states[thread_id]);
+		//
+                // RUSO
+		//
+		thread_mate = cpu_mt_generate_int(MLS.random_states[thread_id],MLS.count_threads-1);
+                rand_op = cpu_mt_generate_int(MLS.random_states[thread_id],NUM_LS_OPERATORS-1); 
+		switch(rand_op){
+		  case LS_ENERGY :
+		  case LS_FORWARDING :
+			// Reduce borders_threshold
+			delta = MLS.population[thread_id+MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold; 
+			if (delta > 0){
+			    MLS.population[thread_id].borders_threshold -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
+			} else {    
+			    MLS.population[thread_id].borders_threshold += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
+			}    
+			// Reduce neighbors_threshold
+			delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold; 
+			if (delta > 0){
+			    MLS.population[thread_id].neighbors_threshold -= floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
+			} else {    
+			    MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
+			}    
+			break;
+		  case LS_COVERAGE :
+			// Augment neighbors_threshold
+			delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold; 
+			if (delta > 0){
+			    MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
+			} else {    
+			    MLS.population[thread_id].neighbors_threshold -= floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
+			}    
+			break;
+		  case LS_TIME :
+			delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay; 
+			if ( cpu_mt_generate(MLS.random_states[thread_id]) < 0.5 ){
+			    // Reduce max delay 
+			    MLS.population[thread_id].max_delay -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
+			} else {
+			    // Augment min delay  
+			    MLS.population[thread_id].min_delay += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
+			}
+			break;
+		}
+
+		//MLS.population[thread_id].borders_threshold = 0;
+		//MLS.population[thread_id].margin_forwarding = 0;
+		//MLS.population[thread_id].min_delay = 0;
+		//MLS.population[thread_id].neighbors_threshold = 0;
+		//
+                // ns3 simulation
+                //
+		//aux = exp.RunExperimentAEDBRestricted (numberDevices, 10, MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay, MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding, MLS.population[thread_id].neighbors_threshold);
+		
+		//MLS.population[thread_id].energy = aux[0];
+                //MLS.population[thread_id].coverage = aux[1];
+                //MLS.population[thread_id].nforwardings = aux[2];
+                //MLS.population[thread_id].time = aux[3];
                 // INVENTO!!! ===============
             }
 

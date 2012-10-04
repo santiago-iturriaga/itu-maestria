@@ -18,6 +18,7 @@ struct cpu_mt_state {
 
 void cpu_mt_init(unsigned int seed, struct cpu_mt_state &empty_state);
 double cpu_mt_generate(struct cpu_mt_state &state);
+int cpu_mt_generate_int(struct cpu_mt_state &state, int rank);
 void cpu_mt_free(struct cpu_mt_state &state);
 
 #endif

@@ -26,13 +26,15 @@ struct solution {
     /* Solución */
     double borders_threshold;
     double margin_forwarding;
-    int delay;
+    double min_delay;
+    double max_delay;
     int neighbors_threshold;
-    
+
     /* Evaluación de la solución */
     double energy;
-    int coverage;
-    int nforwardings;
+    double coverage;
+    double nforwardings;
+    double time;
 };
 
 extern MPI_Datatype mpi_solution_type;

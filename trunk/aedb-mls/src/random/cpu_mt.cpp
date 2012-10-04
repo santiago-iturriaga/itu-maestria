@@ -133,6 +133,12 @@ unsigned long long genrand64_int64(struct cpu_mt_state &state)
     return x;
 }
 
+// RUSO
+// A ver si Santiago aprende a generar enteros de manera EFICIENTE !
+int cpu_mt_generate_int(struct cpu_mt_state &state, int rank){
+      return (genrand64_real2(state) & rank);
+}
+
 /* generates a random number on [0, 2^63-1]-interval */
 long long genrand64_int63(struct cpu_mt_state &state)
 {
