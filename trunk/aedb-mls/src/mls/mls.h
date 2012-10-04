@@ -21,9 +21,25 @@ struct mls_instance {
     pthread_t threads[MLS__MAX_THREADS];
     int threads_id[MLS__MAX_THREADS];
     int work_type[MLS__MAX_THREADS];
-
     struct solution population[MLS__MAX_THREADS];
 
+    // Config. NS3
+    int number_devices;
+    int simul_runs;
+
+    // Rango de búsqueda
+    double lbound_min_delay;
+    double ubound_min_delay;
+    double lbound_max_delay;
+    double ubound_max_delay;
+    double lbound_border_threshold;
+    double ubound_border_threshold;
+    double lbound_margin_threshold;
+    double ubound_margin_threshold;
+    int lbound_neighbors_threshold;
+    int ubound_neighbors_threshold;
+        
+    // Sync
     pthread_mutex_t work_type_mutex[MLS__MAX_THREADS];
     pthread_barrier_t sync_barrier;
 
