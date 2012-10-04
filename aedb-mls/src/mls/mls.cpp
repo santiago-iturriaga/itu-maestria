@@ -185,7 +185,7 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].nforwardings = aux[2];
                 MLS.population[thread_id].time = aux[3];
                 
-                //free(aux);
+                free(aux);
             #else
                 MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
