@@ -145,9 +145,13 @@ void* mls_thread(void *data)
         }
         else if (work_type == MLS__INIT)
         {
+	    #ifndef NDEBUG
+		fprintf(stderr, "[DEBUG] MLS__INIT\n");
+	    #endif
+
             // Inicializo el NS3 para este thread.
             #ifndef LOCAL
-                MLS.simul[thread_id] = ns3AEDBRestrictedCall();
+                //MLS.simul[thread_id] = ns3AEDBRestrictedCall();
             #endif
             
             // =================================================================
@@ -161,26 +165,26 @@ void* mls_thread(void *data)
             MLS.population[thread_id].max_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_max_delay - MLS.lbound_max_delay) + MLS.lbound_max_delay;
             MLS.population[thread_id].neighbors_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold) + MLS.lbound_neighbors_threshold;
             
-            #ifndef LOCAL
+            //#ifndef LOCAL
                 // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
-                double *aux;
+                /*double *aux;
                 aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs, 
                     MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay, 
                     MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding, 
-                    MLS.population[thread_id].neighbors_threshold);
+                    MLS.population[thread_id].neighbors_threshold);*/
             
-                MLS.population[thread_id].energy = aux[0];
+               /* MLS.population[thread_id].energy = aux[0];
                 MLS.population[thread_id].coverage = aux[1];
                 MLS.population[thread_id].nforwardings = aux[2];
                 MLS.population[thread_id].time = aux[3];
-                
-                free(aux);
-            #else
+                */
+                //free(aux);
+            //#else
                 MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
                 MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
-            #endif
+            //#endif
             // INVENTO!!! ===============
 
             // Envío la solución computada por la heurística a AGA.
@@ -202,9 +206,17 @@ void* mls_thread(void *data)
             pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
                 MLS.work_type[thread_id] = MLS__SEARCH;
             pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
+
+            #ifndef NDEBUG
+               fprintf(stderr, "[DEBUG] MLS__INIT (READY!!!)\n");
+            #endif
         }
         else if (work_type == MLS__SEARCH) {
-            double delta;
+            #ifndef NDEBUG
+                 fprintf(stderr, "[DEBUG] MLS__SEARCH\n");
+            #endif
+
+	  double delta;
             double alfa = 0.2;
             int rand_op;
 
@@ -219,7 +231,9 @@ void* mls_thread(void *data)
                 // =================================================================
                 //
                 // RUSO
-                //
+                
+		/*
+
                 //rand_op = cpu_mt_generate_int(MLS.random_states[thread_id],NUM_LS_OPERATORS-1);
                 rand_op = cpu_mt_generate(MLS.random_states[thread_id]) * NUM_LS_OPERATORS;
                 
@@ -260,7 +274,7 @@ void* mls_thread(void *data)
                             MLS.population[thread_id].min_delay += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         }
                         break;
-                }
+                }*/
             }
 
             // Solamente si logro mejorar la solucion, intento agregarla al archivo.
@@ -279,6 +293,9 @@ void* mls_thread(void *data)
                 #endif
             }
         }
+        #ifndef NDEBUG
+           fprintf(stderr, "[DEBUG] MLS__SEARCH (READY!!!!)\n");
+       #endif
     }
 
     return NULL;
