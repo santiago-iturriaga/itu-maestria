@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     // =============================================================
         
     // Cantidad max. de hilos por procesos MPI
-    MLS.count_threads = 2;
+    MLS.count_threads = 1;
     
     // Condicion de parada
     MLS.max_iterations = 10000;
