@@ -24,6 +24,9 @@ struct mls_instance {
     struct solution population[MLS__MAX_THREADS];
 
     // Config. NS3
+    #ifndef LOCAL
+        ns3AEDBRestrictedCall simul[MLS__MAX_THREADS];
+    #endif
     int number_devices;
     int simul_runs;
 

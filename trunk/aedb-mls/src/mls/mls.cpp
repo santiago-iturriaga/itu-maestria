@@ -13,6 +13,10 @@
 #include "../config.h"
 #include "../random/cpu_mt.h"
 
+#ifndef LOCAL
+    #include "ns3/ns3AEDBRestrictedCall.h"
+#endif
+
 struct mls_instance MLS;
 
 /*
@@ -145,6 +149,11 @@ void* mls_thread(void *data)
         }
         else if (work_type == MLS__INIT)
         {
+            // Inicializo el NS3 para este thread.
+            #ifndef LOCAL
+                MLS.simul[thread_id] = ns3AEDBRestrictedCall();
+            #endif
+            
             // =================================================================
             // Inicializo un individuo con una heurística.
             // ... debería inicializar el individuo thread_id con cada hilo.
