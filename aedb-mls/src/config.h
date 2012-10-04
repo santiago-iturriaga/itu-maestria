@@ -14,6 +14,15 @@
 //#define AGA__MAX_ARCHIVE_SIZE   5
 #define AGA__MAX_ARCHIVE_SIZE   50
 
+// How many local search operators
+#define NUM_LS_OPERATORS 4
+
+// Local search operators
+#define LS_ENERGY 0
+#define LS_COVERAGE 1
+#define LS_FORWARDING 2
+#define LS_TIME 3
+
 extern int world_rank, world_size;
 extern char machine_name[180];
 

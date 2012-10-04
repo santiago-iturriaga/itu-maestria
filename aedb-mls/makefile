@@ -1,6 +1,6 @@
-CC=mpicc -Wall -std=c99
-CX=mpicxx -Wall
-LIBS=-lpthread -lrt 
+CC=~/bin/mpich2-1.4.1p1/bin/mpicc -Wall -std=c99
+CX=~/bin/mpich2-1.4.1p1/bin/mpic++ -Wall
+LIBS=-lpthread -lrt -I/home/clusterusers/siturriaga/ns3Files -lns3 -L/home/clusterusers/siturriaga/ns3Files
 OUTPUT_BIN=mls
 
 all: mls
