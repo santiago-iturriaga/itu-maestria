@@ -361,9 +361,10 @@ void pals_search(int thread_id, int solution_index) {
     }
 
     EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
-    FLOAT fitness_post = fitness(thread_id, solution_index);
 
     #ifdef DEBUG_3
+        FLOAT fitness_post = fitness(thread_id, solution_index);
+        
         FLOAT fitness_pre = fitness_zn(
             thread_id, makespan_pre, energy_pre,
             EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
