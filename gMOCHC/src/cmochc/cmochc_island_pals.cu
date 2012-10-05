@@ -28,11 +28,11 @@ void pals_free(int thread_id) {
 void pals_search(int thread_id, int solution_index) {
     #ifdef DEBUG_3
         fprintf(stderr, "[INFO] =======> PALS!\n");
-    
-        FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
-        FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
     #endif
     #ifdef DEBUG_1
+        FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
+        FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+
         CHC_PALS_COUNT_EXECUTIONS[thread_id]++;
     #endif
 
