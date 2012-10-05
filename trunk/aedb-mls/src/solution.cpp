@@ -93,3 +93,15 @@ void clone_solution(struct solution *dst, struct solution *src) {
     dst->nforwardings = src->nforwardings;
     dst->time = src->time;
 }
+
+void show_solution(struct solution *sol) {
+    fprintf(stderr, "-> borders_threshold   : %.2f\n", sol->borders_threshold);
+    fprintf(stderr, "   margin_forwarding   : %.2f\n", sol->margin_forwarding);
+    fprintf(stderr, "   min_delay           : %.2f\n", sol->min_delay);
+    fprintf(stderr, "   max_delay           : %.2f\n", sol->max_delay);
+    fprintf(stderr, "   neighbors_threshold : %d\n", sol->neighbors_threshold);
+    fprintf(stderr, "   energy              : %.2f\n", sol->energy);
+    fprintf(stderr, "   coverage            : %.2f\n", sol->coverage);
+    fprintf(stderr, "   nforwardings        : %.2f\n", sol->nforwardings);
+    fprintf(stderr, "   time                : %.2f\n", sol->time);
+}
