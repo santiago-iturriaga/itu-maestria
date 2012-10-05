@@ -81,8 +81,8 @@ void pals_search(int thread_id, int solution_index) {
         }
     }
     
-    //int selected_machine;
-    //selected_machine = max_et_machine;
+    int selected_machine;
+    selected_machine = max_et_machine;
     //selected_machine = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
 
     FLOAT score;
@@ -117,14 +117,14 @@ void pals_search(int thread_id, int solution_index) {
             task_x = (int)(random1 * INPUT.tasks_count);
             machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
             
-            /*
-            for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
-                task_x++;
-                if (task_x == INPUT.tasks_count) task_x = 0;
-                
-                machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+            if (selected_machine != -1) {
+                for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
+                    task_x++;
+                    if (task_x == INPUT.tasks_count) task_x = 0;
+                    
+                    machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+                }
             }
-            * */
         
             random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);    
             task_y = (int)(random2 * INPUT.tasks_count);
@@ -224,14 +224,16 @@ void pals_search(int thread_id, int solution_index) {
             random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
             task_x = (int)(random1 * INPUT.tasks_count);
             machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-            /*
-            for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
-                task_x++;
-                if (task_x == INPUT.tasks_count) task_x = 0;
-                
-                machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+            
+            if (selected_machine != -1) {
+                for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
+                    task_x++;
+                    if (task_x == INPUT.tasks_count) task_x = 0;
+                    
+                    machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+                }
             }
-            */
+            
             random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);    
             machine_b = (int)(random2 * INPUT.machines_count);
             
