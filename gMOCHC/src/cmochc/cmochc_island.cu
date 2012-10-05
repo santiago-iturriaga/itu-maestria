@@ -101,19 +101,9 @@ void compute_cmochc_island() {
         /* ******************************** */
         
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-
-            while (EA_INSTANCE.thread_idle_count < INPUT.thread_count) {
-                    #ifdef DEBUG_3
-                        fprintf(stderr, "[DEBUG] <master> workers_idle = %d\n", EA_INSTANCE.thread_idle_count);
-                    #endif
-                    
-                    pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex);
-                    
-                    #ifdef DEBUG_3
-                        fprintf(stderr, "[DEBUG] <master> [FIN] pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex)\n");
-                    #endif
+            while (EA_INSTANCE.thread_idle_count < INPUT.thread_count) {                   
+                pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex);
             }
-
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
 
         /* ************************************** */
@@ -187,19 +177,13 @@ void compute_cmochc_island() {
         /* ******************************************************* */
         
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-
             EA_INSTANCE.thread_idle_count = 0;
 
             for (int i = 0; i < INPUT.thread_count; i++) {
                 EA_INSTANCE.thread_status[i] = worker_status;
             }
 
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] <master> pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond)\n");
-            #endif
-
             pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond);
-
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
        
     }
@@ -240,13 +224,6 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     EA_INSTANCE.weight_gap_count = 0;
     int last_filled_patch = -1;
 
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Archive tag count:\n");
-        for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
-            fprintf(stderr, "> [%d] = %d\n", t, ARCHIVER.tag_count[t]);
-        }
-    #endif
-
     for (int i = 0; i < CMOCHC_PARETO_FRONT__PATCHES; i++) {
         if (ARCHIVER.tag_count[i] > 0) {
             EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = i;
@@ -265,23 +242,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         EA_INSTANCE.weight_gap_count++;
     }
 
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Found gaps:\n");
-        for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
-            fprintf(stderr, "> [index=%d] pos=%d size=%d\n", i,
-                EA_INSTANCE.weight_gap_index[i], EA_INSTANCE.weight_gap_length[i]);
-        }
-    #endif
-
     gap_merge_sort();
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Sorted found gaps:\n");
-        for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
-            fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, EA_INSTANCE.weight_gap_sorted[i],
-                EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_sorted[i]], EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[i]]);
-        }
-    #endif
 
     #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
         double random;
@@ -289,10 +250,6 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
 
     int sel_patch_idx = -1;
     int biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] biggest_patch_index = %d\n", biggest_patch_index);
-    #endif
 
     for (int t = 0; t < INPUT.thread_count; t++) {
         #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
@@ -305,11 +262,6 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
 
                 int random_length;
                 random_length = EA_INSTANCE.weight_gap_length[biggest_patch_index] * random;
-
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] instance.weight_gap_index=%d random_length=%d\n",
-                        EA_INSTANCE.weight_gap_index[biggest_patch_index], random_length);
-                #endif
 
                 sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
                 if (sel_patch_idx < 0) sel_patch_idx = 0;
@@ -330,10 +282,6 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         assert(sel_patch_idx >= 0);
         assert(sel_patch_idx < CMOCHC_PARETO_FRONT__PATCHES);
 
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] sel_patch_idx = %d\n", sel_patch_idx);
-        #endif
-
         EA_INSTANCE.thread_weight_assignment[t] = sel_patch_idx;
         EA_INSTANCE.weight_thread_assignment[sel_patch_idx] = t;
 
@@ -342,12 +290,6 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
             EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_length[biggest_patch_index]
                 - EA_INSTANCE.weight_gap_index[biggest_patch_index] + sel_patch_idx;
             EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count] = EA_INSTANCE.weight_gap_count;
-
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] weight_gap_length[last_gap_index=%d] = %d\n", EA_INSTANCE.weight_gap_count, EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count]);
-                fprintf(stderr, "[DEBUG] weight_gap_length[biggest_patch_index=%d] = %d\n", biggest_patch_index, EA_INSTANCE.weight_gap_length[biggest_patch_index]);
-                fprintf(stderr, "[DEBUG] weight_gap_index[biggest_patch_index=%d] = %d\n", biggest_patch_index, EA_INSTANCE.weight_gap_index[biggest_patch_index]);
-            #endif
 
             assert(EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_count] >= 0);
 
@@ -375,23 +317,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         }
 
         biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
-
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Assigned thread %d. New gaps:\n", t);
-            for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
-                fprintf(stderr, "> [index=%d]<offset=%d> pos=%d size=%d\n", i, EA_INSTANCE.weight_gap_sorted[i],
-                    EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_sorted[i]],
-                    EA_INSTANCE.weight_gap_length[EA_INSTANCE.weight_gap_sorted[i]]);
-            }
-        #endif
     }
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Thread assignments:\n");
-        for (int t = 0; t < INPUT.thread_count; t++) {
-            fprintf(stderr, "> thread %d=%d\n", t, EA_INSTANCE.thread_weight_assignment[t]);
-        }
-    #endif
 
     return 0;
 }
@@ -535,32 +461,8 @@ void init() {
 
 /* Obtiene los mejores elementos de cada población */
 int gather() {
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Gathering...\n");
-        fprintf(stderr, "[DEBUG] Current iteration elite solutions:\n");
-
-        int cantidad = 0;
-        for (int i = 0; i < ARCHIVER__MAX_NEW_SOLS; i++) {
-            if (ARCHIVER.new_solutions[i].initialized == 1) {
-                cantidad++;
-
-                fprintf(stderr, "> %d state=%d makespan=%f energy=%f\n",
-                    i, ARCHIVER.new_solutions[i].initialized,
-                    ARCHIVER.new_solutions[i].makespan,
-                    ARCHIVER.new_solutions[i].energy_consumption);
-            }
-        }
-
-        assert(cantidad > 0);
-    #endif
-
     int new_solutions;
     new_solutions = archivers_aga(EA_INSTANCE.archiver_new_pop_size);
-
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Total solutions gathered      = %d\n", new_solutions);
-        fprintf(stderr, "[DEBUG] Current solutions in archiver = %d\n", ARCHIVER.population_count);
-    #endif
 
     #ifdef DEBUG_1
         int current_tag;
@@ -668,18 +570,6 @@ void solution_migration(int thread_id) {
                 ep_current_index++;
             }
         #endif
-
-        #ifdef DEBUG_3
-            for (int i = 0; i < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE; i++) {
-                if (EA_THREADS[thread_id].migration_global_pop_index[i] != -1) {
-                    fprintf(stderr, "[DEBUG] Thread %d, Neighbour %d (weight idx %d, distance %d).\n",
-                        thread_id,
-                        EA_THREADS[thread_id].migration_global_pop_index[i],
-                        ARCHIVER.population_tag[EA_THREADS[thread_id].migration_global_pop_index[i]],
-                        EA_THREADS[thread_id].migration_current_weight_distance[i]);
-                }
-            }
-        #endif
     #endif
 
     /* *********************************************************************************************
@@ -701,7 +591,7 @@ void solution_migration(int thread_id) {
             if (migrated_solution_index < CMOCHC_COLLABORATION__MOEAD_NEIGH_SIZE) {
                 if (EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index] != -1) {
                     #if defined(DEBUG_1)
-                    COUNT_MIGRATIONS[thread_id]++;
+                        COUNT_MIGRATIONS[thread_id]++;
                     #endif
 
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_COPY
@@ -712,7 +602,7 @@ void solution_migration(int thread_id) {
                         next_solution_index++;
                         migrated_solution_index++;
                         #if defined(DEBUG_1)
-                        COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                            COUNT_SOLUTIONS_MIGRATED[thread_id]++;
                         #endif
                         migrated = 1;
                     #endif
@@ -737,7 +627,7 @@ void solution_migration(int thread_id) {
                                 next_solution_index += 2;
                                 migrated_solution_index++;
                                 #if defined(DEBUG_1)
-                                COUNT_SOLUTIONS_MIGRATED[thread_id] += 2;
+                                    COUNT_SOLUTIONS_MIGRATED[thread_id] += 2;
                                 #endif
                                 migrated = 1;
                             }
@@ -752,7 +642,7 @@ void solution_migration(int thread_id) {
                             next_solution_index++;
                             migrated_solution_index++;
                             #if defined(DEBUG_1)
-                            COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                                COUNT_SOLUTIONS_MIGRATED[thread_id]++;
                             #endif
                             migrated = 1;
                         }
@@ -766,7 +656,7 @@ void solution_migration(int thread_id) {
                         next_solution_index++;
                         migrated_solution_index++;
                         #if defined(DEBUG_1)
-                        COUNT_SOLUTIONS_MIGRATED[thread_id]++;
+                            COUNT_SOLUTIONS_MIGRATED[thread_id]++;
                         #endif
 
                         migrated = 1;
@@ -799,11 +689,6 @@ void* slave_thread(void *data) {
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
 
-    #ifdef DEBUG_1
-        fprintf(stderr, "[DEBUG] Threshold Max %d.\n", EA_THREADS[thread_id].threshold_max);
-        fprintf(stderr, "[DEBUG] Threshold Step %d.\n", EA_THREADS[thread_id].threshold_step);
-    #endif
-
     /* Inicializo la busqueda local */
     pals_init(thread_id);
 
@@ -816,27 +701,16 @@ void* slave_thread(void *data) {
     int currently_assigned_weight;
     
     while (status != CMOCHC_THREAD_STATUS__STOP) {
-
         /* ***************************** */
         /* Espero que me asignen trabajo */
         /* ***************************** */
         
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-
-            while (EA_INSTANCE.thread_status[thread_id] == CMOCHC_THREAD_STATUS__IDLE) {
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] <thread:%d> pthread_cond_wait(&EA_INSTANCE.worker_status_cond, &EA_INSTANCE.status_cond_mutex)\n", thread_id);
-                #endif
-                
+            while (EA_INSTANCE.thread_status[thread_id] == CMOCHC_THREAD_STATUS__IDLE) {               
                 pthread_cond_wait(&EA_INSTANCE.worker_status_cond, &EA_INSTANCE.status_cond_mutex);
             }
             
             status = EA_INSTANCE.thread_status[thread_id];
-
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] <thread:%d> EA_INSTANCE.thread_status[%d] = %d\n", thread_id, thread_id, EA_INSTANCE.thread_status[thread_id]);
-            #endif
-
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
 
         /* *********************************************************************************************
@@ -846,11 +720,6 @@ void* slave_thread(void *data) {
         currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
         EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[currently_assigned_weight];
         EA_THREADS[thread_id].weight_energy = 1 - EA_THREADS[thread_id].weight_makespan;
-
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, Current weights=%d (%.4f,%.4f)\n",
-                thread_id, currently_assigned_weight, EA_THREADS[thread_id].weight_makespan, EA_THREADS[thread_id].weight_energy);
-        #endif
         
         /* ****************** */
         /* Proceso el trabajo */
@@ -927,10 +796,6 @@ void* slave_thread(void *data) {
                 new_sol_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
                 local_best_index = EA_THREADS[thread_id].sorted_population[i];
 
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Thread %d, copying from %d to %d\n", thread_id, local_best_index, new_sol_index);
-                #endif
-
                 clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
                 ARCHIVER.new_solutions_tag[new_sol_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
             }
@@ -947,19 +812,12 @@ void* slave_thread(void *data) {
             /* *************************** */
             
             pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-
                 EA_INSTANCE.thread_idle_count++;
 
                 EA_INSTANCE.thread_status[thread_id] = CMOCHC_THREAD_STATUS__IDLE;
                 status = CMOCHC_THREAD_STATUS__IDLE;
-
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] <thread:%d> IDLE! EA_INSTANCE.thread_status[%d] = %d\n", thread_id, thread_id, EA_INSTANCE.thread_status[thread_id]);
-                    fprintf(stderr, "[DEBUG] <thread:%d> pthread_cond_signal(&EA_INSTANCE.master_status_cond)\n", thread_id);
-                #endif
                 
                 pthread_cond_signal(&EA_INSTANCE.master_status_cond);
-
             pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
         }
     }          

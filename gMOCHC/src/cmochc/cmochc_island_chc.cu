@@ -17,11 +17,6 @@ void chc_population_init(int thread_id) {
         int starting_pos;
         starting_pos = (int)(floor(INPUT.tasks_count * random));
 
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Thread %d, inicializando solution %d, starting %d, direction %d...\n",
-                thread_id, i, starting_pos, i & 0x1);
-        #endif
-
         compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
 
         EA_THREADS[thread_id].fitness_population[i] = NAN;
