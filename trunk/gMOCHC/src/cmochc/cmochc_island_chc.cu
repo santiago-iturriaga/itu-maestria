@@ -276,7 +276,9 @@ void chc_evolution(int thread_id) {
             clone_solution(&EA_THREADS[thread_id].population[pals_dst_idx],
                 &EA_THREADS[thread_id].population[pals_src_idx]);
 
+            //for (int j = 0; j < 100; j++) {
             pals_search(thread_id, pals_dst_idx);
+            //}
 
             /* Muto el resto de las soluciones */
             for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT + 1; i < MAX_POP_SOLS; i++) { /* No muto las mejores soluciones */

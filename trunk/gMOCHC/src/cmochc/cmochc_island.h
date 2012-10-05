@@ -10,6 +10,7 @@
 #include "../global.h"
 #include "../solution.h"
 #include "../utils.h"
+
 #include "../basic/mct.h"
 #include "../random/random.h"
 #include "../archivers/aga.h"
@@ -98,7 +99,6 @@ struct cmochc_thread {
     /* Merge sort tmp array */
     int merge_sort_tmp[MAX_POP_SOLS];
 
-    //int currently_assigned_weight;
     FLOAT weight_makespan;
     FLOAT weight_energy;
 

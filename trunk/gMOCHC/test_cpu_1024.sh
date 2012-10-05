@@ -17,8 +17,8 @@ SEED=0
 THREADS=1
 #THREADS=12
 TIMEOUT=1
-ITERATIONS=20
-#ITERATIONS=200
+#ITERATIONS=20
+ITERATIONS=1000
 #ITERATIONS=8000
 
 bin/gmochc_cpu /home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/scenario.0 \
