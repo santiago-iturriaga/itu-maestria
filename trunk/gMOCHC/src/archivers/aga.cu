@@ -324,7 +324,6 @@ void archivers_aga_init(int tag_size) {
     /* Estado de la población de intercambio */
     for (int i = 0; i < ARCHIVER__MAX_NEW_SOLS; i++) {
         create_empty_solution(&ARCHIVER.new_solutions[i]);
-        
         ARCHIVER.new_solutions_tag[i] = 0;
     }
 
