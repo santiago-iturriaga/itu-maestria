@@ -252,7 +252,7 @@ void chc_evolution(int thread_id) {
         aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
         pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
         assert(EA_THREADS[thread_id].population[pals_idx].initialized == SOLUTION__IN_USE);
-        pals_search(thread_id, pals_idx);
+	for (int i = 0; i < 3; i++) pals_search(thread_id, pals_idx);
 
         if (threshold < 0) {
             threshold = EA_THREADS[thread_id].threshold_max;
