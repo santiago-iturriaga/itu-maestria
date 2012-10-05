@@ -52,9 +52,9 @@ void pals_search(int thread_id, int solution_index) {
     int movimiento;
 
     FLOAT best_delta = 0.0;
-    int best_movimiento;
-    int best_src_task;
-    int best_dst;
+    int best_movimiento = -1;
+    int best_src_task = -1;
+    int best_dst = -1;
 
     FLOAT current_makespan = EA_THREADS[thread_id].population[solution_index].makespan;
 
@@ -207,6 +207,10 @@ void pals_search(int thread_id, int solution_index) {
             }
         }
     }
+
+    assert(best_movimiento >= 0);
+    assert(best_src_task >= 0);
+    assert(best_dst >= 0);
 
     if (best_delta > 0) {
         int src_machine;

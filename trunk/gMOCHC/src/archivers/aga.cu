@@ -327,7 +327,7 @@ void archivers_aga_init(int tag_size) {
         ARCHIVER.new_solutions_tag[i] = 0;
     }
 
-    ARCHIVER.max_locations = pow(2, ARCHIVER__AGA_DEPTH * ARCHIVER__OBJECTIVES); // Number of locations in grid.
+    ARCHIVER.max_locations = (int)(pow(2, ARCHIVER__AGA_DEPTH * ARCHIVER__OBJECTIVES)); // Number of locations in grid.
     ARCHIVER.grid_pop = (int*)(malloc(sizeof(int) * (ARCHIVER.max_locations + 1)));
     ARCHIVER.grid_sol_loc = (int*)(malloc(sizeof(int) * (ARCHIVER__MAX_SIZE + ARCHIVER__MAX_NEW_SOLS)));
 
