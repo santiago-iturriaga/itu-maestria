@@ -247,6 +247,13 @@ void chc_evolution(int thread_id) {
             threshold -= EA_THREADS[thread_id].threshold_step;
         }
 
+        /* Ejecuto la búsqueda local sobre una solución "elite" */
+        int aux_index, pals_idx;
+        aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
+        pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
+        assert(EA_THREADS[thread_id].population[pals_idx].initialized == SOLUTION__IN_USE);
+        pals_search(thread_id, pals_idx);
+
         if (threshold < 0) {
             threshold = EA_THREADS[thread_id].threshold_max;
 
@@ -262,23 +269,8 @@ void chc_evolution(int thread_id) {
                 fprintf(stderr, "[DEBUG] Cataclysm (thread=%d)!\n", thread_id);
             #endif
 
-            int aux_index, current_index, pals_src_idx, pals_dst_idx;
+            int current_index;
             ref_point_changed = 0;
-
-            /* Ejecuto la búsqueda local sobre una solución "elite" */
-            aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
-
-            pals_src_idx = EA_THREADS[thread_id].sorted_population[aux_index];
-            pals_dst_idx = EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__BEST_SOLS_KEPT];
-
-            assert(EA_THREADS[thread_id].population[CMOCHC_LOCAL__BEST_SOLS_KEPT].initialized == SOLUTION__IN_USE);
-
-            clone_solution(&EA_THREADS[thread_id].population[pals_dst_idx],
-                &EA_THREADS[thread_id].population[pals_src_idx]);
-
-            //for (int j = 0; j < 100; j++) {
-            pals_search(thread_id, pals_dst_idx);
-            //}
 
             /* Muto el resto de las soluciones */
             for (int i = CMOCHC_LOCAL__BEST_SOLS_KEPT + 1; i < MAX_POP_SOLS; i++) { /* No muto las mejores soluciones */
