@@ -13,6 +13,10 @@
 #include "../config.h"
 #include "../random/cpu_mt.h"
 
+#ifdef NONMPI
+    #include "../aga/aga.h"
+#endif
+
 struct mls_instance MLS;
 
 /*
@@ -197,16 +201,29 @@ void* mls_thread(void *data)
 
             // Envío la solución computada por la heurística a AGA.
             pthread_mutex_lock(&MLS.mpi_mutex);
-                #ifdef MPI_MODE_STANDARD
-                    MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                #endif
+                #ifndef NONMPI
+                    #ifdef MPI_MODE_STANDARD
+                        MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-                #ifdef MPI_MODE_SYNC
-                    MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                #endif
+                    #ifdef MPI_MODE_SYNC
+                        MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-                #ifdef MPI_MODE_BUFFERED
-                    MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #ifdef MPI_MODE_BUFFERED
+                        MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
+                #else
+                    // NONMPI
+                    MLS.population[thread_id].status = SOLUTION__STATUS_NEW;
+                    for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (MLS.population[thread_id].status == SOLUTION__STATUS_NEW); i++) {
+                        if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
+                            // Encontré una posición libre. Agrego la solución al archivo acá.
+                            clone_solution(&AGA.population[i], &MLS.population[thread_id]);
+                            rc = archivers_aga_add(i);
+                            MLS.population[thread_id].status = SOLUTION__STATUS_READY;
+                        }
+                    }
                 #endif
             pthread_mutex_unlock(&MLS.mpi_mutex);
 
@@ -320,16 +337,29 @@ void* mls_thread(void *data)
             #endif
 
             pthread_mutex_lock(&MLS.mpi_mutex);
-                #ifdef MPI_MODE_STANDARD
-                    MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                #endif
+                #ifndef NONMPI
+                    #ifdef MPI_MODE_STANDARD
+                        MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-                #ifdef MPI_MODE_SYNC
-                    MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                #endif
+                    #ifdef MPI_MODE_SYNC
+                        MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-                #ifdef MPI_MODE_BUFFERED
-                    MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #ifdef MPI_MODE_BUFFERED
+                        MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
+                #else
+                    // NONMPI
+                    MLS.population[thread_id].status = SOLUTION__STATUS_NEW;
+                    for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (MLS.population[thread_id].status == SOLUTION__STATUS_NEW); i++) {
+                        if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
+                            // Encontré una posición libre. Agrego la solución al archivo acá.
+                            clone_solution(&AGA.population[i], &MLS.population[thread_id]);
+                            rc = archivers_aga_add(i);
+                            MLS.population[thread_id].status = SOLUTION__STATUS_READY;
+                        }
+                    }
                 #endif
             pthread_mutex_unlock(&MLS.mpi_mutex);
         }

@@ -76,7 +76,6 @@ void archivers_aga() {
                     } else if (AGA.population[i].status == SOLUTION__STATUS_READY) {
                         // Posición ocupada, sigo buscando.
                         sol_idx++;
-                        
                     }
                 }
 

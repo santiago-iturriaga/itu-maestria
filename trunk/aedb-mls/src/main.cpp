@@ -38,12 +38,21 @@ int main(int argc, char** argv)
     int aux;
     MPI_Get_processor_name(machine_name, &aux);
     
-    if (world_size < 2) {
-        // Procesos insuficientes.
-        fprintf(stderr, "[ERROR][%d] Debe especificar al menos 2 procesos MPI.\n", world_rank);
-        MPI_Finalize();
-        exit(EXIT_FAILURE);
-    }
+    #ifndef NONMPI
+        if (world_size < 2) {
+            // Procesos insuficientes.
+            fprintf(stderr, "[ERROR][%d] Debe especificar al menos 2 procesos MPI.\n", world_rank);
+            MPI_Finalize();
+            exit(EXIT_FAILURE);
+        }
+    #else
+        if (world_size == 1) {
+            // Procesos insuficientes.
+            fprintf(stderr, "[ERROR][%d] En modo NONMPI *SIEMPRE* debe especificar 1 proceso MPI.\n", world_rank);
+            MPI_Finalize();
+            exit(EXIT_FAILURE);
+        }    
+    #endif
  
     #ifndef NDEBUG
         fprintf(stderr, "[DEBUG][%d] MPI ready\n", world_rank);
@@ -52,6 +61,9 @@ int main(int argc, char** argv)
     // =============================================================
     // Loading input parameters
     // =============================================================
+        
+    // Semilla aleatoria!!!
+    int seed = 0;
         
     // Cantidad max. de hilos por procesos MPI
     MLS.count_threads = 1;
@@ -129,53 +141,58 @@ int main(int argc, char** argv)
         MPI_Buffer_attach(mpi_recv_buffer, mpi_buffer_size);
     #endif
     
-    if (world_rank == 0) {
-        // =============================================================
-        // Proceso AGA
-        // =============================================================
-        
-        archivers_aga();
-        
-        // Finalización...        
-    } else {
-        // =============================================================
-        // Proceso MLS
-        // =============================================================
-        
-        // =============================================================
-        // Loading problem instance
-        // =============================================================
-        // ...
-        
-        // =============================================================
-        // Solving the problem.
-        // =============================================================
-        int seed = 0;
-        
-        mls(seed + world_rank, &mls_comm);
-        
-        // Espero a que todos los MLS terminen.
-        MPI_Barrier(mls_comm);
-        
-        // Le aviso a AGA que puede terminar.
-        if (world_rank == 1) {
-            #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG][%d] Sending terminate message to process AGA\n", world_rank);
-            #endif
-                        
-            #ifdef MPI_MODE_STANDARD
-                MPI_Send(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
-            #endif
+    #ifndef NONMPI
+        if (world_rank == 0) {
+            // =============================================================
+            // Proceso AGA
+            // =============================================================
             
-            #ifdef MPI_MODE_SYNC
-                MPI_Ssend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
-            #endif
+            archivers_aga();
             
-            #ifdef MPI_MODE_BUFFERED
-                MPI_Bsend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
-            #endif
+            // Finalización...        
+        } else {
+            // =============================================================
+            // Proceso MLS
+            // =============================================================
+            
+            // =============================================================
+            // Loading problem instance
+            // =============================================================
+            // ...
+            
+            // =============================================================
+            // Solving the problem.
+            // =============================================================
+            mls(seed + world_rank, &mls_comm);
+            
+            // Espero a que todos los MLS terminen.
+            MPI_Barrier(mls_comm);
+            
+            // Le aviso a AGA que puede terminar.
+            if (world_rank == 1) {
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][%d] Sending terminate message to process AGA\n", world_rank);
+                #endif
+                            
+                #ifdef MPI_MODE_STANDARD
+                    MPI_Send(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+                #endif
+                
+                #ifdef MPI_MODE_SYNC
+                    MPI_Ssend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+                #endif
+                
+                #ifdef MPI_MODE_BUFFERED
+                    MPI_Bsend(aga_rank, 1, MPI_INT, AGA__PROCESS_RANK, AGA__EXIT_MSG, MPI_COMM_WORLD);
+                #endif
+            }
         }
-    }
+    #else
+        // =============================================================
+        // NONMPI: Solving the problem.
+        // =============================================================
+        mls(seed + world_rank, &mls_comm);
+    #endif
    
     #ifdef MPI_MODE_BUFFERED
         MPI_Buffer_detach(mpi_recv_buffer, &mpi_buffer_size);

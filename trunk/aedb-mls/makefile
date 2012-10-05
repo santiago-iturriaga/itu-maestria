@@ -26,6 +26,22 @@ mls-local: src/main.cpp src/config.h \
 		src/mls/mls.cpp \
 		$(LIBS_LOCAL) -o bin/$(OUTPUT_BIN) 
 
+mls-nonmpi: src/main.cpp src/config.h \
+		src/solution.h \
+		src/solution.cpp \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cpp \
+		src/aga/aga.h \
+		src/aga/aga.cpp \
+		src/mls/mls.h \
+		src/mls/mls.cpp  
+	$(CX) -g -DNONMPI src/main.cpp \
+		src/solution.cpp \
+		src/random/cpu_mt.cpp \
+		src/aga/aga.cpp \
+		src/mls/mls.cpp \
+		$(LIBS) -o bin/$(OUTPUT_BIN) 
+
 mls-gdb: src/main.cpp src/config.h \
 		src/solution.h \
 		src/solution.cpp \
