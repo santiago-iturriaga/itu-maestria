@@ -591,7 +591,7 @@ void solution_migration(int thread_id) {
         ep_solution_index = 0;
 
         #ifdef CMOCHC_COLLABORATION__MIGRATION_BEST
-            int worst_distance = 0, worst_index;
+            int worst_distance = 0, worst_index = 0;
             int current_solution_distance;
 
             while ((ep_current_index < ARCHIVER__MAX_SIZE) &&
