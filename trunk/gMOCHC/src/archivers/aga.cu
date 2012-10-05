@@ -14,7 +14,7 @@ inline FLOAT get_objective(struct solution *s, int objective) {
     } else if (objective == 1) {
         return s->energy_consumption;
     }
-    
+
     assert(false);
     return 0;
 }
@@ -33,36 +33,32 @@ int archive_add_solution(int new_solutions_count)
     /* Agrego las soluciones no dominadas en lo espacios vacíos */
     int s_pos = 0;
     int n_pos = 0;
-    
+
     while ((new_solutions_count > 0)&&(ARCHIVER.population_count < ARCHIVER__MAX_SIZE)) {
         assert(s_pos < ARCHIVER__MAX_SIZE);
-        
+
         if (ARCHIVER.new_solutions[n_pos].initialized != SOLUTION__IN_USE) {
             n_pos++;
         } else {
             if (ARCHIVER.population[s_pos].initialized == SOLUTION__IN_USE) {
                 s_pos++;
             } else {
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Found empty spot in archive %d!!!", s_pos);
-                #endif
-                
                 if (ARCHIVER.population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
                     create_empty_solution(&ARCHIVER.population[s_pos]);
                 }
-                
+
                 clone_solution(&ARCHIVER.population[s_pos], &ARCHIVER.new_solutions[n_pos]);
-                
+
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
                 ARCHIVER.new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                 new_solutions_count--;
-                
+
                 // Cambio la asignación del square de la solución
                 ARCHIVER.grid_sol_loc[s_pos] = ARCHIVER.grid_sol_loc[n_pos + ARCHIVER__MAX_SIZE];
                 ARCHIVER.population_tag[s_pos] = ARCHIVER.new_solutions_tag[n_pos];
                 ARCHIVER.tag_count[ARCHIVER.population_tag[s_pos]]++;
-                ARCHIVER.population_count++; 
-                                
+                ARCHIVER.population_count++;
+
                 rc++;
             }
         }
@@ -71,14 +67,10 @@ int archive_add_solution(int new_solutions_count)
     n_pos = 0;
 
     while (new_solutions_count > 0)  // Some new solutions are non-dominated.
-    {       
+    {
         if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__EMPTY) {
             n_pos++;
         } else {
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Trying to add new solution %d to archive\n", n_pos);
-            #endif
-            
             int to_replace;
             to_replace = -1;
 
@@ -105,23 +97,19 @@ int archive_add_solution(int new_solutions_count)
                 }
             }
 
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] > new solution %d is replacing solution %d\n", n_pos, to_replace);
-            #endif
-
             if (to_replace != -1)
             {
                 clone_solution(&ARCHIVER.population[to_replace], &ARCHIVER.new_solutions[n_pos]);
                 ARCHIVER.tag_count[ARCHIVER.population_tag[to_replace]]--;
                 ARCHIVER.population_tag[to_replace] = ARCHIVER.new_solutions_tag[n_pos];
                 ARCHIVER.tag_count[ARCHIVER.new_solutions_tag[n_pos]]++;
-                
+
                 // Marco la solución como ya creada e invalido la copia en la población de nuevas soluciones.
                 ARCHIVER.new_solutions[n_pos].initialized = SOLUTION__EMPTY;
 
                 // Decremento la población en el square de la solución que acabo de borrar
                 ARCHIVER.grid_pop[ARCHIVER.grid_sol_loc[to_replace]]--;
-                
+
                 // Cambio la asignación del square de la solución
                 ARCHIVER.grid_sol_loc[to_replace] = ARCHIVER.grid_sol_loc[n_pos + ARCHIVER__MAX_SIZE];
 
@@ -136,7 +124,7 @@ int archive_add_solution(int new_solutions_count)
                 // Decremento la población en el square de la solución que acabo de borrar
                 ARCHIVER.grid_pop[ARCHIVER.grid_sol_loc[n_pos + ARCHIVER__MAX_SIZE]]--;
             }
-            
+
             new_solutions_count--;
         }
     }
@@ -185,17 +173,17 @@ inline int find_loc(int solution_pos)
         for (i = 0; i < ARCHIVER__OBJECTIVES; i++)
         {
             if (solution_pos < ARCHIVER__MAX_SIZE) {
-                if(get_objective(&(ARCHIVER.population[solution_pos]), i) < 
+                if(get_objective(&(ARCHIVER.population[solution_pos]), i) <
                     width[i]/2 + ARCHIVER.gl_offset[i]) {
-                        
+
                     loc += inc[i];
                 } else {
                     ARCHIVER.gl_offset[i] += width[i]/2;
                 }
             } else {
-                if(get_objective(&(ARCHIVER.new_solutions[solution_pos - ARCHIVER__MAX_SIZE]), i) < 
+                if(get_objective(&(ARCHIVER.new_solutions[solution_pos - ARCHIVER__MAX_SIZE]), i) <
                     width[i]/2 + ARCHIVER.gl_offset[i]) {
-                        
+
                     loc += inc[i];
                 } else {
                     ARCHIVER.gl_offset[i] += width[i]/2;
@@ -275,22 +263,12 @@ void update_grid(int new_solutions_size)
                 square = find_loc(a);
                 ARCHIVER.grid_sol_loc[a] = square;
                 ARCHIVER.grid_pop[square]++;
-                                
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Population %d of the archive is in square %d. Now there are %d sols in square %d.\n",
-                        a, square, ARCHIVER.grid_pop[square], square);
-                #endif
             }
         } else {
             if (ARCHIVER.new_solutions[a - new_solutions_size].initialized == SOLUTION__IN_USE) {
                 square = find_loc(a);
                 ARCHIVER.grid_sol_loc[a] = square;
                 ARCHIVER.grid_pop[square]++;
-                
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Population %d of the new solutions is in square %d. Now there are %d sols in square %d.\n",
-                        a - new_solutions_size, square, ARCHIVER.grid_pop[square], square);
-                #endif
             }
         }
     }
@@ -305,22 +283,22 @@ void archivers_aga_init(int tag_size) {
     fprintf(stderr, "       ARCHIVER__MAX_TAGS                          : %d\n", ARCHIVER__MAX_TAGS);
     fprintf(stderr, "       tag_size                                    : %d\n", tag_size);
     fprintf(stderr, "[INFO] == AGA archiver configuration constants ==============\n");
-    
+
     assert(tag_size <= ARCHIVER__MAX_TAGS);
-    
+
     ARCHIVER.population_count = 0;
 
     for (int p = 0; p < ARCHIVER__MAX_SIZE; p++) {
         ARCHIVER.population[p].initialized = SOLUTION__NOT_INITIALIZED;
         ARCHIVER.population_tag[p] = -1;
     }
-    
+
     ARCHIVER.tag_size = tag_size;
-    
+
     for (int p = 0; p < ARCHIVER.tag_size; p++) {
         ARCHIVER.tag_count[p] = 0;
     }
-   
+
     /* Estado de la población de intercambio */
     for (int i = 0; i < ARCHIVER__MAX_NEW_SOLS; i++) {
         create_empty_solution(&ARCHIVER.new_solutions[i]);
@@ -340,7 +318,7 @@ void archivers_aga_init(int tag_size) {
     for (int i = 0; i < ARCHIVER.max_locations; i++) {
         ARCHIVER.grid_pop[i] = 0;
     }
-    
+
     #ifdef DEBUG_1
         fprintf(stderr, "[DEBUG] Archiver init\n");
         fprintf(stderr, "> population_size   : %d\n", ARCHIVER__MAX_SIZE);
@@ -353,33 +331,33 @@ void archivers_aga_free(int new_solutions_size) {
             free_solution(&ARCHIVER.population[p]);
         }
     }
-    
+
     for (int i = 0; i < ARCHIVER__MAX_NEW_SOLS; i++) {
         free_solution(&ARCHIVER.new_solutions[i]);
     }
-    
+
     free(ARCHIVER.grid_pop);
     free(ARCHIVER.grid_sol_loc);
 }
 
-int delete_dominated_solutions(int new_solutions_size) {   
+int delete_dominated_solutions(int new_solutions_size) {
     // Elimino las soluciones dominadas entre si de la población de nuevas soluciones.
     for (int n_pos = 0; n_pos < new_solutions_size; n_pos++)
     {
-        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
+        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE)
         {
-            for (int n2_pos = n_pos+1; (n2_pos < new_solutions_size) && 
+            for (int n2_pos = n_pos+1; (n2_pos < new_solutions_size) &&
                 (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE); n2_pos++)
             {
-                if (ARCHIVER.new_solutions[n2_pos].initialized == SOLUTION__IN_USE) 
+                if (ARCHIVER.new_solutions[n2_pos].initialized == SOLUTION__IN_USE)
                 {
                     // Calculo no dominancia del elemento nuevo con el actual.
-                    if ((ARCHIVER.new_solutions[n2_pos].makespan <= ARCHIVER.new_solutions[n_pos].makespan) && 
+                    if ((ARCHIVER.new_solutions[n2_pos].makespan <= ARCHIVER.new_solutions[n_pos].makespan) &&
                         (ARCHIVER.new_solutions[n2_pos].energy_consumption <= ARCHIVER.new_solutions[n_pos].energy_consumption))
-                    {                       
+                    {
                         ARCHIVER.new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                     }
-                    else if ((ARCHIVER.new_solutions[n_pos].makespan <= ARCHIVER.new_solutions[n2_pos].makespan) && 
+                    else if ((ARCHIVER.new_solutions[n_pos].makespan <= ARCHIVER.new_solutions[n2_pos].makespan) &&
                         (ARCHIVER.new_solutions[n_pos].energy_consumption <= ARCHIVER.new_solutions[n2_pos].energy_consumption))
                     {
                         ARCHIVER.new_solutions[n2_pos].initialized = SOLUTION__EMPTY;
@@ -388,31 +366,27 @@ int delete_dominated_solutions(int new_solutions_size) {
             }
         }
     }
-    
+
     int cant_new_solutions = 0;
-    
-    #ifdef DEBUG_3
-        int current_archive_size = ARCHIVER.population_count;
-    #endif    
-    
+
     // Comparo la dominancia de las nuevas soluciones con las viejas soluciones.
     for (int n_pos = 0; n_pos < new_solutions_size; n_pos++)
     {
-        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
+        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE)
         {
-            for (int s_pos = 0; (s_pos < ARCHIVER__MAX_SIZE) && 
+            for (int s_pos = 0; (s_pos < ARCHIVER__MAX_SIZE) &&
                 (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE); s_pos++)
             {
-                if (ARCHIVER.population[s_pos].initialized == SOLUTION__IN_USE) 
+                if (ARCHIVER.population[s_pos].initialized == SOLUTION__IN_USE)
                 {
                     // Calculo no dominancia del elemento nuevo con el actual.
-                    if ((ARCHIVER.population[s_pos].makespan <= ARCHIVER.new_solutions[n_pos].makespan) && 
+                    if ((ARCHIVER.population[s_pos].makespan <= ARCHIVER.new_solutions[n_pos].makespan) &&
                         (ARCHIVER.population[s_pos].energy_consumption <= ARCHIVER.new_solutions[n_pos].energy_consumption))
                     {
-                        // La nueva solucion es dominada por una ya existente.                        
+                        // La nueva solucion es dominada por una ya existente.
                         ARCHIVER.new_solutions[n_pos].initialized = SOLUTION__EMPTY;
                     }
-                    else if ((ARCHIVER.new_solutions[n_pos].makespan <= ARCHIVER.population[s_pos].makespan) && 
+                    else if ((ARCHIVER.new_solutions[n_pos].makespan <= ARCHIVER.population[s_pos].makespan) &&
                         (ARCHIVER.new_solutions[n_pos].energy_consumption <= ARCHIVER.population[s_pos].energy_consumption))
                     {
                         // La nueva solucion domina a una ya existente.
@@ -423,39 +397,31 @@ int delete_dominated_solutions(int new_solutions_size) {
                 }
             }
         }
-        
-        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE) 
+
+        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE)
         {
             cant_new_solutions++;
         }
     }
-    
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] %d solutions were deleted form the archive\n", current_archive_size - ARCHIVER.population_count);
-    #endif  
-    
+
     return cant_new_solutions;
 }
 
 void archive_add_all_new(int new_solutions_size) {
     for (int n_pos = 0; n_pos < new_solutions_size; n_pos++)
     {
-        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE) {           
-            for (int s_pos = 0; (s_pos < ARCHIVER__MAX_SIZE) && 
+        if (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE) {
+            for (int s_pos = 0; (s_pos < ARCHIVER__MAX_SIZE) &&
                 (ARCHIVER.new_solutions[n_pos].initialized == SOLUTION__IN_USE); s_pos++)
             {
-                if (ARCHIVER.population[s_pos].initialized != SOLUTION__IN_USE) 
+                if (ARCHIVER.population[s_pos].initialized != SOLUTION__IN_USE)
                 {
-                    #ifdef DEBUG_3
-                        fprintf(stderr, "> found empty space in %d\n", s_pos);
-                    #endif
-                    
                     if (ARCHIVER.population[s_pos].initialized == SOLUTION__NOT_INITIALIZED) {
                         create_empty_solution(&ARCHIVER.population[s_pos]);
                     }
-                    
+
                     clone_solution(&ARCHIVER.population[s_pos], &ARCHIVER.new_solutions[n_pos]);
-                    
+
                     ARCHIVER.population_tag[s_pos] = ARCHIVER.new_solutions_tag[n_pos];
                     ARCHIVER.tag_count[ARCHIVER.population_tag[s_pos]]++;
                     ARCHIVER.population_count++;
@@ -469,50 +435,23 @@ void archive_add_all_new(int new_solutions_size) {
 int archivers_aga(int new_solutions_size)
 {
     assert(new_solutions_size <= ARCHIVER__MAX_NEW_SOLS);
-    
+
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] archiver aga...\n");
     #endif
-    
+
     int nd_new_solutions = delete_dominated_solutions(new_solutions_size);
 
-    #ifdef DEBUG_3
-        fprintf(stderr, "> solutions this iteration: %d\n", nd_new_solutions);
-        fprintf(stderr, "> current solutions in archive: %d of %d\n", ARCHIVER.population_count, ARCHIVER__MAX_SIZE);
-    #endif  
-      
     if (nd_new_solutions + ARCHIVER.population_count <= ARCHIVER__MAX_SIZE) {
-        #ifdef DEBUG_3
-            fprintf(stderr, "> there is room in the archive for all gathered solutions\n");
-        #endif
-        
         archive_add_all_new(new_solutions_size);
     } else {
-        #ifdef DEBUG_3
-            fprintf(stderr, "> %d new solutions, but there's only space for %d solutions\n", 
-                nd_new_solutions, ARCHIVER__MAX_SIZE - ARCHIVER.population_count);
-        #endif   
-        
         // Calculate grid location of mutant solution and renormalize archive if necessary.
         update_grid(new_solutions_size);
 
         // Update the archive by removing all dominated individuals.
         nd_new_solutions = archive_add_solution(nd_new_solutions);
     }
-    
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] Current archive (%d):\n", ARCHIVER.population_count);
-        for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
-            if (ARCHIVER.population[i].initialized == SOLUTION__IN_USE) {
-                fprintf(stderr, "(%d) %f %f %d\n",
-                    i,
-                    ARCHIVER.population[i].makespan, 
-                    ARCHIVER.population[i].energy_consumption,
-                    ARCHIVER.population_tag[i]);
-            }
-        }
-    #endif
-    
+
     return nd_new_solutions;
 }
 
@@ -535,7 +474,7 @@ void archivers_aga_show() {
     for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
         if (ARCHIVER.population[i].initialized == SOLUTION__IN_USE) {
             fprintf(stderr, "%f %f %d\n",
-                ARCHIVER.population[i].makespan, 
+                ARCHIVER.population[i].makespan,
                 ARCHIVER.population[i].energy_consumption,
                 ARCHIVER.population_tag[i]);
         }
