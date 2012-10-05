@@ -293,7 +293,6 @@ void pals_search(int thread_id, int solution_index) {
     }
 
     #ifdef DEBUG_3
-        int c = 0;
         fprintf(stderr, "[DEBUG] best_score = %.2f\n", best_score);
     #endif
 
@@ -321,7 +320,6 @@ void pals_search(int thread_id, int solution_index) {
                             
                             state.mod_machines[thread_id][machine_src] = 1;
                             state.mod_machines[thread_id][machine_dst] = 1;
-                            c++;
                         }
                     } else if (movements[thread_id][current_index].tipo == PALS_MOVIMIENTO_MOVE) {
                         machine_dst = movements[thread_id][current_index].dst;
@@ -332,7 +330,6 @@ void pals_search(int thread_id, int solution_index) {
                             
                             state.mod_machines[thread_id][machine_src] = 1;
                             state.mod_machines[thread_id][machine_dst] = 1;
-                            c++;
                         }
                     } else {
                         assert(1 == 0);
@@ -345,9 +342,6 @@ void pals_search(int thread_id, int solution_index) {
         }
     }
 
-    #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] cant movimientos = %d\n", c);
-    #endif
     memset(state.mod_machines[thread_id], 0, sizeof(int) * INPUT.machines_count);
     
     refresh_solution(&EA_THREADS[thread_id].population[solution_index]);
