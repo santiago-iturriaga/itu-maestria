@@ -28,7 +28,11 @@
  * 1 Minimal debug
  * 2 Medium debug
  * 3 Debug everything */
-#define DEBUG_LEVEL 3
+#ifndef NDEBUG
+    #define DEBUG_LEVEL 3
+#else
+    #define DEBUG_LEVEL 0
+#endif
 
 //#define REPORT_EVERY_SECONDS 1
 //#define REPORT_EVERY_ITERS   1
