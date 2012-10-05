@@ -31,7 +31,7 @@
 #ifndef NDEBUG
     #define DEBUG_LEVEL 3
 #else
-    #define DEBUG_LEVEL 0
+    #define DEBUG_LEVEL 1
 #endif
 
 //#define REPORT_EVERY_SECONDS 1
