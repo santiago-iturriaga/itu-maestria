@@ -876,7 +876,11 @@ void display_results() {
         int count_solutions_migrated = 0;
         int count_pals = 0;
         int count_pals_improv = 0;
+        int count_pals_improv_move = 0;
+        int count_pals_improv_swap = 0;
         int count_pals_decline = 0;
+        int count_pals_decline_move = 0;
+        int count_pals_decline_swap = 0;
 
         for (int t = 0; t < INPUT.thread_count; t++) {
             count_generations += COUNT_GENERATIONS[t];
@@ -890,7 +894,11 @@ void display_results() {
             count_solutions_migrated += COUNT_SOLUTIONS_MIGRATED[t];
             count_pals += CHC_PALS_COUNT_EXECUTIONS[t];
             count_pals_improv += CHC_PALS_COUNT_FITNESS_IMPROV[t];
+            count_pals_improv_move += CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[t];
+            count_pals_improv_swap += CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[t];
             count_pals_decline += CHC_PALS_COUNT_FITNESS_DECLINE[t];
+            count_pals_decline_move += CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[t];
+            count_pals_decline_swap += CHC_PALS_COUNT_FITNESS_DECLINE_SWAP[t];
         }
 
         int *count_pf_found;
@@ -924,9 +932,17 @@ void display_results() {
         fprintf(stderr, "       count_pals                           : %d\n", count_pals);
         fprintf(stderr, "       count_pals_improvments               : %d (%.2f %%)\n", count_pals_improv,
             ((FLOAT)count_pals_improv/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_improvments_move          : %d (%.2f %%)\n", count_pals_improv_move,
+            ((FLOAT)count_pals_improv_move/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_improvments_swap          : %d (%.2f %%)\n", count_pals_improv_swap,
+            ((FLOAT)count_pals_improv_swap/(FLOAT)count_pals)*100);
         fprintf(stderr, "       count_pals_decline                   : %d (%.2f %%)\n", count_pals_decline,
             ((FLOAT)count_pals_decline/(FLOAT)count_pals)*100);
-                        
+        fprintf(stderr, "       count_pals_decline_move              : %d (%.2f %%)\n", count_pals_decline_move,
+            ((FLOAT)count_pals_decline_move/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_decline_swap              : %d (%.2f %%)\n", count_pals_decline_swap,
+            ((FLOAT)count_pals_decline_swap/(FLOAT)count_pals)*100);
+                       
         fprintf(stderr, "       archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             fprintf(stderr, "          [%d] = %d\n", t, ARCHIVER.tag_count[t]);
