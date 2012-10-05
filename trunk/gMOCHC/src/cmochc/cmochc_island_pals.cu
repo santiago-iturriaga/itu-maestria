@@ -29,27 +29,14 @@ struct ls_movement {
     int dst;
 };
 
-struct ls_movement movements[MAX_THREADS][PALS__MAX_INTENTOS];
-
-struct pals_aux_state {
-    int **mod_machines;
-};
-
-struct pals_aux_state state;
+struct ls_movement movements[MAX_THREADS];
 
 void pals_init(int thread_id) {
-    state.mod_machines = (int**)(malloc(sizeof(int*) * INPUT.thread_count));
-    for (int i = 0; i < INPUT.thread_count; i++) {
-        state.mod_machines[i] = (int*)(malloc(sizeof(int) * INPUT.machines_count));
-        memset(state.mod_machines[i], 0, sizeof(int) * INPUT.machines_count);
-    }
+
 }
 
 void pals_free(int thread_id) {
-    for (int i = 0; i < INPUT.thread_count; i++) {
-        free(state.mod_machines[i]);
-    }
-    free(state.mod_machines);
+
 }
 
 void pals_search(int thread_id, int solution_index) {
@@ -87,9 +74,11 @@ void pals_search(int thread_id, int solution_index) {
 
     FLOAT score;
     int movimiento;
-
-    FLOAT best_score = VERY_BIG_FLOAT;
-    int best_index = -1;
+    
+    movements[thread_id].score = VERY_BIG_FLOAT;
+    movements[thread_id].tipo = -1;
+    movements[thread_id].src_task = -1;
+    movements[thread_id].dst = -1;
 
     FLOAT random1, random2;
     FLOAT current_makespan = EA_THREADS[thread_id].population[solution_index].makespan;
@@ -198,14 +187,11 @@ void pals_search(int thread_id, int solution_index) {
                 }
             #endif
 
-            movements[thread_id][loop].score = score;
-            movements[thread_id][loop].tipo = PALS_MOVIMIENTO_SWAP;
-            movements[thread_id][loop].src_task = task_x;
-            movements[thread_id][loop].dst = task_y;
-
-            if (best_score > score) {
-                best_score = score;
-                best_index = loop;
+            if (movements[thread_id].score > score) {
+                movements[thread_id].score = score;
+                movements[thread_id].tipo = PALS_MOVIMIENTO_SWAP;
+                movements[thread_id].src_task = task_x;
+                movements[thread_id].dst = task_y;
             }
         } else if (movimiento == PALS_MOVIMIENTO_MOVE) {
             // =================
@@ -275,74 +261,49 @@ void pals_search(int thread_id, int solution_index) {
                     score = 1 / score;
                 }
             #endif
-
-            movements[thread_id][loop].score = score;
-            movements[thread_id][loop].tipo = PALS_MOVIMIENTO_MOVE;
-            movements[thread_id][loop].src_task = task_x;
-            movements[thread_id][loop].dst = machine_b;
-
-            if (best_score > score) {
-                best_score = score;
-                best_index = loop;
+            
+            if (movements[thread_id].score > score) {
+                movements[thread_id].score = score;
+                movements[thread_id].tipo = PALS_MOVIMIENTO_MOVE;
+                movements[thread_id].src_task = task_x;
+                movements[thread_id].dst = machine_b;
             }
         }
         
         #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] Delta %.2f\n", score);
+            fprintf(stderr, "[DEBUG] delta %.2f\n", score);
         #endif
     }
 
     #ifdef DEBUG_3
-        fprintf(stderr, "[DEBUG] best_score = %.2f\n", best_score);
+        fprintf(stderr, "[DEBUG] best_score = %.2f\n", movements[thread_id].score);
     #endif
 
-    if (best_score < 0) {
-        int current_index = best_index;
+    if (movements[thread_id].score < 0) {
         int task_src;
         int task_dst;
         int machine_src;
         int machine_dst;
         
-        for (int i = 0; i < PALS__MAX_INTENTOS; i++) {
-            if (movements[thread_id][current_index].score < 0) {
-                task_src = movements[thread_id][current_index].src_task;
-                machine_src = EA_THREADS[thread_id].population[solution_index].task_assignment[task_src];
+        task_src = movements[thread_id].src_task;
+        machine_src = EA_THREADS[thread_id].population[solution_index].task_assignment[task_src];
 
-                if (state.mod_machines[thread_id][machine_src] == 0) {
-                    if (movements[thread_id][current_index].tipo == PALS_MOVIMIENTO_SWAP) {
-                        task_dst = movements[thread_id][current_index].dst;
-                        machine_dst = EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst];
+        if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
+            task_dst = movements[thread_id].dst;
+            machine_dst = EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst];
 
-                        if (state.mod_machines[thread_id][machine_dst] == 0) {
-                            /* Hago el swap */
-                            EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst] = machine_src;
-                            EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
-                            
-                            state.mod_machines[thread_id][machine_src] = 1;
-                            state.mod_machines[thread_id][machine_dst] = 1;
-                        }
-                    } else if (movements[thread_id][current_index].tipo == PALS_MOVIMIENTO_MOVE) {
-                        machine_dst = movements[thread_id][current_index].dst;
-                        
-                        if (state.mod_machines[thread_id][machine_dst] == 0) {
-                            /* Hago el move */
-                            EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
-                            
-                            state.mod_machines[thread_id][machine_src] = 1;
-                            state.mod_machines[thread_id][machine_dst] = 1;
-                        }
-                    } else {
-                        assert(1 == 0);
-                    }
-                }
-                
-                current_index++;
-                if (current_index == PALS__MAX_INTENTOS) current_index = 0;
-            }
+            /* Hago el swap */
+            EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst] = machine_src;
+            EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
+        } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
+            machine_dst = movements[thread_id].dst;
+            
+            /* Hago el move */
+            EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
+        } else {
+            assert(1 == 0);
         }
     }
-
-    memset(state.mod_machines[thread_id], 0, sizeof(int) * INPUT.machines_count);
     
     refresh_solution(&EA_THREADS[thread_id].population[solution_index]);
 
@@ -377,20 +338,20 @@ void pals_search(int thread_id, int solution_index) {
         if (fitness_post < fitness_pre) {
             CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
             
-            /*if (best_movimiento == PALS_MOVIMIENTO_SWAP) {
+            if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
                 CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[thread_id]++;
-            } else if (best_movimiento == PALS_MOVIMIENTO_MOVE) {
+            } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
                 CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[thread_id]++;
-            }*/
+            }
         }
         if (fitness_post > fitness_pre) {
             CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
             
-            /*if (best_movimiento == PALS_MOVIMIENTO_SWAP) {
+            if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
                 CHC_PALS_COUNT_FITNESS_DECLINE_SWAP[thread_id]++;
-            } else if (best_movimiento == PALS_MOVIMIENTO_MOVE) {
+            } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
                 CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[thread_id]++;
-            }*/
+            }
         }
     #endif
 }
