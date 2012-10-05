@@ -271,7 +271,7 @@ void chc_evolution(int thread_id) {
             ref_point_changed = 0;
 
             /* Ejecuto la búsqueda local sobre una solución "elite" */
-            aux_index = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
+            aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
 
             pals_src_idx = EA_THREADS[thread_id].sorted_population[aux_index];
             pals_dst_idx = EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__BEST_SOLS_KEPT];
@@ -295,7 +295,7 @@ void chc_evolution(int thread_id) {
                         pre_mut_fitness = fitness(thread_id, current_index);
                     #endif
 
-                    aux_index = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT;
+                    aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
 
                     /* Muto la solución */
                     mutate(EA_INSTANCE.rand_state[thread_id],
