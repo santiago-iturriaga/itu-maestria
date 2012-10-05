@@ -35,5 +35,9 @@ extern struct aga_state AGA;
  * Ejecuta el algoritmo.
  */
 void archivers_aga();
+
+#ifdef NONMPI
+    int archivers_aga_add(int new_solution_pos);
+#endif
     
 #endif // AGA__H_
