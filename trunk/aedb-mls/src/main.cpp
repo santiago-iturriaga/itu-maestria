@@ -46,7 +46,7 @@ int main(int argc, char** argv)
             exit(EXIT_FAILURE);
         }
     #else
-        if (world_size == 1) {
+        if (world_size != 1) {
             // Procesos insuficientes.
             fprintf(stderr, "[ERROR][%d] En modo NONMPI *SIEMPRE* debe especificar 1 proceso MPI.\n", world_rank);
             MPI_Finalize();
