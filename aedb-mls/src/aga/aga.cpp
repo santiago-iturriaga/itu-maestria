@@ -37,9 +37,6 @@ void archivers_aga() {
             fprintf(stderr, "[DEBUG][AGA] Waiting for a message.\n");
         #endif
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        #ifndef NDEBUG
-            fprintf(stderr, "[DEBUG][AGA] Probed!\n");
-        #endif
 
         if (status.MPI_TAG == AGA__NEW_SOL_MSG) {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
@@ -54,7 +51,7 @@ void archivers_aga() {
                 input_buffer[s].status = SOLUTION__STATUS_NEW;
 
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG][AGA] Received (%.2f / %.2f / %.2f)\n", 
+                    fprintf(stderr, "[DEBUG][AGA] Received (energy=%.2f / coverage=%.2f / nforwardings=%.2f)\n", 
                         input_buffer[s].energy, input_buffer[s].coverage, input_buffer[s].nforwardings);
                 #endif
 
@@ -83,11 +80,6 @@ void archivers_aga() {
                     }
                 }
 
-                #ifndef NDEBUG
-                    if (input_buffer[s].status != SOLUTION__STATUS_EMPTY) {
-                        fprintf(stderr, "[DEBUG][AGA] No es SOLUTION__STATUS_EMPTY?!\n");
-                    }
-                #endif
                 assert(input_buffer[s].status == SOLUTION__STATUS_EMPTY);
             }
             
@@ -96,7 +88,6 @@ void archivers_aga() {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
             
             #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG][AGA] New solution received (count=%d)\n", msg_count);
                 fprintf(stderr, "[DEBUG][AGA] Terminate message received\n");
             #endif
             MPI_Recv(&aux, 1, MPI_INT, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -111,20 +102,20 @@ void archivers_aga() {
         }
     }
 
-    fprintf(stderr, "[INFO] AGA information ================= \n");
+    fprintf(stderr, "[INFO] AGA information ============================================ \n");
     fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
-    fprintf(stderr, "[INFO] [Population]\n");
+    fprintf(stderr, "[INFO] Population:\n");
     for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
         if (AGA.population[i].status == SOLUTION__STATUS_READY) {
             fprintf(stderr, "(%d) borders_threshold   = %.2f\n", i, AGA.population[i].borders_threshold);
-            fprintf(stderr, "    margin_forwarding   = %.2f\n", AGA.population[i].margin_forwarding);
-            fprintf(stderr, "    min_delay           = %.2f\n", AGA.population[i].min_delay);
-            fprintf(stderr, "    max_delay           = %.2f\n", AGA.population[i].max_delay);
-            fprintf(stderr, "    neighbors_threshold = %d\n", AGA.population[i].neighbors_threshold);
-            fprintf(stderr, "    energy              = %.2f\n", AGA.population[i].energy);
-            fprintf(stderr, "    coverage            = %.2f\n", AGA.population[i].coverage);
-            fprintf(stderr, "    nforwardings        = %.2f\n", AGA.population[i].nforwardings);
-            fprintf(stderr, "    time                = %.2f\n", AGA.population[i].time);
+            fprintf(stderr, "     margin_forwarding   = %.2f\n", AGA.population[i].margin_forwarding);
+            fprintf(stderr, "     min_delay           = %.2f\n", AGA.population[i].min_delay);
+            fprintf(stderr, "     max_delay           = %.2f\n", AGA.population[i].max_delay);
+            fprintf(stderr, "     neighbors_threshold = %d\n", AGA.population[i].neighbors_threshold);
+            fprintf(stderr, "     energy              = %.2f\n", AGA.population[i].energy);
+            fprintf(stderr, "     coverage            = %.2f\n", AGA.population[i].coverage);
+            fprintf(stderr, "     nforwardings        = %.2f\n", AGA.population[i].nforwardings);
+            fprintf(stderr, "     time                = %.2f\n", AGA.population[i].time);
         }
     }
 
