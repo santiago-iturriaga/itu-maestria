@@ -268,10 +268,13 @@ check: src/main.cu \
 		src/load_instance.h \
 		src/scenario.cu \
 		src/scenario.h \
+		src/scenario_struct.h \
 		src/etc_matrix.cu \
 		src/etc_matrix.h \
+		src/etc_matrix_struct.h \
 		src/energy_matrix.cu \
 		src/energy_matrix.h \
+		src/energy_matrix_struct.h \
 		src/solution.cu \
 		src/solution.h \
 		src/utils.cu \
@@ -288,8 +291,12 @@ check: src/main.cu \
 		src/cmochc/cmochc_island.cu \
 		src/cmochc/cmochc_island_chc.h \
 		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_pals.h \
+		src/cmochc/cmochc_island_pals.cu \
 		src/cmochc/cmochc_island_utils.h \
 		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.h \
+		src/archivers/aga.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -298,6 +305,7 @@ check: src/main.cu \
 		src/basic/pminmin.h 
 	cppcheck *.c \
 		src/*.cu \
+		src/archivers/*.cu \
 		src/basic/*.cu \
 		src/random/*.cu \
 		src/cmochc/*.cu
@@ -309,10 +317,13 @@ valgrind: src/main.cu \
 		src/load_instance.h \
 		src/scenario.cu \
 		src/scenario.h \
+		src/scenario_struct.h \
 		src/etc_matrix.cu \
 		src/etc_matrix.h \
+		src/etc_matrix_struct.h \
 		src/energy_matrix.cu \
 		src/energy_matrix.h \
+		src/energy_matrix_struct.h \
 		src/solution.cu \
 		src/solution.h \
 		src/utils.cu \
@@ -329,8 +340,12 @@ valgrind: src/main.cu \
 		src/cmochc/cmochc_island.cu \
 		src/cmochc/cmochc_island_chc.h \
 		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_pals.h \
+		src/cmochc/cmochc_island_pals.cu \
 		src/cmochc/cmochc_island_utils.h \
 		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.h \
+		src/archivers/aga.cu \
 		src/basic/mct.cu \
 		src/basic/mct.h \
 		src/basic/minmin.cu \
@@ -339,7 +354,7 @@ valgrind: src/main.cu \
 		src/basic/pminmin.h 
 	valgrind -v --leak-check=full --show-possibly-lost=yes --track-origins=yes bin/gmochc_cpu \
 		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 \
-		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 500 12
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 3 0 1 10
 
 clean:
 	rm bin/*

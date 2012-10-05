@@ -131,7 +131,7 @@ struct cmochc_island {
     RAND_STATE rand_state[MAX_THREADS+1];
     
     /* Archiver */
-    int arhiver_new_pop_size;
+    int archiver_new_pop_size;
 
     /* Sync */
     pthread_barrier_t sync_barrier;

@@ -514,6 +514,10 @@ void init() {
         exit(EXIT_FAILURE);
     }
 
+    /* Inicializo el archivador */
+    EA_INSTANCE.archiver_new_pop_size = INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT;
+    archivers_aga_init(CMOCHC_PARETO_FRONT__PATCHES);
+
     /* Inicializo los hilos */
     for (int i = 0; i < INPUT.thread_count; i++)
     {
@@ -527,11 +531,6 @@ void init() {
             exit(EXIT_FAILURE);
         }
     }
-
-    /* Inicializo el archivador */
-    EA_INSTANCE.arhiver_new_pop_size = INPUT.thread_count * CMOCHC_LOCAL__BEST_SOLS_KEPT;
-    
-    archivers_aga_init(CMOCHC_PARETO_FRONT__PATCHES);
 }
 
 /* Obtiene los mejores elementos de cada población */
@@ -556,7 +555,7 @@ int gather() {
     #endif
 
     int new_solutions;
-    new_solutions = archivers_aga(EA_INSTANCE.arhiver_new_pop_size);
+    new_solutions = archivers_aga(EA_INSTANCE.archiver_new_pop_size);
 
     #ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] Total solutions gathered      = %d\n", new_solutions);
@@ -1088,6 +1087,6 @@ void display_results() {
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize() {
-    archivers_aga_free(EA_INSTANCE.arhiver_new_pop_size);
+    archivers_aga_free(EA_INSTANCE.archiver_new_pop_size);
     pthread_barrier_destroy(&(EA_INSTANCE.sync_barrier));
 }
