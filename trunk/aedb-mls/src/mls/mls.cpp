@@ -220,7 +220,7 @@ void* mls_thread(void *data)
                         if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
                             // Encontré una posición libre. Agrego la solución al archivo acá.
                             clone_solution(&AGA.population[i], &MLS.population[thread_id]);
-                            rc = archivers_aga_add(i);
+                            archivers_aga_add(i);
                             MLS.population[thread_id].status = SOLUTION__STATUS_READY;
                         }
                     }
@@ -356,7 +356,7 @@ void* mls_thread(void *data)
                         if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
                             // Encontré una posición libre. Agrego la solución al archivo acá.
                             clone_solution(&AGA.population[i], &MLS.population[thread_id]);
-                            rc = archivers_aga_add(i);
+                            archivers_aga_add(i);
                             MLS.population[thread_id].status = SOLUTION__STATUS_READY;
                         }
                     }
