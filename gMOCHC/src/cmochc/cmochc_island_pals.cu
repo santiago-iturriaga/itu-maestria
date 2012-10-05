@@ -31,7 +31,8 @@ void pals_search(int thread_id, int solution_index) {
     
         FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
         FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
-
+    #endif
+    #ifdef DEBUG_1
         CHC_PALS_COUNT_EXECUTIONS[thread_id]++;
     #endif
 
@@ -362,7 +363,7 @@ void pals_search(int thread_id, int solution_index) {
 
     EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
 
-    #ifdef DEBUG_3
+    #ifdef DEBUG_1
         FLOAT fitness_post = fitness(thread_id, solution_index);
         
         FLOAT fitness_pre = fitness_zn(
@@ -370,9 +371,11 @@ void pals_search(int thread_id, int solution_index) {
             EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
             EA_THREADS[thread_id].energy_nadir_value, EA_THREADS[thread_id].energy_zenith_value);
 
-        fprintf(stderr, "[DEBUG] <thread=%d> PALS fitness from %.4f to %.4f (makespan %.2f->%.2f / energy %.2f->%.2f)\n",
-            thread_id, fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan,
-            energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] <thread=%d> PALS fitness from %.4f to %.4f (makespan %.2f->%.2f / energy %.2f->%.2f)\n",
+                thread_id, fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan,
+                energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
+        #endif
 
         if (fitness_post < fitness_pre) CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
         if (fitness_post > fitness_pre) CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
