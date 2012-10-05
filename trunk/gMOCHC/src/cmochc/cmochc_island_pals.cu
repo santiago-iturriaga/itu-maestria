@@ -8,7 +8,7 @@
 #include "cmochc_island.h"
 #include "cmochc_island_chc.h"
 
-#ifdef DEBUG_3
+#ifdef DEBUG_1
     int CHC_PALS_COUNT_EXECUTIONS[MAX_THREADS] = {0};
     int CHC_PALS_COUNT_FITNESS_IMPROV[MAX_THREADS] = {0};
     int CHC_PALS_COUNT_FITNESS_DECLINE[MAX_THREADS] = {0};
