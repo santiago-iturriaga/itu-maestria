@@ -44,6 +44,8 @@ void init_mpi_solution();
 /* Crea una copia exacta de la solución "src" en la solución "dst" */
 void clone_solution(struct solution *dst, struct solution *src);
 
+void show_solution(struct solution *sol);
+
 /* Devuelve el valor del la n-esima métrica objetivo en la solución s */
 inline double get_objective(struct solution *s, int obj_index) {
     if (obj_index == SOLUTION__ENERGY_OBJ) {

@@ -190,6 +190,11 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
             #endif
 
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][%d] Thread %d starting solution:\n", world_rank, thread_id);
+                show_solution(&MLS.population[thread_id]);
+            #endif
+
             // Envío la solución computada por la heurística a AGA.
             pthread_mutex_lock(&MLS.mpi_mutex);
                 #ifdef MPI_MODE_STANDARD
@@ -211,16 +216,8 @@ void* mls_thread(void *data)
             pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
                 MLS.work_type[thread_id] = MLS__SEARCH;
             pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
-
-            #ifndef NDEBUG
-               fprintf(stderr, "[DEBUG] MLS__INIT (READY!!!)\n");
-            #endif
         }
         else if (work_type == MLS__SEARCH) {
-            #ifndef NDEBUG
-                 fprintf(stderr, "[DEBUG] MLS__SEARCH\n");
-            #endif
-
             double delta;
             double alfa = 0.2;
             int rand_op;
@@ -258,6 +255,10 @@ void* mls_thread(void *data)
                         } else {
                             MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         }
+                        
+                        if (MLS.population[thread_id].borders_threshold < MLS.lbound_border_threshold) 
+                            MLS.population[thread_id].borders_threshold = MLS.lbound_border_threshold;
+                        
                         break;
                     case LS_COVERAGE :
                         // Augment neighbors_threshold
@@ -269,63 +270,69 @@ void* mls_thread(void *data)
                         } else {
                             MLS.population[thread_id].neighbors_threshold -= floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         }
+    
+                        if (MLS.population[thread_id].neighbors_threshold < MLS.lbound_neighbors_threshold) 
+                            MLS.population[thread_id].neighbors_threshold = MLS.lbound_neighbors_threshold;
+                        
                         break;
                     case LS_TIME :
                         delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay;
                         
-                        if ( cpu_mt_generate(MLS.random_states[thread_id]) < 0.5 ){
+                        if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5){
                             // Reduce max delay
                             MLS.population[thread_id].max_delay -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         } else {
                             // Augment min delay
                             MLS.population[thread_id].min_delay += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         }
+                        
+                        if (MLS.population[thread_id].min_delay < MLS.lbound_min_delay) MLS.population[thread_id].min_delay = MLS.lbound_min_delay;
+                        if (MLS.population[thread_id].max_delay < MLS.lbound_max_delay) MLS.population[thread_id].max_delay = MLS.lbound_max_delay;
+                        
                         break;
                 }
+            }
+
+            #ifndef LOCAL
+                // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
+                double *aux;
+                aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
+                    MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
+                    MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
+                    MLS.population[thread_id].neighbors_threshold);
+
+                MLS.population[thread_id].energy = aux[0];
+                MLS.population[thread_id].coverage = aux[1];
+                MLS.population[thread_id].nforwardings = aux[2];
+                MLS.population[thread_id].time = aux[3];
                 
-                #ifndef LOCAL
-                    // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
-                    double *aux;
-                    aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
-                        MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
-                        MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
-                        MLS.population[thread_id].neighbors_threshold);
+                free(aux);
+            #else
+                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
+                MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+            #endif
+            
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
+                show_solution(&MLS.population[thread_id]);
+            #endif
 
-                    MLS.population[thread_id].energy = aux[0];
-                    MLS.population[thread_id].coverage = aux[1];
-                    MLS.population[thread_id].nforwardings = aux[2];
-                    MLS.population[thread_id].time = aux[3];
-                    
-                    free(aux);
-                #else
-                    MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
-                    MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
-                    MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
-                    MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+            pthread_mutex_lock(&MLS.mpi_mutex);
+                #ifdef MPI_MODE_STANDARD
+                    MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
                 #endif
-            }
 
-            // Solamente si logro mejorar la solucion, intento agregarla al archivo.
-            if (1 == 1) // TODO!!!
-            {
-                pthread_mutex_lock(&MLS.mpi_mutex);
-                    #ifdef MPI_MODE_STANDARD
-                        MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                    #endif
+                #ifdef MPI_MODE_SYNC
+                    MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #endif
 
-                    #ifdef MPI_MODE_SYNC
-                        MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                    #endif
-
-                    #ifdef MPI_MODE_BUFFERED
-                        MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                    #endif
-                pthread_mutex_unlock(&MLS.mpi_mutex);
-            }
+                #ifdef MPI_MODE_BUFFERED
+                    MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                #endif
+            pthread_mutex_unlock(&MLS.mpi_mutex);
         }
-        #ifndef NDEBUG
-           fprintf(stderr, "[DEBUG] MLS__SEARCH (READY!!!!)\n");
-       #endif
     }
 
     return NULL;
