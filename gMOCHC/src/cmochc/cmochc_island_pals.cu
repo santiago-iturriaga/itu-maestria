@@ -74,8 +74,8 @@ void pals_search(int thread_id, int solution_index) {
             delta = 0.0;
 
             // Obtengo las tareas sorteadas.
-            task_x = random1 * INPUT.tasks_count;
-            task_y = random2 * INPUT.tasks_count;
+            task_x = (int)(random1 * INPUT.tasks_count);
+            task_y = (int)(random2 * INPUT.tasks_count);
 
             if (task_x != task_y) {
                 // Obtengo las máquinas a las que estan asignadas las tareas.
@@ -157,11 +157,11 @@ void pals_search(int thread_id, int solution_index) {
 
             // ================= Obtengo la tarea sorteada, la máquina a la que esta asignada,
             // ================= y el compute time de la máquina.
-            task_x = random1 * INPUT.tasks_count;
+            task_x = (int)(random1 * INPUT.tasks_count);
             machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
 
             // ================= Obtengo la máquina destino sorteada.
-            machine_b = random2 * INPUT.machines_count;
+            machine_b = (int)(random2 * INPUT.machines_count);
 
             if (machine_a != machine_b) {
                 machine_a_ct_old = EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_a];
