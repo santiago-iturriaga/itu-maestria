@@ -329,7 +329,7 @@ void init() {
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
-    //fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
+    fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
 
     fprintf(stderr, "       CMOCHC_LOCAL__MUTATE_INITIAL_POP            : ");
     #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
@@ -697,9 +697,7 @@ void* slave_thread(void *data) {
     pals_init(thread_id);
 
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
-    EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
-    //EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
-    EA_THREADS[thread_id].threshold_step = 1;
+    EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
     if (EA_THREADS[thread_id].threshold_step == 0) EA_THREADS[thread_id].threshold_step = 1;
 
     int status = CMOCHC_THREAD_STATUS__IDLE;
