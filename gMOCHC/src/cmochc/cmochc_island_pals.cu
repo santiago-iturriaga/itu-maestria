@@ -86,11 +86,11 @@ void pals_search(int thread_id, int solution_index) {
         int selected_machine;
         if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.33) {
             selected_machine = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
-        } else if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.66) {
-            selected_machine = makespan_machine_index;
         } else {
+            selected_machine = makespan_machine_index;
+        }/* else {
             selected_machine = energy_machine_index;
-        }
+        }*/
         
 
         FLOAT score;
