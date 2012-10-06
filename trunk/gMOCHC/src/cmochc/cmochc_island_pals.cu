@@ -85,14 +85,13 @@ void pals_search(int thread_id, int solution_index) {
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
         int selected_machine;
         if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.33) {
-            selected_machine = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
+            selected_machine = -1;
         } else {
             selected_machine = makespan_machine_index;
         }/* else {
             selected_machine = energy_machine_index;
         }*/
         
-
         FLOAT score;
         int movimiento;
         
@@ -106,6 +105,12 @@ void pals_search(int thread_id, int solution_index) {
         // Obtengo las tareas sorteadas.
         int task_x;
         int machine_a;
+        
+        FLOAT machine_a_ct_old, machine_b_ct_old;
+        FLOAT machine_a_ct_new, machine_b_ct_new;
+
+        FLOAT machine_a_en_old, machine_b_en_old;
+        FLOAT machine_a_en_new, machine_b_en_new;
         
         random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
         task_x = (int)(random1 * INPUT.tasks_count);
@@ -127,17 +132,14 @@ void pals_search(int thread_id, int solution_index) {
                 movimiento = PALS_MOVIMIENTO_MOVE;
             }
 
+            score = 0.0;
+
             if (movimiento == PALS_MOVIMIENTO_SWAP) {
                 // =================
                 // Swap
                 int task_y;
                 int machine_b;
-
-                FLOAT machine_a_ct_old, machine_b_ct_old;
-                FLOAT machine_a_ct_new, machine_b_ct_new;
-
-                score = 0.0;
-           
+          
                 random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);    
                 task_y = (int)(random2 * INPUT.tasks_count);
                 machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
@@ -165,18 +167,29 @@ void pals_search(int thread_id, int solution_index) {
                 machine_b_ct_new -= get_etc_value(machine_b, task_y); // Resto el ETC de y en b.
                 machine_b_ct_new += get_etc_value(machine_b, task_x); // Sumo el ETC de x en b.
 
-                #ifdef DEBUG_3
-                    fprintf(stderr, "[DEBUG] Swap %d with %d (makespan=%.2f)\n", 
-                        task_x, task_y, makespan);
-                    fprintf(stderr, "[DEBUG] Machine CT (a) %.2f to %.2f (b) %.2f to %.2f\n", 
-                        machine_a_ct_old, machine_a_ct_new,
-                        machine_b_ct_old, machine_b_ct_new);
-                #endif
+                machine_a_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_a];
+                machine_b_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_b];
+                
+                machine_a_en_new = machine_b_ct_new * get_scenario_energy_max(machine_a);
+                machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
 
                 FLOAT max_old;
                 max_old = machine_a_ct_old;
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
 
+                #if defined(PALS__SIMPLE_FITNESS)
+                    if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan) ||
+                        (machine_a_en_new > energy_machine) || (machine_b_en_new > energy_machine)) {
+                            
+                        score = VERY_BIG_FLOAT; //TODO!!!
+                    } else {
+                        score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
+                                (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
+
+                        score += ((machine_a_en_new - machine_a_en_old) / energy_machine +
+                                (machine_b_en_new - machine_b_en_old) / energy_machine) * EA_THREADS[thread_id].weight_energy;
+                    }
+                #endif
                 #if defined(PALS__SIMPLE_DELTA)
                     if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
                         score = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
@@ -222,9 +235,6 @@ void pals_search(int thread_id, int solution_index) {
 
                 int machine_b;
 
-                float machine_a_ct_old, machine_b_ct_old;
-                float machine_a_ct_new, machine_b_ct_new;
-
                 score = 0.0;
 
                 // ================= Obtengo la tarea sorteada
@@ -243,6 +253,25 @@ void pals_search(int thread_id, int solution_index) {
                 machine_a_ct_new = machine_a_ct_old - get_etc_value(machine_a, task_x); // Resto del ETC de x en a.
                 machine_b_ct_new = machine_b_ct_old + get_etc_value(machine_b, task_x); // Sumo el ETC de x en b.
 
+                machine_a_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_a];
+                machine_b_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_b];
+                
+                machine_a_en_new = machine_b_ct_new * get_scenario_energy_max(machine_a);
+                machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
+
+                #if defined(PALS__SIMPLE_FITNESS)
+                    if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan) ||
+                        (machine_a_en_new > energy_machine) || (machine_b_en_new > energy_machine)) {
+                            
+                        score = VERY_BIG_FLOAT; //TODO!!!
+                    } else {
+                        score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
+                                (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
+
+                        score += ((machine_a_en_new - machine_a_en_old) / energy_machine +
+                                (machine_b_en_new - machine_b_en_old) / energy_machine) * EA_THREADS[thread_id].weight_energy;
+                    }
+                #endif
                 #if defined(PALS__SIMPLE_DELTA)
                     float max_old;
                     max_old = machine_a_ct_old;
