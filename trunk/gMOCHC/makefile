@@ -422,7 +422,7 @@ gprof: src/main.cu \
 		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
 	bin/gmochc_cpu \
 		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 \
-		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 1000
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 500
 	gprof bin/gmochc_cpu gmon.out > gmon.txt
 
 clean:

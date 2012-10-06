@@ -44,8 +44,12 @@
 inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
-    for (int i = 0; i < INPUT.tasks_count; i++) {
-        if (s1->task_assignment[i] != s2->task_assignment[i]) {
+    int tasks_count = INPUT.tasks_count;
+    int *s1_task_assignment = s1->task_assignment;
+    int *s2_task_assignment = s2->task_assignment;
+
+    for (int i = 0; i < tasks_count; i++) {
+        if (s1_task_assignment[i] != s2_task_assignment[i]) {
             distance++;
         }
     }
@@ -55,6 +59,9 @@ inline int distance(struct solution *s1, struct solution *s2) {
 
     return distance;
 }
+
+//#define CMOCHC_LOCAL__MATING_CHANCE         256
+#define CMOCHC_LOCAL__MATING_CHANCE         2
 
 inline void hux_0(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
@@ -145,6 +152,9 @@ inline void hux_1(RAND_STATE &rand_state,
     refresh_solution(c1);
     refresh_solution(c2);
 }
+
+//#define CMOCHC_LOCAL__MUTATE_CHANCE         256 
+#define CMOCHC_LOCAL__MUTATE_CHANCE         4
 
 inline void mutate_0(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
     int current_task_index = 0;
