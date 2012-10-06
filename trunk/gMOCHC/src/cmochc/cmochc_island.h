@@ -50,7 +50,7 @@ void compute_cmochc_island();
 /* Muta la población inicial creada con MCT */
 #define CMOCHC_LOCAL__MUTATE_INITIAL_POP
 #define CMOCHC_LOCAL__POPULATION_SIZE       12
-#define CMOCHC_LOCAL__ITERATION_COUNT       1000
+#define CMOCHC_LOCAL__ITERATION_COUNT       500
 #define CMOCHC_LOCAL__BEST_SOLS_KEPT        3
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  4
 /* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR local iterations without change */
