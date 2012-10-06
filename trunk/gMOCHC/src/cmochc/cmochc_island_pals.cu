@@ -84,8 +84,14 @@ void pals_search(int thread_id, int solution_index) {
     
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
         int selected_machine;
-        //selected_machine = makespan_machine_index;
-        selected_machine = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
+        if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.33) {
+            selected_machine = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
+        } else if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.66) {
+            selected_machine = makespan_machine_index;
+        } else {
+            selected_machine = energy_machine_index;
+        }
+        
 
         FLOAT score;
         int movimiento;
@@ -348,32 +354,34 @@ void pals_search(int thread_id, int solution_index) {
         }
         
         // Recalculo makespan y energy
-        makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
-        makespan_machine_index = 0;
-        
-        energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
-        energy_machine_index = 0;
-        
-        for (int m = 1; m < INPUT.machines_count; m++) {
-            if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
-                makespan_machine_index = m;
-                makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
-                
-            } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
-                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+        if (i + 1 < PALS__MAX_BUSQUEDAS) {
+            makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+            makespan_machine_index = 0;
+            
+            energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+            energy_machine_index = 0;
+            
+            for (int m = 1; m < INPUT.machines_count; m++) {
+                if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
                     makespan_machine_index = m;
                     makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
+                    
+                } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
+                    if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                        makespan_machine_index = m;
+                        makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
+                    }
                 }
-            }
 
-            if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] > energy_machine) {
-                energy_machine_index = m;
-                energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
-                
-            } else if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] == energy_machine) {
-                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] > energy_machine) {
                     energy_machine_index = m;
                     energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
+                    
+                } else if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] == energy_machine) {
+                    if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                        energy_machine_index = m;
+                        energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
+                    }
                 }
             }
         }
