@@ -41,7 +41,7 @@ void pals_free(int thread_id) {
 }
 
 void pals_search(int thread_id, int solution_index) {
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {
         #ifdef DEBUG_3
             fprintf(stderr, "[INFO] =======> PALS!\n");
         #endif

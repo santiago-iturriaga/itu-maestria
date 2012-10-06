@@ -133,7 +133,7 @@ inline void hux_1(RAND_STATE &rand_state,
     int random_task;
 
     for (int i = 0; i < cant_crossovers; i++) {
-        random_task = RAND_GENERATE(rand_state) * tasks_count;
+        random_task = (int)(RAND_GENERATE(rand_state) * tasks_count);
         
         c1_task_assignment[random_task] = p2_task_assignment[random_task];
         c2_task_assignment[random_task] = p1_task_assignment[random_task];
@@ -215,8 +215,8 @@ inline void mutate_1(RAND_STATE &rand_state, struct solution *seed_solution, str
     int random_machine;
 
     for (int i = 0; i < cant_mutations; i++) {
-        random_task = RAND_GENERATE(rand_state) * tasks_count;
-        random_machine = RAND_GENERATE(rand_state) * machines_count;
+        random_task = (int)(RAND_GENERATE(rand_state) * tasks_count);
+        random_machine = (int)(RAND_GENERATE(rand_state) * machines_count);
         
         task_assignment[random_task] = random_machine;
     }
