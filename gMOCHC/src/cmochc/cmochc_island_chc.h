@@ -22,6 +22,25 @@
 
 #define CHC__MUTATION_PROB 0.8
 
+//#define CHC__CROSS_OP 0
+#define CHC__CORSS_OP 1
+
+#define CHC__CROSS_PROB 0.8
+
+#if CHC__MUTATE_OP == 0
+    #define CHC__MUTATE(rand_state,seed,mutation) mutate_0(rand_state,seed,mutation);
+#endif
+#if CHC__MUTATE_OP == 1
+    #define CHC__MUTATE(rand_state,seed,mutation) mutate_1(rand_state,seed,mutation);
+#endif
+
+#if CHC__CORSS_OP == 0
+    #define CHC__CROSS(rand_state, p1, p2, c1, c2) hux_0(rand_state, p1, p2, c1, c2);
+#endif
+#if CHC__CORSS_OP == 1
+    #define CHC__CROSS(rand_state, p1, p2, c1, c2) hux_1(rand_state, p1, p2, c1, c2);
+#endif
+
 inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
@@ -37,7 +56,7 @@ inline int distance(struct solution *s1, struct solution *s2) {
     return distance;
 }
 
-inline void hux(RAND_STATE &rand_state,
+inline void hux_0(RAND_STATE &rand_state,
     struct solution *p1, struct solution *p2,
     struct solution *c1, struct solution *c2) {
 
@@ -93,12 +112,39 @@ inline void hux(RAND_STATE &rand_state,
     refresh_solution(c2);
 }
 
-#if CHC__MUTATE_OP == 0
-    #define CHC__MUTATE(rand_state,seed,mutation) mutate_0(rand_state,seed,mutation);
-#endif
-#if CHC__MUTATE_OP == 1
-    #define CHC__MUTATE(rand_state,seed,mutation) mutate_1(rand_state,seed,mutation);
-#endif
+inline void hux_1(RAND_STATE &rand_state,
+    struct solution *p1, struct solution *p2,
+    struct solution *c1, struct solution *c2) {
+
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
+    
+    clone_solution(c1, p1);
+    clone_solution(c2, p2);
+    
+    int *p1_task_assignment = p1->task_assignment;
+    int *p2_task_assignment = p2->task_assignment;
+    
+    int *c1_task_assignment = c1->task_assignment;
+    int *c2_task_assignment = c2->task_assignment;
+    
+    int cant_crossovers = machines_count;
+
+    int random_task;
+
+    for (int i = 0; i < cant_crossovers; i++) {
+        random_task = RAND_GENERATE(rand_state) * tasks_count;
+        
+        c1_task_assignment[random_task] = p2_task_assignment[random_task];
+        c2_task_assignment[random_task] = p1_task_assignment[random_task];
+    }
+
+    c1->initialized = SOLUTION__IN_USE;
+    c2->initialized = SOLUTION__IN_USE;
+
+    refresh_solution(c1);
+    refresh_solution(c2);
+}
 
 inline void mutate_0(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
     int current_task_index = 0;
@@ -152,6 +198,7 @@ inline void mutate_0(RAND_STATE &rand_state, struct solution *seed, struct solut
         }
     }
 
+    mutation->initialized = SOLUTION__IN_USE;
     refresh_solution(mutation);
 }
 
@@ -174,6 +221,7 @@ inline void mutate_1(RAND_STATE &rand_state, struct solution *seed_solution, str
         task_assignment[random_task] = random_machine;
     }
 
+    mutated_solution->initialized = SOLUTION__IN_USE;
     refresh_solution(mutated_solution);
 }
 

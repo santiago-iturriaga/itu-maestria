@@ -618,11 +618,11 @@ void solution_migration(int thread_id) {
                                 &EA_THREADS[thread_id].population[migration_parent_index]);
 
                             if (d > EA_THREADS[thread_id].threshold_max) {
-                                hux(EA_INSTANCE.rand_state[thread_id],
+                                CHC__CROSS(EA_INSTANCE.rand_state[thread_id],
                                     &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                     &EA_THREADS[thread_id].population[migration_parent_index],
                                     &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index]],
-                                    &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]]);
+                                    &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[next_solution_index+1]])
 
                                 next_solution_index += 2;
                                 migrated_solution_index++;
@@ -647,7 +647,7 @@ void solution_migration(int thread_id) {
                         }
                     #endif
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-                        MUTATE(EA_INSTANCE.rand_state[thread_id],
+                        CHC__MUTATE(EA_INSTANCE.rand_state[thread_id],
                             &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                             &EA_THREADS[thread_id].population[next_solution_index])
 
