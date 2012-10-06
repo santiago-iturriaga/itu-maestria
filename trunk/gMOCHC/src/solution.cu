@@ -34,6 +34,7 @@ void create_empty_solution(struct solution *new_solution) {
     //=== Estructura de energy.
     new_solution->energy_consumption = 0.0;
     new_solution->machine_energy_consumption = (FLOAT*)(malloc(sizeof(FLOAT) * INPUT.machines_count));
+    new_solution->machine_active_energy_consumption = (FLOAT*)(malloc(sizeof(FLOAT) * INPUT.machines_count));
 
     if (new_solution->machine_energy_consumption == NULL) {
         fprintf(stderr, "[ERROR] solicitando memoria para el new_solution->__machine_energy_consumption.\n");
@@ -42,6 +43,7 @@ void create_empty_solution(struct solution *new_solution) {
 
     for (int machine = 0; machine < INPUT.machines_count; machine++) {
         new_solution->machine_energy_consumption[machine] = 0.0;
+        new_solution->machine_active_energy_consumption[machine] = 0.0;
     }
 }
 
@@ -54,12 +56,14 @@ void clone_solution(struct solution *dst, struct solution *src) {
     memcpy(dst->task_assignment, src->task_assignment, sizeof(int) * INPUT.tasks_count);
     memcpy(dst->machine_compute_time, src->machine_compute_time, sizeof(FLOAT) * INPUT.machines_count);
     memcpy(dst->machine_energy_consumption, src->machine_energy_consumption, sizeof(FLOAT) * INPUT.machines_count);
+    memcpy(dst->machine_active_energy_consumption, src->machine_active_energy_consumption, sizeof(FLOAT) * INPUT.machines_count);
 }
 
 void free_solution(struct solution *sol) {
     free(sol->task_assignment);
     free(sol->machine_compute_time);
     free(sol->machine_energy_consumption);
+    free(sol->machine_active_energy_consumption);
 }
 
 void validate_solution(struct solution *s) {

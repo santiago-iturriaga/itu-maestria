@@ -27,6 +27,7 @@ struct solution {
     FLOAT *machine_compute_time;
     FLOAT makespan;
     
+    FLOAT *machine_active_energy_consumption;
     FLOAT *machine_energy_consumption;
     FLOAT energy_consumption;
 };
@@ -38,7 +39,35 @@ void free_solution(struct solution *s);
 void validate_solution(struct solution *s);
 void show_solution(struct solution *s);
 
-inline void refresh_solution(struct solution *sol) {
+inline void recompute_metrics(struct solution *sol) {
+    int machines_count = INPUT.machines_count;
+   
+    FLOAT makespan = 0.0;
+    FLOAT *machine_compute_time = sol->machine_compute_time;
+    
+    for (int machine = 0; machine < machines_count; machine++) {      
+        if (makespan < machine_compute_time[machine]) {
+            makespan = machine_compute_time[machine];
+        }
+    }
+
+    sol->makespan = makespan;
+    
+    FLOAT energy_consumption = 0.0;
+    FLOAT *machine_energy_consumption = sol->machine_energy_consumption;
+    FLOAT *machine_active_energy_consumption = sol->machine_active_energy_consumption;
+
+    for (int machine = 0; machine < machines_count; machine++) {
+        machine_energy_consumption[machine] = machine_active_energy_consumption[machine] + 
+            ((makespan - machine_compute_time[machine]) * get_scenario_energy_idle(machine));
+        
+        energy_consumption += machine_energy_consumption[machine];
+    }
+
+    sol->energy_consumption = energy_consumption;
+}
+
+inline void recompute_solution(struct solution *sol) {
     int machines_count = INPUT.machines_count;
     int tasks_count = INPUT.tasks_count;
    
@@ -63,11 +92,12 @@ inline void refresh_solution(struct solution *sol) {
     
     FLOAT energy_consumption = 0.0;
     FLOAT *machine_energy_consumption = sol->machine_energy_consumption;
+    FLOAT *machine_active_energy_consumption = sol->machine_active_energy_consumption;
 
     for (int machine = 0; machine < machines_count; machine++) {
-        machine_energy_consumption[machine] = makespan * get_scenario_energy_idle(machine);
-        machine_energy_consumption[machine] += machine_compute_time[machine] * 
-            (get_scenario_energy_max(machine) - get_scenario_energy_idle(machine));
+        machine_active_energy_consumption[machine] = machine_compute_time[machine] * get_scenario_energy_max(machine);
+        machine_energy_consumption[machine] = machine_active_energy_consumption[machine] + 
+            ((makespan - machine_compute_time[machine]) * get_scenario_energy_idle(machine));
         
         energy_consumption += machine_energy_consumption[machine];
     }

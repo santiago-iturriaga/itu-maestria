@@ -115,8 +115,9 @@ inline void hux_0(RAND_STATE &rand_state,
     c1->initialized = SOLUTION__IN_USE;
     c2->initialized = SOLUTION__IN_USE;
 
-    refresh_solution(c1);
-    refresh_solution(c2);
+    //TODO: ARREGLAR!!!
+    recompute_solution(c1);
+    recompute_solution(c2);
 }
 
 inline void hux_1(RAND_STATE &rand_state,
@@ -134,23 +135,53 @@ inline void hux_1(RAND_STATE &rand_state,
     
     int *c1_task_assignment = c1->task_assignment;
     int *c2_task_assignment = c2->task_assignment;
+
+    FLOAT *c1_machine_compute_time = c1->machine_compute_time;
+    FLOAT *c2_machine_compute_time = c2->machine_compute_time;
+
+    FLOAT *c1_machine_active_energy_consumption = c1->machine_active_energy_consumption;
+    FLOAT *c2_machine_active_energy_consumption = c2->machine_active_energy_consumption;
     
     int cant_crossovers = machines_count;
 
-    int random_task;
+    int task_src;
+    int machine_src, machine_dst;
 
     for (int i = 0; i < cant_crossovers; i++) {
-        random_task = (int)(RAND_GENERATE(rand_state) * tasks_count);
+        task_src = (int)(RAND_GENERATE(rand_state) * tasks_count);
         
-        c1_task_assignment[random_task] = p2_task_assignment[random_task];
-        c2_task_assignment[random_task] = p1_task_assignment[random_task];
+        if (c1_task_assignment[task_src] != p2_task_assignment[task_src]) {   
+            machine_src = c1_task_assignment[task_src];
+            machine_dst = p2_task_assignment[task_src];
+            
+            c1_machine_compute_time[machine_src] -= get_etc_value(machine_src, task_src);
+            c1_machine_compute_time[machine_dst] += get_etc_value(machine_dst, task_src);
+
+            c1_machine_active_energy_consumption[machine_src] -= get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_src);
+            c1_machine_active_energy_consumption[machine_dst] += get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src);
+            
+            c1_task_assignment[task_src] = machine_dst;
+        }
+                
+        if (c2_task_assignment[task_src] != p1_task_assignment[task_src]) {
+            machine_src = c2_task_assignment[task_src];
+            machine_dst = p1_task_assignment[task_src];
+            
+            c2_machine_compute_time[machine_src] -= get_etc_value(machine_src, task_src);
+            c2_machine_compute_time[machine_dst] += get_etc_value(machine_dst, task_src);
+
+            c2_machine_active_energy_consumption[machine_src] -= get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_src);
+            c2_machine_active_energy_consumption[machine_dst] += get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src);
+            
+            c2_task_assignment[task_src] = machine_dst;
+        }
     }
 
     c1->initialized = SOLUTION__IN_USE;
     c2->initialized = SOLUTION__IN_USE;
 
-    refresh_solution(c1);
-    refresh_solution(c2);
+    recompute_metrics(c1);
+    recompute_metrics(c2);
 }
 
 //#define CMOCHC_LOCAL__MUTATE_CHANCE         256 
@@ -209,30 +240,41 @@ inline void mutate_0(RAND_STATE &rand_state, struct solution *seed, struct solut
     }
 
     mutation->initialized = SOLUTION__IN_USE;
-    refresh_solution(mutation);
+    //TODO: ARREGLAR!!!
+    recompute_solution(mutation);
 }
 
 inline void mutate_1(RAND_STATE &rand_state, struct solution *seed_solution, struct solution *mutated_solution) {
     int tasks_count = INPUT.tasks_count;
     int machines_count = INPUT.machines_count;
     
-    clone_solution(mutated_solution, seed_solution);
+    if (mutated_solution != seed_solution) clone_solution(mutated_solution, seed_solution);
     
     int *task_assignment = mutated_solution->task_assignment;
+    FLOAT *machine_compute_time = mutated_solution->machine_compute_time;
+    FLOAT *machine_active_energy_consumption = mutated_solution->machine_active_energy_consumption;
+    
     int cant_mutations = machines_count;
 
-    int random_task;
-    int random_machine;
+    int task_src;
+    int machine_src, machine_dst;
 
     for (int i = 0; i < cant_mutations; i++) {
-        random_task = (int)(RAND_GENERATE(rand_state) * tasks_count);
-        random_machine = (int)(RAND_GENERATE(rand_state) * machines_count);
+        task_src = (int)(RAND_GENERATE(rand_state) * tasks_count);
+        machine_src = task_assignment[task_src];
+        machine_dst = (int)(RAND_GENERATE(rand_state) * machines_count);
         
-        task_assignment[random_task] = random_machine;
+        machine_compute_time[machine_src] -= get_etc_value(machine_src, task_src);
+        machine_compute_time[machine_dst] += get_etc_value(machine_dst, task_src);
+
+        machine_active_energy_consumption[machine_src] -= get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_src);
+        machine_active_energy_consumption[machine_dst] += get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src);
+        
+        task_assignment[task_src] = machine_dst;
     }
 
     mutated_solution->initialized = SOLUTION__IN_USE;
-    refresh_solution(mutated_solution);
+    recompute_metrics(mutated_solution);
 }
 
 extern inline FLOAT fitness_zn(int thread_id, 

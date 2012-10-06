@@ -14,6 +14,7 @@ void compute_mct(struct solution *sol) {
     int machines_count = INPUT.machines_count;
     
     FLOAT *machine_compute_time = sol->machine_compute_time;
+    FLOAT *machine_active_energy_consumption = sol->machine_active_energy_consumption;
     int *task_assignment = sol->task_assignment;
 
     for (int task = 0; task < tasks_count; task++) {
@@ -39,8 +40,12 @@ void compute_mct(struct solution *sol) {
         machine_compute_time[best_machine] = best_etc_value;
     }
     
-    refresh_solution(sol);
-    sol->initialized = 1;
+    for (int machine = 0; machine < machines_count; machine++) {
+        machine_active_energy_consumption[machine] = machine_compute_time[machine] * get_scenario_energy_max(machine);
+    }
+    
+    recompute_metrics(sol);
+    sol->initialized = SOLUTION__IN_USE;
     
     #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);
@@ -58,6 +63,7 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
     int machines_count = INPUT.machines_count;
     
     FLOAT *machine_compute_time = sol->machine_compute_time;
+    FLOAT *machine_active_energy_consumption = sol->machine_active_energy_consumption;
     int *task_assignment = sol->task_assignment;
 
     start = start % tasks_count;
@@ -94,8 +100,12 @@ void compute_mct_random(struct solution *sol, int start, int direction) {
         machine_compute_time[best_machine] = best_etc_value;
     }
     
-    refresh_solution(sol);
-    sol->initialized = 1;
+    for (int machine = 0; machine < machines_count; machine++) {
+        machine_active_energy_consumption[machine] = machine_compute_time[machine] * get_scenario_energy_max(machine);
+    }
+    
+    recompute_metrics(sol);
+    sol->initialized = SOLUTION__IN_USE;
 
     #if defined(DEBUG_3)
         fprintf(stderr, "[DEBUG] MCT solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);

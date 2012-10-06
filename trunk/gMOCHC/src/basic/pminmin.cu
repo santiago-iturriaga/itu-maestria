@@ -58,14 +58,18 @@ void compute_pminmin(struct solution *sol) {
     }
 
     sol->makespan = sol->machine_compute_time[0];
+    sol->machine_active_energy_consumption[0] = sol->machine_compute_time[0] * get_scenario_energy_max(0);
+    
     for (int i = 1; i < INPUT.machines_count; i++) {
+        sol->machine_active_energy_consumption[i] = sol->machine_compute_time[i] * get_scenario_energy_max(i);
+        
         if (sol->makespan < sol->machine_compute_time[i]) {
             sol->makespan = sol->machine_compute_time[i];
         }
     }
 
-    refresh_solution(sol);
-    sol->initialized = 1;
+    recompute_metrics(sol);
+    sol->initialized = SOLUTION__IN_USE;
 
     #ifdef DEBUG_0
         fprintf(stderr, "[DEBUG] pMinMin/D %d-threads: makespan=%f energy=%f.\n", INPUT.thread_count, sol->makespan, sol->energy_consumption);

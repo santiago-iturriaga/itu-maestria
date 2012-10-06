@@ -41,36 +41,50 @@ void pals_free(int thread_id) {
 }
 
 void pals_search(int thread_id, int solution_index) {
-    for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {
-        #ifdef DEBUG_3
-            fprintf(stderr, "[INFO] =======> PALS!\n");
-        #endif
-        #ifdef DEBUG_1
-            FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
-            FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+    #ifdef DEBUG_3
+        fprintf(stderr, "[INFO] =======> PALS!\n");
+    #endif
+    #ifdef DEBUG_1
+        FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
+        FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
 
-            CHC_PALS_COUNT_EXECUTIONS[thread_id]++;
-        #endif
-
-        // Busco la máquina con mayor compute time.
-        float makespan = 0;
-        int makespan_index = 0;
-        
-        for (int m = 1; m < INPUT.machines_count; m++) {
-            if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
-                makespan_index = m;
+        CHC_PALS_COUNT_EXECUTIONS[thread_id]++;
+    #endif
+    
+    // Busco la máquina con mayor compute time.
+    FLOAT makespan = 0;
+    int makespan_machine_index = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+    
+    FLOAT energy_machine = 0;
+    int energy_machine_index = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+    
+    for (int m = 1; m < INPUT.machines_count; m++) {
+        if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
+            makespan_machine_index = m;
+            makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
+            
+        } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
+            if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                makespan_machine_index = m;
                 makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
-                
-            } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
-                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
-                    makespan_index = m;
-                    makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
-                }
             }
         }
-        
+
+        if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] > energy_machine) {
+            energy_machine_index = m;
+            energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
+            
+        } else if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] == energy_machine) {
+            if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                energy_machine_index = m;
+                energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
+            }
+        }
+    }
+    
+    for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
         int selected_machine;
-        //selected_machine = makespan_index;
+        //selected_machine = makespan_machine_index;
         selected_machine = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
 
         FLOAT score;
@@ -295,64 +309,123 @@ void pals_search(int thread_id, int solution_index) {
                 /* Hago el swap */
                 EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst] = machine_src;
                 EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
+                
+                EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_src] =
+                    EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_src] +
+                    get_etc_value(machine_src, task_dst) - get_etc_value(machine_src, task_src);
+
+                EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_dst] =
+                    EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_dst] +
+                    get_etc_value(machine_dst, task_src) - get_etc_value(machine_dst, task_dst);
+                    
+                EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_src] = 
+                    EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_src] +
+                    (get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_dst)) -
+                    (get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_src));
+                    
+                EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_dst] = 
+                    EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_dst] +
+                    (get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src)) -
+                    (get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_dst));
+                    
             } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
                 machine_dst = movements[thread_id].dst;
                 
                 /* Hago el move */
                 EA_THREADS[thread_id].population[solution_index].task_assignment[task_src] = machine_dst;
+
+                EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_src] -= get_etc_value(machine_src, task_src);
+                EA_THREADS[thread_id].population[solution_index].machine_compute_time[machine_dst] += get_etc_value(machine_dst, task_src);
+
+                EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_src] -= 
+                    get_scenario_energy_max(machine_src) * get_etc_value(machine_src, task_src);
+                EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_dst] += 
+                    get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src);
+                
             } else {
                 assert(1 == 0);
             }
         }
         
-        refresh_solution(&EA_THREADS[thread_id].population[solution_index]);
-
-        if (EA_THREADS[thread_id].population[solution_index].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
-            EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[solution_index].makespan;
-        } else if (EA_THREADS[thread_id].population[solution_index].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[solution_index].makespan;
-        }
-
-        if (EA_THREADS[thread_id].population[solution_index].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
-            EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
-        } else if (EA_THREADS[thread_id].population[solution_index].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
-        }
-
-        EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
-
-        #ifdef DEBUG_1
-            FLOAT fitness_post = fitness(thread_id, solution_index);
-            
-            FLOAT fitness_pre = fitness_zn(
-                thread_id, makespan_pre, energy_pre,
-                EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
-                EA_THREADS[thread_id].energy_nadir_value, EA_THREADS[thread_id].energy_zenith_value);
-
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] <thread=%d> PALS fitness from %.4f to %.4f (makespan %.2f->%.2f / energy %.2f->%.2f)\n",
-                    thread_id, fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan,
-                    energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
-            #endif
-
-            if (fitness_post < fitness_pre) {
-                CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
+        // Recalculo makespan y energy
+        makespan = 0;
+        makespan_machine_index = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+        
+        energy_machine = 0;
+        energy_machine_index = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+        
+        for (int m = 1; m < INPUT.machines_count; m++) {
+            if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
+                makespan_machine_index = m;
+                makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
                 
-                if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
-                    CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[thread_id]++;
-                } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
-                    CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[thread_id]++;
+            } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
+                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                    makespan_machine_index = m;
+                    makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
                 }
             }
-            if (fitness_post > fitness_pre) {
-                CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
+
+            if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] > energy_machine) {
+                energy_machine_index = m;
+                energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
                 
-                if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
-                    CHC_PALS_COUNT_FITNESS_DECLINE_SWAP[thread_id]++;
-                } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
-                    CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[thread_id]++;
+            } else if (EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m] == energy_machine) {
+                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
+                    energy_machine_index = m;
+                    energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[m];
                 }
             }
-        #endif
+        }
     }
+    
+    recompute_metrics(&EA_THREADS[thread_id].population[solution_index]);
+    
+    if (EA_THREADS[thread_id].population[solution_index].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[solution_index].makespan;
+    } else if (EA_THREADS[thread_id].population[solution_index].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[solution_index].makespan;
+    }
+
+    if (EA_THREADS[thread_id].population[solution_index].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+    } else if (EA_THREADS[thread_id].population[solution_index].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+    }
+
+    EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
+
+    #ifdef DEBUG_1
+        FLOAT fitness_post = fitness(thread_id, solution_index);
+        
+        FLOAT fitness_pre = fitness_zn(
+            thread_id, makespan_pre, energy_pre,
+            EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
+            EA_THREADS[thread_id].energy_nadir_value, EA_THREADS[thread_id].energy_zenith_value);
+
+        #ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] <thread=%d> PALS fitness from %.4f to %.4f (makespan %.2f->%.2f / energy %.2f->%.2f)\n",
+                thread_id, fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan,
+                energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
+        #endif
+
+        if (fitness_post < fitness_pre) {
+            CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
+            
+            if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
+                CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[thread_id]++;
+            } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
+                CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[thread_id]++;
+            }
+        }
+        if (fitness_post > fitness_pre) {
+            CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
+            
+            if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
+                CHC_PALS_COUNT_FITNESS_DECLINE_SWAP[thread_id]++;
+            } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
+                CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[thread_id]++;
+            }
+        }
+    #endif
 }
