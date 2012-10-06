@@ -103,6 +103,23 @@ void pals_search(int thread_id, int solution_index) {
 
         FLOAT random1, random2;
 
+        // Obtengo las tareas sorteadas.
+        int task_x;
+        int machine_a;
+        
+        random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+        task_x = (int)(random1 * INPUT.tasks_count);
+        machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+        
+        if (selected_machine != -1) {
+            for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
+                task_x++;
+                if (task_x == INPUT.tasks_count) task_x = 0;
+                
+                machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
+            }
+        }
+
         for (int loop = 0; loop < PALS__MAX_INTENTOS; loop++) {       
             if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < PALS__SWAP_SEARCH) {
                 movimiento = PALS_MOVIMIENTO_SWAP;  
@@ -113,28 +130,14 @@ void pals_search(int thread_id, int solution_index) {
             if (movimiento == PALS_MOVIMIENTO_SWAP) {
                 // =================
                 // Swap
-                int task_x, task_y;
-                int machine_a, machine_b;
+                int task_y;
+                int machine_b;
 
                 FLOAT machine_a_ct_old, machine_b_ct_old;
                 FLOAT machine_a_ct_new, machine_b_ct_new;
 
                 score = 0.0;
-
-                // Obtengo las tareas sorteadas.
-                random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                task_x = (int)(random1 * INPUT.tasks_count);
-                machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-                
-                if (selected_machine != -1) {
-                    for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
-                        task_x++;
-                        if (task_x == INPUT.tasks_count) task_x = 0;
-                        
-                        machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-                    }
-                }
-            
+           
                 random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);    
                 task_y = (int)(random2 * INPUT.tasks_count);
                 machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
@@ -217,8 +220,7 @@ void pals_search(int thread_id, int solution_index) {
                 // =================
                 // Move
 
-                int task_x;
-                int machine_a, machine_b;
+                int machine_b;
 
                 float machine_a_ct_old, machine_b_ct_old;
                 float machine_a_ct_new, machine_b_ct_new;
@@ -226,20 +228,6 @@ void pals_search(int thread_id, int solution_index) {
                 score = 0.0;
 
                 // ================= Obtengo la tarea sorteada
-                
-                random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                task_x = (int)(random1 * INPUT.tasks_count);
-                machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-                
-                if (selected_machine != -1) {
-                    for (int i = 0; (i < INPUT.tasks_count) && (machine_a != selected_machine); i++) {
-                        task_x++;
-                        if (task_x == INPUT.tasks_count) task_x = 0;
-                        
-                        machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-                    }
-                }
-                
                 random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);    
                 machine_b = (int)(random2 * INPUT.machines_count);
                 
@@ -354,7 +342,7 @@ void pals_search(int thread_id, int solution_index) {
         }
         
         // Recalculo makespan y energy
-        if (i + 1 < PALS__MAX_BUSQUEDAS) {
+        /*if (i + 1 < PALS__MAX_BUSQUEDAS) {
             makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
             makespan_machine_index = 0;
             
@@ -384,7 +372,7 @@ void pals_search(int thread_id, int solution_index) {
                     }
                 }
             }
-        }
+        }*/
     }
     
     recompute_metrics(&EA_THREADS[thread_id].population[solution_index]);

@@ -54,7 +54,7 @@ void compute_cmochc_island();
 #define CMOCHC_LOCAL__BEST_SOLS_KEPT        3
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  4
 /* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR local iterations without change */
-//#define CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR 15
+#define CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR 15
 
 /* ******************************************************************* */
 /* Configuración de la migración de elementos desde el archivo al deme */
