@@ -85,7 +85,7 @@ void pals_search(int thread_id, int solution_index) {
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
         int selected_machine;
         //selected_machine = makespan_machine_index;
-        selected_machine = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
+        selected_machine = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
 
         FLOAT score;
         int movimiento;
