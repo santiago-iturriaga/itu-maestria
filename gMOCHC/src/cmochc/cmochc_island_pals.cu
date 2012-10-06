@@ -52,11 +52,11 @@ void pals_search(int thread_id, int solution_index) {
     #endif
     
     // Busco la máquina con mayor compute time.
-    FLOAT makespan = 0;
-    int makespan_machine_index = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+    FLOAT makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+    int makespan_machine_index = 0;
     
-    FLOAT energy_machine = 0;
-    int energy_machine_index = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+    FLOAT energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+    int energy_machine_index = 0;
     
     for (int m = 1; m < INPUT.machines_count; m++) {
         if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
@@ -348,11 +348,11 @@ void pals_search(int thread_id, int solution_index) {
         }
         
         // Recalculo makespan y energy
-        makespan = 0;
-        makespan_machine_index = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+        makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[0];
+        makespan_machine_index = 0;
         
-        energy_machine = 0;
-        energy_machine_index = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+        energy_machine = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[0];
+        energy_machine_index = 0;
         
         for (int m = 1; m < INPUT.machines_count; m++) {
             if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
