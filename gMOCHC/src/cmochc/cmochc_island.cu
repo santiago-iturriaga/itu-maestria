@@ -99,9 +99,9 @@ void compute_cmochc_island() {
         /* ******************************** */
         /* Espero que los esclavos terminen */
         /* ******************************** */
-        
+
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-            while (EA_INSTANCE.thread_idle_count < INPUT.thread_count) {                   
+            while (EA_INSTANCE.thread_idle_count < INPUT.thread_count) {
                 pthread_cond_wait(&EA_INSTANCE.master_status_cond, &EA_INSTANCE.status_cond_mutex);
             }
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
@@ -126,9 +126,9 @@ void compute_cmochc_island() {
             TIMMING_END(">> cmochc_gather", ts_gather);
 
         } else if (master_status == CMOCHC_MASTER_STATUS__LS) {
-            
+
             // TODO: .....
-            
+
         }
 
         /* ***************************** */
@@ -138,7 +138,7 @@ void compute_cmochc_island() {
 
             /* Si esta es la última iteracion, les aviso a los esclavos */
             worker_status = CMOCHC_THREAD_STATUS__STOP;
-            
+
         } else {
 
             master_status = CMOCHC_MASTER_STATUS__CHC;
@@ -162,20 +162,20 @@ void compute_cmochc_island() {
                 #endif
 
                 TIMMING_END(">> ts_weights", ts_weights);
-                
+
                 worker_status = CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE;
-                
+
             } else if (master_status == CMOCHC_MASTER_STATUS__LS) {
-                
+
                 // TODO: .....
-                
+
             }
         }
-        
+
         /* ******************************************************* */
         /* Notifico a los esclavos que esta pronto el nuevo estado */
         /* ******************************************************* */
-        
+
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
             EA_INSTANCE.thread_idle_count = 0;
 
@@ -185,7 +185,7 @@ void compute_cmochc_island() {
 
             pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond);
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
-       
+
     }
 
     RAND_FINALIZE(rstate);
@@ -329,7 +329,7 @@ void init() {
     fprintf(stderr, "       CMOCHC_LOCAL__ITERATION_COUNT               : %d\n", CMOCHC_LOCAL__ITERATION_COUNT);
     fprintf(stderr, "       CMOCHC_LOCAL__BEST_SOLS_KEPT                : %d\n", CMOCHC_LOCAL__BEST_SOLS_KEPT);
     fprintf(stderr, "       CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  : %d\n", CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR);
-    fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
+    //fprintf(stderr, "       CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR : %d\n", CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR);
 
     fprintf(stderr, "       CMOCHC_LOCAL__MUTATE_INITIAL_POP            : ");
     #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
@@ -373,7 +373,13 @@ void init() {
         fprintf(stderr, "NONE\n");
     #endif
 
-    fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);    
+    fprintf(stderr, "       CHC__MUTATE_OP                              : %d\n", CHC__MUTATE_OP);
+    fprintf(stderr, "       CHC__MUTATION_PROB                          : %.2f\n", CHC__MUTATION_PROB);
+    fprintf(stderr, "       CHC__CORSS_OP                               : %d\n", CHC__CORSS_OP);
+    fprintf(stderr, "       CHC__CROSS_PROB                             : %.2f\n", CHC__CROSS_PROB);    
+
+    fprintf(stderr, "       PALS__MAX_BUSQUEDAS                         : %d\n", PALS__MAX_BUSQUEDAS);
+    fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Weights */
@@ -392,7 +398,7 @@ void init() {
 
     if (INPUT.thread_count > 1) {
         for (int i = 0; i < INPUT.thread_count; i++) {
-            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);           
+            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
             //EA_THREADS[i].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[i];
             EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[i]] = i;
 
@@ -698,17 +704,17 @@ void* slave_thread(void *data) {
 
     int status = CMOCHC_THREAD_STATUS__IDLE;
     int currently_assigned_weight;
-    
+
     while (status != CMOCHC_THREAD_STATUS__STOP) {
         /* ***************************** */
         /* Espero que me asignen trabajo */
         /* ***************************** */
-        
+
         pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
-            while (EA_INSTANCE.thread_status[thread_id] == CMOCHC_THREAD_STATUS__IDLE) {               
+            while (EA_INSTANCE.thread_status[thread_id] == CMOCHC_THREAD_STATUS__IDLE) {
                 pthread_cond_wait(&EA_INSTANCE.worker_status_cond, &EA_INSTANCE.status_cond_mutex);
             }
-            
+
             status = EA_INSTANCE.thread_status[thread_id];
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
 
@@ -719,20 +725,20 @@ void* slave_thread(void *data) {
         currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[thread_id];
         EA_THREADS[thread_id].weight_makespan = EA_INSTANCE.weights[currently_assigned_weight];
         EA_THREADS[thread_id].weight_energy = 1 - EA_THREADS[thread_id].weight_makespan;
-        
+
         /* ****************** */
         /* Proceso el trabajo */
-        /* ****************** */            
+        /* ****************** */
         if ((status == CMOCHC_THREAD_STATUS__CHC_FROM_NEW)||(status == CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE)) {
-            
+
             if (status == CMOCHC_THREAD_STATUS__CHC_FROM_NEW) {
-                
+
                 /* *********************************************************************************************
                  * Inicializo la población.
                  * *********************************************************************************************/
 
                 chc_population_init(thread_id);
-                
+
             } else if (status == CMOCHC_THREAD_STATUS__CHC_FROM_ARCHIVE) {
 
                 /* ********************************* */
@@ -774,15 +780,15 @@ void* slave_thread(void *data) {
             /* *********************************************************************************************
              * Sort the population
              *********************************************************************************************** */
-             
+
             merge_sort(thread_id);
-            
+
             /* *********************************************************************************************
              * CHC evolution
              * ********************************************************************************************* */
-             
+
             chc_evolution(thread_id);
-            
+
             /* *********************************************************************************************
              * Fin de la evolución
              * ********************************************************************************************* */
@@ -798,28 +804,28 @@ void* slave_thread(void *data) {
                 clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
                 ARCHIVER.new_solutions_tag[new_sol_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
             }
-            
+
         } else if (status == CMOCHC_THREAD_STATUS__LS) {
-            
+
             // TODO: ............
-            
-        } 
-        
+
+        }
+
         if (status != CMOCHC_THREAD_STATUS__STOP) {
             /* *************************** */
             /* Aviso al master que terminé */
             /* *************************** */
-            
+
             pthread_mutex_lock(&EA_INSTANCE.status_cond_mutex);
                 EA_INSTANCE.thread_idle_count++;
 
                 EA_INSTANCE.thread_status[thread_id] = CMOCHC_THREAD_STATUS__IDLE;
                 status = CMOCHC_THREAD_STATUS__IDLE;
-                
+
                 pthread_cond_signal(&EA_INSTANCE.master_status_cond);
             pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
         }
-    }          
+    }
 
     // ================================================================
     // Finalizo el thread.
@@ -827,7 +833,7 @@ void* slave_thread(void *data) {
 
     /* Finalizo el generador de numeros aleatorios */
     RAND_FINALIZE(EA_INSTANCE.rand_state[thread_id]);
-    
+
     /* Finalizo la búsqueda local */
     pals_free(thread_id);
 
@@ -846,7 +852,7 @@ void display_results() {
 
     #ifdef DEBUG_1
         archivers_aga_show();
-        
+
         FLOAT aux;
         for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
             if (ARCHIVER.population[i].initialized == 1) {
@@ -856,7 +862,7 @@ void display_results() {
                         aux = ARCHIVER.population[i].machine_compute_time[j];
                     }
                 }
-                
+
                 fprintf(stderr, "> %d state=%d makespan=%f(%f) energy=%f\n",
                     i, ARCHIVER.new_solutions[i].initialized,
                     ARCHIVER.population[i].makespan, aux,
@@ -941,7 +947,7 @@ void display_results() {
             ((FLOAT)count_pals_decline_move/(FLOAT)count_pals)*100);
         fprintf(stderr, "       count_pals_decline_swap              : %d (%.2f %%)\n", count_pals_decline_swap,
             ((FLOAT)count_pals_decline_swap/(FLOAT)count_pals)*100);
-                       
+
         fprintf(stderr, "       archive tag count:\n");
         for (int t = 0; t < CMOCHC_PARETO_FRONT__PATCHES; t++) {
             fprintf(stderr, "          [%d] = %d\n", t, ARCHIVER.tag_count[t]);
