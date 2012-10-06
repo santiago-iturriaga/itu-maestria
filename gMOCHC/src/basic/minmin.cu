@@ -66,8 +66,12 @@ void compute_minmin(struct solution *sol) {
             get_etc_value(best_machine, best_task);
     }
 
-    refresh_solution(sol);
-    sol->initialized = 1;
+    for (int machine = 0; machine < INPUT.machines_count; machine++) {
+        sol->machine_active_energy_consumption[machine] = sol->machine_compute_time[machine] * get_scenario_energy_max(machine);
+    }
+
+    recompute_metrics(sol);
+    sol->initialized = SOLUTION__IN_USE;
 
     #if defined(DEBUG_0)
         fprintf(stderr, "[DEBUG] MinMin solution: makespan=%f energy=%f.\n", sol->makespan, sol->energy_consumption);

@@ -352,9 +352,31 @@ valgrind: src/main.cu \
 		src/basic/minmin.h \
 		src/basic/pminmin.cu \
 		src/basic/pminmin.h 
+	$(CC) $(CPU_OPTS) -DNDEBUG -g -x c++ \
+		src/main.cu \
+		src/load_instance.cu \
+		src/load_params.cu \
+		src/scenario.cu \
+		src/etc_matrix.cu \
+		src/energy_matrix.cu \
+		src/solution.cu \
+		src/utils.cu \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_pals.cu \
+		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.cu \
+		src/basic/mct.cu \
+		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
+		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
 	valgrind -v --leak-check=full --show-possibly-lost=yes --track-origins=yes bin/gmochc_cpu \
 		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/scenario.0 \
-		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 500
+		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 20
 
 gprof: src/main.cu \
 		src/load_params.cu \
@@ -422,7 +444,7 @@ gprof: src/main.cu \
 		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
 	bin/gmochc_cpu \
 		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/scenario.0 \
-		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 500
+		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 20
 	gprof bin/gmochc_cpu gmon.out > gmon.txt
 
 clean:
