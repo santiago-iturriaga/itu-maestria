@@ -108,99 +108,101 @@ void chc_evolution(int thread_id) {
 
         for (int child = 0; child < CMOCHC_LOCAL__POPULATION_SIZE / 2; child++) {
             if (next_avail_children + 1 < MAX_POP_SOLS) {
-                // Padre aleatorio 1
-                random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                p1_rand = (int)(floor(CMOCHC_LOCAL__POPULATION_SIZE * random));
-                p1_idx = EA_THREADS[thread_id].sorted_population[p1_rand];
+                if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < CHC__CROSS_PROB) {
+                    // Padre aleatorio 1
+                    random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+                    p1_rand = (int)(floor(CMOCHC_LOCAL__POPULATION_SIZE * random));
+                    p1_idx = EA_THREADS[thread_id].sorted_population[p1_rand];
 
-                // Padre aleatorio 2
-                random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-                p2_rand = (int)(floor((CMOCHC_LOCAL__POPULATION_SIZE - 1) * random));
-                if (p2_rand >= p1_rand) p2_rand++;
-                p2_idx = EA_THREADS[thread_id].sorted_population[p2_rand];
+                    // Padre aleatorio 2
+                    random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+                    p2_rand = (int)(floor((CMOCHC_LOCAL__POPULATION_SIZE - 1) * random));
+                    if (p2_rand >= p1_rand) p2_rand++;
+                    p2_idx = EA_THREADS[thread_id].sorted_population[p2_rand];
 
-                // Chequeo la distancia entre padres
-                d = distance(&EA_THREADS[thread_id].population[p1_idx],
-                    &EA_THREADS[thread_id].population[p2_idx]);
+                    // Chequeo la distancia entre padres
+                    d = distance(&EA_THREADS[thread_id].population[p1_idx],
+                        &EA_THREADS[thread_id].population[p2_idx]);
 
-                if (d > threshold) {
-                    // Aplico HUX y creo dos hijos
-                    #if defined(DEBUG_1)
-                    COUNT_CROSSOVER[thread_id]++;
-                    #endif
+                    if (d > threshold) {
+                        // Aplico HUX y creo dos hijos
+                        #if defined(DEBUG_1)
+                            COUNT_CROSSOVER[thread_id]++;
+                        #endif
 
-                    c1_idx = EA_THREADS[thread_id].sorted_population[next_avail_children];
-                    c2_idx = EA_THREADS[thread_id].sorted_population[next_avail_children+1];
+                        c1_idx = EA_THREADS[thread_id].sorted_population[next_avail_children];
+                        c2_idx = EA_THREADS[thread_id].sorted_population[next_avail_children+1];
 
-                    hux(EA_INSTANCE.rand_state[thread_id],
-                        &EA_THREADS[thread_id].population[p1_idx],&EA_THREADS[thread_id].population[p2_idx],
-                        &EA_THREADS[thread_id].population[c1_idx],&EA_THREADS[thread_id].population[c2_idx]);
+                        CHC__CROSS(EA_INSTANCE.rand_state[thread_id],
+                            &EA_THREADS[thread_id].population[p1_idx],&EA_THREADS[thread_id].population[p2_idx],
+                            &EA_THREADS[thread_id].population[c1_idx],&EA_THREADS[thread_id].population[c2_idx])
 
-                    EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
-                    EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
+                        EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
+                        EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
 
-                    // Evalúo el cambio en el pto. de referencia (Zenith/Nadir)
-                    if (EA_THREADS[thread_id].population[p1_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
-                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p1_idx].makespan;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p1_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
-                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p1_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p1_idx].makespan;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p1_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p2_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
-                        EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p2_idx].makespan;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p2_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
-                        EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p2_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
-                        EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p2_idx].makespan;
-                        ref_point_changed = 1;
-                    }
-
-                    if (EA_THREADS[thread_id].population[p2_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
-                        EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
-                        ref_point_changed = 1;
-                    }
-
-                    #ifdef DEBUG_1
-                        // Si cambió el punto de referencia, actualizo todos los fitness
-                        if (ref_point_changed == 0) {
-                            fitness(thread_id, c1_idx);
-                            fitness(thread_id, c2_idx);
-                        } else {
-                            ref_point_changed = 0;
-
-                            fitness_reset(thread_id);
-                            fitness_all(thread_id);
+                        // Evalúo el cambio en el pto. de referencia (Zenith/Nadir)
+                        if (EA_THREADS[thread_id].population[p1_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                            EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p1_idx].makespan;
+                            ref_point_changed = 1;
                         }
 
-                        if ((EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
-                            ||(EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])
-                            ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
-                            ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])) {
-
-                            COUNT_IMPROVED_CROSSOVER[thread_id]++;
+                        if (EA_THREADS[thread_id].population[p1_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                            EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
+                            ref_point_changed = 1;
                         }
-                    #endif
 
+                        if (EA_THREADS[thread_id].population[p1_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p1_idx].makespan;
+                            ref_point_changed = 1;
+                        }
+
+                        if (EA_THREADS[thread_id].population[p1_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p1_idx].energy_consumption;
+                            ref_point_changed = 1;
+                        }
+
+                        if (EA_THREADS[thread_id].population[p2_idx].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
+                            EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[p2_idx].makespan;
+                            ref_point_changed = 1;
+                        }
+
+                        if (EA_THREADS[thread_id].population[p2_idx].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
+                            EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
+                            ref_point_changed = 1;
+                        }
+
+                        if (EA_THREADS[thread_id].population[p2_idx].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
+                            EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[p2_idx].makespan;
+                            ref_point_changed = 1;
+                        }
+
+                        if (EA_THREADS[thread_id].population[p2_idx].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
+                            EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[p2_idx].energy_consumption;
+                            ref_point_changed = 1;
+                        }
+
+                        #ifdef DEBUG_1
+                            // Si cambió el punto de referencia, actualizo todos los fitness
+                            if (ref_point_changed == 0) {
+                                fitness(thread_id, c1_idx);
+                                fitness(thread_id, c2_idx);
+                            } else {
+                                ref_point_changed = 0;
+
+                                fitness_reset(thread_id);
+                                fitness_all(thread_id);
+                            }
+
+                            if ((EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c1_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p1_idx])
+                                ||(EA_THREADS[thread_id].fitness_population[c2_idx] < EA_THREADS[thread_id].fitness_population[p2_idx])) {
+
+                                COUNT_IMPROVED_CROSSOVER[thread_id]++;
+                            }
+                        #endif
+                    }
+                    
                     next_avail_children += 2;
                 }
             }
