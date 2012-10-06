@@ -56,7 +56,7 @@ void* slave_thread(void *data);
 
 void compute_cmochc_island() {
     if (MAX_THREADS >= INPUT.thread_count) {
-        fprintf(stderr, "[ERROR] Max. number of threads is %d (< %d)\n", MAX_THREADS, INPUT.thread_count);
+        fprintf(stderr, "[ERROR] Max. number of threads is %d (%d < 64)\n", MAX_THREADS, INPUT.thread_count);
     }
 
     // ==============================================================================
@@ -634,10 +634,9 @@ void solution_migration(int thread_id) {
                         }
 
                         if (migrated == 0) {
-                            mutate(
-                                EA_INSTANCE.rand_state[thread_id],
+                            CHC__MUTATE(EA_INSTANCE.rand_state[thread_id],
                                 &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
-                                &EA_THREADS[thread_id].population[next_solution_index]);
+                                &EA_THREADS[thread_id].population[next_solution_index])
 
                             next_solution_index++;
                             migrated_solution_index++;
@@ -648,10 +647,9 @@ void solution_migration(int thread_id) {
                         }
                     #endif
                     #ifdef CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-                        mutate(
-                            EA_INSTANCE.rand_state[thread_id],
+                        MUTATE(EA_INSTANCE.rand_state[thread_id],
                             &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
-                            &EA_THREADS[thread_id].population[next_solution_index]);
+                            &EA_THREADS[thread_id].population[next_solution_index])
 
                         next_solution_index++;
                         migrated_solution_index++;
@@ -668,9 +666,9 @@ void solution_migration(int thread_id) {
         if (migrated == 0) {
             random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
 
-            mutate(EA_INSTANCE.rand_state[thread_id],
+            CHC__MUTATE(EA_INSTANCE.rand_state[thread_id],
                 &EA_THREADS[thread_id].population[(int)(random * next_solution_index)],
-                &EA_THREADS[thread_id].population[next_solution_index]);
+                &EA_THREADS[thread_id].population[next_solution_index])
 
             next_solution_index++;
         }

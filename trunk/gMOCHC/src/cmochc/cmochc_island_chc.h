@@ -17,6 +17,11 @@
 #include "../random/random.h"
 #include "../archivers/aga.h"
 
+//#define CHC__MUTATE_OP 0
+#define CHC__MUTATE_OP 1
+
+#define CHC__MUTATION_PROB 0.8
+
 inline int distance(struct solution *s1, struct solution *s2) {
     int distance = 0;
 
@@ -88,7 +93,14 @@ inline void hux(RAND_STATE &rand_state,
     refresh_solution(c2);
 }
 
-inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
+#if CHC__MUTATE_OP == 0
+    #define CHC__MUTATE(rand_state,seed,mutation) mutate_0(rand_state,seed,mutation);
+#endif
+#if CHC__MUTATE_OP == 1
+    #define CHC__MUTATE(rand_state,seed,mutation) mutate_1(rand_state,seed,mutation);
+#endif
+
+inline void mutate_0(RAND_STATE &rand_state, struct solution *seed, struct solution *mutation) {
     int current_task_index = 0;
     int tasks_count = INPUT.tasks_count;
     int machines_count = INPUT.machines_count;
@@ -141,6 +153,28 @@ inline void mutate(RAND_STATE &rand_state, struct solution *seed, struct solutio
     }
 
     refresh_solution(mutation);
+}
+
+inline void mutate_1(RAND_STATE &rand_state, struct solution *seed_solution, struct solution *mutated_solution) {
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
+    
+    clone_solution(mutated_solution, seed_solution);
+    
+    int *task_assignment = mutated_solution->task_assignment;
+    int cant_mutations = machines_count;
+
+    int random_task;
+    int random_machine;
+
+    for (int i = 0; i < cant_mutations; i++) {
+        random_task = RAND_GENERATE(rand_state) * tasks_count;
+        random_machine = RAND_GENERATE(rand_state) * machines_count;
+        
+        task_assignment[random_task] = random_machine;
+    }
+
+    refresh_solution(mutated_solution);
 }
 
 extern inline FLOAT fitness_zn(int thread_id, 

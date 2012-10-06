@@ -39,30 +39,40 @@ void validate_solution(struct solution *s);
 void show_solution(struct solution *s);
 
 inline void refresh_solution(struct solution *sol) {
-    for (int machine = 0; machine < INPUT.machines_count; machine++) {
-        sol->machine_compute_time[machine] = 0.0;
+    int machines_count = INPUT.machines_count;
+    int tasks_count = INPUT.tasks_count;
+   
+    FLOAT makespan = 0.0;
+    int *task_assignment = sol->task_assignment;
+    FLOAT *machine_compute_time = sol->machine_compute_time;
+
+    for (int machine = 0; machine < machines_count; machine++) {
+        machine_compute_time[machine] = 0.0;
     }
-
-    sol->makespan = 0.0;
-
-    for (int task = 0; task < INPUT.tasks_count; task++) {
-        int machine = sol->task_assignment[task];
-
-        sol->machine_compute_time[machine] += get_etc_value(machine, task);
-        if (sol->makespan < sol->machine_compute_time[machine]) {
-            sol->makespan = sol->machine_compute_time[machine];
+    
+    for (int task = 0; task < tasks_count; task++) {
+        int machine = task_assignment[task];
+        machine_compute_time[machine] += get_etc_value(machine, task);
+        
+        if (makespan < machine_compute_time[machine]) {
+            makespan = machine_compute_time[machine];
         }
     }
 
-    sol->energy_consumption = 0.0;
+    sol->makespan = makespan;
+    
+    FLOAT energy_consumption = 0.0;
+    FLOAT *machine_energy_consumption = sol->machine_energy_consumption;
 
-    for (int machine = 0; machine < INPUT.machines_count; machine++) {
-        sol->machine_energy_consumption[machine] = sol->makespan * get_scenario_energy_idle(machine);
-        sol->machine_energy_consumption[machine] += sol->machine_compute_time[machine] * 
+    for (int machine = 0; machine < machines_count; machine++) {
+        machine_energy_consumption[machine] = makespan * get_scenario_energy_idle(machine);
+        machine_energy_consumption[machine] += machine_compute_time[machine] * 
             (get_scenario_energy_max(machine) - get_scenario_energy_idle(machine));
         
-        sol->energy_consumption += sol->machine_energy_consumption[machine];
+        energy_consumption += machine_energy_consumption[machine];
     }
+
+    sol->energy_consumption = energy_consumption;
     
     #ifdef DEBUG_3
         FLOAT aux;
@@ -72,17 +82,6 @@ inline void refresh_solution(struct solution *sol) {
         }
         assert(sol->energy_consumption == aux);
     #endif
-    /*
-    FLOAT task_energy_consumption;
-    for (int task = 0; task < INPUT.tasks_count; task++) {
-        int machine = sol->task_assignment[task];
-
-        task_energy_consumption = get_energy_value(machine, task);
-
-        sol->machine_energy_consumption[machine] += task_energy_consumption;
-        sol->energy_consumption += task_energy_consumption;
-    }
-    * */
 }
 
 #endif
