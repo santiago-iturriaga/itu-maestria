@@ -53,26 +53,25 @@ void pals_search(int thread_id, int solution_index) {
         #endif
 
         // Busco la máquina con mayor compute time.
-        int max_et_machine = 0;
+        float makespan = 0;
+        int makespan_index = 0;
         
         for (int m = 1; m < INPUT.machines_count; m++) {
-            if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] >
-                EA_THREADS[thread_id].population[solution_index].machine_compute_time[max_et_machine]) {
-
-                max_et_machine = m;
+            if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] > makespan) {
+                makespan_index = m;
+                makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
                 
-            } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] ==
-                EA_THREADS[thread_id].population[solution_index].machine_compute_time[max_et_machine]) {
-                    
+            } else if (EA_THREADS[thread_id].population[solution_index].machine_compute_time[m] == makespan) {
                 if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) > 0.5) {
-                    max_et_machine = m;
+                    makespan_index = m;
+                    makespan = EA_THREADS[thread_id].population[solution_index].machine_compute_time[m];
                 }
             }
         }
         
         int selected_machine;
-        selected_machine = max_et_machine;
-        //selected_machine = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
+        //selected_machine = makespan_index;
+        selected_machine = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
 
         FLOAT score;
         int movimiento;
@@ -83,7 +82,6 @@ void pals_search(int thread_id, int solution_index) {
         movements[thread_id].dst = -1;
 
         FLOAT random1, random2;
-        FLOAT current_makespan = EA_THREADS[thread_id].population[solution_index].makespan;
 
         for (int loop = 0; loop < PALS__MAX_INTENTOS; loop++) {       
             if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < PALS__SWAP_SEARCH) {
@@ -146,7 +144,7 @@ void pals_search(int thread_id, int solution_index) {
 
                 #ifdef DEBUG_3
                     fprintf(stderr, "[DEBUG] Swap %d with %d (makespan=%.2f)\n", 
-                        task_x, task_y, EA_THREADS[thread_id].population[solution_index].makespan);
+                        task_x, task_y, makespan);
                     fprintf(stderr, "[DEBUG] Machine CT (a) %.2f to %.2f (b) %.2f to %.2f\n", 
                         machine_a_ct_old, machine_a_ct_new,
                         machine_b_ct_old, machine_b_ct_new);
@@ -164,19 +162,19 @@ void pals_search(int thread_id, int solution_index) {
                     }
                 #endif
                 #if defined(PALS__COMPLEX_DELTA)
-                    if ((machine_a_ct_new > current_makespan) || (machine_b_ct_new > current_makespan)) {
+                    if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan)) {
                         // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-                        if (machine_a_ct_new > current_makespan) score = score + (machine_a_ct_new - current_makespan);
-                        if (machine_b_ct_new > current_makespan) score = score + (machine_b_ct_new - current_makespan);
-                    } else if ((machine_a_ct_old+1 >= current_makespan) || (machine_b_ct_old+1 >= current_makespan)) {
+                        if (machine_a_ct_new > makespan) score = score + (machine_a_ct_new - makespan);
+                        if (machine_b_ct_new > makespan) score = score + (machine_b_ct_new - makespan);
+                    } else if ((machine_a_ct_old+1 >= makespan) || (machine_b_ct_old+1 >= makespan)) {
                         // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
-                        if (machine_a_ct_old+1 >= current_makespan) {
+                        if (machine_a_ct_old+1 >= makespan) {
                             score = score + (machine_a_ct_new - machine_a_ct_old);
                         } else {
                             score = score + 1 / (machine_a_ct_new - machine_a_ct_old);
                         }
 
-                        if (machine_b_ct_old+1 >= current_makespan) {
+                        if (machine_b_ct_old+1 >= makespan) {
                             score = score + (machine_b_ct_new - machine_b_ct_old);
                         } else {
                             score = score + 1 / (machine_b_ct_new - machine_b_ct_old);
@@ -249,10 +247,10 @@ void pals_search(int thread_id, int solution_index) {
                     }
                 #endif
                 #if defined(PALS__COMPLEX_DELTA)
-                    if (machine_b_ct_new > current_makespan) {
+                    if (machine_b_ct_new > makespan) {
                         // Luego del movimiento aumenta el makespan. Intento desestimularlo lo más posible.
-                        score = score + (machine_b_ct_new - current_makespan);
-                    } else if (machine_a_ct_old+1 >= current_makespan) {
+                        score = score + (machine_b_ct_new - makespan);
+                    } else if (machine_a_ct_old+1 >= makespan) {
                         // Antes del movimiento una las de máquinas definía el makespan. Estos son los mejores movimientos.
                         score = score + (machine_a_ct_new - machine_a_ct_old);
                         score = score + 1 / (machine_b_ct_new - machine_b_ct_old);
