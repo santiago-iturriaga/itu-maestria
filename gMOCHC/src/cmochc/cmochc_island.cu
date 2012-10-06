@@ -692,7 +692,8 @@ void* slave_thread(void *data) {
 
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
     EA_THREADS[thread_id].threshold_max = INPUT.tasks_count / CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR;
-    EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
+    //EA_THREADS[thread_id].threshold_step = EA_THREADS[thread_id].threshold_max / CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR;
+    EA_THREADS[thread_id].threshold_step = 1;
     if (EA_THREADS[thread_id].threshold_step == 0) EA_THREADS[thread_id].threshold_step = 1;
 
     int status = CMOCHC_THREAD_STATUS__IDLE;
