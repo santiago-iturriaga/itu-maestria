@@ -22,7 +22,7 @@ BIN = gmochc
 LINK = -lcuda -lrt -lpthread -lm
 OPTS = --ptxas-options=-v
 
-all: debug verificador
+all: cpu_d verificador
 
 verificador: verificador.c
 	$(CC) $(CPU_OPTS) -g verificador.c -o bin/verificador
@@ -157,7 +157,7 @@ cpu_r: src/main.cu \
 		src/basic/pminmin.cu \
 		$(CPU_LINK) -o bin/$(CPU_BIN)
 
-debug: src/main.cu \
+gpu_d: src/main.cu \
 		src/load_params.cu \
 		src/load_params.h \
 		src/load_instance.cu \
@@ -209,7 +209,7 @@ debug: src/main.cu \
 		$(MTGP32_SRC) $(LINK) \
 		-o bin/$(BIN)
 
-release: src/main.cu \
+gpu_r: src/main.cu \
 		src/load_params.cu \
 		src/load_params.h \
 		src/load_instance.cu \
@@ -354,7 +354,76 @@ valgrind: src/main.cu \
 		src/basic/pminmin.h 
 	valgrind -v --leak-check=full --show-possibly-lost=yes --track-origins=yes bin/gmochc_cpu \
 		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 \
-		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 3 0 1 10
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 100
+
+gprof: src/main.cu \
+		src/load_params.cu \
+		src/load_params.h \
+		src/load_instance.cu \
+		src/load_instance.h \
+		src/scenario.cu \
+		src/scenario.h \
+		src/scenario_struct.h \
+		src/etc_matrix.cu \
+		src/etc_matrix.h \
+		src/etc_matrix_struct.h \
+		src/energy_matrix.cu \
+		src/energy_matrix.h \
+		src/energy_matrix_struct.h \
+		src/solution.cu \
+		src/solution.h \
+		src/utils.cu \
+		src/utils.h \
+		src/random/cpu_rand.h \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.h \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.h \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.h \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_chc.h \
+		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_pals.h \
+		src/cmochc/cmochc_island_pals.cu \
+		src/cmochc/cmochc_island_utils.h \
+		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.h \
+		src/archivers/aga.cu \
+		src/basic/mct.cu \
+		src/basic/mct.h \
+		src/basic/minmin.cu \
+		src/basic/minmin.h \
+		src/basic/pminmin.cu \
+		src/basic/pminmin.h 
+	$(CC) $(CPU_OPTS) -DNDEBUG -g -x c++ \
+		src/main.cu \
+		src/load_instance.cu \
+		src/load_params.cu \
+		src/scenario.cu \
+		src/etc_matrix.cu \
+		src/energy_matrix.cu \
+		src/solution.cu \
+		src/utils.cu \
+		src/random/cpu_rand.cu \
+		src/random/cpu_drand48.cu \
+		src/random/cpu_mt.cu \
+		src/cmochc/cmochc_cell.cu \
+		src/cmochc/cmochc_island.cu \
+		src/cmochc/cmochc_island_pals.cu \
+		src/cmochc/cmochc_island_chc.cu \
+		src/cmochc/cmochc_island_utils.cu \
+		src/archivers/aga.cu \
+		src/basic/mct.cu \
+		src/basic/minmin.cu \
+		src/basic/pminmin.cu \
+		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
+	bin/gmochc_cpu \
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/scenario.0 \
+		/home/santiago/Scheduling/Energy-Makespan/instances.ruso/512x16/workload.0 512 16 3 1 0 1 1000
+	gprof bin/gmochc_cpu gmon.out > gmon.txt
 
 clean:
 	rm bin/*
