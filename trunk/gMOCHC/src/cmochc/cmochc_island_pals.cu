@@ -83,15 +83,18 @@ void pals_search(int thread_id, int solution_index) {
     }
     
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
-        int selected_machine;
-        if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.33) {
+	int selected_machine;
+        FLOAT random;
+	random  = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+
+        if (random < 0.05) {
             selected_machine = -1;
-        } else {
+        } else if (random < 0.90) {
             selected_machine = makespan_machine_index;
-        }/* else {
+        } else {
             selected_machine = energy_machine_index;
-        }*/
-        
+        }
+
         FLOAT score;
         int movimiento;
         
