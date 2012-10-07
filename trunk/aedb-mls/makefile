@@ -38,7 +38,7 @@ local: ns3_fake src/main.cpp \
 		src/mls/mls.cpp \
 		$(LIBS_LOCAL) -o bin/$(OUTPUT_BIN) 
 
-nonmpi: src/main.cpp src/config.h \
+nonmpi: ns3 src/main.cpp src/config.h \
 		src/solution.h \
 		src/solution.cpp \
 		src/random/cpu_mt.h \
@@ -54,7 +54,7 @@ nonmpi: src/main.cpp src/config.h \
 		src/mls/mls.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN) 
 
-debug: src/main.cpp src/config.h \
+debug: ns3 src/main.cpp src/config.h \
 		src/solution.h \
 		src/solution.cpp \
 		src/random/cpu_mt.h \
@@ -70,7 +70,7 @@ debug: src/main.cpp src/config.h \
 		src/mls/mls.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN) 
 
-release: src/main.cpp src/config.h \
+release: ns3 src/main.cpp src/config.h \
 		src/solution.h \
 		src/solution.cpp \
 		src/random/cpu_mt.h \
