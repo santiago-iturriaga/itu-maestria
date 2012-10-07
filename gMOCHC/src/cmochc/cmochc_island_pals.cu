@@ -81,29 +81,30 @@ void pals_search(int thread_id, int solution_index) {
             }
         }
     }
+
+    int selected_machine;
+    FLOAT random;
+
+    FLOAT score;
+    int movimiento;
+
+    FLOAT random1, random2;
     
-    for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {       
-	int selected_machine;
-        FLOAT random;
-	random  = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+    random  = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
 
-        if (random < 0.05) {
-            selected_machine = -1;
-        } else if (random < 0.90) {
-            selected_machine = makespan_machine_index;
-        } else {
-            selected_machine = energy_machine_index;
-        }
-
-        FLOAT score;
-        int movimiento;
-        
+    if (random < 0.05) {
+        selected_machine = -1;
+    } else if (random < 0.90) {
+        selected_machine = makespan_machine_index;
+    } else {
+        selected_machine = energy_machine_index;
+    }
+    
+    for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {              
         movements[thread_id].score = VERY_BIG_FLOAT;
         movements[thread_id].tipo = -1;
         movements[thread_id].src_task = -1;
         movements[thread_id].dst = -1;
-
-        FLOAT random1, random2;
 
         // Obtengo las tareas sorteadas.
         int task_x;
