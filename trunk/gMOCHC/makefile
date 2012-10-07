@@ -376,7 +376,7 @@ valgrind: src/main.cu \
 		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
 	valgrind -v --leak-check=full --show-possibly-lost=yes --track-origins=yes bin/gmochc_cpu \
 		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/scenario.0 \
-		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 20
+		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 500
 
 gprof: src/main.cu \
 		src/load_params.cu \
@@ -444,7 +444,7 @@ gprof: src/main.cu \
 		$(CPU_LINK) -pg -o bin/$(CPU_BIN)
 	bin/gmochc_cpu \
 		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/scenario.0 \
-		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 100
+		/home/santiago/Scheduling/Instances/Makespan-Energy/1024x32.ME/workload.A.u_c_hihi 1024 32 3 1 0 1 500
 	gprof bin/gmochc_cpu gmon.out > gmon.txt
 
 clean:

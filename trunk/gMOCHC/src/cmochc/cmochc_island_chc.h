@@ -14,6 +14,7 @@
 #include "../energy_matrix.h"
 #include "../utils.h"
 #include "../basic/mct.h"
+#include "../basic/minmin.h"
 #include "../random/random.h"
 #include "../archivers/aga.h"
 
