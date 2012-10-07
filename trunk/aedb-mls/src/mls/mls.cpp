@@ -96,7 +96,7 @@ void mls_init(int seed)
         fprintf(stderr, "[ERROR][%d] Could not create mpi mutex\n", world_rank);
         exit(EXIT_FAILURE);
     }
-        
+
     if (pthread_barrier_init(&(MLS.sync_barrier), NULL, MLS.count_threads))
     {
         fprintf(stderr, "[ERROR][%d] Could not create sync barrier\n", world_rank);
@@ -121,7 +121,7 @@ void mls_finalize()
     for (int i = 0; i < MLS.count_threads; i++) {
         pthread_mutex_destroy(&(MLS.work_type_mutex[i]));
     }
-    
+
     pthread_mutex_destroy(&(MLS.mpi_mutex));
     pthread_barrier_destroy(&(MLS.sync_barrier));
 }
@@ -141,6 +141,9 @@ void* mls_thread(void *data)
     int search_iteration;
     double random = 0;
     int work_type;
+    
+    char ns3_line[256];
+    char ns3_command[1024];
 
     while ((terminate == 0) && (MLS.total_iterations[thread_id] < MLS.max_iterations))
     {
@@ -160,11 +163,6 @@ void* mls_thread(void *data)
                 fprintf(stderr, "[DEBUG] MLS__INIT\n");
             #endif
 
-            // Inicializo el NS3 para este thread.
-            #ifndef LOCAL
-                MLS.simul[thread_id] = ns3AEDBRestrictedCall();
-            #endif
-
             // =================================================================
             // Inicializo un individuo con una heurística.
             MLS.population[thread_id].borders_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_border_threshold - MLS.lbound_border_threshold) + MLS.lbound_border_threshold;
@@ -173,26 +171,36 @@ void* mls_thread(void *data)
             MLS.population[thread_id].max_delay = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_max_delay - MLS.lbound_max_delay) + MLS.lbound_max_delay;
             MLS.population[thread_id].neighbors_threshold = cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold) + MLS.lbound_neighbors_threshold;
 
-            #ifndef LOCAL
-                // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
-                double *aux;
-                aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
-                    MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
-                    MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
-                    MLS.population[thread_id].neighbors_threshold);
+            FILE *fpipe;
 
-                MLS.population[thread_id].energy = aux[0];
-                MLS.population[thread_id].coverage = aux[1];
-                MLS.population[thread_id].nforwardings = aux[2];
-                MLS.population[thread_id].time = aux[3];
-                
-                free(aux);
-            #else
-                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+            sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, MLS.simul_runs,
+                MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
+                MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
+                MLS.population[thread_id].neighbors_threshold);
+
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG] NS3 command line: %s\n", ns3_command);
             #endif
+
+            if (!(fpipe = (FILE*)popen(ns3_command,"r")))
+            {
+                perror("Problems with pipe");
+                exit(EXIT_FAILURE);
+            }
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].energy = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].coverage = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].nforwardings = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].time = atof(ns3_line);
+
+            pclose(fpipe);
 
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][%d] Thread %d starting solution:\n", world_rank, thread_id);
@@ -259,7 +267,7 @@ void* mls_thread(void *data)
                         // Reduce borders_threshold
                         //delta = MLS.population[thread_id+MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
                         delta = MLS.population[thread_id].borders_threshold * 0.1;
-                        
+
                         if (delta > 0){
                             MLS.population[thread_id].borders_threshold -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         } else {
@@ -272,29 +280,29 @@ void* mls_thread(void *data)
                         } else {
                             MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         }
-                        
-                        if (MLS.population[thread_id].borders_threshold < MLS.lbound_border_threshold) 
+
+                        if (MLS.population[thread_id].borders_threshold < MLS.lbound_border_threshold)
                             MLS.population[thread_id].borders_threshold = MLS.lbound_border_threshold;
-                        
+
                         break;
                     case LS_COVERAGE :
                         // Augment neighbors_threshold
                         //delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
                         delta = MLS.population[thread_id].neighbors_threshold * 0.1;
-                        
+
                         if (delta > 0){
                             MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         } else {
                             MLS.population[thread_id].neighbors_threshold -= floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         }
-    
-                        if (MLS.population[thread_id].neighbors_threshold < MLS.lbound_neighbors_threshold) 
+
+                        if (MLS.population[thread_id].neighbors_threshold < MLS.lbound_neighbors_threshold)
                             MLS.population[thread_id].neighbors_threshold = MLS.lbound_neighbors_threshold;
-                        
+
                         break;
                     case LS_TIME :
                         delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay;
-                        
+
                         if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5){
                             // Reduce max delay
                             MLS.population[thread_id].max_delay -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
@@ -302,35 +310,45 @@ void* mls_thread(void *data)
                             // Augment min delay
                             MLS.population[thread_id].min_delay += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         }
-                        
+
                         if (MLS.population[thread_id].min_delay < MLS.lbound_min_delay) MLS.population[thread_id].min_delay = MLS.lbound_min_delay;
                         if (MLS.population[thread_id].max_delay < MLS.lbound_max_delay) MLS.population[thread_id].max_delay = MLS.lbound_max_delay;
-                        
+
                         break;
                 }
             }
+           
+            FILE *fpipe;
 
-            #ifndef LOCAL
-                // Call the ns3 function, and the results for the three objectives and the time (which is used as a constraint) are put in aux
-                double *aux;
-                aux = MLS.simul[thread_id].RunExperimentAEDBRestricted(MLS.number_devices, MLS.simul_runs,
-                    MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
-                    MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
-                    MLS.population[thread_id].neighbors_threshold);
+            sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, MLS.simul_runs,
+                MLS.population[thread_id].min_delay, MLS.population[thread_id].max_delay,
+                MLS.population[thread_id].borders_threshold, MLS.population[thread_id].margin_forwarding,
+                MLS.population[thread_id].neighbors_threshold);
 
-                MLS.population[thread_id].energy = aux[0];
-                MLS.population[thread_id].coverage = aux[1];
-                MLS.population[thread_id].nforwardings = aux[2];
-                MLS.population[thread_id].time = aux[3];
-                
-                free(aux);
-            #else
-                MLS.population[thread_id].energy = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].coverage = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].nforwardings = cpu_mt_generate(MLS.random_states[thread_id]);
-                MLS.population[thread_id].time = cpu_mt_generate(MLS.random_states[thread_id]);
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG] NS3 command line: %s\n", ns3_command);
             #endif
-            
+
+            if (!(fpipe = (FILE*)popen(ns3_command,"r")))
+            {
+                perror("Problems with pipe");
+                exit(EXIT_FAILURE);
+            }
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].energy = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].coverage = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].nforwardings = atof(ns3_line);
+
+            fscanf(fpipe, "%s", ns3_line);
+            MLS.population[thread_id].time = atof(ns3_line);
+
+            pclose(fpipe);
+
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
                 show_solution(&MLS.population[thread_id]);

@@ -1,6 +1,12 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#ifdef LOCAL
+    #define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3_fake"
+#else
+    #define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3"
+#endif
+
 //#define MPI_MODE_STANDARD
 //#define MPI_MODE_SYNC
 #define MPI_MODE_BUFFERED
