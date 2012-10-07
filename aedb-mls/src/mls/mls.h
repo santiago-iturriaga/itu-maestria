@@ -4,10 +4,6 @@
 #include "../solution.h"
 #include "../random/cpu_mt.h"
 
-#ifndef LOCAL
-    #include "ns3/ns3AEDBRestrictedCall.h"
-#endif
-
 #ifndef MLS__H_
 #define MLS__H_
 
@@ -28,9 +24,6 @@ struct mls_instance {
     struct solution population[MLS__MAX_THREADS];
 
     // Config. NS3
-    #ifndef LOCAL
-        ns3AEDBRestrictedCall simul[MLS__MAX_THREADS];
-    #endif
     int number_devices;
     int simul_runs;
 
