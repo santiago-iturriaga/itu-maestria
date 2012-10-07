@@ -105,7 +105,7 @@ void archivers_aga() {
     fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
     fprintf(stderr, "[INFO] Population:\n");
     
-    fprintf(stdout, "energy,coverage,nforwardings,time\n");
+    fprintf(stdout, "\nenergy,coverage,nforwardings,time\n");
     
     for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
         if (AGA.population[i].status == SOLUTION__STATUS_READY) {
@@ -119,7 +119,7 @@ void archivers_aga() {
             fprintf(stderr, "     nforwardings        = %.2f\n", AGA.population[i].nforwardings);
             fprintf(stderr, "     time                = %.2f\n", AGA.population[i].time);
             
-            fprintf(stderr, "%f,%f,%f,%f\n", AGA.population[i].energy, AGA.population[i].coverage,
+            fprintf(stdout, "%f,%f,%f,%f\n", AGA.population[i].energy, AGA.population[i].coverage,
                 AGA.population[i].nforwardings, AGA.population[i].time);
         }
     }
