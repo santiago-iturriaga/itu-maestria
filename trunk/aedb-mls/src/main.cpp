@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     MLS.count_threads = 12;
     
     // Condicion de parada
-    MLS.max_iterations = 50;
+    MLS.max_iterations = 50000;
     
     if (MLS.count_threads > MLS__MAX_THREADS) {
         fprintf(stderr, "[ERROR][%d] La cantidad máxima de hilos en cada proceso MPI es de %d.\n", world_rank, MLS__MAX_THREADS);
