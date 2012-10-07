@@ -266,15 +266,18 @@ void* mls_thread(void *data)
                     case LS_FORWARDING :
                         // Reduce borders_threshold
                         //delta = MLS.population[thread_id+MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
-                        delta = MLS.population[thread_id].borders_threshold * 0.1;
+                        delta = MLS.population[(thread_id+1) % MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
 
                         if (delta > 0){
                             MLS.population[thread_id].borders_threshold -= alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         } else {
                             MLS.population[thread_id].borders_threshold += alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]);
                         }
+                        
                         // Reduce neighbors_threshold
-                        delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+                        //delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+                        delta = MLS.population[(thread_id+1) % MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+                        
                         if (delta > 0){
                             MLS.population[thread_id].neighbors_threshold -= floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
                         } else {
@@ -288,7 +291,7 @@ void* mls_thread(void *data)
                     case LS_COVERAGE :
                         // Augment neighbors_threshold
                         //delta = MLS.population[thread_id+MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
-                        delta = MLS.population[thread_id].neighbors_threshold * 0.1;
+                        delta = MLS.population[(thread_id+1) % MLS.count_threads].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
 
                         if (delta > 0){
                             MLS.population[thread_id].neighbors_threshold += floor(alfa * delta * cpu_mt_generate(MLS.random_states[thread_id]));
