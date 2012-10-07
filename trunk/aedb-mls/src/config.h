@@ -4,7 +4,7 @@
 #ifdef LOCAL
     #define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3_fake"
 #else
-    #define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3"
+    #define NS3_BIN "/home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls/bin/ns3"
 #endif
 
 //#define MPI_MODE_STANDARD
