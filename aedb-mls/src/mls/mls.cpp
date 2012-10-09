@@ -17,17 +17,19 @@
     #include "../aga/aga.h"
 #endif
 
-/*double INIT_MIN_DELAY[3] = {0.0927,0.0927,0.4169};
+#define INIT_SOLS_COUNT 3
+
+double INIT_MIN_DELAY[3] = {0.0927,0.0927,0.4169};
 double INIT_MAX_DELAY[3] = {0.8193,0.9170,0.6144};
 double INIT_BORDERS[3] = {-90.5793,-90.5793,-90.6721};
 double INIT_MARGIN[3] = {0.3923,0.2031,0.075};
-double INIT_NEIGH[3] = {24.6659,21.8288,21.6789};*/
+double INIT_NEIGH[3] = {24.6659,21.8288,21.6789};
 
-double INIT_MIN_DELAY[2] = {0.0927,0.4169};
+/*double INIT_MIN_DELAY[2] = {0.0927,0.4169};
 double INIT_MAX_DELAY[2] = {0.8193,0.6144};
 double INIT_BORDERS[2] = {-90.5793,-90.6721};
 double INIT_MARGIN[2] = {0.3923,0.075};
-double INIT_NEIGH[2] = {24.6659,21.6789};
+double INIT_NEIGH[2] = {24.6659,21.6789};*/
 
 struct mls_instance MLS;
 
@@ -176,12 +178,21 @@ void* mls_thread(void *data)
             #endif
 
             // =================================================================
-            // Inicializo un individuo con una heurística.           
-            MLS.population[thread_id].min_delay = INIT_MIN_DELAY[thread_id % 2];
-            MLS.population[thread_id].max_delay = INIT_MAX_DELAY[thread_id % 2];
-            MLS.population[thread_id].borders_threshold = INIT_BORDERS[thread_id % 2];
-            MLS.population[thread_id].margin_forwarding = INIT_MARGIN[thread_id % 2];
-            MLS.population[thread_id].neighbors_threshold = INIT_NEIGH[thread_id % 2];
+            // Inicializo un individuo con una heurística. 
+            int selected;
+            selected = (int)(cpu_mt_generate(MLS.random_states[thread_id]) * INIT_SOLS_COUNT);
+            //selected = (int)(thread_id % INIT_SOLS_COUNT);
+                      
+            MLS.population[thread_id].min_delay = INIT_MIN_DELAY[selected] * 
+                (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
+            MLS.population[thread_id].max_delay = INIT_MAX_DELAY[selected] * 
+                (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
+            MLS.population[thread_id].borders_threshold = INIT_BORDERS[selected] * 
+                (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
+            MLS.population[thread_id].margin_forwarding = INIT_MARGIN[selected] * 
+                (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
+            MLS.population[thread_id].neighbors_threshold = INIT_NEIGH[selected] * 
+                (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
 
             FILE *fpipe;
 
@@ -416,7 +427,7 @@ void* mls_thread(void *data)
 
             pclose(fpipe);
 
-            if (time < 2) {
+            //if (time < 2) {
                 MLS.population[thread_id].min_delay = min_delay;
                 MLS.population[thread_id].max_delay = max_delay;
                 MLS.population[thread_id].borders_threshold = borders_threshold;
@@ -431,11 +442,11 @@ void* mls_thread(void *data)
                     fprintf(stderr, "[DEBUG] Resulting solution\n");
                     show_solution(&MLS.population[thread_id]);
                 }
-            } else {
+            /*} else {
                 if ((world_rank == 1)&&(thread_id == 0)) {
                     fprintf(stderr, "        >> Solution was discarded\n");
                 }
-            }
+            }*/
 
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
