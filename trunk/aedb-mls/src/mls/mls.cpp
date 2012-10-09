@@ -417,17 +417,24 @@ void* mls_thread(void *data)
             pclose(fpipe);
 
             if (time < 2) {
+                MLS.population[thread_id].min_delay = min_delay;
+                MLS.population[thread_id].max_delay = max_delay;
+                MLS.population[thread_id].borders_threshold = borders_threshold;
+                MLS.population[thread_id].margin_forwarding = margin_forwarding;
+                MLS.population[thread_id].neighbors_threshold = neighbors_threshold;
                 MLS.population[thread_id].energy = energy;
                 MLS.population[thread_id].coverage = coverage;
                 MLS.population[thread_id].nforwardings = nforwardings;
                 MLS.population[thread_id].time = time;
+                
+                if ((world_rank == 1)&&(thread_id == 0)) {
+                    fprintf(stderr, "[DEBUG] Resulting solution\n");
+                    show_solution(&MLS.population[thread_id]);
+                }
             } else {
-                fprintf(stderr, "        >> Solution was discarded\n");
-            }
-
-            if ((world_rank == 1)&&(thread_id == 0)) {
-                fprintf(stderr, "[DEBUG] Resulting solution\n");
-                show_solution(&MLS.population[thread_id]);
+                if ((world_rank == 1)&&(thread_id == 0)) {
+                    fprintf(stderr, "        >> Solution was discarded\n");
+                }
             }
 
             #ifndef NDEBUG
