@@ -17,8 +17,9 @@ void chc_population_init(int thread_id) {
         int starting_pos;
         starting_pos = (int)(floor(INPUT.tasks_count * random));
 
-        //compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
-        compute_minmin(&(EA_THREADS[thread_id].population[i]));
+        compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
+        //compute_minmin(&(EA_THREADS[thread_id].population[i]));
+        
         EA_THREADS[thread_id].fitness_population[i] = NAN;
 
         if (i == 0) {
