@@ -1,5 +1,7 @@
 set -x
 
+cd /home/siturria/itu-maestria/trunk/gMOCHC
+
 WORKLOADS[0]="A.u_c_hihi"
 WORKLOADS[1]="A.u_c_hilo"
 WORKLOADS[2]="A.u_c_lohi"
