@@ -31,7 +31,7 @@ local: ns3_fake src/main.cpp \
 		src/aga/aga.cpp \
 		src/mls/mls.h \
 		src/mls/mls.cpp  
-	$(CX_LOCAL) -g src/main.cpp \
+	$(CX_LOCAL) -g -DNDEBUG src/main.cpp \
 		src/solution.cpp \
 		src/random/cpu_mt.cpp \
 		src/aga/aga.cpp \
