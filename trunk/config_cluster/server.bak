@@ -31,7 +31,7 @@ set queue medium_jobs started = True
 #
 create queue publica
 set queue publica queue_type = Execution
-set queue publica max_user_queuable = 100
+set queue publica max_user_queuable = 200
 set queue publica acl_user_enable = True
 set queue publica acl_users = siturria@node01.cluster.fing
 set queue publica resources_max.ncpus = 16
