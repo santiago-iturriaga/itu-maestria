@@ -251,7 +251,7 @@ void chc_evolution(int thread_id) {
         /* Ejecuto la búsqueda local sobre una solución "elite" */
         int aux_index, pals_idx;
         
-        for (int t = 0; t < 3; t++) {
+        for (int t = 0; t < 1; t++) {
             aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
             pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
             

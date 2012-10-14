@@ -269,6 +269,7 @@ int pals_search(int thread_id, int solution_index) {
     int machine_a;
 
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {
+    //for (int i = 0; (i < PALS__MAX_BUSQUEDAS) && (count_movements == 0); i++) {
         movements[thread_id].score = VERY_BIG_FLOAT;
         movements[thread_id].tipo = -1;
         movements[thread_id].src_task = -1;
@@ -339,7 +340,7 @@ int pals_search(int thread_id, int solution_index) {
                 machine_a_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_a];
                 machine_b_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_b];
 
-                machine_a_en_new = machine_b_ct_new * get_scenario_energy_max(machine_a);
+                machine_a_en_new = machine_a_ct_new * get_scenario_energy_max(machine_a);
                 machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
 
                 FLOAT max_old;
@@ -384,7 +385,7 @@ int pals_search(int thread_id, int solution_index) {
                 machine_a_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_a];
                 machine_b_en_old = EA_THREADS[thread_id].population[solution_index].machine_active_energy_consumption[machine_b];
 
-                machine_a_en_new = machine_b_ct_new * get_scenario_energy_max(machine_a);
+                machine_a_en_new = machine_a_ct_new * get_scenario_energy_max(machine_a);
                 machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
 
                 score = compute_movement_score(thread_id, search_type,
