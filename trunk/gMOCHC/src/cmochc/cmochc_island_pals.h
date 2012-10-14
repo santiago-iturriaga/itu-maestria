@@ -13,8 +13,8 @@
 //#define PALS__MAX_INTENTOS 100
 //#define PALS__MAX_INTENTOS 262144
 
-//#define PALS__SIMPLE_FITNESS_0
-#define PALS__SIMPLE_FITNESS_1
+#define PALS__SIMPLE_FITNESS_0
+//#define PALS__SIMPLE_FITNESS_1
 //#define PALS__SIMPLE_FITNESS_2
 //#define PALS__SIMPLE_DELTA
 //#define PALS__COMPLEX_DELTA
@@ -40,6 +40,6 @@
 
 void pals_init(int thread_id);
 void pals_free(int thread_id);
-void pals_search(int thread_id, int solution_index);
+int pals_search(int thread_id, int solution_index);
 
 #endif
