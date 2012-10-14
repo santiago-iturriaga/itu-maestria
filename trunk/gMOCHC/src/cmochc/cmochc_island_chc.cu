@@ -267,11 +267,11 @@ void chc_evolution(int thread_id) {
             #ifdef DEBUG_1
                 FLOAT pre_mut_fitness;
             #endif
-
+            /*
             #ifdef DEBUG_3
                 fprintf(stderr, "[DEBUG] Cataclysm (thread=%d)!\n", thread_id);
             #endif
-
+            */
             int current_index;
             ref_point_changed = 0;
 
