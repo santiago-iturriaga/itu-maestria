@@ -198,7 +198,7 @@ void pals_search(int thread_id, int solution_index) {
     worst_compute_time_machine_count = 0;
     worst_energy_machine_count = 0;
 
-    int starting_offset = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count;
+    int starting_offset = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * INPUT.tasks_count);
     int current_task;
 
     for (int t = 0; (t < INPUT.tasks_count) &&
