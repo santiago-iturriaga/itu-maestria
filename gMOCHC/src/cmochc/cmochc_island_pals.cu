@@ -32,6 +32,8 @@
 #define PALS_MAKESPAN_SEARCH 1
 #define PALS_ENERGY_SEARCH 2
 
+#define PALS_MAKESPAN_EPSILON 1
+
 /* LS */
 struct ls_movement {
     FLOAT score;
@@ -50,7 +52,7 @@ void pals_free(int thread_id) {
 
 }
 
-inline FLOAT compute_movement_score(int thread_id,
+inline FLOAT compute_movement_score(int thread_id, int search_type,
     FLOAT makespan, FLOAT energy_machine, 
     FLOAT machine_a_ct_new, FLOAT machine_a_ct_old,
     FLOAT machine_b_ct_new, FLOAT machine_b_ct_old,
@@ -90,26 +92,42 @@ inline FLOAT compute_movement_score(int thread_id,
             if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan)) {
                 score = VERY_BIG_FLOAT;
             } else {
-                score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
-                        (machine_b_ct_new - machine_b_ct_old) / makespan);
+                if ((machine_a_ct_old + PALS_MAKESPAN_EPSILON >= makespan) || (machine_b_ct_old + PALS_MAKESPAN_EPSILON >= makespan)) {
+                    score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
+                            (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
+
+                    score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old +
+                            (machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
+                } else {
+                    score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
+                            (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
+
+                    score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old +
+                            (machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
+                            
+                    score = 1 / score;
+                }
             }
         } else if (search_type == PALS_ENERGY_SEARCH) {
-            if ((machine_a_en_new > energy_machine) || (machine_b_en_new > energy_machine)) {
-                score = VERY_BIG_FLOAT;
-            } else {
-                score = ((machine_a_en_new - machine_a_en_old) / energy_machine +
-                        (machine_b_en_new - machine_b_en_old) / energy_machine);
-            }
-        } else {
-            if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan) ||
-                (machine_a_en_new > energy_machine) || (machine_b_en_new > energy_machine)) {
+            if (machine_a_en_new - machine_a_en_old + machine_b_en_new - machine_b_en_old > 0) {
                 score = VERY_BIG_FLOAT;
             } else {
                 score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
                         (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
 
-                score += ((machine_a_en_new - machine_a_en_old) / energy_machine +
-                        (machine_b_en_new - machine_b_en_old) / energy_machine) * EA_THREADS[thread_id].weight_energy;
+                score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old +
+                        (machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
+            }
+        } else {
+            if ((machine_a_ct_new > makespan) || (machine_b_ct_new > makespan) ||
+                (machine_a_en_new - machine_a_en_old + machine_b_en_new - machine_b_en_old > 0)) {
+                score = VERY_BIG_FLOAT;
+            } else {
+                score = ((machine_a_ct_new - machine_a_ct_old) / makespan +
+                        (machine_b_ct_new - machine_b_ct_old) / makespan) * EA_THREADS[thread_id].weight_makespan;
+
+                score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old +
+                        (machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
             }
         }
     #endif
@@ -149,17 +167,17 @@ inline FLOAT compute_movement_score(int thread_id,
     return score;
 }
 
-void pals_search(int thread_id, int solution_index) {
+int pals_search(int thread_id, int solution_index) {
     int worst_compute_time_machine_tasks[MAX_COLLECTED_TASKS];
     int worst_compute_time_machine_count;
 
     int worst_energy_machine_tasks[MAX_COLLECTED_TASKS];
     int worst_energy_machine_count;
 
-    #ifdef DEBUG_1
-        FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
-        FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+    FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
+    FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
 
+    #ifdef DEBUG_1
         CHC_PALS_COUNT_EXECUTIONS[thread_id]++;
     #endif
 
@@ -328,7 +346,7 @@ void pals_search(int thread_id, int solution_index) {
                 max_old = machine_a_ct_old;
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
 
-                score = compute_movement_score(thread_id,
+                score = compute_movement_score(thread_id, search_type,
                     makespan, energy_machine, 
                     machine_a_ct_new, machine_a_ct_old,
                     machine_b_ct_new, machine_b_ct_old,
@@ -369,7 +387,7 @@ void pals_search(int thread_id, int solution_index) {
                 machine_a_en_new = machine_b_ct_new * get_scenario_energy_max(machine_a);
                 machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
 
-                score = compute_movement_score(thread_id,
+                score = compute_movement_score(thread_id, search_type,
                     makespan, energy_machine, 
                     machine_a_ct_new, machine_a_ct_old,
                     machine_b_ct_new, machine_b_ct_old,
@@ -489,35 +507,33 @@ void pals_search(int thread_id, int solution_index) {
         }
 
         EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
-    }
-
-    #ifdef DEBUG_1
         FLOAT fitness_post = fitness(thread_id, solution_index);
 
         FLOAT fitness_pre = fitness_zn(
             thread_id, makespan_pre, energy_pre,
             EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
             EA_THREADS[thread_id].energy_nadir_value, EA_THREADS[thread_id].energy_zenith_value);
-        /*
-        #ifdef DEBUG_3
-            fprintf(stderr, "[DEBUG] <thread=%d> PALS fitness from %.4f to %.4f (makespan %.2f->%.2f / energy %.2f->%.2f)\n",
-                thread_id, fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan,
-                energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
-        #endif
-        */
-        if (fitness_post < fitness_pre) {
-            CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
-    
-            if (search_type == PALS_RANDOM_SEARCH) {
-                CHC_PALS_COUNT_FITNESS_IMPROV_RANDOM[thread_id]++;
-            } else if (search_type == PALS_MAKESPAN_SEARCH) {
-                CHC_PALS_COUNT_FITNESS_IMPROV_MAKESPAN[thread_id]++;
-            } else {
-                CHC_PALS_COUNT_FITNESS_IMPROV_ENERGY[thread_id]++;
+                
+        #ifdef DEBUG_1
+            if (fitness_post < fitness_pre) {
+                CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
+        
+                if (search_type == PALS_RANDOM_SEARCH) {
+                    CHC_PALS_COUNT_FITNESS_IMPROV_RANDOM[thread_id]++;
+                } else if (search_type == PALS_MAKESPAN_SEARCH) {
+                    CHC_PALS_COUNT_FITNESS_IMPROV_MAKESPAN[thread_id]++;
+                } else {
+                    CHC_PALS_COUNT_FITNESS_IMPROV_ENERGY[thread_id]++;
+                }
             }
-        }
-        if (fitness_post > fitness_pre) {
-            CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
-        }
-    #endif
+            if (fitness_post > fitness_pre) {
+                CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
+            }
+        #endif
+        
+        if (fitness_post < fitness_pre) return 1;
+        else return 0;
+    } else {
+        return 0;
+    }
 }

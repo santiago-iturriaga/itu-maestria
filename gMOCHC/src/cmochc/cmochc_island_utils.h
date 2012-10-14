@@ -114,5 +114,27 @@ inline void merge_sort(int thread_id) {
         }
     }
 }
+/*
+inline void insertion_sort(int thread_id) {
+    int current_sol;
+    int previous_sol;
+    int end_loop;
+    
+    for (int i = 1; i < MAX_POP_SOLS; i++) {
+        end_loop = 0;
+        
+        for (int j = i; (j > 0) && (end_loop == 0); j--) {
+            current_sol = EA_THREADS[thread_id].sorted_population[j];
+            previous_sol = EA_THREADS[thread_id].sorted_population[j-1];
+            
+            if (fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_sol]) < fitness(thread_id, EA_THREADS[thread_id].sorted_population[previous_sol])) {
+                EA_THREADS[thread_id].sorted_population[j] = previous_sol;
+                EA_THREADS[thread_id].sorted_population[j-1] = current_sol;
+            } else {
+                end_loop = 1;
+            }
+        }
+    }
+}*/
 
 #endif // CMOCHC_ISLANDS_UTILS__H

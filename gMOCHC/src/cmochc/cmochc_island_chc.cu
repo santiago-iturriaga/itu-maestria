@@ -209,7 +209,7 @@ void chc_evolution(int thread_id) {
             }
         }
 
-        if (next_avail_children > CMOCHC_LOCAL__POPULATION_SIZE) {
+        if (next_avail_children != CMOCHC_LOCAL__POPULATION_SIZE) {
             // Si cambió el punto de referencia, actualizo todos los fitness
             if (ref_point_changed == 1) {
                 ref_point_changed = 0;
@@ -232,7 +232,6 @@ void chc_evolution(int thread_id) {
             merge_sort(thread_id);
 
             if (worst_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1])) {
-
                 #ifdef DEBUG_1
                     COUNT_AT_LEAST_ONE_CHILDREN_INSERTED[thread_id]++;
                 #endif
@@ -241,7 +240,6 @@ void chc_evolution(int thread_id) {
             }
 
             if (best_parent > fitness(thread_id, EA_THREADS[thread_id].sorted_population[0])) {
-
                 #ifdef DEBUG_1
                     COUNT_IMPROVED_BEST_SOL[thread_id]++;
                 #endif
@@ -252,11 +250,38 @@ void chc_evolution(int thread_id) {
 
         /* Ejecuto la búsqueda local sobre una solución "elite" */
         int aux_index, pals_idx;
-        aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
-        pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
-        assert(EA_THREADS[thread_id].population[pals_idx].initialized == SOLUTION__IN_USE);
-        pals_search(thread_id, pals_idx);
+        
+        for (int t = 0; t < 3; t++) {
+            aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
+            pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
+            
+            // Clono la mejor solución y descarto la peor.       
+            clone_solution(&EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]], &EA_THREADS[thread_id].population[pals_idx]);
+            
+            // Ejecuto el PALS sobre la copia de la mejor.
+            pals_search(thread_id, CMOCHC_LOCAL__POPULATION_SIZE-1);
 
+            /* Re-sort de population */
+            int current_pos = CMOCHC_LOCAL__POPULATION_SIZE-1;
+            while ((current_pos > 0) && (fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos]) < fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos-1]))) {
+                aux_index = EA_THREADS[thread_id].sorted_population[current_pos];
+                EA_THREADS[thread_id].sorted_population[current_pos] = EA_THREADS[thread_id].sorted_population[current_pos-1];
+                EA_THREADS[thread_id].sorted_population[current_pos-1] = aux_index;
+                current_pos--;
+            }
+        }
+        
+        /*
+        #ifdef DEBUG_3
+            if (thread_id == 0) {
+                fprintf(stderr, "[DEBUG] Current population:\n");
+                for (int i = 0; i < CMOCHC_LOCAL__POPULATION_SIZE; i++) {
+                    fprintf(stderr, "%.4f\n", fitness(thread_id, EA_THREADS[thread_id].sorted_population[i]));
+                }
+            }
+        #endif
+        * */
+        
         if (threshold < 0) {
             threshold = EA_THREADS[thread_id].threshold_max;
 
@@ -267,11 +292,7 @@ void chc_evolution(int thread_id) {
             #ifdef DEBUG_1
                 FLOAT pre_mut_fitness;
             #endif
-            /*
-            #ifdef DEBUG_3
-                fprintf(stderr, "[DEBUG] Cataclysm (thread=%d)!\n", thread_id);
-            #endif
-            */
+
             int current_index;
             ref_point_changed = 0;
 
