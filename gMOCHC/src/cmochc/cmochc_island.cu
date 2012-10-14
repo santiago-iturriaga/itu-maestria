@@ -113,9 +113,9 @@ void compute_cmochc_island() {
 
             /* Incorporo las mejores soluciones al repositorio de soluciones */
             TIMMING_START(ts_gather);
-            #if defined(DEBUG_3)
+            /*#if defined(DEBUG_3)
                 fprintf(stderr, "[DEBUG] CPU CHC (islands): gather\n");
-            #endif
+            #endif*/
 
             if (gather() > 0) {
                 #if defined(DEBUG_1)
@@ -879,6 +879,9 @@ void display_results() {
         int count_solutions_migrated = 0;
         int count_pals = 0;
         int count_pals_improv = 0;
+        int count_pals_improv_random = 0;
+        int count_pals_improv_makespan = 0;
+        int count_pals_improv_energy = 0;
         int count_pals_improv_move = 0;
         int count_pals_improv_swap = 0;
         int count_pals_decline = 0;
@@ -899,6 +902,9 @@ void display_results() {
             count_pals_improv += CHC_PALS_COUNT_FITNESS_IMPROV[t];
             count_pals_improv_move += CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[t];
             count_pals_improv_swap += CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[t];
+            count_pals_improv_random += CHC_PALS_COUNT_FITNESS_IMPROV_RANDOM[t];
+            count_pals_improv_makespan += CHC_PALS_COUNT_FITNESS_IMPROV_MAKESPAN[t];
+            count_pals_improv_energy += CHC_PALS_COUNT_FITNESS_IMPROV_ENERGY[t];
             count_pals_decline += CHC_PALS_COUNT_FITNESS_DECLINE[t];
             count_pals_decline_move += CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[t];
             count_pals_decline_swap += CHC_PALS_COUNT_FITNESS_DECLINE_SWAP[t];
@@ -935,6 +941,12 @@ void display_results() {
         fprintf(stderr, "       count_pals                           : %d\n", count_pals);
         fprintf(stderr, "       count_pals_improvments               : %d (%.2f %%)\n", count_pals_improv,
             ((FLOAT)count_pals_improv/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_improvments_random        : %d (%.2f %%)\n", count_pals_improv_random,
+            ((FLOAT)count_pals_improv_random/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_improvments_makespan      : %d (%.2f %%)\n", count_pals_improv_makespan,
+            ((FLOAT)count_pals_improv_makespan/(FLOAT)count_pals)*100);
+        fprintf(stderr, "       count_pals_improvments_energy        : %d (%.2f %%)\n", count_pals_improv_energy,
+            ((FLOAT)count_pals_improv_energy/(FLOAT)count_pals)*100);
         fprintf(stderr, "       count_pals_improvments_move          : %d (%.2f %%)\n", count_pals_improv_move,
             ((FLOAT)count_pals_improv_move/(FLOAT)count_pals)*100);
         fprintf(stderr, "       count_pals_improvments_swap          : %d (%.2f %%)\n", count_pals_improv_swap,

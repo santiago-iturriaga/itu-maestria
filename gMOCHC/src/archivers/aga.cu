@@ -436,9 +436,9 @@ int archivers_aga(int new_solutions_size)
 {
     assert(new_solutions_size <= ARCHIVER__MAX_NEW_SOLS);
 
-    #ifdef DEBUG_3
+    /*#ifdef DEBUG_3
         fprintf(stderr, "[DEBUG] archiver aga...\n");
-    #endif
+    #endif*/
 
     int nd_new_solutions = delete_dominated_solutions(new_solutions_size);
 
