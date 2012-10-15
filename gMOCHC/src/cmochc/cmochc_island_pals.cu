@@ -605,6 +605,12 @@ int pals_search(int thread_id, int solution_index) {
                 } else if (search_type == PALS__ENERGY_SEARCH) {
                     CHC_PALS_COUNT_FITNESS_IMPROV_ENERGY[thread_id]++;
                 }
+
+                if (movements[thread_id].tipo == PALS__MOVIMIENTO_SWAP) {
+                    CHC_PALS_COUNT_FITNESS_IMPROV_SWAP[thread_id]++;
+                } else if (movements[thread_id].tipo == PALS__MOVIMIENTO_MOVE) {
+                    CHC_PALS_COUNT_FITNESS_IMPROV_MOVE[thread_id]++;
+                }
             }
             if (fitness_post > fitness_pre) {
                 CHC_PALS_COUNT_FITNESS_DECLINE[thread_id]++;
