@@ -11,6 +11,7 @@ THREADS=8
 TIMEOUT=1
 #ITERATIONS=20
 #ITERATIONS=1250
+#ITERATIONS=2000
 ITERATIONS=2500
 time( bin/gmochc_cpu ~/instancias/1024x32.ME/scenario.0 ~/instancias/1024x32.ME/workload.A.u_c_hihi \
     1024 32 3 ${THREADS} ${SEED} ${TIMEOUT} ${ITERATIONS} 1> sols_1k.txt 2>log_1k.txt)
