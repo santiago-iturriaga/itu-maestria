@@ -24,7 +24,7 @@
 
 //#define CHC__CROSS_OP 0
 #define CHC__CORSS_OP 1
-#define CHC__CROSS_PROB 0.7
+#define CHC__CROSS_PROB 0.8
 
 #if CHC__MUTATE_OP == 0
     #define CHC__MUTATE(rand_state,seed,mutation) mutate_0(rand_state,seed,mutation);
