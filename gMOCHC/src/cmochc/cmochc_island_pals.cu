@@ -22,17 +22,17 @@
     int CHC_PALS_COUNT_FITNESS_DECLINE_MOVE[MAX_THREADS] = {0};
 #endif
 
-#define PALS_MOVIMIENTO_SWAP 0
-#define PALS_MOVIMIENTO_MOVE 1
+#define PALS__MOVIMIENTO_SWAP 0
+#define PALS__MOVIMIENTO_MOVE 1
 
-#define MAX_COLLECTED_TASKS 16
-//#define MAX_COLLECTED_TASKS 64
+#define MAX__COLLECTED_TASKS 16
+//#define MAX__COLLECTED_TASKS 64
 
-#define PALS_RANDOM_SEARCH 0
-#define PALS_MAKESPAN_SEARCH 1
-#define PALS_ENERGY_SEARCH 2
+#define PALS__RANDOM_SEARCH 0
+#define PALS__MAKESPAN_SEARCH 1
+#define PALS__ENERGY_SEARCH 2
 
-#define PALS_MAKESPAN_EPSILON 1
+#define PALS__MAKESPAN_EPSILON 1
 
 /* LS */
 struct ls_movement {
@@ -168,10 +168,10 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
 }
 
 int pals_search(int thread_id, int solution_index) {
-    int worst_compute_time_machine_tasks[MAX_COLLECTED_TASKS];
+    int worst_compute_time_machine_tasks[MAX__COLLECTED_TASKS];
     int worst_compute_time_machine_count;
 
-    int worst_energy_machine_tasks[MAX_COLLECTED_TASKS];
+    int worst_energy_machine_tasks[MAX__COLLECTED_TASKS];
     int worst_energy_machine_count;
 
     FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
@@ -220,8 +220,8 @@ int pals_search(int thread_id, int solution_index) {
     int current_task;
 
     for (int t = 0; (t < INPUT.tasks_count) &&
-        ((worst_compute_time_machine_count < MAX_COLLECTED_TASKS) ||
-        (worst_energy_machine_count < MAX_COLLECTED_TASKS)); t++) {
+        ((worst_compute_time_machine_count < MAX__COLLECTED_TASKS) ||
+        (worst_energy_machine_count < MAX__COLLECTED_TASKS)); t++) {
 
         current_task = starting_offset + t;
         if (current_task >= INPUT.tasks_count) {
@@ -229,14 +229,14 @@ int pals_search(int thread_id, int solution_index) {
             starting_offset = -t;
         }
 
-        if (worst_compute_time_machine_count < MAX_COLLECTED_TASKS) {
+        if (worst_compute_time_machine_count < MAX__COLLECTED_TASKS) {
             if (EA_THREADS[thread_id].population[solution_index].task_assignment[current_task] == makespan_machine_index) {
                 worst_compute_time_machine_tasks[worst_compute_time_machine_count] = current_task;
                 worst_compute_time_machine_count++;
             }
         }
 
-        if (worst_energy_machine_count < MAX_COLLECTED_TASKS) {
+        if (worst_energy_machine_count < MAX__COLLECTED_TASKS) {
             if (EA_THREADS[thread_id].population[solution_index].task_assignment[current_task] == energy_machine_index) {
                 worst_energy_machine_tasks[worst_energy_machine_count] = current_task;
                 worst_energy_machine_count++;
@@ -256,12 +256,12 @@ int pals_search(int thread_id, int solution_index) {
     FLOAT random1, random2;
     random  = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
 
-    if (random < 0.05) {
-        search_type = PALS_RANDOM_SEARCH;
-    } else if (random < 0.90) {
-        search_type = PALS_MAKESPAN_SEARCH;
+    if (random < PALS__MAKESPAN_SEARCH_PROB) {
+        search_type = PALS__MAKESPAN_SEARCH;
+    } else if (random < PALS__MAKESPAN_SEARCH_PROB + PALS__ENERGY_SEARCH_PROB) {
+        search_type = PALS__ENERGY_SEARCH;
     } else {
-        search_type = PALS_ENERGY_SEARCH;
+        search_type = PALS__RANDOM_SEARCH;
     }
 
     int count_movements = 0;
@@ -269,7 +269,6 @@ int pals_search(int thread_id, int solution_index) {
     int machine_a;
 
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {
-    //for (int i = 0; (i < PALS__MAX_BUSQUEDAS) && (count_movements == 0); i++) {
         movements[thread_id].score = VERY_BIG_FLOAT;
         movements[thread_id].tipo = -1;
         movements[thread_id].src_task = -1;
@@ -284,10 +283,10 @@ int pals_search(int thread_id, int solution_index) {
 
         random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
 
-        if (search_type == PALS_RANDOM_SEARCH) {
+        if (search_type == PALS__RANDOM_SEARCH) {
             task_x = (int)(random1 * INPUT.tasks_count);
             machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x]; // Máquina a.
-        } else if (search_type == PALS_MAKESPAN_SEARCH) {
+        } else if (search_type == PALS__MAKESPAN_SEARCH) {
             task_x = worst_compute_time_machine_tasks[(int)(random1 * worst_compute_time_machine_count)];
             machine_a = makespan_machine_index;
         } else {
@@ -297,14 +296,14 @@ int pals_search(int thread_id, int solution_index) {
 
         for (int loop = 0; loop < PALS__MAX_INTENTOS; loop++) {
             if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < PALS__SWAP_SEARCH) {
-                movimiento = PALS_MOVIMIENTO_SWAP;
+                movimiento = PALS__MOVIMIENTO_SWAP;
             } else {
-                movimiento = PALS_MOVIMIENTO_MOVE;
+                movimiento = PALS__MOVIMIENTO_MOVE;
             }
 
             score = 0.0;
 
-            if (movimiento == PALS_MOVIMIENTO_SWAP) {
+            if (movimiento == PALS__MOVIMIENTO_SWAP) {
                 // =================
                 // Swap
                 int task_y;
@@ -356,11 +355,11 @@ int pals_search(int thread_id, int solution_index) {
 
                 if (movements[thread_id].score > score) {
                     movements[thread_id].score = score;
-                    movements[thread_id].tipo = PALS_MOVIMIENTO_SWAP;
+                    movements[thread_id].tipo = PALS__MOVIMIENTO_SWAP;
                     movements[thread_id].src_task = task_x;
                     movements[thread_id].dst = task_y;
                 }
-            } else if (movimiento == PALS_MOVIMIENTO_MOVE) {
+            } else if (movimiento == PALS__MOVIMIENTO_MOVE) {
                 // =================
                 // Move
                 int machine_b;
@@ -397,7 +396,7 @@ int pals_search(int thread_id, int solution_index) {
 
                 if (movements[thread_id].score > score) {
                     movements[thread_id].score = score;
-                    movements[thread_id].tipo = PALS_MOVIMIENTO_MOVE;
+                    movements[thread_id].tipo = PALS__MOVIMIENTO_MOVE;
                     movements[thread_id].src_task = task_x;
                     movements[thread_id].dst = machine_b;
                 }
@@ -415,7 +414,7 @@ int pals_search(int thread_id, int solution_index) {
             task_src = movements[thread_id].src_task;
             machine_src = EA_THREADS[thread_id].population[solution_index].task_assignment[task_src];
 
-            if (movements[thread_id].tipo == PALS_MOVIMIENTO_SWAP) {
+            if (movements[thread_id].tipo == PALS__MOVIMIENTO_SWAP) {
                 task_dst = movements[thread_id].dst;
                 machine_dst = EA_THREADS[thread_id].population[solution_index].task_assignment[task_dst];
 
@@ -441,7 +440,7 @@ int pals_search(int thread_id, int solution_index) {
                     (get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_src)) -
                     (get_scenario_energy_max(machine_dst) * get_etc_value(machine_dst, task_dst));
 
-            } else if (movements[thread_id].tipo == PALS_MOVIMIENTO_MOVE) {
+            } else if (movements[thread_id].tipo == PALS__MOVIMIENTO_MOVE) {
                 machine_dst = movements[thread_id].dst;
 
                 /* Hago el move */
@@ -519,9 +518,9 @@ int pals_search(int thread_id, int solution_index) {
             if (fitness_post < fitness_pre) {
                 CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
         
-                if (search_type == PALS_RANDOM_SEARCH) {
+                if (search_type == PALS__RANDOM_SEARCH) {
                     CHC_PALS_COUNT_FITNESS_IMPROV_RANDOM[thread_id]++;
-                } else if (search_type == PALS_MAKESPAN_SEARCH) {
+                } else if (search_type == PALS__MAKESPAN_SEARCH) {
                     CHC_PALS_COUNT_FITNESS_IMPROV_MAKESPAN[thread_id]++;
                 } else {
                     CHC_PALS_COUNT_FITNESS_IMPROV_ENERGY[thread_id]++;

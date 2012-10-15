@@ -251,24 +251,27 @@ void chc_evolution(int thread_id) {
         /* Ejecuto la búsqueda local sobre una solución "elite" */
         int aux_index, pals_idx;
         
-        for (int t = 0; t < 1; t++) {
-            aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
-            pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
-            
-            // Clono la mejor solución y descarto la peor.       
-            clone_solution(&EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[CMOCHC_LOCAL__POPULATION_SIZE-1]], &EA_THREADS[thread_id].population[pals_idx]);
-            
-            // Ejecuto el PALS sobre la copia de la mejor.
-            pals_search(thread_id, CMOCHC_LOCAL__POPULATION_SIZE-1);
+        //aux_index = 0;
+        aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__BEST_SOLS_KEPT);
+        //aux_index = (int)(RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) * CMOCHC_LOCAL__POPULATION_SIZE);
+        
+        pals_idx = EA_THREADS[thread_id].sorted_population[aux_index];
+        
+        // Clono la mejor solución y descarto la peor.       
+        clone_solution(&EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[MAX_POP_SOLS-1]], &EA_THREADS[thread_id].population[pals_idx]);
+        
+        // Ejecuto el PALS sobre la copia de la mejor.
+        pals_search(thread_id, MAX_POP_SOLS-1);
 
-            /* Re-sort de population */
-            int current_pos = CMOCHC_LOCAL__POPULATION_SIZE-1;
-            while ((current_pos > 0) && (fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos]) < fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos-1]))) {
-                aux_index = EA_THREADS[thread_id].sorted_population[current_pos];
-                EA_THREADS[thread_id].sorted_population[current_pos] = EA_THREADS[thread_id].sorted_population[current_pos-1];
-                EA_THREADS[thread_id].sorted_population[current_pos-1] = aux_index;
-                current_pos--;
-            }
+        /* Re-sort de population */
+        int current_pos = MAX_POP_SOLS-1;
+        while ((current_pos > 0) && 
+            (fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos]) < fitness(thread_id, EA_THREADS[thread_id].sorted_population[current_pos-1]))) {
+                
+            aux_index = EA_THREADS[thread_id].sorted_population[current_pos];
+            EA_THREADS[thread_id].sorted_population[current_pos] = EA_THREADS[thread_id].sorted_population[current_pos-1];
+            EA_THREADS[thread_id].sorted_population[current_pos-1] = aux_index;
+            current_pos--;
         }
         
         /*
