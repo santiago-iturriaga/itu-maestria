@@ -18,8 +18,8 @@ workloads = (("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","
 
 print "scenario,workload,minmin_makespan,minmin_energy,chc_makespan,chc_energy,improv.makespan,improv.energy"
 
-for s in range(scenarios):
-    for w_type in workloads:
+for w_type in workloads:
+    for s in range(scenarios):
         for w in w_type:
             minmin_file = open(directorio+"/minmin_"+str(s)+"_"+w+"_"+dimension+".metrics",'r')
             minmin_line = minmin_file.read()
