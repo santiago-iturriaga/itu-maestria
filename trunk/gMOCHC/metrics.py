@@ -11,7 +11,8 @@ print "Path: %s" % directorio
 dimension = sys.argv[2]
 print "Dim: %s" % dimension
 
-scenarios = 20
+#scenarios = 20
+scenarios = 7
 #workloads = ("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
 workloads = (("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo"),("A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo"),("A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo"))
 
