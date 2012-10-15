@@ -78,6 +78,7 @@ void compute_cmochc_island() {
 
     create_empty_solution(&(EA_THREADS[0].population[0]));
     compute_pminmin(&(EA_THREADS[0].population[0]));
+    //compute_mct(&(EA_THREADS[0].population[0]));
     for (int i = 1; i < INPUT.thread_count; i++) {
         create_empty_solution(&(EA_THREADS[i].population[0]));
         clone_solution(&(EA_THREADS[i].population[0]), &(EA_THREADS[0].population[0]));
