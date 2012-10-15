@@ -126,6 +126,12 @@ inline void hux_1(RAND_STATE &rand_state,
     int tasks_count = INPUT.tasks_count;
     int machines_count = INPUT.machines_count;
     
+    assert(c1 != p1);
+    assert(c1 != p2);
+    assert(c2 != p1);
+    assert(c2 != p1);
+    assert(c1 != c2);
+    
     clone_solution(c1, p1);
     clone_solution(c2, p2);
     
