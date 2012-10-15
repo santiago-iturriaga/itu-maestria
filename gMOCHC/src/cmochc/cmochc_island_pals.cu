@@ -170,10 +170,6 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
                 score += ((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
             }
         }
-        
-        if (thread_id == 0) {
-            
-        }
     #endif
     #if defined(PALS__SIMPLE_DELTA)
         if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
