@@ -66,7 +66,7 @@ void compute_cmochc_island();
 //#define CMOCHC_COLLABORATION__MIGRATION_RANDOM_ELITE
 //#define CMOCHC_COLLABORATION__MIGRATION_NONE
 
-/* Define cómo son incluidos los ementos al deme */
+/* Define cómo son incluidos los elementos al deme */
 #define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY

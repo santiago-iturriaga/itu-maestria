@@ -260,32 +260,38 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
     int biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
 
     for (int t = 0; t < INPUT.thread_count; t++) {
-        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
-            if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
-            } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
-            } else {
-                random = RAND_GENERATE(rstate);
+        if (t == 0) {
+            sel_patch_idx = 0;
+        } else if (t == 1) {
+            sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
+        } else {
+            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
+                if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
+                } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
+                } else {
+                    random = RAND_GENERATE(rstate);
 
-                int random_length;
-                random_length = EA_INSTANCE.weight_gap_length[biggest_patch_index] * random;
+                    int random_length;
+                    random_length = EA_INSTANCE.weight_gap_length[biggest_patch_index] * random;
 
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
-                if (sel_patch_idx < 0) sel_patch_idx = 0;
-                if (sel_patch_idx >= CMOCHC_PARETO_FRONT__PATCHES) sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
-            }
-        #endif
-        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
-            if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
-            } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
-            } else {
-                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index]
-                    - (EA_INSTANCE.weight_gap_length[biggest_patch_index] / 2) - 1;
-            }
-        #endif
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
+                    if (sel_patch_idx < 0) sel_patch_idx = 0;
+                    if (sel_patch_idx >= CMOCHC_PARETO_FRONT__PATCHES) sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
+                }
+            #endif
+            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
+                if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
+                } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
+                } else {
+                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index]
+                        - (EA_INSTANCE.weight_gap_length[biggest_patch_index] / 2) - 1;
+                }
+            #endif
+        }
 
         assert(sel_patch_idx >= 0);
         assert(sel_patch_idx < CMOCHC_PARETO_FRONT__PATCHES);
@@ -406,7 +412,14 @@ void init() {
 
     if (INPUT.thread_count > 1) {
         for (int i = 0; i < INPUT.thread_count; i++) {
-            EA_INSTANCE.thread_weight_assignment[i] = i * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
+            if (i == 0) {
+                EA_INSTANCE.thread_weight_assignment[i] = 0;
+            } else if (i == 1) {
+                EA_INSTANCE.thread_weight_assignment[i] = CMOCHC_PARETO_FRONT__PATCHES - 1;
+            } else {
+                EA_INSTANCE.thread_weight_assignment[i] = (i - 1) * (CMOCHC_PARETO_FRONT__PATCHES / INPUT.thread_count);
+            }
+            
             //EA_THREADS[i].currently_assigned_weight = EA_INSTANCE.thread_weight_assignment[i];
             EA_INSTANCE.weight_thread_assignment[EA_INSTANCE.thread_weight_assignment[i]] = i;
 
