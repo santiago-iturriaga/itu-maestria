@@ -257,48 +257,65 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         double random;
     #endif
 
+    /*#if defined(DEBUG_3)
+        fprintf(stderr, "[DEBUG] (1) Parches gap\n");
+        for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
+            int index;
+            index = EA_INSTANCE.weight_gap_sorted[i];
+            
+            fprintf(stderr, "     (%d) patch %d, gap %d\n", 
+                i, EA_INSTANCE.weight_gap_index[index], EA_INSTANCE.weight_gap_length[index]);
+        }
+    #endif*/
+
     int sel_patch_idx = -1;
     int biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
+            
+    // El hilo 0 siempre se encarga del parche 0
+    EA_INSTANCE.thread_weight_assignment[0] = 0;
+    EA_INSTANCE.weight_thread_assignment[0] = 0;
+        
+    // El hilo 1 siempre se encarga del último parche
+    EA_INSTANCE.thread_weight_assignment[1] = CMOCHC_PARETO_FRONT__PATCHES - 1;
+    EA_INSTANCE.weight_thread_assignment[CMOCHC_PARETO_FRONT__PATCHES - 1] = 1;
 
-    for (int t = 0; t < INPUT.thread_count; t++) {
-        if (t == 0) {
-            sel_patch_idx = 0;
-        } else if (t == 1) {
-            sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
-        } else {
-            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
-                if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
-                } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
-                } else {
-                    random = RAND_GENERATE(rstate);
+    for (int t = 2; t < INPUT.thread_count; t++) {
+        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AR_WEIGHTS)
+            if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
+            } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
+            } else {
+                random = RAND_GENERATE(rstate);
 
-                    int random_length;
-                    random_length = (int)(EA_INSTANCE.weight_gap_length[biggest_patch_index] * random);
+                int random_length;
+                random_length = (int)(EA_INSTANCE.weight_gap_length[biggest_patch_index] * random);
 
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
-                    if (sel_patch_idx < 0) sel_patch_idx = 0;
-                    if (sel_patch_idx >= CMOCHC_PARETO_FRONT__PATCHES) sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
-                }
-            #endif
-            #if defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
-                if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
-                } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
-                } else {
-                    sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index]
-                        - (EA_INSTANCE.weight_gap_length[biggest_patch_index] / 2) - 1;
-                }
-            #endif
-        }
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
+                if (sel_patch_idx < 0) sel_patch_idx = 0;
+                if (sel_patch_idx >= CMOCHC_PARETO_FRONT__PATCHES) sel_patch_idx = CMOCHC_PARETO_FRONT__PATCHES - 1;
+            }
+        #endif
+        #if defined(CMOCHC_PARETO_FRONT__ADAPT_AM_WEIGHTS)
+            if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 0) {
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index];
+            } else if (EA_INSTANCE.weight_gap_length[biggest_patch_index] == 1) {
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - 1;
+            } else {
+                sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index]
+                    - (EA_INSTANCE.weight_gap_length[biggest_patch_index] / 2) - 1;
+            }
+        #endif
 
         assert(sel_patch_idx >= 0);
         assert(sel_patch_idx < CMOCHC_PARETO_FRONT__PATCHES);
 
         EA_INSTANCE.thread_weight_assignment[t] = sel_patch_idx;
         EA_INSTANCE.weight_thread_assignment[sel_patch_idx] = t;
+
+        /*#ifdef DEBUG_3
+            fprintf(stderr, "[DEBUG] thread %d, sel_patch_id %d\n", t, sel_patch_idx);
+        #endif*/
 
         if (sel_patch_idx != EA_INSTANCE.weight_gap_index[biggest_patch_index]) {
             EA_INSTANCE.weight_gap_index[EA_INSTANCE.weight_gap_count] = sel_patch_idx;
@@ -316,6 +333,17 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
             assert(EA_INSTANCE.weight_gap_length[biggest_patch_index] >= 0);
         }
 
+        /*#if defined(DEBUG_3)
+            fprintf(stderr, "[DEBUG] (>> 2) Parches gap\n");
+            for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
+                int index;
+                index = EA_INSTANCE.weight_gap_sorted[i];
+                
+                fprintf(stderr, "     (%d) patch %d, gap %d\n", 
+                    i, EA_INSTANCE.weight_gap_index[index], EA_INSTANCE.weight_gap_length[index]);
+            }
+        #endif*/
+
         for (int j = EA_INSTANCE.weight_gap_count - 2; j < EA_INSTANCE.weight_gap_count; j++) {
             int pos = j;
             int aux;
@@ -332,6 +360,17 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
         }
 
         biggest_patch_index = EA_INSTANCE.weight_gap_sorted[EA_INSTANCE.weight_gap_count - 1];
+        
+        /*#if defined(DEBUG_3)
+            fprintf(stderr, "[DEBUG] (>> 3) Parches gap\n");
+            for (int i = 0; i < EA_INSTANCE.weight_gap_count; i++) {
+                int index;
+                index = EA_INSTANCE.weight_gap_sorted[i];
+                
+                fprintf(stderr, "     (%d) patch %d, gap %d\n", 
+                    i, EA_INSTANCE.weight_gap_index[index], EA_INSTANCE.weight_gap_length[index]);
+            }
+        #endif*/
     }
 
     return 0;
