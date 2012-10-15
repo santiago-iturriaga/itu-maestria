@@ -35,6 +35,8 @@ do
         #MinMin
         bin/gmochc_cpu ~/instancias/1024x32.ME/scenario.${s} ~/instancias/1024x32.ME/workload.${WORKLOADS[w]} \
             1024 32 1 1 0 1 1 1>minmin_${s}_${WORKLOADS[w]}_1k.sol 2>minmin_${s}_${WORKLOADS[w]}_1k.log
+        bin/verificador ~/instancias/1024x32.ME/scenario.${s} ~/instancias/1024x32.ME/workload.${WORKLOADS[w]} \
+            minmin_${s}_${WORKLOADS[w]}_1k.sol 1024 32 > minmin_${s}_${WORKLOADS[w]}_1k.metrics
 
         #cMOCHC/islands
         SEED=0
@@ -46,6 +48,7 @@ do
         ITERATIONS=2000
         time(bin/gmochc_cpu ~/instancias/1024x32.ME/scenario.${s} ~/instancias/1024x32.ME/workload.${WORKLOADS[w]} \
             1024 32 3 ${THREADS} ${SEED} ${TIMEOUT} ${ITERATIONS} 1>chc__${s}_${WORKLOADS[w]}_1k.sol 2>chc__${s}_${WORKLOADS[w]}_1k.log)
-
+        bin/verificador ~/instancias/1024x32.ME/scenario.${s} ~/instancias/1024x32.ME/workload.${WORKLOADS[w]} \
+            chc__${s}_${WORKLOADS[w]}_1k.sol 1024 32 > chc__${s}_${WORKLOADS[w]}_1k.metrics
     done
 done
