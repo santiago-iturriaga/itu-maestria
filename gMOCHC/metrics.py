@@ -14,7 +14,7 @@ print "Dim: %s" % dimension
 scenarios = 20
 workloads = ("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_i_hihi","A.u_i_hilo","A.u_i_lohi","A.u_i_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_i_hihi","B.u_i_hilo","B.u_i_lohi","B.u_i_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
 
-print "scenario,workload,minmin_makespan,minmin_energy,chc_makespan,chc_energy"
+print "scenario,workload,minmin_makespan,minmin_energy,chc_makespan,chc_energy,improv.makespan,improv.energy"
 
 for s in range(scenarios):
     for w in workloads:
@@ -41,4 +41,4 @@ for s in range(scenarios):
                 if (aux_energy < chc_energy):
                     chc_energy = aux_energy
         
-        print "%d,%s,%f,%f,%f,%f" % (s, w, minmin_makespan, minmin_energy, chc_makespan, chc_energy)
+        print "%d,%s,%f,%f,%f,%f,%f,%f" % (s, w, minmin_makespan, minmin_energy, chc_makespan, chc_energy, (1-chc_makespan/minmin_makespan)*100, (1-chc_energy/minmin_energy)*100)
