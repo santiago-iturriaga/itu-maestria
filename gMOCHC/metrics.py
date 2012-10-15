@@ -41,4 +41,4 @@ for s in range(scenarios):
                 if (aux_energy < chc_energy):
                     chc_energy = aux_energy
         
-        print "%d,%s,%f,%f,%f,%f,%f,%f" % (s, w, minmin_makespan, minmin_energy, chc_makespan, chc_energy, (1-chc_makespan/minmin_makespan)*100, (1-chc_energy/minmin_energy)*100)
+        print "%d,%s,%f,%f,%f,%f,%.2f,%.2f" % (s, w, minmin_makespan, minmin_energy, chc_makespan, chc_energy, (1-chc_makespan/minmin_makespan)*100, (1-chc_energy/minmin_energy)*100)
