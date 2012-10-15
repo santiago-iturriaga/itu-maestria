@@ -275,7 +275,7 @@ int adapt_weights_mod_arm(RAND_STATE rstate) {
                     random = RAND_GENERATE(rstate);
 
                     int random_length;
-                    random_length = EA_INSTANCE.weight_gap_length[biggest_patch_index] * random;
+                    random_length = (int)(EA_INSTANCE.weight_gap_length[biggest_patch_index] * random);
 
                     sel_patch_idx = EA_INSTANCE.weight_gap_index[biggest_patch_index] - random_length - 1;
                     if (sel_patch_idx < 0) sel_patch_idx = 0;
