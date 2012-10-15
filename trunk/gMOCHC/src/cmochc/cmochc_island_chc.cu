@@ -9,17 +9,6 @@ void chc_population_init(int thread_id) {
     FLOAT random;
 
     for (int i = 0; i < MAX_POP_SOLS; i++) {
-        // Random init.
-        create_empty_solution(&(EA_THREADS[thread_id].population[i]));
-
-        random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
-
-        int starting_pos;
-        starting_pos = (int)(floor(INPUT.tasks_count * random));
-
-        compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
-        //compute_minmin(&(EA_THREADS[thread_id].population[i]));
-        
         EA_THREADS[thread_id].fitness_population[i] = NAN;
 
         if (i == 0) {
@@ -29,6 +18,17 @@ void chc_population_init(int thread_id) {
             EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[i].energy_consumption;
             EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].energy_zenith_value;
         } else {
+            // Random init.
+            create_empty_solution(&(EA_THREADS[thread_id].population[i]));
+
+            random = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+
+            int starting_pos;
+            starting_pos = (int)(floor(INPUT.tasks_count * random));
+
+            compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
+            //compute_minmin(&(EA_THREADS[thread_id].population[i]));
+            
             #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
                 CHC__MUTATE(EA_INSTANCE.rand_state[thread_id], &EA_THREADS[thread_id].population[i], &EA_THREADS[thread_id].population[i])
             #endif

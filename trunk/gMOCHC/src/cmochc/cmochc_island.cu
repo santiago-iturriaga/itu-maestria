@@ -6,6 +6,7 @@
 #include "cmochc_island_pals.h"
 #include "cmochc_island_utils.h"
 #include "cmochc_island_chc.h"
+#include "../basic/pminmin.h"
 
 /* Statistics */
 #ifdef DEBUG_1
@@ -74,6 +75,13 @@ void compute_cmochc_island() {
     #if defined(DEBUG_1)
         fprintf(stderr, "[DEBUG] CPU CHC (islands): init\n");
     #endif
+
+    create_empty_solution(&(EA_THREADS[0].population[0]));
+    compute_pminmin(&(EA_THREADS[0].population[0]));
+    for (int i = 1; i < INPUT.thread_count; i++) {
+        create_empty_solution(&(EA_THREADS[i].population[0]));
+        clone_solution(&(EA_THREADS[i].population[0]), &(EA_THREADS[0].population[0]));
+    }
 
     init();
 
