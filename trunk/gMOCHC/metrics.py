@@ -2,7 +2,7 @@
 
 import sys
 
-if sys.argc != 3:
+if len(sys.argv) != 3:
     exit(-1)
     
 directorio = sys.argv[1]
@@ -22,5 +22,7 @@ for s in range(scenarios):
         minmin_array = minmin_line.strip().split(' ')
         minmin_makespan = float(minmin_array[0])
         minmin_energy = float(minmin_array[1])
+        
+        print "%f %f" % (minmin_makespan, minmin_energy)
         
         #chc__6_A.u_s_hihi_1k.metrics
