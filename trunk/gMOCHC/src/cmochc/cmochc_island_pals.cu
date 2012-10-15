@@ -378,14 +378,23 @@ int pals_search(int thread_id, int solution_index) {
             random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
             task_x = (int)(random1 * INPUT.tasks_count);
             machine_a = EA_THREADS[thread_id].population[solution_index].task_assignment[task_x];
+            
+            assert(task_x >= 0);
+            assert(task_x <= INPUT.tasks_count);
         } else if (search_type == PALS__MAKESPAN_SEARCH) {
             random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
             task_x = worst_compute_time_machine_tasks[(int)(random1 * worst_compute_time_machine_count)];
             machine_a = worst_compute_time_index;
+
+            assert(task_x >= 0);
+            assert(task_x <= INPUT.tasks_count);
         } else if (search_type == PALS__ENERGY_SEARCH) {
             random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
             task_x = worst_energy_machine_tasks[(int)(random1 * worst_energy_machine_count)];
             machine_a = worst_energy_index;
+            
+            assert(task_x >= 0);
+            assert(task_x <= INPUT.tasks_count);
         }
 
         for (int loop = 0; loop < PALS__MAX_INTENTOS; loop++) {
@@ -415,15 +424,52 @@ int pals_search(int thread_id, int solution_index) {
 
                         machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
                     }
+                    
+                    assert(task_y >= 0);
+                    assert(task_y <= INPUT.tasks_count);
                 } else {
                     random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
                     
                     if (search_type == PALS__MAKESPAN_SEARCH) {
-                        task_y = less_compute_time_machine_tasks[(int)(random2 * less_compute_time_machine_count)];
-                        machine_b = less_compute_time_index;
+                        if (less_compute_time_machine_count > 0) {
+                            assert(less_compute_time_machine_count > 0);
+                            
+                            task_y = less_compute_time_machine_tasks[(int)(random2 * less_compute_time_machine_count)];
+                            machine_b = less_compute_time_index;
+                        } else {
+                            task_y = (int)(random2 * INPUT.tasks_count);
+                            machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
+
+                            for (int i = 0; (i < INPUT.tasks_count) && (machine_a == machine_b); i++) {
+                                task_y++;
+                                if (task_y == INPUT.tasks_count) task_y = 0;
+
+                                machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
+                            }
+                        }
+                        
+                        assert(task_y >= 0);
+                        assert(task_y <= INPUT.tasks_count);
                     } else if (search_type == PALS__ENERGY_SEARCH) {
-                        task_y = less_energy_machine_tasks[(int)(random2 * less_energy_machine_count)];
-                        machine_b = less_energy_index;
+                        if (less_energy_machine_count > 0) {
+                            assert(less_energy_machine_count > 0);
+                            
+                            task_y = less_energy_machine_tasks[(int)(random2 * less_energy_machine_count)];
+                            machine_b = less_energy_index;
+                        } else {
+                            task_y = (int)(random2 * INPUT.tasks_count);
+                            machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
+
+                            for (int i = 0; (i < INPUT.tasks_count) && (machine_a == machine_b); i++) {
+                                task_y++;
+                                if (task_y == INPUT.tasks_count) task_y = 0;
+
+                                machine_b = EA_THREADS[thread_id].population[solution_index].task_assignment[task_y]; // Máquina b.
+                            }
+                        }
+                        
+                        assert(task_y >= 0);
+                        assert(task_y <= INPUT.tasks_count);
                     }
                 }
 
