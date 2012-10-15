@@ -230,8 +230,9 @@ int pals_search(int thread_id, int solution_index) {
     int search_type;
     int count_movements = 0;
 
-    int task_x;
-    int machine_a;
+    int task_x = 0;
+    int machine_a = 0;
+    
     FLOAT score;
     int movimiento;
 
@@ -399,8 +400,8 @@ int pals_search(int thread_id, int solution_index) {
             if (movimiento == PALS__MOVIMIENTO_SWAP) {
                 // =================
                 // Swap
-                int task_y;
-                int machine_b;
+                int task_y = 0;
+                int machine_b = 0;
 
                 random2 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
                 if (RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]) < 0.8) {
@@ -468,7 +469,7 @@ int pals_search(int thread_id, int solution_index) {
             } else if (movimiento == PALS__MOVIMIENTO_MOVE) {
                 // =================
                 // Move
-                int machine_b;
+                int machine_b = 0;
                 score = 0.0;
 
                 // ================= Obtengo la tarea sorteada
