@@ -609,7 +609,8 @@ void solution_migration(int thread_id) {
     migrated_solution_index = 0;
 
     int next_solution_index;
-    next_solution_index = 0;
+    //next_solution_index = 0;
+    next_solution_index = CMOCHC_LOCAL__BEST_SOLS_KEPT;
 
     while (next_solution_index < MAX_POP_SOLS) {
         migrated = 0;
