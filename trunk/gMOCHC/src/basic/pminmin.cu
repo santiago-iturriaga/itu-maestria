@@ -27,10 +27,11 @@ void compute_pminmin(struct solution *sol) {
     struct thread_data threadDataArray[INPUT.thread_count];
 
     // Create the thread pool
-    int chunk = INPUT.tasks_count/INPUT.thread_count;
+    int chunk = (int)(ceil((FLOAT)INPUT.tasks_count/(FLOAT)INPUT.thread_count));
     for (int i = 0; i < INPUT.thread_count; i ++) {
         threadDataArray[i].t_i = i*chunk;
         threadDataArray[i].t_f = (i+1)*chunk;
+        if ((i+1)*chunk >= INPUT.tasks_count) threadDataArray[i].t_f = INPUT.tasks_count;
         threadDataArray[i].sol = sol;
         
         rc = pthread_create(&threads[i], NULL, &compute_pminmin_thread, &threadDataArray[i]);
