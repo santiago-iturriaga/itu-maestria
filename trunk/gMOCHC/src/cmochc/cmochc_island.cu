@@ -394,6 +394,27 @@ void init() {
 
     fprintf(stderr, "       PALS__MAX_BUSQUEDAS                         : %d\n", PALS__MAX_BUSQUEDAS);
     fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);
+
+    fprintf(stderr, "       PALS__SIMPLE_FITNESS                        : ");
+    #ifdef PALS__SIMPLE_FITNESS_0
+        fprintf(stderr, "PALS__SIMPLE_FITNESS_0");
+    #endif
+    #ifdef PALS__SIMPLE_FITNESS_1
+        fprintf(stderr, "PALS__SIMPLE_FITNESS_1");
+    #endif
+    #ifdef PALS__SIMPLE_FITNESS_2
+        fprintf(stderr, "PALS__SIMPLE_FITNESS_2");
+    #endif
+    #ifdef PALS__SIMPLE_FITNESS_3
+        fprintf(stderr, "PALS__SIMPLE_FITNESS_3");
+    #endif
+    fprintf(stderr, "\n");
+    
+    fprintf(stderr, "       PALS__SWAP_SEARCH                           : %.2f\n", PALS__SWAP_SEARCH);
+    fprintf(stderr, "       PALS__MOVE_SEARCH                           : %.2f\n", PALS__MOVE_SEARCH);
+    fprintf(stderr, "       PALS__MAKESPAN_SEARCH_PROB                  : %.2f\n", PALS__MAKESPAN_SEARCH_PROB);
+    fprintf(stderr, "       PALS__ENERGY_SEARCH_PROB                    : %.2f\n", PALS__ENERGY_SEARCH_PROB);
+    fprintf(stderr, "       PALS__RANDOM_SEARCH_PROB                    : %.2f\n", PALS__RANDOM_SEARCH_PROB);   
     fprintf(stderr, "[INFO] ========================================================\n");
 
     /* Weights */
