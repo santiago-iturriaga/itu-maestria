@@ -106,7 +106,7 @@ void archivers_aga() {
     fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
     fprintf(stderr, "[INFO] Population:\n");
     
-    fprintf(stdout, "\nborders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
+    fprintf(stdout, "\nid,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
     
     for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
         if (AGA.population[i].status == SOLUTION__STATUS_READY) {
@@ -119,8 +119,15 @@ void archivers_aga() {
             fprintf(stderr, "     coverage            = %.2f (%.2f)\n", 1/AGA.population[i].coverage, AGA.population[i].coverage);
             fprintf(stderr, "     nforwardings        = %.2f\n", AGA.population[i].nforwardings);
             fprintf(stderr, "     time                = %.2f\n", AGA.population[i].time);
+
+            fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
+                AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
+                AGA.population[i].min_delay, AGA.population[i].max_delay, 
+                AGA.population[i].neighbors_threshold,
+                AGA.population[i].energy, 1/AGA.population[i].coverage,
+                AGA.population[i].nforwardings, AGA.population[i].time);
             
-            fprintf(stdout, "%f,%f,%f,%f,%d,%f,%f,%f,%f\n", 
+            fprintf(stdout, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
                 AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
                 AGA.population[i].min_delay, AGA.population[i].max_delay, 
                 AGA.population[i].neighbors_threshold,
