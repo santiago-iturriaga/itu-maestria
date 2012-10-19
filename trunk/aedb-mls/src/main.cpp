@@ -69,6 +69,7 @@ int main(int argc, char** argv)
     MLS.count_threads = 12;
 
     // Condicion de parada
+    //MLS.max_iterations = 1000;
     MLS.max_iterations = 10000;
     //MLS.max_iterations = 50000;
 
