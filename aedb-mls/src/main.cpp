@@ -92,7 +92,7 @@ int main(int argc, char** argv)
     // 25 for 100 devices/km^2 density, 50 for 200, and 75 for 300
     MLS.number_devices = 25;
     // Number of independent runs of the simulator, if > 1, the results given are averaged over all the runs
-    MLS.simul_runs = 5;
+    MLS.simul_runs = 10;
 
     // Dominio de las variables de búsqueda.
     MLS.lbound_min_delay = 0;
