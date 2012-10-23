@@ -4,7 +4,7 @@ cd /home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls
 make clean
 make
 
-ITERATIONS=10000
+ITERATIONS=20000
 THREADS=12
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/clusterusers/siturriaga/ns3Files
