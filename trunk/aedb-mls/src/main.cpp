@@ -62,16 +62,25 @@ int main(int argc, char** argv)
     // Loading input parameters
     // =============================================================
 
+	fprintf(stderr, "[DEBUG] argc = %d\n", argc);
+	if (argc != 4) {
+		fprintf(stderr, "[ERROR] invalid arguments\n");
+		MPI_Finalize();
+		exit(EXIT_FAILURE);
+	}
+
     // Semilla aleatoria!!!
-    int seed = 0;
+    int seed = atoi(argv[1]);
 
     // Cantidad max. de hilos por procesos MPI
-    MLS.count_threads = 12;
+    //MLS.count_threads = 12;
+    MLS.count_threads = atoi(argv[3]);
 
     // Condicion de parada
     //MLS.max_iterations = 1000;
-    MLS.max_iterations = 10000;
+    //MLS.max_iterations = 10000;
     //MLS.max_iterations = 50000;
+    MLS.max_iterations = atoi(argv[2]);
 
     if (MLS.count_threads > MLS__MAX_THREADS) {
         fprintf(stderr, "[ERROR][%d] La cantidad máxima de hilos en cada proceso MPI es de %d.\n", world_rank, MLS__MAX_THREADS);
@@ -101,6 +110,7 @@ int main(int argc, char** argv)
         fprintf(stderr, "===========================================================\n");
         fprintf(stderr, "Configuración\n");
         fprintf(stderr, "===========================================================\n");
+        fprintf(stderr, "   Random seed        = %d\n", seed);
         fprintf(stderr, "   MPI size           = %d\n", world_size);
         fprintf(stderr, "   MLS.count_threads  = %d\n", MLS.count_threads);
         fprintf(stderr, "   MLS.max_iterations = %d\n", MLS.max_iterations);
