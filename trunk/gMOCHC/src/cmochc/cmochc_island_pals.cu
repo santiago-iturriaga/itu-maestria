@@ -620,6 +620,7 @@ int pals_search(int thread_id, int solution_index) {
         }
         
         recompute_metrics(&EA_THREADS[thread_id].population[solution_index]);
+        COUNT_EVALUATIONS[thread_id]++;
     }
 
     if (count_movements > 0) {

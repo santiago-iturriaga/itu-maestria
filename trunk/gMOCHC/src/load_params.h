@@ -19,7 +19,8 @@ struct params {
     int algorithm;
     
     int max_time_secs;
-    int max_iterations;
+    //int max_iterations;
+    int max_evaluations;
 };
 
 int load_params(int argc, char **argv);
