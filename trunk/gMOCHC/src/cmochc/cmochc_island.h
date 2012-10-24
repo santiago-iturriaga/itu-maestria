@@ -147,6 +147,7 @@ extern struct cmochc_island EA_INSTANCE;
 
 /* Statistics */
 #ifdef DEBUG_1
+    extern int COUNT_EVALUATIONS[MAX_THREADS];
     extern int COUNT_GENERATIONS[MAX_THREADS];
     
     /* Al menos una nueva solución fue agregada a la población de 
