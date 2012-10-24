@@ -77,7 +77,7 @@ public class MEScheduling_PAES_Settings extends Settings {
 				workloadPath);
 		
 		// Default settings
-		maxEvaluations_ = 850000*2;
+		maxEvaluations_ = 865000*2;
 		archiveSize_ = 100;
 		biSections_ = 5;
 		mutationProbability_ = 1.0 / problem_.getNumberOfVariables();
