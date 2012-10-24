@@ -73,28 +73,28 @@ CLASSWEIGHT     1
 # Partitions (max. 2 partitions)
 # =============================================================
 
-NODECFG[node02.cluster.fing] PARTITION=general
-NODECFG[node03.cluster.fing] PARTITION=general
-NODECFG[node04.cluster.fing] PARTITION=general
-NODECFG[node05.cluster.fing] PARTITION=general
-NODECFG[node06.cluster.fing] PARTITION=general
-NODECFG[node07.cluster.fing] PARTITION=general
-NODECFG[node08.cluster.fing] PARTITION=general
-NODECFG[node09.cluster.fing] PARTITION=general
-#NODECFG[node20.cluster.fing] PARTITION=general
-NODECFG[node21.cluster.fing] PARTITION=general
-#NODECFG[node22.cluster.fing] PARTITION=general
-#NODECFG[node23.cluster.fing] PARTITION=general
-NODECFG[node30.cluster.fing] PARTITION=general
-NODECFG[node31.cluster.fing] PARTITION=general
-NODECFG[node32.cluster.fing] PARTITION=general
-NODECFG[node33.cluster.fing] PARTITION=general
-NODECFG[node34.cluster.fing] PARTITION=general
-NODECFG[node35.cluster.fing] PARTITION=general
-NODECFG[node36.cluster.fing] PARTITION=general
-NODECFG[node37.cluster.fing] PARTITION=general
-NODECFG[node38.cluster.fing] PARTITION=quick
-#NODECFG[telsa.cluster.fing] PARTITION=general
+#NODECFG[node02.cluster.fing] PARTITION=general
+#NODECFG[node03.cluster.fing] PARTITION=general
+#NODECFG[node04.cluster.fing] PARTITION=general
+#NODECFG[node05.cluster.fing] PARTITION=general
+#NODECFG[node06.cluster.fing] PARTITION=general
+#NODECFG[node07.cluster.fing] PARTITION=general
+#NODECFG[node08.cluster.fing] PARTITION=general
+#NODECFG[node09.cluster.fing] PARTITION=general
+NODECFG[node20.cluster.fing] PARTITION=sys
+#NODECFG[node21.cluster.fing] PARTITION=general
+NODECFG[node22.cluster.fing] PARTITION=sys
+NODECFG[node23.cluster.fing] PARTITION=sys
+#NODECFG[node30.cluster.fing] PARTITION=general
+#NODECFG[node31.cluster.fing] PARTITION=general
+#NODECFG[node32.cluster.fing] PARTITION=general
+#NODECFG[node33.cluster.fing] PARTITION=general
+#NODECFG[node34.cluster.fing] PARTITION=general
+#NODECFG[node35.cluster.fing] PARTITION=general
+#NODECFG[node36.cluster.fing] PARTITION=general
+#NODECFG[node37.cluster.fing] PARTITION=general
+#NODECFG[node38.cluster.fing] PARTITION=quick
+#NODECFG[telsa.cluster.fing] PARTITION=gpu
 
 # =============================================================
 # Queues config
@@ -112,13 +112,25 @@ CLASSCFG[big_jobs]      PRIORITY=1
 CLASSCFG[big_jobs]      FSTARGET=15.0
 CLASSCFG[quick_jobs]    PRIORITY=100
 
-SYSCFG[base]            PLIST=general,quick&
-#CLASSCFG[publica]       PLIST=general,quick&
-#CLASSCFG[medium_jobs]   PLIST=general,quick&
-#CLASSCFG[long_jobs]     PLIST=general,quick&
-#CLASSCFG[big_jobs]      PLIST=general,quick&
-#CLASSCFG[quick_jobs]    PLIST=quick:general PDEF=quick
-#CLASSCFG[quick_jobs]    PLIST=quick,general&
+# Todos los usuarios pueden ejecutar en la particion general y en quick
+#SYSCFG[base]            PLIST=general,eolo,quick&
+#SYSCFG[base]            PLIST=
+
+# El usuario eolico solo puede ejecutar en la particion eolico
+# el resto de los usuarios solo pueden ejecutar en general o quick
+#USERCFG[DEFAULT]	PLIST=general,quick&
+#USERCFG[eolico]	PLIST=eolo
+
+#CLASSCFG[publica]       PLIST=general
+#CLASSCFG[medium_jobs]   PLIST=general
+#CLASSCFG[long_jobs]     PLIST=general
+#CLASSCFG[big_jobs]      PLIST=general
+
+#CLASSCFG[publica]       PLIST=general:eolica
+#CLASSCFG[medium_jobs]   PLIST=general:eolica
+#CLASSCFG[long_jobs]     PLIST=general:eolica
+#CLASSCFG[big_jobs]      PLIST=general:eolica
+#CLASSCFG[quick_jobs]    PLIST=quick
 
 #CLASSCFG[publica]   PRIORITY=1
 #CLASSCFG[publica]   FSTARGET=25.0
@@ -132,61 +144,18 @@ SYSCFG[base]            PLIST=general,quick&
 # Standing reservations
 # =============================================================
 
-# Reserva grupo eolica. 1 nodo 8 CPU (node0X o node2X) entre las 16:00 y las 02:00.
 #SRCFG[eolica] PERIOD=INFINITY
-#SRCFG[eolica] STARTTIME=16:00:00 ENDTIME=02:00:00
-#SRCFG[eolica] RESOURCES=PROCS:-1
-#SRCFG[eolica] HOSTLIST=node02.cluster.fing
-#SRCFG[eolica] USERLIST=aguti
-
-#SRCFG[eolres] PERIOD=INFINITY
-#SRCFG[eolres] STARTTIME=16:00:00 ENDTIME=02:00:00
-#SRCFG[eolres] RESOURCES=PROCS:-1
-#SRCFG[eolres] HOSTLIST=node03.cluster.fing
-#SRCFG[eolres] USERLIST=aguti
-
-SRCFG[eolica] PERIOD=INFINITY
 #SRCFG[eolica] TPN=1
-SRCFG[eolica] TASKCOUNT=2
-SRCFG[eolica] RESOURCES=PROCS:8
-SRCFG[eolica] NODEFEATURES=class0
-SRCFG[eolica] USERLIST=eolico
+#SRCFG[eolica] TASKCOUNT=2
+#SRCFG[eolica] RESOURCES=PROCS:8
+#SRCFG[eolica] NODEFEATURES=class0
+#SRCFG[eolica] USERLIST=eolico
 
-#SRCFG[eolica2r] PERIOD=INFINITY
-#SRCFG[eolica2r] TPN=1
-#SRCFG[eolica2r] TASKCOUNT=1
-#SRCFG[eolica2r] RESOURCES=PROCS:8
-#SRCFG[eolica2r] NODEFEATURES=class0
-#SRCFG[eolica2r] USERLIST=eolico
+SRCFG[eolo] PERIOD=INFINITY
+SRCFG[eolo] HOSTLIST=node08.cluster.fing,node09.cluster.fing,node36.cluster.fing
+SRCFG[eolo] USERLIST=eolico
 
-#SRCFG[rodrigoa] PERIOD=INFINITY
-#SRCFG[rodrigoa] RESOURCES=PROCS:8
-#SRCFG[rodrigoa] HOSTLIST=node06.cluster.fing
-#SRCFG[rodrigoa] USERLIST=rodrigoa
+SRCFG[quick] PERIOD=INFINITY
+SRCFG[quick] HOSTLIST=node38.cluster.fing
+SRCFG[quick] CLASSLIST=quick_jobs
 
-#SRCFG[galnares] PERIOD=INFINITY
-##SRCFG[galnares] STARTTIME=00:00:00
-##SRCFG[galnares] ENDTIME=23:59:59
-#SRCFG[galnares] TPN=1
-#SRCFG[galnares] TASKCOUNT=1
-#SRCFG[galnares] RESOURCES=PROCS:24
-#SRCFG[galnares] NODEFEATURES=class2
-#SRCFG[galnares] USERLIST=matiasg,sergion
-
-#SRCFG[jamal] PERIOD=INFINITY
-#SRCFG[jamal] TPN=1
-#SRCFG[jamal] TASKCOUNT=1
-#SRCFG[jamal] RESOURCES=PROCS:24
-#SRCFG[jamal] USERLIST=jamal,sergion,siturria
-
-#SRCFG[situ] PERIOD=INFINITY
-#SRCFG[situ] TPN=1
-#SRCFG[situ] TASKCOUNT=1
-#SRCFG[situ] RESOURCES=PROCS:24
-#SRCFG[situ] USERLIST=siturria
-
-#SRCFG[prueba] PERIOD=INFINITY
-#SRCFG[prueba] STARTTIME=03:00:00 ENDTIME=06:30:00
-#SRCFG[prueba] RESOURCES=PROCS:-1
-#SRCFG[prueba] HOSTLIST=node03.cluster.fing
-#SRCFG[prueba] USERLIST=siturria
