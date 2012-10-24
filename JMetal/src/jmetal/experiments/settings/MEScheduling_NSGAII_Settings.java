@@ -52,7 +52,7 @@ public class MEScheduling_NSGAII_Settings extends Settings {
 
 		// Default settings
 		populationSize_ = 100;
-		maxEvaluations_ = 550000;
+		maxEvaluations_ = 630000*2;
 		mutationProbability_ = 1.0 / problem_.getNumberOfVariables();
 		crossoverProbability_ = 0.9;
 		mutationDistributionIndex_ = 20.0;
