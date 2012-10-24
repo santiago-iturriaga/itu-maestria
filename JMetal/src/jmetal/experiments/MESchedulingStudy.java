@@ -33,6 +33,8 @@ public class MESchedulingStudy extends Experiment {
 				}
 			} // if
 
+			//algorithm[0] = new MEScheduling_NSGAII_Settings(problemName).configure(parameters[0]);
+			
 			algorithm[0] = new MEScheduling_MOCHC_Settings(problemName).configure(parameters[0]);
 			algorithm[1] = new MEScheduling_NSGAII_Settings(problemName).configure(parameters[1]);
 			algorithm[2] = new MEScheduling_MOCell_Settings(problemName).configure(parameters[2]);
@@ -65,8 +67,10 @@ public class MESchedulingStudy extends Experiment {
 
 		exp.experimentName_ = "MESchedulingStudy";
 		exp.algorithmNameList_ = new String[] { "MOCHC", "NSGAII", "MOCell", "PAES" };
-		/*exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0", "MEProblem 2048x64 scenario.0 workload.0" };*/
-		exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0" };
+		//exp.algorithmNameList_ = new String[] { "NSGAII" };
+		//exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0", "MEProblem 2048x64 scenario.0 workload.0" };
+		//exp.problemList_ = new String[] { "MEProblem 512x16 scenario.0 workload.0" };
+		exp.problemList_ = new String[] { "MEProblem 1024x32 scenario.0 workload.A.u_c_hihi" };
 		exp.paretoFrontFile_ = new String[] { "", "", "", "" };
 		exp.indicatorList_ = new String[] {};
 		exp.experimentBaseDirectory_ = "/home/santiago/workspace/JMetal/results/"

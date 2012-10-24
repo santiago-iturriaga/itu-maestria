@@ -45,10 +45,10 @@ public class MEScheduling_MOCHC_Settings extends Settings {
 
 		int taskCount = Integer.parseInt(dimension[0]);
 		int machineCount = Integer.parseInt(dimension[1]);
-		String scenarioPath = "/home/santiago/Scheduling/Energy-Makespan/instances.ruso/"
-				+ problemInfo[1] + "/" + problemInfo[2];
-		String workloadPath = "/home/santiago/Scheduling/Energy-Makespan/instances.ruso/"
-				+ problemInfo[1] + "/" + problemInfo[3];
+		String scenarioPath = "/home/santiago/Scheduling/Instances/Makespan-Energy/"
+				+ problemInfo[1] + ".ME/" + problemInfo[2];
+		String workloadPath = "/home/santiago/Scheduling/Instances/Makespan-Energy/"
+				+ problemInfo[1] + ".ME/" + problemInfo[3];
 
 		problem_ = new MEProblem(taskCount, machineCount, scenarioPath,
 				workloadPath);
