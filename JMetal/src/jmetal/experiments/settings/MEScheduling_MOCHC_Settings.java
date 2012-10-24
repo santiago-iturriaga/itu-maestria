@@ -58,7 +58,7 @@ public class MEScheduling_MOCHC_Settings extends Settings {
 		preservedPopulation_ = 0.05;
 		convergenceValue_ = 3;
 		populationSize_ = 100;
-		maxEvaluations_ = 1200000*2;
+		maxEvaluations_ = 1050000*2;
 		mutationProbability_ = 0.25;
 		crossoverProbability_ = 1.0;
 	}
