@@ -67,9 +67,14 @@ int load_params(int argc, char **argv) {
             fprintf(stderr, "       Max. execution time (s)      : %d\n", INPUT.max_time_secs);
         #endif
         
-        INPUT.max_iterations = atoi(argv[9]);
+        /*INPUT.max_iterations = atoi(argv[9]);
         #if defined(DEBUG_0) 
             fprintf(stderr, "       Max. iterations              : %d\n", INPUT.max_iterations);
+        #endif*/
+        
+        INPUT.max_evaluations = atoi(argv[9]);
+        #if defined(DEBUG_0) 
+            fprintf(stderr, "       Max. evaluations              : %d\n", INPUT.max_evaluations);
         #endif
 
         if ((INPUT.algorithm < 0)||(INPUT.algorithm > 4)) {

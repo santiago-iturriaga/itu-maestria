@@ -48,7 +48,7 @@ int gather();
 int adapt_weights_mod_arm(RAND_STATE rstate);
 
 /* Muestra el resultado de la ejecución */
-void display_results();
+void display_results(int total_evaluations);
 
 /* Libera los recursos pedidos y finaliza la ejecución */
 void finalize();
@@ -105,7 +105,10 @@ void compute_cmochc_island() {
     int master_status = CMOCHC_MASTER_STATUS__CHC;
     int worker_status = 0;
 
-    for (int iteracion = 0; iteracion < INPUT.max_iterations; iteracion++) {
+	int total_evaluations = 0;
+	int iteracion = 0;
+
+	while (total_evaluations < INPUT.max_evaluations) {
         /* ******************************** */
         /* Espero que los esclavos terminen */
         /* ******************************** */
@@ -141,10 +144,15 @@ void compute_cmochc_island() {
 
         }
 
+		for (int thread_id = 0; thread_id < INPUT.thread_count; thread_id++) {
+			total_evaluations += COUNT_EVALUATIONS[thread_id];
+			COUNT_EVALUATIONS[thread_id] = 0;
+		}
+
         /* ***************************** */
         /* Configuro el siguiente estado */
         /* ***************************** */
-        if (iteracion + 1 >= INPUT.max_iterations) {
+		if (total_evaluations >= INPUT.max_evaluations) {
 
             /* Si esta es la última iteracion, les aviso a los esclavos */
             worker_status = CMOCHC_THREAD_STATUS__STOP;
@@ -196,6 +204,7 @@ void compute_cmochc_island() {
             pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond);
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
 
+		iteracion++;
     }
 
     RAND_FINALIZE(rstate);
@@ -221,7 +230,7 @@ void compute_cmochc_island() {
         fprintf(stderr, "[DEBUG] CPU CHC (islands): finalize\n");
     #endif
 
-    display_results();
+    display_results(total_evaluations);
 
     #if defined(DEBUG_1)
         fprintf(stderr, "[DEBUG] Last solution gathered on iteration = %d\n", last_iter_sols_gathered);
@@ -777,6 +786,8 @@ void* slave_thread(void *data) {
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
 
+	COUNT_EVALUATIONS[thread_id] = 0;
+
     /* Inicializo la busqueda local */
     pals_init(thread_id);
 
@@ -926,7 +937,7 @@ void* slave_thread(void *data) {
     return 0;
 }
 
-void display_results() {
+void display_results(int total_evaluations) {
     /* Show solutions */
     #if defined(OUTPUT_SOLUTION)
         archivers_aga_dump();
@@ -1008,6 +1019,7 @@ void display_results() {
         }
 
         fprintf(stderr, "[INFO] == Statistics ==========================================\n");
+        fprintf(stderr, "       count_evaluations                    : %d\n", total_evaluations);
         fprintf(stderr, "       count_generations                    : %d\n", count_generations);
         fprintf(stderr, "       count_at_least_one_children_inserted : %d (%.2f %%)\n", count_at_least_one_children_inserted,
             ((FLOAT)count_at_least_one_children_inserted/(FLOAT)count_generations)*100);
