@@ -10,6 +10,7 @@
 
 /* Statistics */
 #ifdef DEBUG_1
+    int COUNT_EVALUATIONS[MAX_THREADS] = {0};
     int COUNT_GENERATIONS[MAX_THREADS] = {0};
 
     /* Al menos una nueva solución fue agregada a la población de
