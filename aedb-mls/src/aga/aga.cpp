@@ -23,19 +23,19 @@ void archivers_aga() {
     int finalize = 0, aux, msg_count;
     int rc;
     
-    #ifndef NDEBUG
-        int iteration = 0;
-    #endif
+	int iteration = 0;
     
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
+		iteration++;
+		
         #ifndef NDEBUG
-            iteration++;
             fprintf(stderr, "[DEBUG][AGA] ITERATION %d ==================================\n", iteration);
             fprintf(stderr, "[DEBUG][AGA] Current population = %d\n", AGA.population_count);
             fprintf(stderr, "[DEBUG][AGA] Waiting for a message.\n");
         #endif
+        
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
         if (status.MPI_TAG == AGA__NEW_SOL_MSG) {
@@ -84,6 +84,26 @@ void archivers_aga() {
             }
             
             assert(AGA.population_count > 0);
+            
+            if (iteration % 1000 == 0) {
+				fprintf(stderr, "[INFO] (%d) AGA information ============================================ \n", iteration);
+				fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
+				fprintf(stderr, "[INFO] Population:\n");
+				
+				fprintf(stderr, "\nid,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
+				
+				for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
+					if (AGA.population[i].status == SOLUTION__STATUS_READY) {
+						fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
+							AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
+							AGA.population[i].min_delay, AGA.population[i].max_delay, 
+							AGA.population[i].neighbors_threshold,
+							AGA.population[i].energy, 1/AGA.population[i].coverage,
+							AGA.population[i].nforwardings, AGA.population[i].time);
+					}
+				}
+			}
+            
         } else if (status.MPI_TAG == AGA__EXIT_MSG) {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
             
