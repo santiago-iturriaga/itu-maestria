@@ -85,12 +85,12 @@ void archivers_aga() {
             
             assert(AGA.population_count > 0);
             
-            if (iteration % 1000 == 0) {
+            if (iteration % 8000 == 1) {
 				fprintf(stderr, "[INFO] (%d) AGA information ============================================ \n", iteration);
 				fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
 				fprintf(stderr, "[INFO] Population:\n");
 				
-				fprintf(stderr, "\nid,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
+				fprintf(stderr, "id,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
 				
 				for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
 					if (AGA.population[i].status == SOLUTION__STATUS_READY) {
