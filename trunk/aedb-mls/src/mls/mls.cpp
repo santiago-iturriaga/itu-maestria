@@ -277,11 +277,13 @@ void* mls_thread(void *data)
             random = cpu_mt_generate(MLS.random_states[thread_id]);
             work_iteration_size = (int)(MLS__THREAD_FIXED_ITERS + (random * MLS__THREAD_RANDOM_ITERS));
 
+			/*
             if ((world_rank == 1)&&(thread_id == 0)) {
                 fprintf(stderr, "[DEBUG] ===================================================\n");
                 fprintf(stderr, "[DEBUG] Current solution\n");
                 show_solution(&MLS.population[thread_id]);
             }
+            * */
 
             double min_delay;
             min_delay = MLS.population[thread_id].min_delay;
@@ -313,7 +315,8 @@ void* mls_thread(void *data)
                     case LS_FORWARDING :
                         // Reduce borders_threshold
                         delta = MLS.population[(thread_id+1) % MLS.count_threads].borders_threshold - MLS.population[thread_id].borders_threshold;
-			prod = alfa * delta;
+						prod = alfa * delta;
+						
                         if (delta > 0){
                             borders_threshold = borders_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
                         } else {
@@ -341,10 +344,11 @@ void* mls_thread(void *data)
                         if (neighbors_threshold > MLS.ubound_neighbors_threshold)
                             neighbors_threshold = MLS.ubound_neighbors_threshold;
 
+						/*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: borders_threshold %.4f\n", borders_threshold);
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: neighbors_threshold %d\n", neighbors_threshold);
-                        }
+                        }*/
 
                         break;
                     case LS_COVERAGE :
@@ -362,10 +366,10 @@ void* mls_thread(void *data)
 
                         if (neighbors_threshold > MLS.ubound_neighbors_threshold)
                             neighbors_threshold = MLS.ubound_neighbors_threshold;
-
+						/*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_COVERAGE: neighbors_threshold %d\n", neighbors_threshold);
-                        }
+                        }*/
 
                         break;
                     case LS_TIME :
@@ -384,11 +388,11 @@ void* mls_thread(void *data)
                         
                         if (max_delay < MLS.lbound_max_delay) max_delay = MLS.lbound_max_delay;
                         if (max_delay > MLS.ubound_max_delay) max_delay = MLS.ubound_max_delay;
-
+						/*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_TIME: min_delay %.4f\n", min_delay);
                             fprintf(stderr, "   >> LS_TIME: max_delay %.4f\n", max_delay);
-                        }
+                        }*/
 
                         break;
                 }
@@ -438,11 +442,11 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].coverage = coverage;
                 MLS.population[thread_id].nforwardings = nforwardings;
                 MLS.population[thread_id].time = time;
-                
+                /*
                 if ((world_rank == 1)&&(thread_id == 0)) {
                     fprintf(stderr, "[DEBUG] Resulting solution\n");
                     show_solution(&MLS.population[thread_id]);
-                }
+                }*/
             /*} else {
                 if ((world_rank == 1)&&(thread_id == 0)) {
                     fprintf(stderr, "        >> Solution was discarded\n");
