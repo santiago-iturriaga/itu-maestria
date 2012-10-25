@@ -86,5 +86,21 @@ release: ns3 src/main.cpp src/config.h \
 		src/mls/mls.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN)
 
+release2: ns3 src/main.cpp src/config.h \
+		src/solution.h \
+		src/solution.cpp \
+		src/random/cpu_mt.h \
+		src/random/cpu_mt.cpp \
+		src/aga/aga.h \
+		src/aga/aga.cpp \
+		src/mls/mls.h \
+		src/mls/mls.cpp  
+	$(CX) -O3 -DNDEBUG src/main.cpp \
+		src/solution.cpp \
+		src/random/cpu_mt.cpp \
+		src/aga/aga.cpp \
+		src/mls/mls.cpp \
+		$(LIBS) -o bin/mls_verbose
+
 clean:
 	rm bin/$(OUTPUT_BIN)
