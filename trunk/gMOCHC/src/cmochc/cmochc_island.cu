@@ -712,10 +712,14 @@ void solution_migration(int thread_id) {
                             int migration_parent_index;
                             migration_parent_index = (int)(random * next_solution_index);
 
+							FLOAT d = CHC__DISTANCE(EA_INSTANCE.rand_state[thread_id],
+								&ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                                &EA_THREADS[thread_id].population[migration_parent_index]);
+							/*
                             FLOAT d = distance(
                                 &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                 &EA_THREADS[thread_id].population[migration_parent_index]);
-
+							*/
                             if (d > EA_THREADS[thread_id].threshold_max) {
                                 CHC__CROSS(EA_INSTANCE.rand_state[thread_id],
                                     &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],

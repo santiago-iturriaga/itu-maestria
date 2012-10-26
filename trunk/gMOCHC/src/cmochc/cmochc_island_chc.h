@@ -20,11 +20,16 @@
 
 //#define CHC__MUTATE_OP 0
 #define CHC__MUTATE_OP 1
-#define CHC__MUTATION_PROB 0.7
+//#define CHC__MUTATION_PROB 0.7
+#define CHC__MUTATION_PROB 0.0
 
 //#define CHC__CROSS_OP 0
 #define CHC__CORSS_OP 1
-#define CHC__CROSS_PROB 0.8
+//#define CHC__CROSS_PROB 0.8
+#define CHC__CROSS_PROB 0.0
+
+#define CHC__DISTANCE_OP 0
+//#define CHC__DISTANCE_OP 1
 
 #if CHC__MUTATE_OP == 0
     #define CHC__MUTATE(rand_state,seed,mutation) mutate_0(rand_state,seed,mutation);
@@ -40,7 +45,14 @@
     #define CHC__CROSS(rand_state, p1, p2, c1, c2) hux_1(rand_state, p1, p2, c1, c2);
 #endif
 
-inline int distance(struct solution *s1, struct solution *s2) {
+#if CHC__DISTANCE_OP == 0
+    #define CHC__DISTANCE(rand_state, s1, s2) distance_0(rand_state, s1, s2);
+#endif
+#if CHC__DISTANCE_OP == 1
+    #define CHC__DISTANCE(rand_state, s1, s2) distance_1(rand_state, s1, s2);
+#endif
+
+inline int distance_0(RAND_STATE &rand_state, struct solution *s1, struct solution *s2) {
     int distance = 0;
 
     int tasks_count = INPUT.tasks_count;
@@ -57,6 +69,32 @@ inline int distance(struct solution *s1, struct solution *s2) {
     assert(distance <= INPUT.tasks_count);
 
     return distance;
+}
+
+inline int distance_1(RAND_STATE &rand_state, struct solution *s1, struct solution *s2) {
+    int distance = 0;
+
+    int tasks_count = INPUT.tasks_count;
+    int machines_count = INPUT.machines_count;
+    int *s1_task_assignment = s1->task_assignment;
+    int *s2_task_assignment = s2->task_assignment;
+
+	FLOAT random;
+	int task_id;
+
+    for (int i = 0; i < machines_count; i++) {
+		random = RAND_GENERATE(rand_state);
+		task_id = random * tasks_count;
+		
+        if (s1_task_assignment[task_id] != s2_task_assignment[task_id]) {
+            distance++;
+        }
+    }
+
+    assert(distance >= 0);
+    assert(distance <= machines_count);
+
+    return distance * (tasks_count / machines_count);
 }
 
 //#define CMOCHC_LOCAL__MATING_CHANCE         256

@@ -127,8 +127,12 @@ void chc_evolution(int thread_id) {
                     p2_idx = EA_THREADS[thread_id].sorted_population[p2_rand];
 
                     // Chequeo la distancia entre padres
-                    d = distance(&EA_THREADS[thread_id].population[p1_idx],
+                    d = CHC__DISTANCE(EA_INSTANCE.rand_state[thread_id],
+						&EA_THREADS[thread_id].population[p1_idx],
                         &EA_THREADS[thread_id].population[p2_idx]);
+                    
+                    /*d = distance(&EA_THREADS[thread_id].population[p1_idx],
+                        &EA_THREADS[thread_id].population[p2_idx]);*/
 
                     if (d > threshold) {
                         // Aplico HUX y creo dos hijos
