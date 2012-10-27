@@ -647,6 +647,12 @@ int pals_search(int thread_id, int solution_index) {
             if (fitness_post < fitness_pre) {
                 CHC_PALS_COUNT_FITNESS_IMPROV[thread_id]++;
         
+                if (thread_id == 2) {
+                    fprintf(stderr, "[DEBUG] PALS improv. %f -> %f, makespan(%.2f -> %.2f), energy(%.2f -> %.2f)\n",
+                        fitness_pre, fitness_post, makespan_pre, EA_THREADS[thread_id].population[solution_index].makespan, 
+                        energy_pre, EA_THREADS[thread_id].population[solution_index].energy_consumption);
+                }
+        
                 if (search_type == PALS__MAKESPAN_SEARCH) {
                     CHC_PALS_COUNT_FITNESS_IMPROV_MAKESPAN[thread_id]++;
                 } else if (search_type == PALS__ENERGY_SEARCH) {
