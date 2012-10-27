@@ -84,7 +84,7 @@ inline int distance_1(RAND_STATE &rand_state, struct solution *s1, struct soluti
 
     for (int i = 0; i < machines_count; i++) {
         random = RAND_GENERATE(rand_state);
-        task_id = random * tasks_count;
+        task_id = (int)(random * tasks_count);
         
         if (s1_task_assignment[task_id] != s2_task_assignment[task_id]) {
             distance++;
