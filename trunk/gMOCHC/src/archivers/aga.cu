@@ -467,10 +467,6 @@ void archivers_aga_dump() {
 }
 
 void archivers_aga_show() {
-    fprintf(stderr, "[DEBUG] ================================================\n");
-    fprintf(stderr, "[DEBUG] Elite archive solutions [makespan energy origin]\n");
-    fprintf(stderr, "[DEBUG] ================================================\n");
-
     int pos = 0;
 
     for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
@@ -481,7 +477,5 @@ void archivers_aga_show() {
                 ARCHIVER.population_tag[i]);
         }
     }
-    fprintf(stderr, "[DEBUG] ================================================\n");
     fprintf(stderr, "[DEBUG] Total solutions: %d\n", ARCHIVER.population_count);
-    fprintf(stderr, "[DEBUG] ================================================\n");
 }
