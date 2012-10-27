@@ -135,7 +135,7 @@ void compute_cmochc_island() {
                     last_iter_sols_gathered = iteracion;
                 #endif
                 
-                if (iteracion % 1000 == 0) archivers_aga_show();
+                if (iteracion % 100 == 0) archivers_aga_show();
             }
 
             TIMMING_END(">> cmochc_gather", ts_gather);
@@ -235,6 +235,7 @@ void compute_cmochc_island() {
     display_results(total_evaluations);
 
     #if defined(DEBUG_1)
+        fprintf(stderr, "[DEBUG] Total outer iterations = %d\n", iteracion);
         fprintf(stderr, "[DEBUG] Last solution gathered on iteration = %d\n", last_iter_sols_gathered);
     #endif
 
