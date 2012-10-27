@@ -74,7 +74,7 @@ int load_params(int argc, char **argv) {
         
         INPUT.max_evaluations = atoi(argv[9]);
         #if defined(DEBUG_0) 
-            fprintf(stderr, "       Max. evaluations              : %d\n", INPUT.max_evaluations);
+            fprintf(stderr, "       Max. evaluations             : %d\n", INPUT.max_evaluations);
         #endif
 
         if ((INPUT.algorithm < 0)||(INPUT.algorithm > 4)) {
