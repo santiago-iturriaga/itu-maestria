@@ -52,7 +52,7 @@ void pals_free(int thread_id) {
 
 }
 
-inline FLOAT compute_movement_score(int thread_id, int search_type,
+inline FLOAT compute_movement_score(double random, int thread_id, int search_type,
     FLOAT worst_compute_time, FLOAT worst_energy, 
     FLOAT machine_a_ct_new, FLOAT machine_a_ct_old,
     FLOAT machine_b_ct_new, FLOAT machine_b_ct_old,
@@ -191,6 +191,60 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
             } else {
                 score += (machine_a_en_new - machine_a_en_old) / machine_a_en_old;
                 score += (machine_b_en_new - machine_b_en_old) / machine_b_en_old;
+            }
+        }
+    #endif
+    #if defined(PALS__SIMPLE_FITNESS_5)
+        if (random < 0.5) {
+            if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time) ||
+                (machine_a_en_new > worst_energy) || (machine_b_en_new > worst_energy)) {
+
+                score = VERY_BIG_FLOAT;
+            } else {
+                score = ((machine_a_ct_new - machine_a_ct_old) / worst_compute_time +
+                        (machine_b_ct_new - machine_b_ct_old) / worst_compute_time) * EA_THREADS[thread_id].weight_makespan;
+
+                score += ((machine_a_en_new - machine_a_en_old) / worst_energy +
+                        (machine_b_en_new - machine_b_en_old) / worst_energy) * EA_THREADS[thread_id].weight_energy;
+            }
+        } else {
+            if (search_type == PALS__MAKESPAN_SEARCH) {
+                if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time)) {
+                    score = VERY_BIG_FLOAT;
+                } else {
+                    if ((machine_a_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) || (machine_b_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time)) {
+                        if (machine_a_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) {
+                            score = (machine_a_ct_new - machine_a_ct_old) - machine_a_ct_old;
+                        } else {
+                            score = (((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                        }
+                        
+                        if (machine_b_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) {
+                            score += (machine_b_ct_new - machine_b_ct_old) - machine_a_ct_old;
+                        } else {
+                            score += (((machine_b_ct_new - machine_b_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_energy);
+                        }
+                        
+                        score += (((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy);
+                        score += (((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy);
+                    } else {
+                        score = (((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                        score += (((machine_b_ct_new - machine_b_ct_old) / machine_b_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                                
+                        score += (((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy);
+                        score += (((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy);
+                    }
+                }
+            } else if (search_type == PALS__ENERGY_SEARCH) {
+                if (machine_a_en_new - machine_a_en_old + machine_b_en_new - machine_b_en_old > 0) {
+                    score = VERY_BIG_FLOAT;
+                } else {
+                    score = ((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan;
+                    score += ((machine_b_ct_new - machine_b_ct_old) / machine_b_ct_old) * EA_THREADS[thread_id].weight_makespan;
+                            
+                    score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy;
+                    score += ((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
+                }
             }
         }
     #endif
@@ -395,6 +449,8 @@ int pals_search(int thread_id, int solution_index) {
     FLOAT machine_a_en_old, machine_b_en_old;
     FLOAT machine_a_en_new, machine_b_en_new;
 
+    FLOAT randscore = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
+
     for (int i = 0; i < PALS__MAX_BUSQUEDAS; i++) {
         // Obtengo las tareas sorteadas.
         random1 = RAND_GENERATE(EA_INSTANCE.rand_state[thread_id]);
@@ -523,7 +579,7 @@ int pals_search(int thread_id, int solution_index) {
                 max_old = machine_a_ct_old;
                 if (max_old < machine_b_ct_old) max_old = machine_b_ct_old;
 
-                score = compute_movement_score(thread_id, search_type,
+                score = compute_movement_score(randscore, thread_id, search_type,
                     worst_compute_time, worst_energy, 
                     machine_a_ct_new, machine_a_ct_old,
                     machine_b_ct_new, machine_b_ct_old,
@@ -573,7 +629,7 @@ int pals_search(int thread_id, int solution_index) {
                 machine_a_en_new = machine_a_ct_new * get_scenario_energy_max(machine_a);
                 machine_b_en_new = machine_b_ct_new * get_scenario_energy_max(machine_b);
 
-                score = compute_movement_score(thread_id, search_type,
+                score = compute_movement_score(randscore, thread_id, search_type,
                     worst_compute_time, worst_energy, 
                     machine_a_ct_new, machine_a_ct_old,
                     machine_b_ct_new, machine_b_ct_old,
