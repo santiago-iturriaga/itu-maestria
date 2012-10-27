@@ -136,7 +136,13 @@ void compute_cmochc_island() {
                 #endif
             }
             
-            if (iteracion % 500 == 0) archivers_aga_show();
+            if (iteracion % 500 == 0) {
+                fprintf(stderr, "[DEBUG] ========================================================\n");
+                fprintf(stderr, "[DEBUG] (%d) Elite archive solutions [makespan energy origin]\n", iteracion);
+                fprintf(stderr, "[DEBUG] ========================================================\n");
+                archivers_aga_show();
+                fprintf(stderr, "[DEBUG] ========================================================\n");
+            }
 
             TIMMING_END(">> cmochc_gather", ts_gather);
 
