@@ -96,7 +96,7 @@ void compute_cmochc_island() {
     // Timming -----------------------------------------------------
 
     #if defined(DEBUG_1)
-    int last_iter_sols_gathered = 0;
+        int last_iter_sols_gathered = 0;
     #endif
 
     RAND_STATE rstate;
@@ -134,9 +134,9 @@ void compute_cmochc_island() {
                 #if defined(DEBUG_1)
                     last_iter_sols_gathered = iteracion;
                 #endif
-                
-                if (iteracion % 100 == 0) archivers_aga_show();
             }
+            
+            if (iteracion % 500 == 0) archivers_aga_show();
 
             TIMMING_END(">> cmochc_gather", ts_gather);
 
