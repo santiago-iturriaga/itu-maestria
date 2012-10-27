@@ -87,11 +87,13 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
         }
     #endif
     #if defined(PALS__SIMPLE_FITNESS_2)
-        if (search_type == PALS_MAKESPAN_SEARCH) {
+        if (search_type == PALS__MAKESPAN_SEARCH) {
             if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time)) {
                 score = VERY_BIG_FLOAT;
             } else {
-                if ((machine_a_ct_old + PALS_MAKESPAN_EPSILON >= worst_compute_time) || (machine_b_ct_old + PALS_MAKESPAN_EPSILON >= worst_compute_time)) {
+                if ((machine_a_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) || 
+                    (machine_b_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time)) {
+                        
                     score = ((machine_a_ct_new - machine_a_ct_old) / worst_compute_time +
                             (machine_b_ct_new - machine_b_ct_old) / worst_compute_time) * EA_THREADS[thread_id].weight_makespan;
 
@@ -107,7 +109,7 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
                     score = 1 / score;
                 }
             }
-        } else if (search_type == PALS_ENERGY_SEARCH) {
+        } else if (search_type == PALS__ENERGY_SEARCH) {
             if (machine_a_en_new - machine_a_en_old + machine_b_en_new - machine_b_en_old > 0) {
                 score = VERY_BIG_FLOAT;
             } else {
