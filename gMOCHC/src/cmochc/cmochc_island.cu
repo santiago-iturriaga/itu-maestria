@@ -907,12 +907,12 @@ void* slave_thread(void *data) {
                 new_sol_index = thread_id * CMOCHC_LOCAL__BEST_SOLS_KEPT + i;
                 local_best_index = EA_THREADS[thread_id].sorted_population[i];
 
-                if (thread_id == 2) {
+                /*if (thread_id == 2) {
                     fprintf(stderr, "[DEBUG] Best sol. [fitness = %f], makespan = %.2f, energy = %.2f\n", 
                         EA_THREADS[thread_id].fitness_population[local_best_index],
                         EA_THREADS[thread_id].population[local_best_index].makespan,
                         EA_THREADS[thread_id].population[local_best_index].energy_consumption);
-                }
+                }*/
 
                 clone_solution(&ARCHIVER.new_solutions[new_sol_index], &EA_THREADS[thread_id].population[local_best_index]);
                 ARCHIVER.new_solutions_tag[new_sol_index] = EA_INSTANCE.thread_weight_assignment[thread_id];
