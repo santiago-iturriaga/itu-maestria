@@ -51,7 +51,7 @@ void compute_cmochc_island();
 //#define CMOCHC_LOCAL__MUTATE_INITIAL_POP
 #define CMOCHC_LOCAL__POPULATION_SIZE       8
 #define CMOCHC_LOCAL__ITERATION_COUNT       500
-#define CMOCHC_LOCAL__BEST_SOLS_KEPT        1
+#define CMOCHC_LOCAL__BEST_SOLS_KEPT        2
 #define CMOCHC_LOCAL__MATING_MAX_THRESHOLD_DIVISOR  4
 /* Aprox. one cataclysm every CROSS_THRESHOLD_STEP_DIVISOR local iterations without change */
 #define CMOCHC_LOCAL__MATING_THRESHOLD_STEP_DIVISOR 15
@@ -67,9 +67,9 @@ void compute_cmochc_island();
 //#define CMOCHC_COLLABORATION__MIGRATION_NONE
 
 /* Define cómo son incluidos los elementos al deme */
-//#define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
+#define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
+//#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
 
 // Cantidad máxima de soluciones (padres+hijos)
 #define MAX_POP_SOLS 2*CMOCHC_LOCAL__POPULATION_SIZE

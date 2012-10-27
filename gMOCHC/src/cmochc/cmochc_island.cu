@@ -450,6 +450,7 @@ void init() {
     fprintf(stderr, "       CHC__MUTATION_PROB                          : %.2f\n", CHC__MUTATION_PROB);
     fprintf(stderr, "       CHC__CORSS_OP                               : %d\n", CHC__CORSS_OP);
     fprintf(stderr, "       CHC__CROSS_PROB                             : %.2f\n", CHC__CROSS_PROB);    
+    fprintf(stderr, "       CHC__DISTANCE_OP                            : %d\n", CHC__DISTANCE_OP);    
 
     fprintf(stderr, "       PALS__MAX_BUSQUEDAS                         : %d\n", PALS__MAX_BUSQUEDAS);
     fprintf(stderr, "       PALS__MAX_INTENTOS                          : %d\n", PALS__MAX_INTENTOS);
