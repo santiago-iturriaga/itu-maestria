@@ -105,10 +105,10 @@ void compute_cmochc_island() {
     int master_status = CMOCHC_MASTER_STATUS__CHC;
     int worker_status = 0;
 
-	int total_evaluations = 0;
-	int iteracion = 0;
+    int total_evaluations = 0;
+    int iteracion = 0;
 
-	while (total_evaluations < INPUT.max_evaluations) {
+    while (total_evaluations < INPUT.max_evaluations) {
         /* ******************************** */
         /* Espero que los esclavos terminen */
         /* ******************************** */
@@ -132,8 +132,10 @@ void compute_cmochc_island() {
 
             if (gather() > 0) {
                 #if defined(DEBUG_1)
-                last_iter_sols_gathered = iteracion;
+                    last_iter_sols_gathered = iteracion;
                 #endif
+                
+                if (iteracion % 1000 == 0) archivers_aga_show();
             }
 
             TIMMING_END(">> cmochc_gather", ts_gather);
@@ -144,15 +146,15 @@ void compute_cmochc_island() {
 
         }
 
-		for (int thread_id = 0; thread_id < INPUT.thread_count; thread_id++) {
-			total_evaluations += COUNT_EVALUATIONS[thread_id];
-			COUNT_EVALUATIONS[thread_id] = 0;
-		}
+        for (int thread_id = 0; thread_id < INPUT.thread_count; thread_id++) {
+            total_evaluations += COUNT_EVALUATIONS[thread_id];
+            COUNT_EVALUATIONS[thread_id] = 0;
+        }
 
         /* ***************************** */
         /* Configuro el siguiente estado */
         /* ***************************** */
-		if (total_evaluations >= INPUT.max_evaluations) {
+        if (total_evaluations >= INPUT.max_evaluations) {
 
             /* Si esta es la última iteracion, les aviso a los esclavos */
             worker_status = CMOCHC_THREAD_STATUS__STOP;
@@ -204,7 +206,7 @@ void compute_cmochc_island() {
             pthread_cond_broadcast(&EA_INSTANCE.worker_status_cond);
         pthread_mutex_unlock(&EA_INSTANCE.status_cond_mutex);
 
-		iteracion++;
+        iteracion++;
     }
 
     RAND_FINALIZE(rstate);
@@ -712,14 +714,14 @@ void solution_migration(int thread_id) {
                             int migration_parent_index;
                             migration_parent_index = (int)(random * next_solution_index);
 
-							FLOAT d = CHC__DISTANCE(EA_INSTANCE.rand_state[thread_id],
-								&ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
+                            FLOAT d = CHC__DISTANCE(EA_INSTANCE.rand_state[thread_id],
+                                &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                 &EA_THREADS[thread_id].population[migration_parent_index]);
-							/*
+                            /*
                             FLOAT d = distance(
                                 &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
                                 &EA_THREADS[thread_id].population[migration_parent_index]);
-							*/
+                            */
                             if (d > EA_THREADS[thread_id].threshold_max) {
                                 CHC__CROSS(EA_INSTANCE.rand_state[thread_id],
                                     &ARCHIVER.population[EA_THREADS[thread_id].migration_global_pop_index[migrated_solution_index]],
@@ -790,7 +792,7 @@ void* slave_thread(void *data) {
     /* Inicialización del estado del generador aleatorio */
     RAND_INIT(thread_id, EA_INSTANCE.rand_state[thread_id]);
 
-	COUNT_EVALUATIONS[thread_id] = 0;
+    COUNT_EVALUATIONS[thread_id] = 0;
 
     /* Inicializo la busqueda local */
     pals_init(thread_id);

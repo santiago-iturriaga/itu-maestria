@@ -471,9 +471,11 @@ void archivers_aga_show() {
     fprintf(stderr, "[DEBUG] Elite archive solutions [makespan energy origin]\n");
     fprintf(stderr, "[DEBUG] ================================================\n");
 
+    int pos = 0;
+
     for (int i = 0; i < ARCHIVER__MAX_SIZE; i++) {
         if (ARCHIVER.population[i].initialized == SOLUTION__IN_USE) {
-            fprintf(stderr, "%f %f %d\n",
+            fprintf(stderr, "(%d) %f %f %d\n", pos++,
                 ARCHIVER.population[i].makespan,
                 ARCHIVER.population[i].energy_consumption,
                 ARCHIVER.population_tag[i]);
