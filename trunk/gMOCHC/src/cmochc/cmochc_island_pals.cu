@@ -219,6 +219,7 @@ int pals_search(int thread_id, int solution_index) {
     int less_energy_machine_tasks[MAX__COLLECTED_TASKS];
     int less_energy_machine_count;
 
+    FLOAT fitness_pre = fitness(thread_id, solution_index);
     FLOAT makespan_pre = EA_THREADS[thread_id].population[solution_index].makespan;
     FLOAT energy_pre = EA_THREADS[thread_id].population[solution_index].energy_consumption;
 
@@ -623,25 +624,42 @@ int pals_search(int thread_id, int solution_index) {
     }
 
     if (count_movements > 0) {
+        int referencia_modificada = 0;
+        
         if (EA_THREADS[thread_id].population[solution_index].makespan < EA_THREADS[thread_id].makespan_zenith_value) {
             EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[solution_index].makespan;
+            referencia_modificada = 1;
         } else if (EA_THREADS[thread_id].population[solution_index].makespan > EA_THREADS[thread_id].makespan_nadir_value) {
             EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].population[solution_index].makespan;
+            referencia_modificada = 1;
         }
 
         if (EA_THREADS[thread_id].population[solution_index].energy_consumption < EA_THREADS[thread_id].energy_zenith_value) {
             EA_THREADS[thread_id].energy_zenith_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+            referencia_modificada = 1;
         } else if (EA_THREADS[thread_id].population[solution_index].energy_consumption > EA_THREADS[thread_id].energy_nadir_value) {
             EA_THREADS[thread_id].energy_nadir_value = EA_THREADS[thread_id].population[solution_index].energy_consumption;
+            referencia_modificada = 1;
         }
 
-        EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
-        FLOAT fitness_post = fitness(thread_id, solution_index);
+        FLOAT fitness_post;
 
-        FLOAT fitness_pre = fitness_zn(
-            thread_id, makespan_pre, energy_pre,
-            EA_THREADS[thread_id].makespan_nadir_value, EA_THREADS[thread_id].makespan_zenith_value,
-            EA_THREADS[thread_id].energy_nadir_value, EA_THREADS[thread_id].energy_zenith_value);
+        if (referencia_modificada == 0) {
+            EA_THREADS[thread_id].fitness_population[solution_index] = NAN;
+            fitness_post = fitness(thread_id, solution_index);
+        } else {
+            fitness_reset(thread_id);
+            fitness_all(thread_id);
+            
+            fitness_pre = fitness_zn(
+                thread_id, makespan_pre, energy_pre,
+                EA_THREADS[thread_id].makespan_nadir_value, 
+                EA_THREADS[thread_id].makespan_zenith_value,
+                EA_THREADS[thread_id].energy_nadir_value, 
+                EA_THREADS[thread_id].energy_zenith_value);
+            
+            fitness_post = fitness(thread_id, solution_index);
+        }
                 
         #ifdef DEBUG_1
             if (fitness_post < fitness_pre) {
