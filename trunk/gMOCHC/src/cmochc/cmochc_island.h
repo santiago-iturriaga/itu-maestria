@@ -31,9 +31,9 @@ void compute_cmochc_island();
 /* ************************************************************************ */
 //#define CMOCHC_PARETO_FRONT__PATCHES        8
 //#define CMOCHC_PARETO_FRONT__PATCHES        12
-//#define CMOCHC_PARETO_FRONT__PATCHES        24
+#define CMOCHC_PARETO_FRONT__PATCHES        24
 //#define CMOCHC_PARETO_FRONT__PATCHES        32
-#define CMOCHC_PARETO_FRONT__PATCHES        48
+//#define CMOCHC_PARETO_FRONT__PATCHES        48
 //#define CMOCHC_PARETO_FRONT__PATCHES        64
 
 /* ******************************************************** */
@@ -48,7 +48,7 @@ void compute_cmochc_island();
 /* Configuración del EA CHC de cada deme */
 /* ************************************* */
 /* Muta la población inicial creada con MCT */
-#define CMOCHC_LOCAL__MUTATE_INITIAL_POP
+//#define CMOCHC_LOCAL__MUTATE_INITIAL_POP
 #define CMOCHC_LOCAL__POPULATION_SIZE       8
 #define CMOCHC_LOCAL__ITERATION_COUNT       500
 #define CMOCHC_LOCAL__BEST_SOLS_KEPT        1
@@ -67,9 +67,9 @@ void compute_cmochc_island();
 //#define CMOCHC_COLLABORATION__MIGRATION_NONE
 
 /* Define cómo son incluidos los elementos al deme */
-#define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
+//#define CMOCHC_COLLABORATION__MIGRATE_BY_MATE
 //#define CMOCHC_COLLABORATION__MIGRATE_BY_MUTATE
-//#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
+#define CMOCHC_COLLABORATION__MIGRATE_BY_COPY
 
 // Cantidad máxima de soluciones (padres+hijos)
 #define MAX_POP_SOLS 2*CMOCHC_LOCAL__POPULATION_SIZE
