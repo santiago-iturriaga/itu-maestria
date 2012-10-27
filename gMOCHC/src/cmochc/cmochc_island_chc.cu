@@ -12,8 +12,8 @@ void chc_population_init(int thread_id) {
         EA_THREADS[thread_id].fitness_population[i] = NAN;
 
         if (i == 0) {
-			COUNT_EVALUATIONS[thread_id]++;
-			
+            COUNT_EVALUATIONS[thread_id]++;
+            
             EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
             EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].makespan_zenith_value;
 
@@ -31,7 +31,7 @@ void chc_population_init(int thread_id) {
             compute_mct_random(&(EA_THREADS[thread_id].population[i]), starting_pos, i & 0x1);
             //compute_minmin(&(EA_THREADS[thread_id].population[i]));
 
-			COUNT_EVALUATIONS[thread_id]++;
+            COUNT_EVALUATIONS[thread_id]++;
 
             #ifdef CMOCHC_LOCAL__MUTATE_INITIAL_POP
                 CHC__MUTATE(EA_INSTANCE.rand_state[thread_id], &EA_THREADS[thread_id].population[i], &EA_THREADS[thread_id].population[i])
@@ -128,7 +128,7 @@ void chc_evolution(int thread_id) {
 
                     // Chequeo la distancia entre padres
                     d = CHC__DISTANCE(EA_INSTANCE.rand_state[thread_id],
-						&EA_THREADS[thread_id].population[p1_idx],
+                        &EA_THREADS[thread_id].population[p1_idx],
                         &EA_THREADS[thread_id].population[p2_idx]);
                     
                     /*d = distance(&EA_THREADS[thread_id].population[p1_idx],
@@ -147,7 +147,7 @@ void chc_evolution(int thread_id) {
                             &EA_THREADS[thread_id].population[p1_idx],&EA_THREADS[thread_id].population[p2_idx],
                             &EA_THREADS[thread_id].population[c1_idx],&EA_THREADS[thread_id].population[c2_idx])
 
-						COUNT_EVALUATIONS[thread_id]+=2;
+                        COUNT_EVALUATIONS[thread_id]+=2;
 
                         EA_THREADS[thread_id].fitness_population[c1_idx] = NAN;
                         EA_THREADS[thread_id].fitness_population[c2_idx] = NAN;
@@ -329,7 +329,7 @@ void chc_evolution(int thread_id) {
                             &EA_THREADS[thread_id].population[EA_THREADS[thread_id].sorted_population[aux_index]],
                             &EA_THREADS[thread_id].population[current_index])
 
-						COUNT_EVALUATIONS[thread_id]++;
+                        COUNT_EVALUATIONS[thread_id]++;
 
                         EA_THREADS[thread_id].fitness_population[current_index] = NAN;
 
