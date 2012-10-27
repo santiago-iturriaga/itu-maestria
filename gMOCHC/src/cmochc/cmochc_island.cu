@@ -908,7 +908,8 @@ void* slave_thread(void *data) {
                 local_best_index = EA_THREADS[thread_id].sorted_population[i];
 
                 if (thread_id == 2) {
-                    fprintf(stderr, "[DEBUG] Best sol. makespan = %.2f, energy = %.2f\n", 
+                    fprintf(stderr, "[DEBUG] Best sol. [fitness = %f], makespan = %.2f, energy = %.2f\n", 
+                        EA_THREADS[thread_id].fitness_population[local_best_index],
                         EA_THREADS[thread_id].population[local_best_index].makespan,
                         EA_THREADS[thread_id].population[local_best_index].energy_consumption);
                 }
