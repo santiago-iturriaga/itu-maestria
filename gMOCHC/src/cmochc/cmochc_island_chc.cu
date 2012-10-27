@@ -13,6 +13,9 @@ void chc_population_init(int thread_id) {
 
         if (i == 0) {
             COUNT_EVALUATIONS[thread_id]++;
+
+            CHC__MUTATE(EA_INSTANCE.rand_state[thread_id], &EA_THREADS[thread_id].population[i], &EA_THREADS[thread_id].population[i])
+            COUNT_EVALUATIONS[thread_id]++;
             
             EA_THREADS[thread_id].makespan_zenith_value = EA_THREADS[thread_id].population[i].makespan;
             EA_THREADS[thread_id].makespan_nadir_value = EA_THREADS[thread_id].makespan_zenith_value;
