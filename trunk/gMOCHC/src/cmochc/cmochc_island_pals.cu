@@ -75,8 +75,7 @@ inline FLOAT compute_movement_score(int thread_id, int search_type,
         }
     #endif
     #if defined(PALS__SIMPLE_FITNESS_1)
-        if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time) ||
-            (machine_a_en_new > worst_energy) || (machine_b_en_new > worst_energy)) {
+        if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time)) {
 
             score = VERY_BIG_FLOAT;
         } else {
