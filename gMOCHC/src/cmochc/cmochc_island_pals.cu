@@ -248,6 +248,60 @@ inline FLOAT compute_movement_score(double random, int thread_id, int search_typ
             }
         }
     #endif
+    #if defined(PALS__SIMPLE_FITNESS_6)
+        if (((random < 0.5) || (thread_id == 1)) && (thread_id != 0)) {
+            if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time) ||
+                (machine_a_en_new > worst_energy) || (machine_b_en_new > worst_energy)) {
+
+                score = VERY_BIG_FLOAT;
+            } else {
+                score = ((machine_a_ct_new - machine_a_ct_old) / worst_compute_time +
+                        (machine_b_ct_new - machine_b_ct_old) / worst_compute_time) * EA_THREADS[thread_id].weight_makespan;
+
+                score += ((machine_a_en_new - machine_a_en_old) / worst_energy +
+                        (machine_b_en_new - machine_b_en_old) / worst_energy) * EA_THREADS[thread_id].weight_energy;
+            }
+        } else {
+            if (search_type == PALS__MAKESPAN_SEARCH) {
+                if ((machine_a_ct_new > worst_compute_time) || (machine_b_ct_new > worst_compute_time)) {
+                    score = VERY_BIG_FLOAT;
+                } else {
+                    if ((machine_a_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) || (machine_b_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time)) {
+                        if (machine_a_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) {
+                            score = (machine_a_ct_new - machine_a_ct_old) - machine_a_ct_old;
+                        } else {
+                            score = (((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                        }
+                        
+                        if (machine_b_ct_old + PALS__MAKESPAN_EPSILON >= worst_compute_time) {
+                            score += (machine_b_ct_new - machine_b_ct_old) - machine_a_ct_old;
+                        } else {
+                            score += (((machine_b_ct_new - machine_b_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_energy);
+                        }
+                        
+                        score += (((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy);
+                        score += (((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy);
+                    } else {
+                        score = (((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                        score += (((machine_b_ct_new - machine_b_ct_old) / machine_b_ct_old) * EA_THREADS[thread_id].weight_makespan);
+                                
+                        score += (((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy);
+                        score += (((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy);
+                    }
+                }
+            } else if (search_type == PALS__ENERGY_SEARCH) {
+                if (machine_a_en_new - machine_a_en_old + machine_b_en_new - machine_b_en_old > 0) {
+                    score = VERY_BIG_FLOAT;
+                } else {
+                    score = ((machine_a_ct_new - machine_a_ct_old) / machine_a_ct_old) * EA_THREADS[thread_id].weight_makespan;
+                    score += ((machine_b_ct_new - machine_b_ct_old) / machine_b_ct_old) * EA_THREADS[thread_id].weight_makespan;
+                            
+                    score += ((machine_a_en_new - machine_a_en_old) / machine_a_en_old) * EA_THREADS[thread_id].weight_energy;
+                    score += ((machine_b_en_new - machine_b_en_old) / machine_b_en_old) * EA_THREADS[thread_id].weight_energy;
+                }
+            }
+        }
+    #endif
     #if defined(PALS__SIMPLE_DELTA)
         if ((machine_a_ct_new > max_old) || (machine_b_ct_new > max_old)) {
             score = VERY_BIG_FLOAT - (max_old - machine_a_ct_new) + (max_old - machine_b_ct_new);
