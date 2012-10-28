@@ -280,7 +280,7 @@ void* mls_thread(void *data)
 			/*
             if ((world_rank == 1)&&(thread_id == 0)) {
                 fprintf(stderr, "[DEBUG] ===================================================\n");
-                fprintf(stderr, "[DEBUG] Current solution\n");
+                fprintf(stderr, "[DEBUG] (%d) Current solution\n", MLS.total_iterations[thread_id]);
                 show_solution(&MLS.population[thread_id]);
             }
             * */

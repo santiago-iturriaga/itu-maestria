@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     // =============================================================
 
 	fprintf(stderr, "[DEBUG] argc = %d\n", argc);
-	if (argc != 4) {
+	if (argc != 6) {
 		fprintf(stderr, "[ERROR] invalid arguments\n");
 		MPI_Finalize();
 		exit(EXIT_FAILURE);
@@ -90,9 +90,11 @@ int main(int argc, char** argv)
 
     // Config. NS3
     // 25 for 100 devices/km^2 density, 50 for 200, and 75 for 300
-    MLS.number_devices = 25;
+    //MLS.number_devices = 25;
+    MLS.number_devices = atoi(argv[5]);
     // Number of independent runs of the simulator, if > 1, the results given are averaged over all the runs
-    MLS.simul_runs = 10;
+    //MLS.simul_runs = 10;
+    MLS.simul_runs = atoi(argv[4]);
 
     // Dominio de las variables de búsqueda.
     MLS.lbound_min_delay = 0;

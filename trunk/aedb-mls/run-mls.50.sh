@@ -6,7 +6,7 @@ cd /home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls
 
 ITERATIONS=20000
 THREADS=12
-INSTANCE=25
+INSTANCE=50
 SIMULS=5
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/clusterusers/siturriaga/ns3Files
