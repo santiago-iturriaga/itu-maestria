@@ -126,7 +126,7 @@ int main(int argc, char** argv)
     // =============================================================
 
     // Inicializo el tipo de datos SOLUTION en MPI.
-    init_mpi_solution();
+    init_mpi_solution(MLS.count_threads);
 
     // Construyo el grupo MLS
     MPI_Group world_group, mls_group;
@@ -161,7 +161,7 @@ int main(int argc, char** argv)
             // Proceso AGA
             // =============================================================
 
-            archivers_aga();
+            archivers_aga(seed);
 
             // Finalización...
         } else {

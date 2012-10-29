@@ -8,8 +8,9 @@
 #include "solution.h"
 
 MPI_Datatype mpi_solution_type;
+MPI_Datatype mpi_solution_type_array;
 
-void init_mpi_solution() {
+void init_mpi_solution(int array_size) {
     struct solution aux;
 
     int lengtharray[10];         /* Array of lengths */
@@ -77,6 +78,9 @@ void init_mpi_solution() {
     /* Build the data structure */
     MPI_Type_struct(10, lengtharray, disparray, typearray, &mpi_solution_type);
     MPI_Type_commit(&mpi_solution_type);
+    
+    MPI_Type_contiguous(array_size, mpi_solution_type, &mpi_solution_type_array);
+	MPI_Type_commit(&mpi_solution_type_array);
 }
 
 void clone_solution(struct solution *dst, struct solution *src) {

@@ -12,46 +12,46 @@ struct aga_state AGA;
 int find_loc(int solution_pos);
 void update_grid(int new_solution_pos);
 
-void archivers_aga_init();
+void archivers_aga_init(int seed);
 int archivers_aga_add(int new_solution_pos);
 void archivers_aga_free();
 
-void archivers_aga() {
-    archivers_aga_init();
+void archivers_aga(int seed) {
+    archivers_aga_init(seed);
 
     MPI_Status status;
     int finalize = 0, aux, msg_count;
     int rc;
-    
+
 	int iteration = 0;
-    
+
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
 		iteration++;
-		
+
         #ifndef NDEBUG
             fprintf(stderr, "[DEBUG][AGA] ITERATION %d ==================================\n", iteration);
             fprintf(stderr, "[DEBUG][AGA] Current population = %d\n", AGA.population_count);
             fprintf(stderr, "[DEBUG][AGA] Waiting for a message.\n");
         #endif
-        
+
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
         if (status.MPI_TAG == AGA__NEW_SOL_MSG) {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
-            
+
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][AGA] New solution received (count=%d)\n", msg_count);
             #endif
-            
+
             MPI_Recv(input_buffer, msg_count, mpi_solution_type, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            
+
             for (int s = 0; s < msg_count; s++) {
                 input_buffer[s].status = SOLUTION__STATUS_NEW;
 
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG][AGA] Received (energy=%.2f / coverage=%.2f / nforwardings=%.2f)\n", 
+                    fprintf(stderr, "[DEBUG][AGA] Received (energy=%.2f / coverage=%.2f / nforwardings=%.2f)\n",
                         input_buffer[s].energy, input_buffer[s].coverage, input_buffer[s].nforwardings);
                 #endif
 
@@ -61,9 +61,9 @@ void archivers_aga() {
                         // Encontré una posición libre. Agrego la solución al archivo acá.
                         clone_solution(&AGA.population[i], &input_buffer[s]);
                         AGA.population[i].coverage = 1/AGA.population[i].coverage;
-                        
+
                         rc = archivers_aga_add(i);
-                        
+
                         #ifndef NDEBUG
                             if (rc > 0) {
                                 fprintf(stderr, "[DEBUG][AGA] Solution in %d was added.\n", i);
@@ -71,9 +71,9 @@ void archivers_aga() {
                                 fprintf(stderr, "[DEBUG][AGA] Solution in %d was discarded.\n", i);
                             }
                         #endif
-                        
-                        input_buffer[s].status = SOLUTION__STATUS_EMPTY;                    
-                        
+
+                        input_buffer[s].status = SOLUTION__STATUS_EMPTY;
+
                     } else if (AGA.population[i].status == SOLUTION__STATUS_READY) {
                         // Posición ocupada, sigo buscando.
                         sol_idx++;
@@ -82,31 +82,97 @@ void archivers_aga() {
 
                 assert(input_buffer[s].status == SOLUTION__STATUS_EMPTY);
             }
-            
+
             assert(AGA.population_count > 0);
-            
-            if (iteration % 8000 == 1) {
-				fprintf(stderr, "[INFO] (%d) AGA information ============================================ \n", iteration);
-				fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
-				fprintf(stderr, "[INFO] Population:\n");
-				
+
+            if (iteration % 250 == 1) {
+				fprintf(stderr, "[INFO][AGA] (%d) Information ============================================ \n", iteration);
+				fprintf(stderr, "[INFO][AGA] Population count: %d\n", AGA.population_count);
+				fprintf(stderr, "[INFO][AGA] Population:\n");
+
 				fprintf(stderr, "id,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
-				
+
 				for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
 					if (AGA.population[i].status == SOLUTION__STATUS_READY) {
 						fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
-							AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
-							AGA.population[i].min_delay, AGA.population[i].max_delay, 
+							AGA.population[i].borders_threshold,
+							AGA.population[i].margin_forwarding,
+							AGA.population[i].min_delay,
+							AGA.population[i].max_delay,
 							AGA.population[i].neighbors_threshold,
-							AGA.population[i].energy, 1/AGA.population[i].coverage,
-							AGA.population[i].nforwardings, AGA.population[i].time);
+							AGA.population[i].energy,
+							1/AGA.population[i].coverage,
+							AGA.population[i].nforwardings,
+							AGA.population[i].time);
 					}
 				}
 			}
+        } else if (status.MPI_TAG == AGA__REQ_SOL_MSG) {
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][AGA] AGA__REQ_SOL_MSG\n");
+            #endif
             
+			MPI_Get_count(&status, MPI_INT, &msg_count);
+
+            int sol_count;
+            MPI_Recv(&sol_count, msg_count, MPI_INT, MPI_ANY_SOURCE, AGA__REQ_SOL_MSG, MPI_COMM_WORLD, &status);
+
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][AGA] Solution requested sol_count=%d from %d (count=%d)\n", sol_count, status.MPI_SOURCE, msg_count);
+            #endif
+
+            int current_index;
+			int sol_index;
+			
+            for (int i = 0; i < sol_count; i++) {
+				sol_index = (int)(cpu_mt_generate(AGA.random_state) * AGA.population_count);
+				current_index = -1;
+
+				for (int j = 0; (j < AGA__MAX_ARCHIVE_SIZE) && (current_index < sol_index); j++) {
+					if (AGA.population[j].status == SOLUTION__STATUS_READY) {
+						current_index++;
+
+						if (current_index == sol_index) {
+							AGA.aux_population[i].borders_threshold = AGA.population[j].borders_threshold;
+							AGA.aux_population[i].margin_forwarding = AGA.population[j].margin_forwarding;
+							AGA.aux_population[i].min_delay = AGA.population[j].min_delay;
+							AGA.aux_population[i].max_delay = AGA.population[j].max_delay;
+							AGA.aux_population[i].neighbors_threshold = AGA.population[j].neighbors_threshold;
+							AGA.aux_population[i].energy = AGA.population[j].energy;
+							AGA.aux_population[i].coverage = 1/AGA.population[j].coverage;
+							AGA.aux_population[i].nforwardings = AGA.population[j].nforwardings;
+							AGA.aux_population[i].time = AGA.population[j].time;
+						}
+					}
+				}
+			}
+			
+			#ifndef NDEBUG
+				fprintf(stderr, "[DEBUG][AGA] ===================================================\n");
+				fprintf(stderr, "[DEBUG][AGA] Population refresh response\n");
+				fprintf(stderr, "id,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
+				for (int i = 0; i < sol_count; i++) {
+					fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
+						AGA.aux_population[i].borders_threshold,
+						AGA.aux_population[i].margin_forwarding,
+						AGA.aux_population[i].min_delay,
+						AGA.aux_population[i].max_delay,
+						AGA.aux_population[i].neighbors_threshold,
+						AGA.aux_population[i].energy,
+						1/AGA.aux_population[i].coverage,
+						AGA.aux_population[i].nforwardings,
+						AGA.aux_population[i].time);
+				}
+				fprintf(stderr, "[DEBUG][AGA] ===================================================\n");
+				
+				fprintf(stderr, "[DEBUG][AGA] MPI_Send\n");
+			#endif
+			
+			MPI_Send(AGA.aux_population, 1, mpi_solution_type_array, status.MPI_SOURCE, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
+			
         } else if (status.MPI_TAG == AGA__EXIT_MSG) {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
-            
+
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][AGA] Terminate message received\n");
             #endif
@@ -114,7 +180,7 @@ void archivers_aga() {
 
             fprintf(stderr, "[INFO][AGA] Kaput!\n");
             finalize = 1;
-            
+
         } else {
             fprintf(stderr, "[ERROR][AGA] Unknown TAG %d\n", status.MPI_TAG);
             MPI_Finalize();
@@ -125,9 +191,9 @@ void archivers_aga() {
     fprintf(stderr, "[INFO] AGA information ============================================ \n");
     fprintf(stderr, "[INFO] Population count: %d\n", AGA.population_count);
     fprintf(stderr, "[INFO] Population:\n");
-    
+
     fprintf(stdout, "\nid,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
-    
+
     for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
         if (AGA.population[i].status == SOLUTION__STATUS_READY) {
             fprintf(stderr, "(%d) borders_threshold   = %.2f\n", i, AGA.population[i].borders_threshold);
@@ -142,14 +208,14 @@ void archivers_aga() {
 
             fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
                 AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
-                AGA.population[i].min_delay, AGA.population[i].max_delay, 
+                AGA.population[i].min_delay, AGA.population[i].max_delay,
                 AGA.population[i].neighbors_threshold,
                 AGA.population[i].energy, 1/AGA.population[i].coverage,
                 AGA.population[i].nforwardings, AGA.population[i].time);
-            
+
             fprintf(stdout, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
                 AGA.population[i].borders_threshold, AGA.population[i].margin_forwarding,
-                AGA.population[i].min_delay, AGA.population[i].max_delay, 
+                AGA.population[i].min_delay, AGA.population[i].max_delay,
                 AGA.population[i].neighbors_threshold,
                 AGA.population[i].energy, 1/AGA.population[i].coverage,
                 AGA.population[i].nforwardings, AGA.population[i].time);
@@ -191,7 +257,7 @@ int archivers_aga_add(int new_solution_pos)
         if ((AGA.population[s_pos].status > SOLUTION__STATUS_EMPTY) && (s_pos != new_solution_pos))
         {
             s_idx++;
-            
+
             aux_dominates = 1;
             aux_is_dominated = 1;
 
@@ -213,9 +279,9 @@ int archivers_aga_add(int new_solution_pos)
             {
                 // La nueva solucion es dominada por una ya existente.
                 new_solution_is_dominated = 1;
-                
+
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG] New solution is dominated by %d\n", s_pos);
+                    fprintf(stderr, "[DEBUG][AGA] New solution is dominated by %d\n", s_pos);
                 #endif
             }
             else if (aux_dominates == 1)
@@ -223,9 +289,9 @@ int archivers_aga_add(int new_solution_pos)
                 // La nueva solucion domina a una ya existente.
                 solutions_deleted++;
                 AGA.population[s_pos].status = SOLUTION__STATUS_EMPTY;
-                
+
                 #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG] New solution dominates %d\n", s_pos);
+                    fprintf(stderr, "[DEBUG][AGA] New solution dominates %d\n", s_pos);
                 #endif
             }
         }
@@ -291,7 +357,7 @@ int archivers_aga_add(int new_solution_pos)
     }
 }
 
-void archivers_aga_init() {
+void archivers_aga_init(int seed) {
     AGA.max_locations = pow(2, ARCHIVER__AGA_DEPTH * OBJECTIVES); // Number of locations in grid.
     AGA.grid_pop = (int*)(malloc(sizeof(int) * (AGA.max_locations + 1)));
 
@@ -304,10 +370,15 @@ void archivers_aga_init() {
     for (int i = 0; i < AGA.max_locations; i++) {
         AGA.grid_pop[i] = 0;
     }
-    
+
     for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
         AGA.population[i].status = SOLUTION__STATUS_EMPTY;
     }
+
+    // =========================================================================
+    // Inicializo las semillas para la generación de numeros aleatorios.
+    //
+	cpu_mt_init(seed, AGA.random_state);
 }
 
 void archivers_aga_free() {
