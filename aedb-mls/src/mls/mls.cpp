@@ -150,7 +150,7 @@ void* mls_thread(void *data)
 
     MLS.total_iterations[thread_id] = 0;
 
-	MPI_Status status;
+    MPI_Status status;
 
     int terminate = 0;
     int work_iteration_size;
@@ -161,19 +161,19 @@ void* mls_thread(void *data)
     char ns3_line[256];
     char ns3_command[1024];
 
-	int reset_hit = 50;
+    int reset_hit = 5000;
 
-	pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
-		work_type = MLS.work_type[thread_id];
-	pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
+    pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
+        work_type = MLS.work_type[thread_id];
+    pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
 
     while ((terminate == 0) && (MLS.total_iterations[thread_id] < MLS.max_iterations))
     {
-		#ifndef NDEBUG
-			if (thread_id == 0) {
-				fprintf(stderr, "[DEBUG] (%d)\n", MLS.total_iterations[thread_id]);
-			}
-		#endif
+        #ifndef NDEBUG
+            if (thread_id == 0) {
+                fprintf(stderr, "[DEBUG] (%d)\n", MLS.total_iterations[thread_id]);
+            }
+        #endif
 
         if (work_type == MLS__EXIT)
         {
@@ -303,12 +303,12 @@ void* mls_thread(void *data)
             int neighbors_threshold;
             neighbors_threshold = MLS.population[thread_id].neighbors_threshold;
 
-			int rand_other_thread;
-			rand_other_thread = (int)(cpu_mt_generate(MLS.random_states[thread_id]) * MLS.count_threads);
+            int rand_other_thread;
+            rand_other_thread = (int)(cpu_mt_generate(MLS.random_states[thread_id]) * MLS.count_threads);
 
-			MLS.total_iterations[thread_id]++;
+            MLS.total_iterations[thread_id]++;
 
-			float prod;
+            float prod;
             for (search_iteration = 0; search_iteration < work_iteration_size; search_iteration++) {
                 // =================================================================
                 // RUSO
@@ -321,7 +321,7 @@ void* mls_thread(void *data)
                     case LS_FORWARDING :
                         // Reduce borders_threshold
                         delta = MLS.population[rand_other_thread].borders_threshold - MLS.population[thread_id].borders_threshold;
-						prod = alfa * delta;
+                        prod = alfa * delta;
 
                         if (delta > 0){
                             borders_threshold = borders_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
@@ -349,7 +349,7 @@ void* mls_thread(void *data)
 
                         if (neighbors_threshold > MLS.ubound_neighbors_threshold)
                             neighbors_threshold = MLS.ubound_neighbors_threshold;
-						/*
+                        /*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: borders_threshold %.4f\n", borders_threshold);
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: neighbors_threshold %d\n", neighbors_threshold);
@@ -371,7 +371,7 @@ void* mls_thread(void *data)
 
                         if (neighbors_threshold > MLS.ubound_neighbors_threshold)
                             neighbors_threshold = MLS.ubound_neighbors_threshold;
-						/*
+                        /*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_COVERAGE: neighbors_threshold %d\n", neighbors_threshold);
                         }*/
@@ -393,7 +393,7 @@ void* mls_thread(void *data)
 
                         if (max_delay < MLS.lbound_max_delay) max_delay = MLS.lbound_max_delay;
                         if (max_delay > MLS.ubound_max_delay) max_delay = MLS.ubound_max_delay;
-						/*
+                        /*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_TIME: min_delay %.4f\n", min_delay);
                             fprintf(stderr, "   >> LS_TIME: max_delay %.4f\n", max_delay);
@@ -437,7 +437,7 @@ void* mls_thread(void *data)
 
             pclose(fpipe);
 
-            if (time < 2) {
+            //if (time < 2) {
                 MLS.population[thread_id].min_delay = min_delay;
                 MLS.population[thread_id].max_delay = max_delay;
                 MLS.population[thread_id].borders_threshold = borders_threshold;
@@ -452,12 +452,14 @@ void* mls_thread(void *data)
                     fprintf(stderr, "[DEBUG] Resulting solution\n");
                     show_solution(&MLS.population[thread_id]);
                 }*/
-				/*
-				#ifndef NDEBUG
-					fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
-					show_solution(&MLS.population[thread_id]);
-				#endif*/
+                /*
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
+                    show_solution(&MLS.population[thread_id]);
+                #endif*/
+            //}
 
+            if (time < 2) {
                 pthread_mutex_lock(&MLS.mpi_mutex);
                     #ifndef NONMPI
                         #ifdef MPI_MODE_STANDARD
@@ -487,51 +489,51 @@ void* mls_thread(void *data)
             }
         }
 
-		if (MLS.total_iterations[thread_id] % reset_hit == 0) {
-			pthread_barrier_wait(&MLS.sync_barrier);
+        if (MLS.total_iterations[thread_id] % reset_hit == 0) {
+            pthread_barrier_wait(&MLS.sync_barrier);
 
-			if (thread_id == 0) {
-				#ifndef NDEBUG
-					fprintf(stderr, "[DEBUG] (%d) Refresh!\n", MLS.total_iterations[thread_id]);
-				#endif 
-				
-				#ifndef NONMPI
-					#ifndef NDEBUG
-						fprintf(stderr, "[DEBUG] MPI_Send\n");
-					#endif
-					
-					#ifdef MPI_MODE_STANDARD
-						MPI_Send(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
-					#endif
+            if (thread_id == 0) {
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG] (%d) Refresh!\n", MLS.total_iterations[thread_id]);
+                #endif
 
-					#ifdef MPI_MODE_SYNC
-						MPI_Ssend(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
-					#endif
+                #ifndef NONMPI
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG] MPI_Send\n");
+                    #endif
 
-					#ifdef MPI_MODE_BUFFERED
-						MPI_Bsend(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
-					#endif
-					
-					#ifndef NDEBUG
-						fprintf(stderr, "[DEBUG] MPI_Recv\n");
-					#endif
-					MPI_Recv(MLS.population, 1, mpi_solution_type_array, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD, &status);
+                    #ifdef MPI_MODE_STANDARD
+                        MPI_Send(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-					#ifndef NDEBUG
-						fprintf(stderr, "[DEBUG] ===================================================\n");
-						fprintf(stderr, "[DEBUG] [%d](%d) Population refresh\n", world_rank, MLS.total_iterations[thread_id]);
-						for (int i = 0; i < MLS.count_threads; i++) {
-							show_solution(&MLS.population[i]);
-						}
-						fprintf(stderr, "[DEBUG] ===================================================\n");
-					#endif
-				#else
-					// ....
-				#endif
-			}
+                    #ifdef MPI_MODE_SYNC
+                        MPI_Ssend(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
 
-			pthread_barrier_wait(&MLS.sync_barrier);
-		}
+                    #ifdef MPI_MODE_BUFFERED
+                        MPI_Bsend(&MLS.count_threads, 1, MPI_INT, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
+                    #endif
+
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG] MPI_Recv\n");
+                    #endif
+                    MPI_Recv(MLS.population, 1, mpi_solution_type_array, AGA__PROCESS_RANK, AGA__REQ_SOL_MSG, MPI_COMM_WORLD, &status);
+
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG] ===================================================\n");
+                        fprintf(stderr, "[DEBUG] [%d](%d) Population refresh\n", world_rank, MLS.total_iterations[thread_id]);
+                        for (int i = 0; i < MLS.count_threads; i++) {
+                            show_solution(&MLS.population[i]);
+                        }
+                        fprintf(stderr, "[DEBUG] ===================================================\n");
+                    #endif
+                #else
+                    // ....
+                #endif
+            }
+
+            pthread_barrier_wait(&MLS.sync_barrier);
+        }
     }
 
     return NULL;
