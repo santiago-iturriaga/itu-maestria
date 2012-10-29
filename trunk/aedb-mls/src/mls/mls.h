@@ -9,7 +9,7 @@
 
 // Configuracion
 #define MLS__THREAD_FIXED_ITERS     1
-#define MLS__THREAD_RANDOM_ITERS    2
+#define MLS__THREAD_RANDOM_ITERS    1
 
 // Constantes
 #define MLS__INIT       0
