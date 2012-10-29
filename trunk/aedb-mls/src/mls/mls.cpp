@@ -161,8 +161,8 @@ void* mls_thread(void *data)
     char ns3_line[256];
     char ns3_command[1024];
 
-    //int reset_hit = 50;
-    int reset_hit = 5 + (5 * world_rank);
+    int reset_hit = 50;
+    //int reset_hit = 35 + (2 * world_rank);
 
     pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
         work_type = MLS.work_type[thread_id];
@@ -439,7 +439,7 @@ void* mls_thread(void *data)
 
             pclose(fpipe);
 
-            //if (time < 2) {
+            if (time < 2) {
                 MLS.population[thread_id].min_delay = min_delay;
                 MLS.population[thread_id].max_delay = max_delay;
                 MLS.population[thread_id].borders_threshold = borders_threshold;
@@ -459,7 +459,7 @@ void* mls_thread(void *data)
                     fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
                     show_solution(&MLS.population[thread_id]);
                 #endif*/
-            //}
+            }
 
             if (time < 2) {
                 pthread_mutex_lock(&MLS.mpi_mutex);
