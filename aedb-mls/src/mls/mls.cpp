@@ -161,7 +161,8 @@ void* mls_thread(void *data)
     char ns3_line[256];
     char ns3_command[1024];
 
-    int reset_hit = 50;
+    //int reset_hit = 50;
+    int reset_hit = 5 + (5 * world_rank);
 
     pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
         work_type = MLS.work_type[thread_id];
