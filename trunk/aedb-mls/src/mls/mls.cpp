@@ -536,6 +536,7 @@ void* mls_thread(void *data)
 
             pthread_barrier_wait(&MLS.sync_barrier);
 
+            /*
             if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5) {
                 MLS.population[thread_id].min_delay = MLS.population[thread_id].min_delay *
                     (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
@@ -546,8 +547,9 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].margin_forwarding = MLS.population[thread_id].margin_forwarding *
                     (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
                 MLS.population[thread_id].neighbors_threshold = MLS.population[thread_id].neighbors_threshold *
-                    (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));
+                    (1.1 - (cpu_mt_generate(MLS.random_states[thread_id]) / 5));*/
 
+                /*
                 FILE *fpipe;
 
                 sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, MLS.simul_runs,
@@ -578,7 +580,8 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].time = atof(ns3_line);
 
                 pclose(fpipe);
-            }
+                * */
+            //}
         }
     }
 
