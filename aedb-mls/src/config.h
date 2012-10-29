@@ -2,7 +2,8 @@
 #define CONFIG_H_
 
 #ifdef LOCAL
-    #define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3_fake"
+    //#define NS3_BIN "/home/santiago/itu-maestria/svn/trunk/aedb-mls/bin/ns3_fake"
+    #define NS3_BIN "/home/santiago/itu-maestria/trunk/aedb-mls/bin/ns3_fake"
 #else
     #define NS3_BIN "/home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls/bin/ns3"
 #endif
@@ -18,7 +19,8 @@
 
 #define AGA__PROCESS_RANK       0
 #define AGA__NEW_SOL_MSG        0
-#define AGA__EXIT_MSG           1
+#define AGA__REQ_SOL_MSG        1
+#define AGA__EXIT_MSG           2
 //#define AGA__MAX_ARCHIVE_SIZE   5
 #define AGA__MAX_ARCHIVE_SIZE   50
 

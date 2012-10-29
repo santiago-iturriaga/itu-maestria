@@ -1,5 +1,6 @@
 #include "../config.h"
 #include "../solution.h"
+#include "../random/cpu_mt.h"
 
 #ifndef AGA__H_
 #define AGA__H_
@@ -27,6 +28,9 @@ struct aga_state {
     
     struct solution population[AGA__MAX_ARCHIVE_SIZE];
     int population_count;
+    
+    struct cpu_mt_state random_state;
+    struct solution aux_population[MLS__MAX_THREADS];
 };
 
 extern struct aga_state AGA;
@@ -34,7 +38,7 @@ extern struct aga_state AGA;
 /*
  * Ejecuta el algoritmo.
  */
-void archivers_aga();
+void archivers_aga(int seed);
 
 #ifdef NONMPI
     int archivers_aga_add(int new_solution_pos);

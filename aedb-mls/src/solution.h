@@ -38,8 +38,9 @@ struct solution {
 };
 
 extern MPI_Datatype mpi_solution_type;
+extern MPI_Datatype mpi_solution_type_array;
 
-void init_mpi_solution();
+void init_mpi_solution(int array_size);
 
 /* Crea una copia exacta de la solución "src" en la solución "dst" */
 void clone_solution(struct solution *dst, struct solution *src);
