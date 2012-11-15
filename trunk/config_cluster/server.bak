@@ -183,4 +183,5 @@ set server mom_job_sync = True
 set server mail_domain = fing.edu.uy
 set server pbs_version = 2.1.8
 set server submit_hosts = cluster.fing.edu.uy
+set server submit_hosts += node07.cluster.fing
 set server allow_node_submit = False
