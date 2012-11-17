@@ -32,6 +32,7 @@ set queue medium_jobs started = True
 create queue publica
 set queue publica queue_type = Execution
 set queue publica max_user_queuable = 200
+set queue publica acl_host_enable = False
 set queue publica acl_user_enable = True
 set queue publica acl_users = siturria@node01.cluster.fing
 set queue publica resources_max.ncpus = 16
@@ -184,4 +185,4 @@ set server mail_domain = fing.edu.uy
 set server pbs_version = 2.1.8
 set server submit_hosts = cluster.fing.edu.uy
 set server submit_hosts += node07.cluster.fing
-set server allow_node_submit = False
+set server allow_node_submit = True

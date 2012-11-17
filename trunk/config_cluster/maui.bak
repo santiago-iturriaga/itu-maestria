@@ -163,3 +163,6 @@ SRCFG[quick] PERIOD=INFINITY
 SRCFG[quick] HOSTLIST=node38.cluster.fing
 SRCFG[quick] CLASSLIST=quick_jobs
 
+#SRCFG[mantenimiento] STARTTIME=05:00
+#SRCFG[mantenimiento] ENDTIME=23:59
+
