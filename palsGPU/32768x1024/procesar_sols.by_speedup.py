@@ -37,6 +37,8 @@ if __name__ == '__main__':
                         dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
                         dtime = dtime_mins * 60 + dtime_secs
 
+			print ">> instancia %d algoritmo %s dtime_str(%s) dtime_mins(%d) dtime_secs(%f) dtime(%f)" % (instancia, a, dtime_str, dtime_mins, dtime_secs, dtime)
+
                     if line.split('|')[0].strip() == 'LOADING(s)':
                         host_init_time = float(line.split('|')[1].strip())
 
