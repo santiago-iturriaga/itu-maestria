@@ -68,4 +68,4 @@ if __name__ == '__main__':
         pals_mct_time = resultados[instancia]['pals+mct']
         pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
 
-        print "%d,%.1f,%.1f,%.1f,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
+        print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
