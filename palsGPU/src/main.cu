@@ -246,7 +246,6 @@ int main(int argc, char** argv)
     free_etc_matrix(etc_matrix);
     free_solution(current_solution);
 
-    timespec ts_timeout_current;
     clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
     fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
 
