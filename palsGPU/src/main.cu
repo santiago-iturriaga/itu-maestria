@@ -209,7 +209,12 @@ int main(int argc, char** argv)
         // CUDA. Búsqueda aleatoria por tarea.
         // =============================================================
 
+        clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+        fprintf(stderr, "LOG|%lu|%lu|gpu_set_device\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
         gpu_set_device(input.gpu_device);
+        clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+        fprintf(stderr, "LOG|%lu|%lu|gpu_set_device\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
+        
         pals_gpu_rtask(input, etc_matrix, current_solution);
 
     } else if (input.algorithm == MinMin) {
