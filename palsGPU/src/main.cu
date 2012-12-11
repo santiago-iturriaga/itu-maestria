@@ -35,6 +35,10 @@
 
 int main(int argc, char** argv)
 {
+    timespec ts_timeout_current;
+    clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+    fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
+    
     // =============================================================
     // Loading input parameters
     // =============================================================
@@ -92,7 +96,6 @@ int main(int argc, char** argv)
     timming_start(ts);
     // Timming -----------------------------------------------------
 
-    timespec ts_timeout_current;
     clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
     fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
 
