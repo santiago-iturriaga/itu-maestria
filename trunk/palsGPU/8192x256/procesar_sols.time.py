@@ -14,12 +14,12 @@ if __name__ == '__main__':
         resultados[instancia] = {}
 
         for a in algoritmos:
-            base_path = 'solutions.by_time/' + str(instancia) + '.' + a
-            print base_path
-
             dtime = 0.0
 
             for t in range(30):
+                base_path = 'solutions.by_time/' + str(instancia) + '.' + a + '.' + str(t)
+                print base_path
+
                 if os.path.isfile(base_path + '.makespan'):
                     #dmake_file = open(base_path + '.makespan')
                     #dmake = dmake + float(dmake_file.readline())
