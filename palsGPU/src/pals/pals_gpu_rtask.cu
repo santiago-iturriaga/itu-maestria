@@ -1499,6 +1499,9 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     // ==============================================================================
 
     timespec ts_timeout_current;
+    clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+    fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
+    
     timespec ts_timeout_start;
     clock_gettime(CLOCK_REALTIME, &ts_timeout_start);
 
@@ -1561,10 +1564,16 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
     //int makespan_idx_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
     float makespan_ct_aux[COMPUTE_MAKESPAN_KERNEL_BLOCKS];
 
+    clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+    fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
+
     // Cargo el makespan de la solución actual en la GPU.
     pals_compute_makespan<<< COMPUTE_MAKESPAN_KERNEL_BLOCKS, COMPUTE_MAKESPAN_KERNEL_THREADS >>>(
         etc_matrix->machines_count, instance.gpu_machine_compute_time,
         instance.gpu_makespan_idx_aux, instance.gpu_makespan_ct_aux);
+
+    clock_gettime(CLOCK_REALTIME, &ts_timeout_current);
+    fprintf(stderr, "LOG|%lu|%lu\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec);
 
     int pals_count = input.max_iter;
 
@@ -1578,11 +1587,13 @@ void pals_gpu_rtask(struct params &input, struct matrix *etc_matrix, struct solu
 
         if ((ts_timeout_current.tv_sec - last_report_time) > REPORT_EVERY_SECONDS) {
             last_report_time = ts_timeout_current.tv_sec;
-            fprintf(stderr, "MAKESPAN|%lu|%d|%f\n", ts_timeout_current.tv_sec, iter, current_solution->makespan);
+            fprintf(stderr, "MAKESPAN|%lu|%lu|%d|%f\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec, 
+                iter, current_solution->makespan);
         }
 
         if (last_report_iter == 0) {
-            fprintf(stderr, "MAKESPAN|%lu|%d|%f\n", ts_timeout_current.tv_sec, iter, current_solution->makespan);
+            fprintf(stderr, "MAKESPAN|%lu|%lu|%d|%f\n", ts_timeout_current.tv_sec, ts_timeout_current.tv_nsec, 
+                iter, current_solution->makespan);
             last_report_iter = REPORT_EVERY_ITERS-1;
         } else {
             last_report_iter--;
