@@ -178,7 +178,59 @@ int main(int argc, char** argv)
             compute_mct(etc_matrix, current_solution);
         } else if (input.init_algorithm == MinMin) {
             fprintf(stderr, "INIT|MINMIN\n");
-            compute_minmin(etc_matrix, current_solution);
+            /*compute_minmin(etc_matrix, current_solution);*/
+            
+            // /home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_32768x1024_hihi_1.dat
+            // /home/users/siturriaga/itu-maestria/trunk/palsGPU/32768x1024/hpclatam.res/solutions.by_time/7.pminmin.sol
+            
+            int instancia = 0; //??
+            char solution_path[2048] = "/home/users/siturriaga/itu-maestria/trunk/palsGPU/32768x1024/hpclatam.res/solutions.by_time/";
+            
+            fprintf(stderr, "input.instance_path[79] == %c\n", input.instance_path[79]);
+            
+            if (input.instance_path[79] == '.') {
+                // El número de la instancia es de 1 cifra.
+                solution_path[92] = input.instance_path[78];
+                solution_path[93] = '\n';
+                
+                fprintf(stderr, "input.instance_path[78] == %c\n", input.instance_path[78]);
+            } else {
+                // De dos cifras.
+                solution_path[92] = input.instance_path[78];
+                solution_path[93] = input.instance_path[79];
+                solution_path[94] = '\n';
+                
+                fprintf(stderr, "input.instance_path[78] == %c\n", input.instance_path[78]);
+                fprintf(stderr, "input.instance_path[79] == %c\n", input.instance_path[79]);
+            }
+            
+            strcat(solution_path, ".pminmin.sol");
+            
+            fprintf(stderr, "Instancia         : %d\n", instancia);
+            fprintf(stderr, "Path a la solucion: %s\n", solution_path);
+            
+            FILE *solution_file;
+            
+            if ((solution_file = open(solution_path, "r")) == NULL) {
+                fprintf(stderr, "[ERROR] cargando la solucion\n");
+                return EXIT_FAILURE;
+            }
+            
+            current_solution->makespan = 0;
+            int machine;
+            for (int task = 0; task < input->tasks_count; task++) {
+                fscanf(fi, "%d", &machine);
+                
+                assert(machine >= 0);
+                assert(machine < input->tasks_count);
+                
+                current_solution->task_assignment[task] = machine;
+                current_solution->machine_compute_time[machine] += get_etc_value(etc_matrix, machine, task);
+                
+                if (current_solution->machine_compute_time[machine] > current_solution->makespan) {
+                    current_solution->makespan = current_solution->machine_compute_time[machine];
+                }
+            }
         } else if (input.init_algorithm == pMinMin) {
             int thread_count = input.init_algorithm_threads;
             
