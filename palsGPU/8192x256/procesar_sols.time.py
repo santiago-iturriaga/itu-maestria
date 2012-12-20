@@ -17,7 +17,7 @@ if __name__ == '__main__':
             dtime = 0.0
 
             for t in range(30):
-                base_path = 'solutions.by_time/' + str(instancia) + '.' + a + '.' + str(t)
+                base_path = 'solutions/' + str(instancia) + '.' + a + '.' + str(t)
                 print base_path
 
                 if os.path.isfile(base_path + '.makespan'):
