@@ -22,7 +22,7 @@
 #define AGA__REQ_SOL_MSG        1
 #define AGA__EXIT_MSG           2
 //#define AGA__MAX_ARCHIVE_SIZE   5
-#define AGA__MAX_ARCHIVE_SIZE   50
+#define AGA__MAX_ARCHIVE_SIZE   100
 
 // How many local search operators
 #define NUM_LS_OPERATORS 4
