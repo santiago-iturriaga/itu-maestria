@@ -163,6 +163,7 @@ void* mls_thread(void *data)
 
     int reset_hit = 50;
     //int reset_hit = 35 + (2 * world_rank);
+    //int reset_hit = 10 + (2 * world_rank);
 
     pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
         work_type = MLS.work_type[thread_id];
@@ -281,8 +282,7 @@ void* mls_thread(void *data)
         }
         else if (work_type == MLS__SEARCH) {
             double delta;
-            //double alfa = 0.2;
-            double alfa = 0.1;
+            double alfa = 0.2;
             int rand_op;
 
             // =================================================================

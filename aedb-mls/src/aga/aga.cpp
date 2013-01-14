@@ -85,7 +85,8 @@ void archivers_aga(int seed) {
 
             assert(AGA.population_count > 0);
 
-            if (iteration % 960 == 1) {
+    /*
+	    if (iteration % 960 == 1) {
             //if (iteration % 4800 == 1) {
                 fprintf(stderr, "[INFO][AGA] (%d) Information ============================================ \n", iteration);
                 fprintf(stderr, "[INFO][AGA] Population count: %d\n", AGA.population_count);
@@ -107,7 +108,7 @@ void archivers_aga(int seed) {
                             AGA.population[i].time);
                     }
                 }
-            }
+            }*/
         } else if (status.MPI_TAG == AGA__REQ_SOL_MSG) {
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][AGA] AGA__REQ_SOL_MSG\n");
