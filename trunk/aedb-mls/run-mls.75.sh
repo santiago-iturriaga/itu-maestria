@@ -4,7 +4,7 @@ cd /home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls
 #make clean
 #make
 
-ITERATIONS=1500
+ITERATIONS=1000
 THREADS=12
 INSTANCE=75
 SIMULS=10
