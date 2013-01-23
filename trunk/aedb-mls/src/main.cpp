@@ -62,12 +62,12 @@ int main(int argc, char** argv)
     // Loading input parameters
     // =============================================================
 
-	fprintf(stderr, "[DEBUG] argc = %d\n", argc);
-	if (argc != 6) {
-		fprintf(stderr, "[ERROR] invalid arguments\n");
-		MPI_Finalize();
-		exit(EXIT_FAILURE);
-	}
+    fprintf(stderr, "[DEBUG] argc = %d\n", argc);
+    if (argc != 6) {
+        fprintf(stderr, "[ERROR] invalid arguments\n");
+        MPI_Finalize();
+        exit(EXIT_FAILURE);
+    }
 
     // Semilla aleatoria!!!
     int seed = atoi(argv[1]);
@@ -118,6 +118,12 @@ int main(int argc, char** argv)
         fprintf(stderr, "   MLS.max_iterations = %d\n", MLS.max_iterations);
         fprintf(stderr, "   MLS.number_devices = %d\n", MLS.number_devices);
         fprintf(stderr, "   MLS.simul_runs     = %d\n", MLS.simul_runs);
+        #if defined(MLS__SEED_BASED)
+            fprintf(stderr, "   MLS.init           = MLS__SEED_BASED\n");
+        #endif
+        #if defined(MLS__SUBSPACE_BASED)
+            fprintf(stderr, "   MLS.init           = MLS__SUBSPACE_BASED\n");
+        #endif
         fprintf(stderr, "===========================================================\n");
     }
 
