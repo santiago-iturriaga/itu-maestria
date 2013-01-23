@@ -27,6 +27,10 @@
 // How many local search operators
 #define NUM_LS_OPERATORS 4
 
+// Initialization procedure
+//#define MLS__SEED_BASED
+#define MLS__SUBSPACE_BASED
+
 // Local search operators
 #define LS_ENERGY 0
 #define LS_COVERAGE 1
