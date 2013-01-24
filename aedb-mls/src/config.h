@@ -28,9 +28,12 @@
 #define NUM_LS_OPERATORS 4
 
 // Initialization procedure
-//#define MLS__SEED_BASED
+#define MLS__REF_SEED
+//#define MLS__COMPROMISE_SEED
+//#define MLS__NSGAII_SEED
+#define MLS__SEED_BASED
 //#define MLS__SUBSPACE_BASED
-#define MLS__RANDOM
+//#define MLS__RANDOM_BASED
 
 // Local search operators
 #define LS_ENERGY 0
