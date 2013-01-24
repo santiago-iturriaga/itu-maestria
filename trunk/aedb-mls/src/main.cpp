@@ -124,6 +124,9 @@ int main(int argc, char** argv)
         #if defined(MLS__SUBSPACE_BASED)
             fprintf(stderr, "   MLS.init           = MLS__SUBSPACE_BASED\n");
         #endif
+        #if defined(MLS__RANDOM)
+            fprintf(stderr, "   MLS.init           = MLS__RANDOM\n");
+        #endif
         fprintf(stderr, "===========================================================\n");
     }
 

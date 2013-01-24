@@ -29,7 +29,8 @@
 
 // Initialization procedure
 //#define MLS__SEED_BASED
-#define MLS__SUBSPACE_BASED
+//#define MLS__SUBSPACE_BASED
+#define MLS__RANDOM
 
 // Local search operators
 #define LS_ENERGY 0
