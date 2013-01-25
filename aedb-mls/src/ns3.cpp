@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
     double borders_threshold = atof(argv[5]);
     //fprintf(stderr, "borders_threshold  : %f\n", borders_threshold);
     
+    if (borders_threshold < 0) borders_threshold = borders_threshold * -1:
+    
     double margin_forwarding = atof(argv[6]);
     //fprintf(stderr, "margin_forwarding  : %f\n", margin_forwarding);
     
