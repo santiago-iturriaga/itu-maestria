@@ -133,9 +133,6 @@ int main(int argc, char** argv)
         #if defined(MLS__COMPROMISE_SEED)
             fprintf(stderr, "   MLS.seed           = MLS__COMPROMISE_SEED\n");
         #endif
-        #if defined(MLS__NSGAII_SEED)
-            fprintf(stderr, "   MLS.seed           = MLS__NSGAII_SEED\n");
-        #endif
         
         fprintf(stderr, "===========================================================\n");
     }
