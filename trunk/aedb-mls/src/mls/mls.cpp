@@ -268,8 +268,6 @@ void* mls_thread(void *data)
                             (1.2 - (cpu_mt_generate(MLS.random_states[thread_id]) / 2.5));
                     }
                 #endif
-                #if defined(MLS__NSGAII_SEED)
-                #endif
             #endif
             #if defined(MLS__SUBSPACE_BASED)
                 int pop_index = thread_id + (world_rank * MLS.count_threads);
