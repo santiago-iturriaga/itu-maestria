@@ -166,9 +166,10 @@ void* mls_thread(void *data)
     char ns3_line[256];
     char ns3_command[1024];
 
-    int soft_reset_hit = 5;
-    int hard_reset_hit = 25;
-    int reset_hit = 50;
+    //int soft_reset_hit = 5;
+    //int hard_reset_hit = 25;
+    //int reset_hit = 50;
+    int reset_hit = 5;
 
     pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
         work_type = MLS.work_type[thread_id];
@@ -573,55 +574,58 @@ void* mls_thread(void *data)
             pclose(fpipe);
 
             if (time < 2) {
-                MLS.population[thread_id].min_delay = min_delay;
-                MLS.population[thread_id].max_delay = max_delay;
-                MLS.population[thread_id].borders_threshold = borders_threshold;
-                MLS.population[thread_id].margin_forwarding = margin_forwarding;
-                MLS.population[thread_id].neighbors_threshold = neighbors_threshold;
-                MLS.population[thread_id].energy = energy;
-                MLS.population[thread_id].coverage = coverage;
-                MLS.population[thread_id].nforwardings = nforwardings;
-                MLS.population[thread_id].time = time;
-                /*
-                if ((world_rank == 1)&&(thread_id == 0)) {
-                    fprintf(stderr, "[DEBUG] Resulting solution\n");
-                    show_solution(&MLS.population[thread_id]);
-                }
-                */
-                /*
-                #ifndef NDEBUG
-                    fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
-                    show_solution(&MLS.population[thread_id]);
-                #endif*/
-            }
+                if ((MLS.population[thread_id].energy >= energy) ||
+                    (MLS.population[thread_id].coverage <= coverage) ||
+                    (MLS.population[thread_id].nforwardings >= nforwardings)) {
+                
+                    MLS.population[thread_id].min_delay = min_delay;
+                    MLS.population[thread_id].max_delay = max_delay;
+                    MLS.population[thread_id].borders_threshold = borders_threshold;
+                    MLS.population[thread_id].margin_forwarding = margin_forwarding;
+                    MLS.population[thread_id].neighbors_threshold = neighbors_threshold;
+                    MLS.population[thread_id].energy = energy;
+                    MLS.population[thread_id].coverage = coverage;
+                    MLS.population[thread_id].nforwardings = nforwardings;
+                    MLS.population[thread_id].time = time;
+                    /*
+                    if ((world_rank == 1)&&(thread_id == 0)) {
+                        fprintf(stderr, "[DEBUG] Resulting solution\n");
+                        show_solution(&MLS.population[thread_id]);
+                    }
+                    */
+                    /*
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG][%d] Thread %d found:\n", world_rank, thread_id);
+                        show_solution(&MLS.population[thread_id]);
+                    #endif*/
 
-            if (time < 2) {
-                pthread_mutex_lock(&MLS.mpi_mutex);
-                    #ifndef NONMPI
-                        #ifdef MPI_MODE_STANDARD
-                            MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                        #endif
+                    pthread_mutex_lock(&MLS.mpi_mutex);
+                        #ifndef NONMPI
+                            #ifdef MPI_MODE_STANDARD
+                                MPI_Send(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                            #endif
 
-                        #ifdef MPI_MODE_SYNC
-                            MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                        #endif
+                            #ifdef MPI_MODE_SYNC
+                                MPI_Ssend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                            #endif
 
-                        #ifdef MPI_MODE_BUFFERED
-                            MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
-                        #endif
-                    #else
-                        // NONMPI
-                        MLS.population[thread_id].status = SOLUTION__STATUS_NEW;
-                        for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (MLS.population[thread_id].status == SOLUTION__STATUS_NEW); i++) {
-                            if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
-                                // Encontré una posición libre. Agrego la solución al archivo acá.
-                                clone_solution(&AGA.population[i], &MLS.population[thread_id]);
-                                archivers_aga_add(i);
-                                MLS.population[thread_id].status = SOLUTION__STATUS_READY;
+                            #ifdef MPI_MODE_BUFFERED
+                                MPI_Bsend(&MLS.population[thread_id], 1, mpi_solution_type, AGA__PROCESS_RANK, AGA__NEW_SOL_MSG, MPI_COMM_WORLD);
+                            #endif
+                        #else
+                            // NONMPI
+                            MLS.population[thread_id].status = SOLUTION__STATUS_NEW;
+                            for (int i = 0; (i < AGA__MAX_ARCHIVE_SIZE) && (MLS.population[thread_id].status == SOLUTION__STATUS_NEW); i++) {
+                                if (AGA.population[i].status == SOLUTION__STATUS_EMPTY) {
+                                    // Encontré una posición libre. Agrego la solución al archivo acá.
+                                    clone_solution(&AGA.population[i], &MLS.population[thread_id]);
+                                    archivers_aga_add(i);
+                                    MLS.population[thread_id].status = SOLUTION__STATUS_READY;
+                                }
                             }
-                        }
-                    #endif
-                pthread_mutex_unlock(&MLS.mpi_mutex);
+                        #endif
+                    pthread_mutex_unlock(&MLS.mpi_mutex);
+                }
             }
         }
 
