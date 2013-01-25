@@ -29,8 +29,8 @@
 
 // Initialization procedure
 #define MLS__ELITE
-#define MLS__REF_SEED
-//#define MLS__COMPROMISE_SEED
+//#define MLS__REF_SEED
+#define MLS__COMPROMISE_SEED
 #define MLS__SEED_BASED
 //#define MLS__SUBSPACE_BASED
 //#define MLS__RANDOM_BASED
