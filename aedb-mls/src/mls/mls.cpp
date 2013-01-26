@@ -304,13 +304,13 @@ void* mls_thread(void *data)
                 }
             #endif
             #if defined(MLS__RANDOM_BASED)
-                if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {
+                /*if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {
                     MLS.population[thread_id].min_delay = INIT_MIN_DELAY[world_rank];
                     MLS.population[thread_id].max_delay = INIT_MAX_DELAY[world_rank];
                     MLS.population[thread_id].borders_threshold = INIT_BORDERS[world_rank];
                     MLS.population[thread_id].margin_forwarding = INIT_MARGIN[world_rank];
                     MLS.population[thread_id].neighbors_threshold = INIT_NEIGH[world_rank];
-                } else {
+                } else {*/
                     MLS.population[thread_id].min_delay = MLS.lbound_min_delay +
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_min_delay - MLS.lbound_min_delay);
                     MLS.population[thread_id].max_delay = MLS.lbound_max_delay +
@@ -321,7 +321,7 @@ void* mls_thread(void *data)
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_margin_threshold - MLS.lbound_margin_threshold);
                     MLS.population[thread_id].neighbors_threshold = MLS.lbound_neighbors_threshold +
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold);
-                }
+                //}
             #endif
 
             if (MLS.population[thread_id].min_delay > MLS.ubound_min_delay) {
