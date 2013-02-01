@@ -1,0 +1,1076 @@
+++ cd /home/clusterusers/siturriaga/itu-maestria/trunk/aedb-mls
+++ ITERATIONS=250
+++ THREADS=12
+++ INSTANCE=75
+++ SIMULS=10
+++ export LD_LIBRARY_PATH=:/home/clusterusers/siturriaga/ns3Files
+++ LD_LIBRARY_PATH=:/home/clusterusers/siturriaga/ns3Files
+++ /home/users/siturriaga/bin/mpich2-1.4.1p1/bin/mpiexec -launcher ssh -launcher-exec oarsh -f /var/lib/oar/2644284 -np 9 -ppn 1 bin/mls.rand 20972 250 12 10 75
+[DEBUG] argc = 6
+===========================================================
+Configuración
+===========================================================
+   Random seed        = 20972
+   MPI size           = 9
+   MLS.count_threads  = 12
+   MLS.max_iterations = 250
+   MLS.number_devices = 75
+   MLS.simul_runs     = 10
+   MLS.init           = MLS__RANDOM
+===========================================================
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG] argc = 6
+[DEBUG][1] Thread 0 starting solution:
+-> borders_threshold   : -73.3491
+   margin_forwarding   : 1.9252
+   min_delay           : 0.3152
+   max_delay           : 0.4272
+   neighbors_threshold : 5
+   energy              : -2.4331
+   coverage            : 7.2000
+   nforwardings        : 6.6000
+   time                : 0.8247
+[DEBUG][3] Thread 0 starting solution:
+-> borders_threshold   : -84.3736
+   margin_forwarding   : 2.1033
+   min_delay           : 0.7005
+   max_delay           : 4.7404
+   neighbors_threshold : 27
+   energy              : 360.1880
+   coverage            : 74.0000
+   nforwardings        : 21.7000
+   time                : 6.2161
+[DEBUG][5] Thread 0 starting solution:
+-> borders_threshold   : -81.4332
+   margin_forwarding   : 0.9282
+   min_delay           : 0.8242
+   max_delay           : 0.8867
+   neighbors_threshold : 31
+   energy              : 501.6310
+   coverage            : 73.9000
+   nforwardings        : 30.6000
+   time                : 2.6875
+[DEBUG][4] Thread 0 starting solution:
+-> borders_threshold   : -79.5218
+   margin_forwarding   : 2.8018
+   min_delay           : 0.8531
+   max_delay           : 0.4494
+   neighbors_threshold : 8
+   energy              : 277.2170
+   coverage            : 58.0000
+   nforwardings        : 46.0000
+   time                : 7.0503
+[DEBUG][2] Thread 0 starting solution:
+-> borders_threshold   : -75.8741
+   margin_forwarding   : 0.8741
+   min_delay           : 0.2669
+   max_delay           : 3.9797
+   neighbors_threshold : 45
+   energy              : 726.1060
+   coverage            : 74.0000
+   nforwardings        : 44.8000
+   time                : 3.0820
+[INFO][AGA] Kaput!
+[INFO] AGA information ============================================ 
+[INFO] Population count: 99
+[INFO] Population:
+(0) borders_threshold   = -94.95
+     margin_forwarding   = 0.05
+     min_delay           = 0.79
+     max_delay           = 1.02
+     neighbors_threshold = 7
+     energy              = 17.29
+     coverage            = 18.60 (0.05)
+     nforwardings        = 0.10
+     time                = 0.09
+0,-94.952166,0.053514,0.790946,1.023922,7,17.286700,18.600000,0.100000,0.091706
+(1) borders_threshold   = -74.28
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 11
+     energy              = 4.36
+     coverage            = 10.80 (0.09)
+     nforwardings        = 9.90
+     time                = 1.55
+1,-74.280796,0.053514,0.000000,1.073786,11,4.364390,10.800000,9.900000,1.545730
+(2) borders_threshold   = -75.28
+     margin_forwarding   = 0.05
+     min_delay           = 0.12
+     max_delay           = 1.10
+     neighbors_threshold = 9
+     energy              = 0.29
+     coverage            = 3.90 (0.26)
+     nforwardings        = 3.20
+     time                = 0.70
+2,-75.279402,0.053514,0.124164,1.095554,9,0.287258,3.900000,3.200000,0.703259
+(3) borders_threshold   = -76.25
+     margin_forwarding   = 0.05
+     min_delay           = 0.12
+     max_delay           = 1.10
+     neighbors_threshold = 7
+     energy              = 2.67
+     coverage            = 10.20 (0.10)
+     nforwardings        = 9.00
+     time                = 1.74
+3,-76.247946,0.053514,0.124164,1.095554,7,2.672790,10.200000,9.000000,1.744600
+(4) borders_threshold   = -72.82
+     margin_forwarding   = 0.94
+     min_delay           = 0.20
+     max_delay           = 4.64
+     neighbors_threshold = 10
+     energy              = 0.62
+     coverage            = 12.20 (0.08)
+     nforwardings        = 10.00
+     time                = 6.75
+4,-72.820851,0.942601,0.202254,4.641061,10,0.619467,12.200000,10.000000,6.746880
+(5) borders_threshold   = -77.70
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.04
+     neighbors_threshold = 6
+     energy              = 14.41
+     coverage            = 11.20 (0.09)
+     nforwardings        = 9.50
+     time                = 0.07
+5,-77.695439,0.053514,0.000000,0.040074,6,14.408100,11.200000,9.500000,0.074064
+(6) borders_threshold   = -94.97
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 2.51
+     neighbors_threshold = 39
+     energy              = 17.31
+     coverage            = 19.30 (0.05)
+     nforwardings        = 0.10
+     time                = 0.24
+6,-94.965453,0.169443,0.910677,2.513197,39,17.305900,19.300000,0.100000,0.240103
+(7) borders_threshold   = -93.56
+     margin_forwarding   = 2.47
+     min_delay           = 0.29
+     max_delay           = 4.31
+     neighbors_threshold = 32
+     energy              = 97.73
+     coverage            = 61.80 (0.02)
+     nforwardings        = 5.10
+     time                = 5.78
+7,-93.564897,2.474577,0.287640,4.306558,32,97.725700,61.800000,5.100000,5.776190
+(8) borders_threshold   = -94.69
+     margin_forwarding   = 1.78
+     min_delay           = 0.33
+     max_delay           = 2.83
+     neighbors_threshold = 28
+     energy              = 23.99
+     coverage            = 27.40 (0.04)
+     nforwardings        = 0.50
+     time                = 0.87
+8,-94.691111,1.780432,0.333015,2.829037,28,23.990800,27.400000,0.500000,0.865285
+(9) borders_threshold   = -74.79
+     margin_forwarding   = 0.05
+     min_delay           = 1.00
+     max_delay           = 0.59
+     neighbors_threshold = 7
+     energy              = 2.79
+     coverage            = 6.90 (0.14)
+     nforwardings        = 6.10
+     time                = 1.48
+9,-74.790002,0.053514,1.000000,0.593269,7,2.787000,6.900000,6.100000,1.479110
+(10) borders_threshold   = -76.69
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 5
+     energy              = 6.75
+     coverage            = 8.00 (0.12)
+     nforwardings        = 7.00
+     time                = 1.22
+10,-76.693006,0.053514,0.000000,1.073786,5,6.754410,8.000000,7.000000,1.220770
+(11) borders_threshold   = -95.00
+     margin_forwarding   = 0.05
+     min_delay           = 0.79
+     max_delay           = 1.07
+     neighbors_threshold = 7
+     energy              = 15.72
+     coverage            = 17.70 (0.06)
+     nforwardings        = 0.00
+     time                = 0.00
+11,-95.000000,0.053514,0.790946,1.073786,7,15.719900,17.700000,0.000000,0.000787
+(12) borders_threshold   = -94.61
+     margin_forwarding   = 0.05
+     min_delay           = 0.44
+     max_delay           = 1.07
+     neighbors_threshold = 23
+     energy              = 58.35
+     coverage            = 45.40 (0.02)
+     nforwardings        = 2.70
+     time                = 1.65
+12,-94.611554,0.053514,0.443725,1.073786,23,58.353900,45.400000,2.700000,1.652540
+(13) borders_threshold   = -94.79
+     margin_forwarding   = 1.78
+     min_delay           = 0.33
+     max_delay           = 2.77
+     neighbors_threshold = 27
+     energy              = 20.79
+     coverage            = 22.80 (0.04)
+     nforwardings        = 0.30
+     time                = 0.57
+13,-94.786541,1.780432,0.333015,2.773270,27,20.786700,22.800000,0.300000,0.572433
+(14) borders_threshold   = -94.84
+     margin_forwarding   = 1.78
+     min_delay           = 0.33
+     max_delay           = 2.77
+     neighbors_threshold = 28
+     energy              = 19.18
+     coverage            = 21.10 (0.05)
+     nforwardings        = 0.20
+     time                = 0.47
+14,-94.839851,1.780432,0.333015,2.773270,28,19.184700,21.100000,0.200000,0.471572
+(15) borders_threshold   = -95.00
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 2.51
+     neighbors_threshold = 41
+     energy              = 15.76
+     coverage            = 17.80 (0.06)
+     nforwardings        = 0.00
+     time                = 0.00
+15,-95.000000,0.169443,0.910677,2.513197,41,15.755300,17.800000,0.000000,0.000787
+(16) borders_threshold   = -94.32
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.15
+     neighbors_threshold = 7
+     energy              = 66.29
+     coverage            = 47.50 (0.02)
+     nforwardings        = 3.20
+     time                = 1.38
+16,-94.321417,0.053514,0.000000,1.153506,7,66.294900,47.500000,3.200000,1.384890
+(17) borders_threshold   = -94.52
+     margin_forwarding   = 2.18
+     min_delay           = 0.17
+     max_delay           = 0.25
+     neighbors_threshold = 0
+     energy              = 44.86
+     coverage            = 38.10 (0.03)
+     nforwardings        = 1.80
+     time                = 0.30
+17,-94.524634,2.177076,0.170030,0.248254,0,44.857300,38.100000,1.800000,0.296107
+(18) borders_threshold   = -77.44
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.94
+     neighbors_threshold = 8
+     energy              = 8.75
+     coverage            = 9.80 (0.10)
+     nforwardings        = 8.10
+     time                = 1.71
+18,-77.437210,0.053514,0.000000,0.939556,8,8.748090,9.800000,8.100000,1.709890
+(19) borders_threshold   = -93.93
+     margin_forwarding   = 0.05
+     min_delay           = 0.02
+     max_delay           = 1.06
+     neighbors_threshold = 25
+     energy              = 83.78
+     coverage            = 53.70 (0.02)
+     nforwardings        = 4.30
+     time                = 1.50
+19,-93.932261,0.053514,0.016502,1.057703,25,83.775700,53.700000,4.300000,1.500570
+(20) borders_threshold   = -94.76
+     margin_forwarding   = 0.05
+     min_delay           = 0.87
+     max_delay           = 1.07
+     neighbors_threshold = 6
+     energy              = 37.77
+     coverage            = 34.30 (0.03)
+     nforwardings        = 1.40
+     time                = 1.38
+20,-94.756057,0.053514,0.874056,1.073786,6,37.768800,34.300000,1.400000,1.378310
+(21) borders_threshold   = -92.66
+     margin_forwarding   = 2.18
+     min_delay           = 0.17
+     max_delay           = 0.25
+     neighbors_threshold = 0
+     energy              = 164.68
+     coverage            = 73.70 (0.01)
+     nforwardings        = 9.30
+     time                = 0.87
+21,-92.662783,2.177076,0.170030,0.248254,0,164.678000,73.700000,9.300000,0.866942
+(22) borders_threshold   = -77.89
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.14
+     neighbors_threshold = 0
+     energy              = 13.05
+     coverage            = 11.00 (0.09)
+     nforwardings        = 9.90
+     time                = 1.45
+22,-77.887780,0.053514,0.000000,1.139595,0,13.054800,11.000000,9.900000,1.451220
+(23) borders_threshold   = -94.64
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 1.33
+     neighbors_threshold = 40
+     energy              = 50.70
+     coverage            = 40.60 (0.02)
+     nforwardings        = 2.20
+     time                = 1.95
+23,-94.642228,0.169443,0.910677,1.329915,40,50.699600,40.600000,2.200000,1.949850
+(24) borders_threshold   = -94.58
+     margin_forwarding   = 1.78
+     min_delay           = 1.00
+     max_delay           = 2.77
+     neighbors_threshold = 45
+     energy              = 28.80
+     coverage            = 30.50 (0.03)
+     nforwardings        = 0.80
+     time                = 1.25
+24,-94.582998,1.780432,1.000000,2.773270,45,28.797000,30.500000,0.800000,1.245620
+(25) borders_threshold   = -94.13
+     margin_forwarding   = 2.18
+     min_delay           = 0.17
+     max_delay           = 0.96
+     neighbors_threshold = 18
+     energy              = 64.08
+     coverage            = 46.30 (0.02)
+     nforwardings        = 3.00
+     time                = 1.24
+25,-94.133858,2.177076,0.170030,0.959149,18,64.082000,46.300000,3.000000,1.237230
+(26) borders_threshold   = -94.89
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 2.51
+     neighbors_threshold = 45
+     energy              = 20.29
+     coverage            = 22.60 (0.04)
+     nforwardings        = 0.30
+     time                = 0.60
+26,-94.891117,0.169443,0.910677,2.513197,45,20.287100,22.600000,0.300000,0.601110
+(27) borders_threshold   = -76.77
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.27
+     neighbors_threshold = 6
+     energy              = 0.22
+     coverage            = 7.90 (0.13)
+     nforwardings        = 7.40
+     time                = 1.67
+27,-76.767621,0.053514,0.000000,1.272106,6,0.220829,7.900000,7.400000,1.666550
+(28) borders_threshold   = -76.95
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 1
+     energy              = 1.34
+     coverage            = 8.10 (0.12)
+     nforwardings        = 7.50
+     time                = 1.36
+28,-76.950672,0.053514,0.000000,1.095554,1,1.344580,8.100000,7.500000,1.356500
+(29) borders_threshold   = -94.70
+     margin_forwarding   = 0.05
+     min_delay           = 0.87
+     max_delay           = 1.07
+     neighbors_threshold = 1
+     energy              = 42.29
+     coverage            = 36.90 (0.03)
+     nforwardings        = 1.70
+     time                = 1.60
+29,-94.697044,0.053514,0.874056,1.073786,1,42.290600,36.900000,1.700000,1.600780
+(30) borders_threshold   = -76.31
+     margin_forwarding   = 0.05
+     min_delay           = 0.03
+     max_delay           = 1.53
+     neighbors_threshold = 5
+     energy              = 1.07
+     coverage            = 6.50 (0.15)
+     nforwardings        = 6.10
+     time                = 1.90
+30,-76.311933,0.053514,0.029688,1.532267,5,1.070890,6.500000,6.100000,1.895860
+(31) borders_threshold   = -94.55
+     margin_forwarding   = 0.17
+     min_delay           = 0.28
+     max_delay           = 1.08
+     neighbors_threshold = 44
+     energy              = 54.19
+     coverage            = 43.40 (0.02)
+     nforwardings        = 2.40
+     time                = 1.34
+31,-94.550907,0.169443,0.276722,1.076907,44,54.188300,43.400000,2.400000,1.339820
+(32) borders_threshold   = -77.67
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 6
+     energy              = 6.96
+     coverage            = 9.30 (0.11)
+     nforwardings        = 8.20
+     time                = 1.80
+32,-77.665006,0.053514,0.000000,1.073786,6,6.964950,9.300000,8.200000,1.803810
+(33) borders_threshold   = -75.15
+     margin_forwarding   = 0.05
+     min_delay           = 0.87
+     max_delay           = 1.07
+     neighbors_threshold = 7
+     energy              = 4.85
+     coverage            = 5.80 (0.17)
+     nforwardings        = 4.80
+     time                = 1.15
+33,-75.146277,0.053514,0.874056,1.073786,7,4.845820,5.800000,4.800000,1.146150
+(34) borders_threshold   = -94.74
+     margin_forwarding   = 0.27
+     min_delay           = 0.44
+     max_delay           = 3.94
+     neighbors_threshold = 23
+     energy              = 23.61
+     coverage            = 25.80 (0.04)
+     nforwardings        = 0.50
+     time                = 1.18
+34,-94.743755,0.273986,0.441046,3.939576,23,23.608500,25.800000,0.500000,1.179400
+(35) borders_threshold   = -91.65
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.01
+     neighbors_threshold = 23
+     energy              = 171.51
+     coverage            = 73.80 (0.01)
+     nforwardings        = 9.90
+     time                = 1.18
+35,-91.653951,0.053514,0.000000,1.013570,23,171.512000,73.800000,9.900000,1.179870
+(37) borders_threshold   = -74.80
+     margin_forwarding   = 0.05
+     min_delay           = 0.08
+     max_delay           = 0.56
+     neighbors_threshold = 10
+     energy              = 0.64
+     coverage            = 7.40 (0.14)
+     nforwardings        = 6.70
+     time                = 0.66
+37,-74.797907,0.053514,0.080238,0.558865,10,0.640358,7.400000,6.700000,0.657962
+(38) borders_threshold   = -94.84
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 2.51
+     neighbors_threshold = 39
+     energy              = 23.54
+     coverage            = 25.50 (0.04)
+     nforwardings        = 0.50
+     time                = 0.75
+38,-94.842891,0.169443,0.910677,2.513197,39,23.539300,25.500000,0.500000,0.748588
+(39) borders_threshold   = -94.31
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 8
+     energy              = 88.75
+     coverage            = 57.30 (0.02)
+     nforwardings        = 4.60
+     time                = 1.28
+39,-94.310556,0.053514,0.000000,1.073786,8,88.750500,57.300000,4.600000,1.282200
+(40) borders_threshold   = -76.56
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.20
+     neighbors_threshold = 3
+     energy              = 4.76
+     coverage            = 7.50 (0.13)
+     nforwardings        = 6.90
+     time                = 1.60
+40,-76.555357,0.053514,0.000000,1.195095,3,4.764810,7.500000,6.900000,1.599710
+(41) borders_threshold   = -94.87
+     margin_forwarding   = 0.17
+     min_delay           = 1.00
+     max_delay           = 2.55
+     neighbors_threshold = 30
+     energy              = 21.88
+     coverage            = 23.60 (0.04)
+     nforwardings        = 0.40
+     time                = 0.77
+41,-94.865688,0.169443,1.000000,2.547576,30,21.876400,23.600000,0.400000,0.766711
+(42) borders_threshold   = -94.96
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 2.51
+     neighbors_threshold = 40
+     energy              = 20.30
+     coverage            = 22.70 (0.04)
+     nforwardings        = 0.30
+     time                = 0.55
+42,-94.957919,0.169443,0.910677,2.513197,40,20.296300,22.700000,0.300000,0.553374
+(43) borders_threshold   = -76.38
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.13
+     neighbors_threshold = 0
+     energy              = 1.94
+     coverage            = 3.20 (0.31)
+     nforwardings        = 3.00
+     time                = 0.60
+43,-76.384087,0.053514,0.000621,1.125034,0,1.942580,3.200000,3.000000,0.600360
+(44) borders_threshold   = -94.69
+     margin_forwarding   = 1.78
+     min_delay           = 1.00
+     max_delay           = 2.77
+     neighbors_threshold = 45
+     energy              = 25.59
+     coverage            = 29.30 (0.03)
+     nforwardings        = 0.60
+     time                = 0.96
+44,-94.688124,1.780432,1.000000,2.773270,45,25.592900,29.300000,0.600000,0.955219
+(45) borders_threshold   = -76.51
+     margin_forwarding   = 0.05
+     min_delay           = 0.03
+     max_delay           = 1.13
+     neighbors_threshold = 0
+     energy              = 0.29
+     coverage            = 6.40 (0.16)
+     nforwardings        = 5.80
+     time                = 1.19
+45,-76.509361,0.053514,0.029688,1.125034,0,0.289705,6.400000,5.800000,1.187600
+(46) borders_threshold   = -94.68
+     margin_forwarding   = 0.05
+     min_delay           = 0.66
+     max_delay           = 1.14
+     neighbors_threshold = 0
+     energy              = 36.27
+     coverage            = 32.50 (0.03)
+     nforwardings        = 1.30
+     time                = 1.04
+46,-94.680068,0.053514,0.659286,1.140049,0,36.265100,32.500000,1.300000,1.037420
+(47) borders_threshold   = -94.89
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 1.33
+     neighbors_threshold = 32
+     energy              = 18.95
+     coverage            = 20.70 (0.05)
+     nforwardings        = 0.20
+     time                = 0.25
+47,-94.894394,0.169443,0.910677,1.329915,32,18.945200,20.700000,0.200000,0.252483
+(48) borders_threshold   = -76.68
+     margin_forwarding   = 0.05
+     min_delay           = 0.94
+     max_delay           = 1.08
+     neighbors_threshold = 1
+     energy              = 1.23
+     coverage            = 5.30 (0.19)
+     nforwardings        = 4.60
+     time                = 1.71
+48,-76.676000,0.053514,0.942465,1.082115,1,1.232750,5.300000,4.600000,1.705930
+(49) borders_threshold   = -77.34
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.94
+     neighbors_threshold = 0
+     energy              = 8.59
+     coverage            = 9.40 (0.11)
+     nforwardings        = 8.50
+     time                = 1.65
+49,-77.339249,0.053514,0.000000,0.939556,0,8.588630,9.400000,8.500000,1.647700
+(50) borders_threshold   = -94.91
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.00
+     neighbors_threshold = 16
+     energy              = 32.80
+     coverage            = 31.80 (0.03)
+     nforwardings        = 1.10
+     time                = 0.00
+50,-94.908438,0.053514,0.000000,0.000000,16,32.796400,31.800000,1.100000,0.001570
+(51) borders_threshold   = -94.87
+     margin_forwarding   = 0.17
+     min_delay           = 0.94
+     max_delay           = 2.54
+     neighbors_threshold = 26
+     energy              = 21.93
+     coverage            = 25.40 (0.04)
+     nforwardings        = 0.40
+     time                = 0.75
+51,-94.867621,0.169443,0.940456,2.535196,26,21.926700,25.400000,0.400000,0.754036
+(52) borders_threshold   = -77.54
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 0
+     energy              = 8.16
+     coverage            = 10.30 (0.10)
+     nforwardings        = 9.40
+     time                = 1.73
+52,-77.542166,0.053514,0.000000,1.095554,0,8.156110,10.300000,9.400000,1.730500
+(53) borders_threshold   = -75.78
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 8
+     energy              = 1.29
+     coverage            = 5.90 (0.17)
+     nforwardings        = 5.10
+     time                = 1.36
+53,-75.783488,0.053514,0.000000,1.095554,8,1.286260,5.900000,5.100000,1.363190
+(54) borders_threshold   = -75.82
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 8
+     energy              = 0.51
+     coverage            = 6.30 (0.16)
+     nforwardings        = 5.40
+     time                = 1.40
+54,-75.823569,0.053514,0.000000,1.073786,8,0.513006,6.300000,5.400000,1.396350
+(55) borders_threshold   = -93.73
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.54
+     neighbors_threshold = 31
+     energy              = 130.74
+     coverage            = 69.80 (0.01)
+     nforwardings        = 7.30
+     time                = 0.90
+55,-93.729254,0.053514,0.000000,0.538450,31,130.740000,69.800000,7.300000,0.903557
+(56) borders_threshold   = -77.76
+     margin_forwarding   = 0.05
+     min_delay           = 0.27
+     max_delay           = 1.10
+     neighbors_threshold = 4
+     energy              = 6.21
+     coverage            = 8.40 (0.12)
+     nforwardings        = 7.30
+     time                = 1.45
+56,-77.757182,0.053514,0.265960,1.095554,4,6.205350,8.400000,7.300000,1.448010
+(57) borders_threshold   = -94.01
+     margin_forwarding   = 0.17
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 40
+     energy              = 91.94
+     coverage            = 59.50 (0.02)
+     nforwardings        = 4.80
+     time                = 1.48
+57,-94.011580,0.169443,0.000000,1.073707,40,91.943800,59.500000,4.800000,1.477790
+(58) borders_threshold   = -94.65
+     margin_forwarding   = 0.17
+     min_delay           = 0.91
+     max_delay           = 1.07
+     neighbors_threshold = 40
+     energy              = 48.85
+     coverage            = 40.20 (0.02)
+     nforwardings        = 2.10
+     time                = 1.91
+58,-94.645512,0.169443,0.910677,1.073707,40,48.854000,40.200000,2.100000,1.914810
+(59) borders_threshold   = -94.55
+     margin_forwarding   = 0.17
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 42
+     energy              = 71.51
+     coverage            = 49.80 (0.02)
+     nforwardings        = 3.50
+     time                = 1.57
+59,-94.551597,0.169443,0.000000,1.073707,42,71.509800,49.800000,3.500000,1.574900
+(60) borders_threshold   = -77.12
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.01
+     neighbors_threshold = 0
+     energy              = 4.26
+     coverage            = 8.00 (0.12)
+     nforwardings        = 7.20
+     time                = 1.51
+60,-77.118074,0.053514,0.000000,1.010796,0,4.261810,8.000000,7.200000,1.510030
+(61) borders_threshold   = -94.22
+     margin_forwarding   = 0.05
+     min_delay           = 0.02
+     max_delay           = 1.06
+     neighbors_threshold = 23
+     energy              = 86.65
+     coverage            = 55.70 (0.02)
+     nforwardings        = 4.50
+     time                = 1.26
+61,-94.215516,0.053514,0.016502,1.057703,23,86.646100,55.700000,4.500000,1.263930
+(62) borders_threshold   = -76.17
+     margin_forwarding   = 0.05
+     min_delay           = 0.85
+     max_delay           = 1.07
+     neighbors_threshold = 0
+     energy              = 0.20
+     coverage            = 5.10 (0.20)
+     nforwardings        = 4.70
+     time                = 1.52
+62,-76.173867,0.053514,0.845762,1.073786,0,0.204580,5.100000,4.700000,1.524370
+(63) borders_threshold   = -77.61
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 5
+     energy              = 7.21
+     coverage            = 9.20 (0.11)
+     nforwardings        = 8.10
+     time                = 1.73
+63,-77.611246,0.053514,0.000000,1.073786,5,7.209280,9.200000,8.100000,1.732510
+(64) borders_threshold   = -78.53
+     margin_forwarding   = 0.05
+     min_delay           = 0.12
+     max_delay           = 0.56
+     neighbors_threshold = 3
+     energy              = 12.26
+     coverage            = 8.10 (0.12)
+     nforwardings        = 7.00
+     time                = 0.76
+64,-78.531748,0.053514,0.122450,0.555420,3,12.258200,8.100000,7.000000,0.759907
+(65) borders_threshold   = -76.62
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.20
+     neighbors_threshold = 1
+     energy              = 0.14
+     coverage            = 8.40 (0.12)
+     nforwardings        = 7.70
+     time                = 1.59
+65,-76.616670,0.053514,0.000000,1.195095,1,0.138975,8.400000,7.700000,1.586460
+(66) borders_threshold   = -75.79
+     margin_forwarding   = 0.05
+     min_delay           = 0.85
+     max_delay           = 1.07
+     neighbors_threshold = 0
+     energy              = 0.05
+     coverage            = 5.70 (0.18)
+     nforwardings        = 4.80
+     time                = 1.91
+66,-75.791537,0.053514,0.845762,1.073786,0,0.050369,5.700000,4.800000,1.911810
+(67) borders_threshold   = -94.06
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 8
+     energy              = 113.70
+     coverage            = 63.80 (0.02)
+     nforwardings        = 6.20
+     time                = 1.60
+67,-94.064176,0.053514,0.000000,1.073786,8,113.700000,63.800000,6.200000,1.600680
+(68) borders_threshold   = -93.51
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 10
+     energy              = 105.74
+     coverage            = 63.60 (0.02)
+     nforwardings        = 5.70
+     time                = 1.36
+68,-93.512143,0.053514,0.000000,1.073786,10,105.744000,63.600000,5.700000,1.359790
+(69) borders_threshold   = -76.95
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.12
+     neighbors_threshold = 2
+     energy              = 3.26
+     coverage            = 9.30 (0.11)
+     nforwardings        = 8.70
+     time                = 1.85
+69,-76.949084,0.053514,0.000000,1.118611,2,3.256800,9.300000,8.700000,1.846890
+(70) borders_threshold   = -75.40
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.27
+     neighbors_threshold = 8
+     energy              = 2.07
+     coverage            = 4.40 (0.23)
+     nforwardings        = 3.60
+     time                = 1.06
+70,-75.402094,0.053514,0.000000,1.272106,8,2.068980,4.400000,3.600000,1.056630
+(71) borders_threshold   = -77.31
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.12
+     neighbors_threshold = 0
+     energy              = 5.58
+     coverage            = 7.10 (0.14)
+     nforwardings        = 6.10
+     time                = 1.17
+71,-77.314923,0.053514,0.000000,1.118611,0,5.582520,7.100000,6.100000,1.169280
+(72) borders_threshold   = -75.23
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 10
+     energy              = 0.45
+     coverage            = 6.00 (0.17)
+     nforwardings        = 5.70
+     time                = 1.28
+72,-75.233512,0.053514,0.000000,1.073786,10,0.445292,6.000000,5.700000,1.284260
+(73) borders_threshold   = -74.93
+     margin_forwarding   = 0.05
+     min_delay           = 0.90
+     max_delay           = 1.10
+     neighbors_threshold = 3
+     energy              = 0.06
+     coverage            = 4.50 (0.22)
+     nforwardings        = 3.80
+     time                = 1.79
+73,-74.929614,0.053514,0.899314,1.095554,3,0.064775,4.500000,3.800000,1.787270
+(74) borders_threshold   = -75.53
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 11
+     energy              = 5.39
+     coverage            = 7.90 (0.13)
+     nforwardings        = 6.70
+     time                = 1.09
+74,-75.525450,0.053514,0.000000,1.095554,11,5.391160,7.900000,6.700000,1.086970
+(75) borders_threshold   = -76.88
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 3
+     energy              = 0.49
+     coverage            = 8.10 (0.12)
+     nforwardings        = 7.60
+     time                = 1.36
+75,-76.883563,0.053514,0.000000,1.095554,3,0.486352,8.100000,7.600000,1.356500
+(76) borders_threshold   = -92.72
+     margin_forwarding   = 2.18
+     min_delay           = 0.04
+     max_delay           = 0.37
+     neighbors_threshold = 0
+     energy              = 147.26
+     coverage            = 72.30 (0.01)
+     nforwardings        = 8.20
+     time                = 0.57
+76,-92.715181,2.177076,0.039471,0.373908,0,147.258000,72.300000,8.200000,0.569404
+(77) borders_threshold   = -77.53
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.10
+     neighbors_threshold = 5
+     energy              = 9.02
+     coverage            = 10.90 (0.09)
+     nforwardings        = 9.70
+     time                = 2.00
+77,-77.534790,0.053514,0.000000,1.095554,5,9.017910,10.900000,9.700000,1.995960
+(78) borders_threshold   = -76.50
+     margin_forwarding   = 0.05
+     min_delay           = 0.09
+     max_delay           = 1.07
+     neighbors_threshold = 2
+     energy              = 0.08
+     coverage            = 3.20 (0.31)
+     nforwardings        = 3.10
+     time                = 0.65
+78,-76.501163,0.053514,0.088128,1.073786,2,0.078265,3.200000,3.100000,0.654829
+(79) borders_threshold   = -77.15
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.12
+     neighbors_threshold = 1
+     energy              = 4.79
+     coverage            = 6.70 (0.15)
+     nforwardings        = 5.70
+     time                = 0.94
+79,-77.146734,0.053514,0.000000,1.118611,1,4.792810,6.700000,5.700000,0.937686
+(80) borders_threshold   = -93.66
+     margin_forwarding   = 0.05
+     min_delay           = 1.00
+     max_delay           = 0.00
+     neighbors_threshold = 19
+     energy              = 119.77
+     coverage            = 67.00 (0.01)
+     nforwardings        = 6.60
+     time                = 1.44
+80,-93.656437,0.053514,1.000000,0.000000,19,119.765000,67.000000,6.600000,1.441740
+(81) borders_threshold   = -75.95
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.02
+     neighbors_threshold = 2
+     energy              = 1.96
+     coverage            = 9.20 (0.11)
+     nforwardings        = 8.30
+     time                = 1.65
+81,-75.945649,0.053514,0.000000,1.023713,2,1.957650,9.200000,8.300000,1.646830
+(82) borders_threshold   = -74.68
+     margin_forwarding   = 0.05
+     min_delay           = 0.08
+     max_delay           = 0.56
+     neighbors_threshold = 9
+     energy              = 0.80
+     coverage            = 3.80 (0.26)
+     nforwardings        = 3.10
+     time                = 0.31
+82,-74.681545,0.053514,0.080238,0.558865,9,0.801971,3.800000,3.100000,0.313816
+(83) borders_threshold   = -94.63
+     margin_forwarding   = 0.17
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 48
+     energy              = 50.25
+     coverage            = 40.40 (0.02)
+     nforwardings        = 2.20
+     time                = 1.32
+83,-94.626832,0.169443,0.000000,1.073707,48,50.247300,40.400000,2.200000,1.324130
+(84) borders_threshold   = -93.71
+     margin_forwarding   = 0.17
+     min_delay           = 0.01
+     max_delay           = 1.07
+     neighbors_threshold = 47
+     energy              = 123.62
+     coverage            = 67.10 (0.01)
+     nforwardings        = 6.80
+     time                = 1.85
+84,-93.712384,0.169443,0.008407,1.073707,47,123.623000,67.100000,6.800000,1.851680
+(85) borders_threshold   = -76.92
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.27
+     neighbors_threshold = 7
+     energy              = 3.16
+     coverage            = 7.90 (0.13)
+     nforwardings        = 7.20
+     time                = 1.57
+85,-76.920403,0.053514,0.000000,1.272106,7,3.156240,7.900000,7.200000,1.567970
+(86) borders_threshold   = -75.98
+     margin_forwarding   = 0.05
+     min_delay           = 0.10
+     max_delay           = 1.02
+     neighbors_threshold = 1
+     energy              = 0.36
+     coverage            = 4.00 (0.25)
+     nforwardings        = 3.70
+     time                = 0.78
+86,-75.981417,0.053514,0.095429,1.023713,1,0.356863,4.000000,3.700000,0.776005
+(87) borders_threshold   = -75.05
+     margin_forwarding   = 0.05
+     min_delay           = 0.89
+     max_delay           = 1.07
+     neighbors_threshold = 5
+     energy              = 1.17
+     coverage            = 4.60 (0.22)
+     nforwardings        = 3.80
+     time                = 1.69
+87,-75.046948,0.053514,0.889155,1.073786,5,1.173310,4.600000,3.800000,1.692900
+(88) borders_threshold   = -74.76
+     margin_forwarding   = 0.05
+     min_delay           = 0.85
+     max_delay           = 1.07
+     neighbors_threshold = 8
+     energy              = 6.95
+     coverage            = 5.90 (0.17)
+     nforwardings        = 4.90
+     time                = 1.62
+88,-74.764495,0.053514,0.845762,1.073786,8,6.946750,5.900000,4.900000,1.615810
+(89) borders_threshold   = -91.88
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 30
+     energy              = 181.75
+     coverage            = 74.00 (0.01)
+     nforwardings        = 10.60
+     time                = 1.42
+89,-91.877907,0.053514,0.000000,1.073786,30,181.747000,74.000000,10.600000,1.416690
+(90) borders_threshold   = -75.07
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.27
+     neighbors_threshold = 7
+     energy              = 0.60
+     coverage            = 4.90 (0.20)
+     nforwardings        = 4.10
+     time                = 0.74
+90,-75.066065,0.053514,0.000000,1.272106,7,0.602541,4.900000,4.100000,0.742203
+(91) borders_threshold   = -94.06
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.01
+     neighbors_threshold = 9
+     energy              = 82.25
+     coverage            = 53.20 (0.02)
+     nforwardings        = 4.20
+     time                = 0.90
+91,-94.064724,0.053514,0.000000,1.013570,9,82.253700,53.200000,4.200000,0.898795
+(92) borders_threshold   = -76.47
+     margin_forwarding   = 0.05
+     min_delay           = 0.94
+     max_delay           = 1.08
+     neighbors_threshold = 6
+     energy              = 6.32
+     coverage            = 6.30 (0.16)
+     nforwardings        = 5.20
+     time                = 1.72
+92,-76.469641,0.053514,0.942465,1.082115,6,6.321430,6.300000,5.200000,1.723690
+(93) borders_threshold   = -75.85
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.02
+     neighbors_threshold = 0
+     energy              = 0.60
+     coverage            = 9.00 (0.11)
+     nforwardings        = 8.10
+     time                = 1.76
+93,-75.854583,0.053514,0.000000,1.023713,0,0.601498,9.000000,8.100000,1.763650
+(94) borders_threshold   = -76.71
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.27
+     neighbors_threshold = 7
+     energy              = 1.76
+     coverage            = 7.90 (0.13)
+     nforwardings        = 7.30
+     time                = 1.60
+94,-76.712259,0.053514,0.000000,1.272106,7,1.760990,7.900000,7.300000,1.601930
+(95) borders_threshold   = -76.82
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 0.05
+     neighbors_threshold = 7
+     energy              = 8.86
+     coverage            = 10.50 (0.10)
+     nforwardings        = 8.60
+     time                = 0.09
+95,-76.823601,0.053514,0.000000,0.047548,7,8.860830,10.500000,8.600000,0.092898
+(96) borders_threshold   = -94.17
+     margin_forwarding   = 0.17
+     min_delay           = 0.00
+     max_delay           = 1.07
+     neighbors_threshold = 39
+     energy              = 73.91
+     coverage            = 52.20 (0.02)
+     nforwardings        = 3.70
+     time                = 1.24
+96,-94.168426,0.169443,0.000000,1.073707,39,73.914300,52.200000,3.700000,1.235690
+(97) borders_threshold   = -74.82
+     margin_forwarding   = 0.05
+     min_delay           = 0.00
+     max_delay           = 1.12
+     neighbors_threshold = 10
+     energy              = 6.08
+     coverage            = 8.80 (0.11)
+     nforwardings        = 7.70
+     time                = 1.40
+97,-74.816490,0.053514,0.000000,1.118611,10,6.083240,8.800000,7.700000,1.397620
+(98) borders_threshold   = -76.52
+     margin_forwarding   = 0.05
+     min_delay           = 0.03
+     max_delay           = 1.07
+     neighbors_threshold = 0
+     energy              = 0.98
+     coverage            = 8.00 (0.12)
+     nforwardings        = 7.40
+     time                = 1.45
+98,-76.515687,0.053514,0.029688,1.073786,0,0.977470,8.000000,7.400000,1.448220
+(99) borders_threshold   = -94.68
+     margin_forwarding   = 0.05
+     min_delay           = 0.67
+     max_delay           = 1.07
+     neighbors_threshold = 0
+     energy              = 40.65
+     coverage            = 35.50 (0.03)
+     nforwardings        = 1.60
+     time                = 1.29
+99,-94.680469,0.053514,0.666745,1.073786,0,40.649800,35.500000,1.600000,1.292490
+
+real	416m18.036s
+user	351m24.470s
+sys	64m12.333s
