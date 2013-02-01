@@ -26,7 +26,7 @@ import os
 
 def main():
     file_id = 0
-    dimension = "50"
+    dimension = "75"
     
     for dirname, dirnames, filenames in os.walk('.'):
         for filename in filenames:
