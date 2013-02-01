@@ -1,0 +1,34 @@
+OAR.aedb-mls.25.1400969.stderr
+OAR.aedb-mls.25.1400969.stdout
+
+Resultados viejos
+
+OAR.aedb-mls.25.2643145.stderr
+OAR.aedb-mls.25.2643145.stdout
+
+Resultados con la init del ruso+jamal
+
+OAR.aedb-mls.25e.2643258.stderr
+OAR.aedb-mls.25e.2643258.stdout
+
+Super elite con init seed+ref de patricia
+
+OAR.aedb-mls.25r2.2643247.stderr
+OAR.aedb-mls.25r2.2643247.stdout
+
+Random con las 3 seed intactas
+
+OAR.aedb-mls.25r.2643246.stderr
+OAR.aedb-mls.25r.2643246.stdout
+
+Todo random
+
+OAR.aedb-mls.25s2.2643256.stderr
+OAR.aedb-mls.25s2.2643256.stdout
+
+Seed con la ref de patricia intacta
+
+OAR.aedb-mls.25s.2643248.stderr
+OAR.aedb-mls.25s.2643248.stdout
+
+Seed con las 3 seed instactas

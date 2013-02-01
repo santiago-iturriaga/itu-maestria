@@ -1,0 +1,83 @@
+scatter3(pf(:,1),pf(:,2),pf(:,3))
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(r(:,1),r(:,2),r(:,3))
+scatter3(re(:,1),re(:,2),re(:,3))
+scatter3(s(:,1),s(:,2),s(:,3))
+scatter3(se(:,1),se(:,2),se(:,3))
+scatter3(sc(:,1),sc(:,2),sc(:,3))
+scatter3(sce(:,1),sce(:,2),sce(:,3))
+
+scatter3(ref_100(:,1),ref_100(:,2),ref_100(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls_100(:,1),mls_100(:,2),mls_100(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
+scatter3(ref_200(:,1),ref_200(:,2),ref_200(:,3))
+title('200dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls_200(:,1),mls_200(:,2),mls_200(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
+scatter3(ref_300(:,1),ref_300(:,2),ref_300(:,3))
+title('300dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls_300(:,1),mls_300(:,2),mls_300(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+
+
+---
+
+scatter3(ea_100_aux(:,1),ea_100_aux(:,2),ea_100_aux(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls100_pf_aux(:,1),mls100_pf_aux(:,2),mls100_pf_aux(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
+scatter3(ea_200_aux(:,1),ea_200_aux(:,2),ea_200_aux(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls200_pf_aux(:,1),mls200_pf_aux(:,2),mls200_pf_aux(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
+scatter3(ea_300_aux(:,1),ea_300_aux(:,2),ea_300_aux(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls300_pf_aux(:,1),mls300_pf_aux(:,2),mls300_pf_aux(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
