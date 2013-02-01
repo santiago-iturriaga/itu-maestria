@@ -383,7 +383,9 @@ void* mls_thread(void *data)
             //#endif
 
             // Envío la solución computada por la heurística a AGA.
-            if (MLS.population[thread_id].energy > 0) {
+            if ((MLS.population[thread_id].energy > 0) &&
+                (MLS.population[thread_id].min_delay <= MLS.population[thread_id].max_delay)) {
+
                 pthread_mutex_lock(&MLS.mpi_mutex);
                     #ifndef NONMPI
                         #ifdef MPI_MODE_STANDARD
@@ -578,7 +580,9 @@ void* mls_thread(void *data)
 
             pclose(fpipe);
 
-            if ((time < 2) && (energy > 0)) {
+            if ((time < 2) && (energy > 0) &&
+                (MLS.population[thread_id].min_delay <= MLS.population[thread_id].max_delay)) {
+
                 #if defined(MLS__ELITE)
                 if ((MLS.population[thread_id].energy >= energy) ||
                     (MLS.population[thread_id].coverage <= coverage) ||
