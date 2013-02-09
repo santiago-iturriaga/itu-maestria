@@ -10,7 +10,7 @@
 #PBS -q medium_jobs
 
 # Working dir
-#PBS -d /home/siturria/itu-maestria/trunk/me-mls/
+#PBS -d /home/siturria/itu-maestria/trunk/me-mls/scripts/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
