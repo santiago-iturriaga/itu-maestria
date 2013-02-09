@@ -4,7 +4,7 @@
 #PBS -N palsCPU-4k-24-aga
 
 # Requerimientos
-#PBS -l nodes=1:ppn=24,walltime=70:00:00
+#PBS -l nodes=1:ppn=24,walltime=95:00:00
 
 # Cola
 #PBS -q medium_jobs
