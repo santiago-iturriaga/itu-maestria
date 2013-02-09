@@ -8,8 +8,8 @@
 #ifndef LOAD_PARAMS_H_
 #define LOAD_PARAMS_H_
 
-#define PALS_2POP 0
-#define PALS_1POP 1
+#define  ME_RPALS 0
+#define    ME_MLS 1
 #define    MINMIN 2
 #define       MCT 3
 #define   pMINMIN 4

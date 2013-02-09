@@ -32,10 +32,10 @@ int load_params(int argc, char **argv, struct params *input) {
         #endif
 
         #if defined(DEBUG)
-        if (input->algorithm == PALS_2POP) {
-            fprintf(stdout, " (PALS 2-populations)\n");
-        } else if (input->algorithm == PALS_1POP) {
-            fprintf(stdout, " (PALS 1-population)\n");
+        if (input->algorithm == ME_RPALS) {
+            fprintf(stdout, " (ME-rPALS)\n");
+        } else if (input->algorithm == ME_MLS) {
+            fprintf(stdout, " (ME-MLS)\n");
         } else if (input->algorithm == MINMIN) {
             fprintf(stdout, " (MinMin)\n");
         } else if (input->algorithm == MCT) {
@@ -81,8 +81,8 @@ int load_params(int argc, char **argv, struct params *input) {
         fprintf(stdout, "Usage:\n");    
         fprintf(stdout, "       %s <scenario> <workload> <#tasks> <#machines> <algorithm> <#threads> <seed> <max time (secs)> <max iterations> <population size>\n\n", argv[0]);
         fprintf(stdout, "       Algorithms\n");
-        fprintf(stdout, "           0 PALS 2-populations\n");
-        fprintf(stdout, "           1 PALS 1-population\n");
+        fprintf(stdout, "           0 ME-rPALS\n");
+        fprintf(stdout, "           1 ME-MLS\n");
         fprintf(stdout, "           2 MinMin\n");
         fprintf(stdout, "           3 MCT\n");
         fprintf(stdout, "           4 pMinMin\n");

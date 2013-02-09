@@ -35,7 +35,7 @@ void compute_custom_mct(struct solution *solution, int starting_task) {
     refresh_energy(solution);
     
     #if defined(DEBUG) 
-    fprintf(stdout, "[DEBUG] MCT Solution >> makespan: %f || energy: %f.\n", get_makespan(solution), get_energy(solution));
+        fprintf(stdout, "[DEBUG] MCT Solution >> makespan: %f || energy: %f.\n", get_makespan(solution), get_energy(solution));
     #endif
     //else fprintf(stdout, "%f|%f\n", get_makespan(solution), get_energy(solution));
 }

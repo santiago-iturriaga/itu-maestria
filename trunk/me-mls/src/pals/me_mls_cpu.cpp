@@ -18,7 +18,7 @@
 #include "../random/cpu_mt.h"
 
 #include "archivers/aga.h"
-#include "pals_cpu_1pop.h"
+#include "me_mls_cpu.h"
 
 void validate_thread_instance(struct pals_cpu_1pop_thread_arg *instance)
 {
@@ -268,7 +268,7 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     }
 }
 
-void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
+void me_mls_cpu(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy)
 {
     // ==============================================================================
     // PALS aleatorio por tarea.

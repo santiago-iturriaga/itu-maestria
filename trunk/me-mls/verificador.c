@@ -88,8 +88,8 @@ int main(int argc, char *argv[])
         for (j=0;j<NM;j++)
         {
             fscanf(fworkload,"%f",&aux_etc);
-            //ETC[i][j] = aux_etc / (ssj[j] / (cores[j] * 1000));
-            ETC[i][j] = aux_etc / ssj[j];
+            ETC[i][j] = aux_etc / (ssj[j] / (cores[j] * 1000));
+            //ETC[i][j] = aux_etc / ssj[j];
         }
     }
 

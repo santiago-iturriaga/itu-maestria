@@ -24,10 +24,11 @@ pals-prof: src/main.cpp \
 		src/basic/minmin.cpp \
 		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
-	        src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-	        src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp 
+		src/pals/archivers/aga.cpp \
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp
 	$(CX) -g -O3 src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
@@ -42,7 +43,8 @@ pals-prof: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp \
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp \
 		$(LIBS) -o bin/pals_cpu_prof
 
 pals-gdb: src/main.cpp \
@@ -59,7 +61,8 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp 
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp 
 	$(CX) -g src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
@@ -74,7 +77,8 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp \
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN) 
 
 pals-opt: src/main.cpp \
@@ -91,7 +95,8 @@ pals-opt: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp 
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp 
 	$(CX) -O3 src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
@@ -106,7 +111,8 @@ pals-opt: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp \
+		src/pals/me_mls_cpu.cpp \
+		src/pals/me_rpals_cpu.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN)
 
 clean:

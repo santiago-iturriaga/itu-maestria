@@ -67,12 +67,12 @@ int load_instance(struct params *input, struct etc_matrix *etc, struct energy_ma
                 return EXIT_FAILURE;
             }
 
-            /*set_etc_value(etc, machine, task,
-                value / (get_ssj_value(energy, machine)
-                /(get_cores_value(energy, machine)*1000)));*/
-                
             set_etc_value(etc, machine, task,
-                value / get_ssj_value(energy, machine));
+                value / (get_ssj_value(energy, machine)
+                /(get_cores_value(energy, machine)*1000)));
+                
+            /*set_etc_value(etc, machine, task,
+                value / get_ssj_value(energy, machine));*/
         }
     }
 
