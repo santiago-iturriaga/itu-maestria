@@ -79,18 +79,10 @@ void me_rpals_cpu(struct params &input, struct etc_matrix *etc, struct energy_ma
     
     // ==================================================================
     {
-        int candidate_to_del_pos;
-        int i;
-        int random_sol_index;
-        int current_sol_pos;
-        int current_sol_index;
         float original_makespan;
         float original_energy;
         int search_type;
         double search_type_random;
-        int work_do_iteration;
-        int work_iteration_size;
-        int search_iteration;
         int machine_a, machine_b;
         int machine_a_task_count;
         int machine_b_task_count;
@@ -124,8 +116,6 @@ void me_rpals_cpu(struct params &input, struct etc_matrix *etc, struct energy_ma
         int machine_b_offset;
         float machine_b_current_energy_idle;
         float machine_b_current_energy_max;
-        int mutex_locked;
-        int new_solution_eval;
 
         timespec ts_current;
         clock_gettime(CLOCK_REALTIME, &ts_current);

@@ -30,9 +30,6 @@ int archive_add_solution(struct pals_cpu_1pop_thread_arg *instance, int new_solu
     float best_energy_value = get_energy(&(instance->population[*(instance->best_energy_solution)]));
     float best_makespan_value = get_makespan(&(instance->population[*(instance->best_makespan_solution)]));
 
-    float init_best_makespan = best_makespan_value;
-    float init_best_energy = best_energy_value;
-
     int solutions_deleted = 0;
     int new_solution_is_dominated = 0;
 

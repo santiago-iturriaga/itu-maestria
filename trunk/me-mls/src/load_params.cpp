@@ -7,31 +7,31 @@
 int load_params(int argc, char **argv, struct params *input) {
     if (argc >= 11) {
         input->scenario_path = argv[1];
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] scenario path: %s\n", input->scenario_path);
         #endif
 
         input->workload_path = argv[2];
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] workload path: %s\n", input->workload_path);
         #endif
 
         input->tasks_count = atoi(argv[3]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] tasks count: %d\n", input->tasks_count);
         #endif
         
         input->machines_count = atoi(argv[4]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0)
         fprintf(stdout, "[PARAMS] machines count: %d\n", input->machines_count);
         #endif
 
         input->algorithm = atoi(argv[5]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0)
         fprintf(stdout, "[PARAMS] algorithm: %d", input->algorithm);
         #endif
 
-        #if defined(DEBUG)
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0)
         if (input->algorithm == ME_RPALS) {
             fprintf(stdout, " (ME-rPALS)\n");
         } else if (input->algorithm == ME_MLS) {
@@ -47,17 +47,17 @@ int load_params(int argc, char **argv, struct params *input) {
 
         input->thread_count = atoi(argv[6]);
         //if (input->thread_count < 2) input->thread_count = 2; 
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] threads count: %d\n", input->thread_count);
         #endif
 
         input->seed = atoi(argv[7]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] seed: %d\n", input->seed);
         #endif
 
         input->max_time_secs = atoi(argv[8]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] Max. time (secs.): %d\n", input->max_time_secs);
         #endif
         
@@ -67,7 +67,7 @@ int load_params(int argc, char **argv, struct params *input) {
         #endif
 
         input->population_size = atoi(argv[10]);
-        #if defined(DEBUG) 
+        #if defined(DEBUG) || (OUTPUT_SOLUTION == 0) 
         fprintf(stdout, "[PARAMS] Population size: %d\n", input->population_size);
         #endif
 
