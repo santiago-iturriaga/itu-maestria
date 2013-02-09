@@ -1,12 +1,12 @@
 set -x
 rm -rf 512x16.test
-rm bin/pals_cpu
-make
+#rm bin/pals_cpu
+#make
 
 echo "MinMin"
-bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.B.u_c_hihi 512 16 2 1 1 1 1 1
+bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 2 1 1 1 1 1
 echo "MCT"
-bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.B.u_c_hihi 512 16 3 1 1 1 1 1
+bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 3 1 1 1 1 1
 
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16.ME"
@@ -45,7 +45,7 @@ SCENARIOS[8]=16
 SCENARIOS[9]=17
 SCENARIOS[10]=19
 
-WORKLOADS[12]="B.u_c_hihi"
+WORKLOADS[12]="A.u_c_hihi"
 WORKLOADS[13]="B.u_c_hilo"
 WORKLOADS[14]="B.u_c_lohi"
 WORKLOADS[15]="B.u_c_lolo"
@@ -80,9 +80,9 @@ do
             
                 RAND=1 #$RANDOM
                 EXEC="${ALGORITHMS[a]} ${INSTANCES_PATH}/scenario.${SCENARIOS[s]} ${INSTANCES_PATH}/workload.${WORKLOADS[w]} ${DIMENSIONS} ${ALGORITHMS_ID[a]} ${THREADS} ${RAND} ${PALS_TIMEOUT} ${PALS_ITERATIONS} ${PALS_POP_SIZE}"
-                echo ${EXEC}
-                #time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
-                time (${EXEC})
+                #echo ${EXEC}
+                time (${EXEC} >> ${OUT}.sols 2> ${OUT}.info) 2> ${OUT}.time
+                #time (${EXEC})
             
                 cat ${OUT}.time
             
