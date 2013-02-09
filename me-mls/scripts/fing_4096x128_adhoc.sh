@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N palsCPU-4096-24
+#PBS -N palsCPU-4k-24-adhoc
 
 # Requerimientos
 #PBS -l nodes=1:ppn=24,walltime=70:00:00
@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_4096x128.24.sh
+./run_4096x128.24_adhoc.sh
