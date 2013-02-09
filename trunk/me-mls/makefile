@@ -1,5 +1,5 @@
 CC=gcc -Wall -std=c99
-CX=g++ -Wall
+CX=g++ -Wall 
 LIBS=-lpthread -lrt 
 #-mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
@@ -11,7 +11,6 @@ fp: fp_2obj.cpp
 
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
-	
 
 pals-prof: src/main.cpp \
 		src/load_params.cpp \
