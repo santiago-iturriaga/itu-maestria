@@ -10,7 +10,7 @@
 #PBS -q medium_jobs
 
 # Working dir
-#PBS -d /home/siturria/itu-maestria/trunk/me-mls/scripts/
+#PBS -d /home/siturria/itu-maestria/trunk/me-mls/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_4096x128.24_aga.sh
+./scripts/run_4096x128.24_aga.sh

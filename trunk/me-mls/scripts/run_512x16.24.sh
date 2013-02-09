@@ -11,8 +11,8 @@ PALS_ITERATIONS=250000000
 PALS_TIMEOUT=10
 PALS_POP_SIZE=34
 
-VERIFICADOR="../bin/verificador"
-ALGORITHMS[0]="../bin/pals_cpu"
+VERIFICADOR="bin/verificador"
+ALGORITHMS[0]="bin/pals_cpu"
 ALGORITHMS_ID[0]=1
 ALGORITHMS_OUTNAME[0]="pals-aga"
 
