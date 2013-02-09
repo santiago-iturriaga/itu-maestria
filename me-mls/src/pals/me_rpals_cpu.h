@@ -19,6 +19,10 @@
 #ifndef RPALS_CPU_H_
 #define RPALS_CPU_H_
 
+#define RPALS_INIT_MCT
+//#define RPALS_INIT_PMINMIN
+//#define RPALS_INIT_MINMIN
+
 #define RPALS_CPU_WORK__THREAD_ITERATIONS       650
 
 #define RPALS_CPU_WORK__SRC_TASK_NHOOD      27
