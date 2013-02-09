@@ -94,7 +94,6 @@ void me_rpals_cpu(struct params &input, struct etc_matrix *etc, struct energy_ma
         float machine_a_ct_old, machine_b_ct_old;
         float machine_a_ct_new, machine_b_ct_new;
         float current_makespan;
-        float current_energy;
         int task_x_pos;
         int task_x_current;
         int machine_b_current;
@@ -366,7 +365,6 @@ void me_rpals_cpu(struct params &input, struct etc_matrix *etc, struct energy_ma
                 machine_b_energy_max = get_energy_max_value(energy, machine_b);
 
                 current_makespan = get_makespan(selected_solution);
-                current_energy = get_energy(selected_solution);
 
                 #ifdef CPU_MERSENNE_TWISTER
                     random = cpu_mt_generate(instance.random_state);
