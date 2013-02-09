@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N palsCPU-512-24c
+#PBS -N palsCPU-4096-24
 
 # Requerimientos
 #PBS -l nodes=1:ppn=24,walltime=70:00:00
@@ -10,7 +10,7 @@
 #PBS -q medium_jobs
 
 # Working dir
-#PBS -d /home/siturria/itu-maestria/branches/palsCPU-Journal2/
+#PBS -d /home/siturria/itu-maestria/trunk/me-mls/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
@@ -23,8 +23,8 @@
 # e: mail is sent when the job terminates.
 
 # Output path
-#PBS -e /home/siturria/itu-maestria/branches/palsCPU-Journal2/
-#PBS -o /home/siturria/itu-maestria/branches/palsCPU-Journal2/
+#PBS -e /home/siturria/itu-maestria/trunk/me-mls/
+#PBS -o /home/siturria/itu-maestria/trunk/me-mls/
 
 #PBS -V
 
@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_512x16.24.c.sh
+./run_4096x128.24.sh

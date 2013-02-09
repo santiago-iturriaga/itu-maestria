@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N palsCPU-512-24-t
+#PBS -N pals-1024-speed
 
 # Requerimientos
-#PBS -l nodes=1:ppn=24,walltime=01:59:00
+#PBS -l nodes=1:ppn=24,walltime=18:00:00
 
 # Cola
-#PBS -q quick_jobs
+#PBS -q medium_jobs
 
 # Working dir
-#PBS -d /home/siturria/itu-maestria/branches/palsCPU-Journal2/
+#PBS -d /home/siturria/itu-maestria/trunk/me-mls/
 
 # Correo electronico
 ###PBS -M siturria@fing.edu.uy
@@ -23,8 +23,8 @@
 # e: mail is sent when the job terminates.
 
 # Output path
-#PBS -e /home/siturria/itu-maestria/branches/palsCPU-Journal2/
-#PBS -o /home/siturria/itu-maestria/branches/palsCPU-Journal2/
+#PBS -e /home/siturria/itu-maestria/trunk/me-mls/
+#PBS -o /home/siturria/itu-maestria/trunk/me-mls/
 
 #PBS -V
 
@@ -59,4 +59,5 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_512x16.24.test.sh
+
+./speed_1024x32.1-24.sh
