@@ -55,7 +55,6 @@ int pals_cpu_1pop_adhoc_arch(struct pals_cpu_1pop_thread_arg *instance, int new_
     #if defined(DEBUG_DEV)
     fprintf(stdout, "========================================================\n");
     #endif
-    double random = 0.0;
 
     float makespan_new, energy_new;
     makespan_new = get_makespan(&(instance->population[new_solution_pos]));
