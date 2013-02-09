@@ -51,22 +51,23 @@ void me_rpals_cpu(struct params &input, struct etc_matrix *etc, struct energy_ma
     init_empty_solution(etc, energy, &(instance.population[0]));
     init_empty_solution(etc, energy, &(instance.population[1]));
 
-    #ifdef CPU_MERSENNE_TWISTER
-        random = cpu_mt_generate(instance.random_state);
-    #endif
-    #ifdef CPU_RAND
-        random = cpu_rand_generate(instance.random_state);
-    #endif
-    #ifdef CPU_DRAND48
-        random = cpu_drand48_generate(instance.random_state);
-    #endif
+    #if defined(RPALS_INIT_PMINMIN)
+        printf("[DEBUG] Usando pMin-Min\n");
 
-    int random_task = (int)floor(random * etc->tasks_count);
-    compute_custom_mct(&(instance.population[0]), random_task);
+        compute_pminmin(instance.etc,
+            &(instance.population[0]),
+            instance.count_threads);
+    #endif
+    #if defined(RPALS_INIT_MINMIN)
+        printf("[DEBUG] Usando Min-Min\n");
 
-    //fprintf(stdout, " >> sol.pos[%d] init=%d status=%d\n", 0,
-    //    instance.population[0].initialized,
-    //    instance.population[0].status);
+        compute_minmin(&(instance.population[0]));
+    #endif
+    #if defined(RPALS_INIT_MCT)
+        printf("[DEBUG] Usando MCT\n");
+
+        compute_mct(&(instance.population[0]));
+    #endif
 
     fprintf(stdout, " >> Starting makespan: %f // energy: %f\n",
             get_makespan(&instance.population[0]), get_energy(&instance.population[0]));
