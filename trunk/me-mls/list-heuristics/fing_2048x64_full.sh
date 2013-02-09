@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./run_2048x64_full.c.sh
+./run_2048x64_full.sh
