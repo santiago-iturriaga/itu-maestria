@@ -7,6 +7,9 @@
 #Optional: type of task execution times: (0-real, 1-integer).
 #Optional: seed for the pseudorandom number generator.
 
+mkdir 2048x64.M
+cd 2048x64.M
+
 #A.u_c_hihi
 ../generator 2048 64 1 1 0 0 0 1214389178
 #A.u_c_hilo
@@ -60,4 +63,3 @@
 ../generator 2048 64 0 1 2 1 0 1214389278 
 #B.u_u_lolo
 ../generator 2048 64 0 0 2 1 0 1214389281 
-

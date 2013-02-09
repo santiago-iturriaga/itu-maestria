@@ -19,7 +19,7 @@ do
     echo "${workload_file} to workload.${i}"
     
     cp ${M_INSTANCES_PATH}/${workload_file} ${SOLUTIONS_DIR}/workload.${workload_file}
-    #(python remove_first_line.py ${M_INSTANCES_PATH}/${workload_file}) > ${SOLUTIONS_DIR}/workload.${workload_file}
+
     #echo ${EXEC}
     #${EXEC}
     
