@@ -26,7 +26,8 @@
 #include "basic/minmin.h"
 #include "basic/pminmin.h"
 
-#include "pals/pals_cpu_1pop.h"
+#include "pals/me_mls_cpu.h"
+#include "pals/me_rpals_cpu.h"
 
 int main(int argc, char** argv)
 {
@@ -68,18 +69,25 @@ int main(int argc, char** argv)
     timming_start(ts);
     // Timming -----------------------------------------------------
 
-    if (input.algorithm == PALS_1POP) {
+    if (input.algorithm == ME_RPALS) {
         // =============================================================
-        // PALS de 1 poblacion
+        // ME-rPALS
         // =============================================================
             
-        pals_cpu_1pop(input, &etc, &energy);
+        me_rpals_cpu(input, &etc, &energy);
+        
+    } else if (input.algorithm == ME_MLS) {
+        // =============================================================
+        // ME-MLS
+        // =============================================================
+            
+        me_mls_cpu(input, &etc, &energy);
         
     } else if (input.algorithm == MINMIN) {
         struct solution *current_solution = create_empty_solution(&etc, &energy);
         compute_minmin(current_solution);
         
-        if (!OUTPUT_SOLUTION) {
+        if (OUTPUT_SOLUTION == 0) {
             fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
         } else {
             show_solution(current_solution);
@@ -92,7 +100,7 @@ int main(int argc, char** argv)
         struct solution *current_solution = create_empty_solution(&etc, &energy);
         compute_mct(current_solution);
         
-        if (!OUTPUT_SOLUTION) {
+        if (OUTPUT_SOLUTION == 0) {
             fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
         } else {
             show_solution(current_solution);
@@ -105,7 +113,7 @@ int main(int argc, char** argv)
         struct solution *current_solution = create_empty_solution(&etc, &energy);
         compute_pminmin(&etc, current_solution, input.thread_count);
         
-        if (!OUTPUT_SOLUTION) {
+        if (OUTPUT_SOLUTION == 0) {
             fprintf(stdout, "%f %f\n", get_makespan(current_solution), get_energy(current_solution));
         } else {
             show_solution(current_solution);

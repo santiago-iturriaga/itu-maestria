@@ -7,7 +7,7 @@
 //#define CPU_DRAND48
 #define CPU_MERSENNE_TWISTER
 
-#define OUTPUT_SOLUTION 1
+#define OUTPUT_SOLUTION 0
 //#define DEBUG
 //#define DEBUG_DEV
 //#define TIMMING

@@ -153,7 +153,7 @@ struct pals_cpu_1pop_thread_arg {
 /*
  * Ejecuta el algoritmo.
  */
-void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy);
+void me_mls_cpu(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy);
 
 /*
  * Reserva e inicializa la memoria con los datos del problema.
