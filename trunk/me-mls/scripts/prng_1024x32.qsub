@@ -4,7 +4,7 @@
 #PBS -N pals-1024-prng
 
 # Requerimientos
-#PBS -l nodes=1:ppn=24,walltime=128:00:00
+#PBS -l nodes=1:ppn=24,walltime=95:00:00
 
 # Cola
 #PBS -q small_jobs
@@ -60,4 +60,4 @@ echo $NPROCS
 echo
 
 
-./prng_1024x32.sh
+./scripts/prng_1024x32.sh
