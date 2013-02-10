@@ -574,6 +574,12 @@ int seed, struct pals_cpu_1pop_instance &empty_instance)
 
     timming_end(".. cpu_rand_buffers", ts_1);
 
+    #if defined(INIT_PMINMIN)
+        fprintf(stderr, "INIT|pMin-Min\n");
+        init_empty_solution(etc, energy, &(empty_instance.population[0]));
+        compute_pminmin(etc, &(empty_instance.population[0]), empty_instance.count_threads);
+    #endif
+                    
     // =========================================================================
     // Creo e inicializo los threads y los mecanismos de sincronizacin del sistema.
 
@@ -781,29 +787,31 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                     thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
                 pthread_mutex_unlock(thread_instance->population_mutex);
 
-                // Inicializo el individuo que me toca.
-                init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
-
                 if (thread_instance->thread_idx == 0)
                 {
                     #if defined(INIT_PMINMIN)
-                        fprintf(stderr, "INIT|pMin-Min\n");
 
-                        compute_pminmin(thread_instance->etc,
-                            &(thread_instance->population[thread_instance->thread_idx]),
-                            thread_instance->count_threads);
                     #endif
                     #if defined(INIT_MINMIN)
+                        // Inicializo el individuo que me toca.
+                        init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+
                         fprintf(stderr, "INIT|MinMin\n");
 
                         compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
                     #endif
                     #if defined(INIT_MCT)
+                        // Inicializo el individuo que me toca.
+                        init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+
                         fprintf(stderr, "INIT|MCT\n");
 
                         compute_mct(&(thread_instance->population[thread_instance->thread_idx]));
                     #endif
                 } else {
+                    // Inicializo el individuo que me toca.
+                    init_empty_solution(thread_instance->etc, thread_instance->energy, &(thread_instance->population[thread_instance->thread_idx]));
+
                     #ifdef CPU_MERSENNE_TWISTER
                         random = cpu_mt_generate(*(thread_instance->thread_random_state));
                     #endif

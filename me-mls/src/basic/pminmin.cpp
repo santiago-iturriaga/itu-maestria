@@ -48,9 +48,10 @@ void compute_pminmin(struct etc_matrix *etc, struct solution *sol, int numberOfT
     }
 
     refresh(sol);
+    //validate_solution(sol); 
 
     #ifdef DEBUG 
-    fprintf(stdout, "[DEBUG] pMinMin %d-threads solution makespan: %f.\n", numberOfThreads, sol->__makespan);
+        fprintf(stdout, "[DEBUG] pMinMin %d-threads solution makespan: %f.\n", numberOfThreads, sol->__makespan);
     #endif
     
     // Timming -----------------------------------------------------
