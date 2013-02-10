@@ -783,14 +783,16 @@ void* pals_cpu_1pop_thread(void *thread_arg)
 
             if (thread_instance->thread_idx < (thread_instance->population_max_size - thread_instance->count_threads))
             {
-                pthread_mutex_lock(thread_instance->population_mutex);
+                /*pthread_mutex_lock(thread_instance->population_mutex);
                     thread_instance->population[thread_instance->thread_idx].status = SOLUTION__STATUS_NOT_READY;
-                pthread_mutex_unlock(thread_instance->population_mutex);
+                pthread_mutex_unlock(thread_instance->population_mutex);*/
 
                 if (thread_instance->thread_idx == 0)
                 {
                     #if defined(INIT_PMINMIN)
-
+                        //fprintf(stderr, "PUTA PUTA PUTA PUTA PUTA!!!\n");
+                        
+                        //terminate = 1;
                     #endif
                     #if defined(INIT_MINMIN)
                         // Inicializo el individuo que me toca.
