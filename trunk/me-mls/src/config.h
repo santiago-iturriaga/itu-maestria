@@ -5,9 +5,9 @@
 
 //#define CPU_RAND
 //#define CPU_DRAND48
-#define CPU_MERSENNE_TWISTER
+//#define CPU_MERSENNE_TWISTER
 
-#define OUTPUT_SOLUTION 0
+//#define OUTPUT_SOLUTION 1
 //#define DEBUG
 //#define DEBUG_DEV
 //#define TIMMING

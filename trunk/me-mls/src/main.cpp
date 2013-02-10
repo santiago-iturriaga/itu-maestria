@@ -69,6 +69,26 @@ int main(int argc, char** argv)
     timming_start(ts);
     // Timming -----------------------------------------------------
 
+    #if defined(CPU_RAND)
+        fprintf(stderr, "PRNG|randr\n");
+    #endif
+    #if defined(CPU_DRAND48)
+        fprintf(stderr, "PRNG|drand48r\n");
+    #endif
+    #if defined(CPU_MERSENNE_TWISTER)
+        fprintf(stderr, "PRNG|MT\n");
+    #endif
+    #if !defined(CPU_RAND) && !(CPU_DRAND48) && !(CPU_MERSENNE_TWISTER)
+        fprintf(stderr, "No PRNG method is defined.\n");
+        return EXIT_FAILURE;
+    #endif
+    
+    #if !defined(OUTPUT_SOLUTION)
+        fprintf(stderr, "No output option is defined.\n");
+        return EXIT_FAILURE;
+    #endif
+    fprintf(stderr, "OUTPUT|%d\n", OUTPUT_SOLUTION);
+
     if (input.algorithm == ME_RPALS) {
         // =============================================================
         // ME-rPALS
@@ -80,6 +100,26 @@ int main(int argc, char** argv)
         // =============================================================
         // ME-MLS
         // =============================================================
+
+        #if defined(ARCHIVER_AGA)
+            fprintf(stderr, "ARCHIVER|AGA\n");
+        #else
+            fprintf(stderr, "ARCHIVER|ADHOC\n");
+        #endif
+
+        #if defined(INIT_MCT)
+            fprintf(stderr, "PRNG|MCT\n");
+        #endif
+        #if defined(INIT_PMINMIN)
+            fprintf(stderr, "PRNG|pMinMinDD\n");
+        #endif
+        #if defined(INIT_MINMIN)
+            fprintf(stderr, "PRNG|MinMin\n");
+        #endif
+        #if !defined(INIT_MCT) && !(INIT_PMINMIN) && !(INIT_MINMIN)
+            fprintf(stderr, "No init method is defined.\n");
+            return EXIT_FAILURE;
+        #endif
             
         me_mls_cpu(input, &etc, &energy);
         
