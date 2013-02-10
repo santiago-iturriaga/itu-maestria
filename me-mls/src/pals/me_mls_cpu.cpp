@@ -787,19 +787,19 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 if (thread_instance->thread_idx == 0)
                 {
                     #if defined(INIT_PMINMIN)
-                        printf("[DEBUG] Usando pMin-Min\n");
+                        fprintf(stderr, "INIT|pMin-Min\n");
 
                         compute_pminmin(thread_instance->etc,
                             &(thread_instance->population[thread_instance->thread_idx]),
                             thread_instance->count_threads);
                     #endif
                     #if defined(INIT_MINMIN)
-                        printf("[DEBUG] Usando Min-Min\n");
+                        fprintf(stderr, "INIT|MinMin\n");
 
                         compute_minmin(&(thread_instance->population[thread_instance->thread_idx]));
                     #endif
                     #if defined(INIT_MCT)
-                        printf("[DEBUG] Usando MCT\n");
+                        fprintf(stderr, "INIT|MCT\n");
 
                         compute_mct(&(thread_instance->population[thread_instance->thread_idx]));
                     #endif
