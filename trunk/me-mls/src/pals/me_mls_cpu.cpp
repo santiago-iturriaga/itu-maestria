@@ -790,16 +790,7 @@ void* pals_cpu_1pop_thread(void *thread_arg)
                 if (thread_instance->thread_idx == 0)
                 {
                     #if defined(INIT_PMINMIN)
-                        for (int task = 0; task < thread_instance->population[0].etc->tasks_count; task++) {
-                            if (thread_instance->population[0].__task_assignment[task] < 0) {
-                                fprintf(stderr, "PUTA PUTA PUTA PUTA PUTA!!!\n");
-                                terminate = 1;
-                            }
-                            if (thread_instance->population[0].__task_assignment[task] >= thread_instance->population[0].etc->machines_count) {
-                                fprintf(stderr, "PUTA PUTA PUTA PUTA PUTA!!!\n");
-                                terminate = 1;
-                            }
-                        }
+
                     #endif
                     #if defined(INIT_MINMIN)
                         // Inicializo el individuo que me toca.
