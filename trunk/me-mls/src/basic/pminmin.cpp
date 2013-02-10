@@ -22,8 +22,10 @@ void compute_pminmin(struct etc_matrix *etc, struct solution *sol, int numberOfT
     struct threadData threadDataArray[numberOfThreads];
 
     // Create the thread pool
-    int chunk = etc->tasks_count/numberOfThreads;
-    //fprintf(stdout, "[DEBUG] Chunks %d\n",chunk);
+    int chunk = etc->tasks_count / numberOfThreads;
+    if (etc->tasks_count % numberOfThreads != 0) chunk++;
+    fprintf(stdout, "[DEBUG] Chunks %d\n",chunk);
+    
     for (int i = 0; i < numberOfThreads; i ++) {
         threadDataArray[i].t_i = i*chunk;
         threadDataArray[i].t_f = (i+1)*chunk;
@@ -63,9 +65,11 @@ void* compute_pminmin_thread(void *data) {
     struct threadData *d = (struct threadData *)data;
 
     int t_i = (int)d->t_i;
-    int t_f = (int)d->t_f;
+    int t_f = (int)d->t_f;    
     struct etc_matrix *etc = d->etc;
     struct solution *sol = d->sol;
+    
+    if (t_f > etc->tasks_count) t_f = etc->tasks_count;
     
     int nt = t_f - t_i;
 
