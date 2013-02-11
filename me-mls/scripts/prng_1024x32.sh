@@ -32,12 +32,12 @@ for (( t=0; t<13; t++ ))
 do
     for (( i=0; i<${ITER}; i++ ))
     do   
-        time (bin/pals_aga_mt ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.time
-        time (bin/pals_aga_randr ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.time
-        time (bin/pals_aga_drand48r ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.time
+        time (bin/me-mls-adhoc-mct-mt ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.mt.${THREADS[t]}.${i}.time
+        time (bin/me-mls-adhoc-mct-randr ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.randr.${THREADS[t]}.${i}.time
+        time (bin/me-mls-adhoc-mct-drand48r ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/aga.drand48r.${THREADS[t]}.${i}.time
 
-        time (bin/pals_adhoc_mt ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.time
-        time (bin/pals_adhoc_randr ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.time
-        time (bin/pals_adhoc_drand48r ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.time
+        time (bin/me-mls-aga-mct-mt ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.mt.${THREADS[t]}.${i}.time
+        time (bin/me-mls-aga-mct-randr ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.randr.${THREADS[t]}.${i}.time
+        time (bin/me-mls-aga-mct-drand48r ${INSTANCE} 1 ${THREADS[t]} 0 ${PALS_TIMEOUT} ${PALS_ITER} ${PALS_POPULATION} 1> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.sols 2> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.info) 2> ${PRNG_PATH}/adhoc.drand48r.${THREADS[t]}.${i}.time
     done
 done
