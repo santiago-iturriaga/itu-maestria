@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Nombre del trabajo
-#PBS -N palsCPU-512-24
+#PBS -N palsCPU-512-24_10s
 
 # Requerimientos
 #PBS -l nodes=1:ppn=24,walltime=70:00:00
@@ -59,4 +59,4 @@ NPROCS=`wc -l < $PBS_NODEFILE`
 echo $NPROCS
 echo
 
-./scripts/run_512x16.24.sh
+./scripts/run_512x16.24_10s.sh
