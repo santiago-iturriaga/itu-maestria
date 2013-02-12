@@ -9,13 +9,16 @@ pals_alg_name = 'pals-aga'
 list_heur_dir = 'list-heuristics/'
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print "Error! Uso: %s <dimension> <sufijo>"
+    if len(sys.argv) != 4:
+        print "Error! Uso: %s <dimension> <sufijo> <prefijo>"
         print "        Ej: %s 1024x32 4"
         exit(-1)
 
     dimension = sys.argv[1]
     sufijo = sys.argv[2]
+    prefijo_archivo = sys.argv[3]
+
+    pals_alg_name = prefijo_archivo
 
     list_heur_dir = list_heur_dir + dimension
     pals_dir = dimension + '.' + sufijo
