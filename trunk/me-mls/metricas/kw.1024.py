@@ -136,8 +136,8 @@ if __name__ == '__main__':
     cant_iters = 30
     
     base = []
-    base.append(("1024x32.24_10s","pals-aga"))
-    base.append(("1024x32.24.adhoc","pals-1"))
+    base.append(("../1024x32.24_10s","pals-aga"))
+    base.append(("../1024x32.24.adhoc","pals-1"))
     print base
    
     scenario = []
@@ -158,12 +158,28 @@ if __name__ == '__main__':
     instancias.append("A.u_c_hilo")
     instancias.append("A.u_c_lohi")
     instancias.append("A.u_c_lolo")
+    instancias.append("A.u_i_hihi")
+    instancias.append("A.u_i_hilo")
+    instancias.append("A.u_i_lohi")
+    instancias.append("A.u_i_lolo")
+    instancias.append("A.u_s_hihi")
+    instancias.append("A.u_s_hilo")
+    instancias.append("A.u_s_lohi")
+    instancias.append("A.u_s_lolo")
     instancias.append("B.u_c_hihi")
     instancias.append("B.u_c_hilo")
     instancias.append("B.u_c_lohi")
     instancias.append("B.u_c_lolo")
+    instancias.append("B.u_i_hihi")
+    instancias.append("B.u_i_hilo")
+    instancias.append("B.u_i_lohi")
+    instancias.append("B.u_i_lolo")
+    instancias.append("B.u_s_hihi")
+    instancias.append("B.u_s_hilo")
+    instancias.append("B.u_s_lohi")
+    instancias.append("B.u_s_lolo")  
            
-    output_filename = "kw.txt"
+    output_filename = "kw.1024.txt"
     
     print "> Instancias:\n"
     print instancias

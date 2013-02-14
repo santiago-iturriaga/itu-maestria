@@ -4,9 +4,9 @@ rm -rf 512x16.test
 #make
 
 echo "MinMin"
-bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 2 1 1 1 1 1
+bin/d_me-mls-aga-mct-mt instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 2 1 1 1 1 1
 echo "MCT"
-bin/pals_cpu instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 3 1 1 1 1 1
+bin/d_me-mls-aga-mct-mt instancias/512x16.ME/scenario.0 instancias/512x16.ME/workload.A.u_c_hihi 512 16 3 1 1 1 1 1
 
 DIMENSIONS="512 16"
 INSTANCES_PATH="instancias/512x16.ME"
@@ -29,7 +29,7 @@ VERIFICADOR="bin/verificador"
 MINMIN_METRICS_PATH="list-heuristics/512x16/MinMin"
 RUSO_METRICS_PATH="pals-ruso/512x16/pals-ruso"
 
-ALGORITHMS[0]="bin/pals_cpu"
+ALGORITHMS[0]="bin/d_me-mls-aga-mct-mt"
 ALGORITHMS_ID[0]=1
 ALGORITHMS_OUTNAME[0]="pals-1"
 
