@@ -8,23 +8,32 @@ cant_iters=30
 pals_alg_name = 'pals-aga'
 list_heur_dir = 'list-heuristics/'
 
+lp_results_dir = '/home/santiago/bitbucket/master-thesis/linear_programming'
+
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print "Error! Uso: %s <dimension> <sufijo> <prefijo>"
+    if len(sys.argv) != 3:
+        print "Error! Uso: %s <dimension> <sufijo>"
         print "        Ej: %s 1024x32 4"
         exit(-1)
 
     dimension = sys.argv[1]
     sufijo = sys.argv[2]
-    prefijo_archivo = sys.argv[3]
-
-    pals_alg_name = prefijo_archivo
 
     list_heur_dir = list_heur_dir + dimension
     pals_dir = dimension + '.' + sufijo
 
     print 'List heuristics path : %s' % list_heur_dir
     print 'PALS path            : %s' % pals_dir
+
+    lp_results = {}
+    lp_results_raw = open(lp_results_dir + "/" + dimension + ".table").readlines()
+    for index in range(len(lp_results_raw)):
+        if index > 0:
+            if len(lp_results_raw[index].strip()) > 0:
+                line_content = lp_results_raw[index].strip().split('\t')
+                lp_results[line_content[1].strip() + "." + line_content[0].strip()] = (float(line_content[2].strip()), float(line_content[3].strip()))
+
+    print lp_results
 
     instancias_raw = []
 
@@ -156,40 +165,40 @@ if __name__ == '__main__':
                 print '[ERROR] cargando heuristica pals ' + path
                 #exit(-1)
 
-            avg_makespan = total_makespan/cant_iters
-            avg_energy = total_energy/cant_iters
+        avg_makespan = total_makespan/cant_iters
+        avg_energy = total_energy/cant_iters
 
-            aux_stdev_makespan = 0.0
-            aux_stdev_energy = 0.0
+        aux_stdev_makespan = 0.0
+        aux_stdev_energy = 0.0
 
-            for (cant_s, min_m, min_e) in aux_iter_metrics:
-                aux_stdev_makespan = aux_stdev_makespan + math.pow(min_m - avg_makespan, 2)
-                aux_stdev_energy = aux_stdev_energy + math.pow(min_e - avg_energy, 2)
+        for (cant_s, min_m, min_e) in aux_iter_metrics:
+            aux_stdev_makespan = aux_stdev_makespan + math.pow(min_m - avg_makespan, 2)
+            aux_stdev_energy = aux_stdev_energy + math.pow(min_e - avg_energy, 2)
 
-            stdev_makespan = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_makespan)
-            stdev_energy = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_energy)
+        stdev_makespan = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_makespan)
+        stdev_energy = math.sqrt((1.0/(cant_iters-1.0))*aux_stdev_energy)
 
-            resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)
+        resultados_pals[instancia] = (abs_min_makespan, abs_min_energy, total_sols/cant_iters, avg_makespan, stdev_makespan, avg_energy, stdev_energy)
 
-            # INFO ===========================
+        # INFO ===========================
 
-            file_name = pals_alg_name + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
+        file_name = pals_alg_name + '.scenario.' + instancia[0] + '.workload.' + instancia[1] + '.info'
 
-            path = dir_path + file_name
-            #print path
+        path = dir_path + file_name
+        #print path
 
-            if os.path.isfile(path):
-                info_file = open(path)
+        if os.path.isfile(path):
+            info_file = open(path)
 
-                for line in info_file:
-                    values = line.strip().split('|')
+            for line in info_file:
+                values = line.strip().split('|')
 
-                    if values[0] == 'TOTAL_TIME':
-                        total_time = total_time + (float(values[1]) / 1000000.0)
+                if values[0] == 'TOTAL_TIME':
+                    total_time = total_time + (float(values[1]) / 1000000.0)
 
-            else:
-                print "[ERROR] cargando info de la heuristica pals"
-                #exit(-1)
+        else:
+            print "[ERROR] cargando info de la heuristica pals"
+            #exit(-1)
 
         resultados_pals_info[instancia] = (total_time/cant_iters,)
 
@@ -240,6 +249,7 @@ if __name__ == '__main__':
     instancias_grupo_1 = {}
     instancias_grupo_2 = {}
     instancias_grupo_3 = {}
+    instancias_grupo_4 = {}
 
     for instancia in instancias:
         workload_parts = instancia[1].split('.')
@@ -249,14 +259,17 @@ if __name__ == '__main__':
         grupo_1 = (workload_model, workload_type[1])
         grupo_2 = (workload_model, workload_type[2])
         grupo_3 = (workload_type[1], workload_type[2])
-
+        grupo_4 = (workload_model, workload_type[1], workload_type[2])
+        
         if not grupo_1 in instancias_grupo_1: instancias_grupo_1[grupo_1] = []
         if not grupo_2 in instancias_grupo_2: instancias_grupo_2[grupo_2] = []
         if not grupo_3 in instancias_grupo_3: instancias_grupo_3[grupo_3] = []
+        if not grupo_4 in instancias_grupo_4: instancias_grupo_4[grupo_4] = []
 
         instancias_grupo_1[grupo_1].append(instancia)
         instancias_grupo_2[grupo_2].append(instancia)
         instancias_grupo_3[grupo_3].append(instancia)
+        instancias_grupo_4[grupo_4].append(instancia)
 
     print "[====== Tabla GRUPO 1 ======]"
     for item_grupo in sorted(instancias_grupo_1.keys()):
@@ -424,6 +437,68 @@ if __name__ == '__main__':
 
     print "[====== CSV ======]"
     print csv
+
+    # ==============================================================================================================================
+    
+    latex = ""
+
+    #print "[====== Tabla GRUPO 4 ======]"
+    for item_grupo in sorted(instancias_grupo_4.keys()):
+        items = float(len(instancias_grupo_4[item_grupo]))
+
+        mk_total_improvement_best = 0.0
+        mk_total_improvement_avg = 0.0
+        mk_total_std_dev = 0.0
+        mk_total_nd = 0
+
+        nrg_total_improvement_best = 0.0
+        nrg_total_improvement_avg = 0.0
+        nrg_total_std_dev = 0.0
+        nrg_total_nd = 0
+
+        for instancia in instancias_grupo_4[item_grupo]:
+            min_minmin = resultados_MinMin[instancia][0]
+            if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
+            if resultados_MINMin[instancia][0] < min_minmin: min_minmin = resultados_MINMin[instancia][0]
+            if resultados_MINMIN[instancia][0] < min_minmin: min_minmin = resultados_MINMIN[instancia][0]
+
+            mk_total_improvement_best = mk_total_improvement_best + (100.0 - (resultados_pals[instancia][0] * 100.0 / min_minmin))
+            mk_total_improvement_avg = mk_total_improvement_avg + (100.0 - (resultados_pals[instancia][3] * 100.0 / min_minmin))
+            mk_total_std_dev = mk_total_std_dev + (resultados_pals[instancia][4] * 100.0 / resultados_pals[instancia][3])
+            mk_total_nd = mk_total_nd + resultados_pals[instancia][2]
+
+            min_minmin = resultados_MinMin[instancia][1]
+            if resultados_MinMIN[instancia][1] < min_minmin: min_minmin = resultados_MinMIN[instancia][1]
+            if resultados_MINMin[instancia][1] < min_minmin: min_minmin = resultados_MINMin[instancia][1]
+            if resultados_MINMIN[instancia][1] < min_minmin: min_minmin = resultados_MINMIN[instancia][1]
+
+            nrg_total_improvement_best = nrg_total_improvement_best + (100.0 - (resultados_pals[instancia][1] * 100.0 / min_minmin))
+            nrg_total_improvement_avg = nrg_total_improvement_avg + (100.0 - (resultados_pals[instancia][5] * 100.0 / min_minmin))
+            nrg_total_std_dev = nrg_total_std_dev + (resultados_pals[instancia][6] * 100.0 / resultados_pals[instancia][5])
+            nrg_total_nd = nrg_total_nd + resultados_pals[instancia][2]
+
+        model_desc = ""
+        type_desc = ""
+        heter_desc = ""
+        if item_grupo[0] == 'A': model_desc = 'Ali'
+        if item_grupo[0] == 'B': model_desc = 'Braun'
+        if item_grupo[1] == 'c': type_desc = 'cons.'
+        if item_grupo[1] == 's': type_desc = 'semi.'
+        if item_grupo[1] == 'i': type_desc = 'incons.'
+        if item_grupo[2] == 'hihi': heter_desc = 'high high'
+        if item_grupo[2] == 'hilo': heter_desc = 'high low'
+        if item_grupo[2] == 'lohi': heter_desc = 'low high'
+        if item_grupo[2] == 'lolo': heter_desc = 'low low'
+
+        latex = latex + "%s & %s & %s & & %.1f & %.1f & %.1f & & %.1f & %.1f & %.1f\n" % (model_desc, type_desc, heter_desc, \
+            mk_total_improvement_best / items, \
+            mk_total_improvement_avg / items)
+            
+
+    print "[====== LATEX GRUPO 4 ======]"
+    print latex
+    
+    # ==============================================================================================================================
 
     print "[====== Tabla improvements makespan ======]"
     print "MinMin,MinMIN,MINMin,MINMIN"
