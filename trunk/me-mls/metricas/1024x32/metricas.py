@@ -263,7 +263,7 @@ if __name__ == '__main__':
         
         print w
         
-        print "NG/IGD"
+        print "ND/IGD"
         print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
         print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
         print "\\\\"
@@ -271,7 +271,7 @@ if __name__ == '__main__':
         print ""
         
     print "==========================================="
-        
+
     for w in WORKLOADS:
         nd_aga = aggr_value(nd_aga_w[w])
         nd_adhoc = aggr_value(nd_adhoc_w[w])
@@ -299,3 +299,95 @@ if __name__ == '__main__':
         print "\\\\"
 
         print ""
+
+    kw_data = {}
+    with open("kw.txt") as f:
+        for line in f:
+            raw = line.strip().split("|")
+            
+            if not raw[0] in kw_data:
+                kw_data[raw[0]] = {}
+                
+            kw_data[raw[0]][raw[1]] = raw[2]
+    
+    Latex_Q = ""
+    Latex_D = ""
+
+    for w in WORKLOADS:
+        nd_aga = aggr_value(nd_aga_w[w])
+        nd_adhoc = aggr_value(nd_adhoc_w[w])
+
+        spread_aga = aggr_value(spread_aga_w[w])
+        spread_adhoc = aggr_value(spread_adhoc_w[w])
+
+        igd_aga = aggr_value(igd_aga_w[w])
+        igd_adhoc = aggr_value(igd_adhoc_w[w])
+
+        hv_aga = aggr_value(hv_aga_w[w])
+        hv_adhoc = aggr_value(hv_adhoc_w[w])
+
+        min_spread = spread_aga[0]
+        if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
+
+        max_hv = hv_aga[0]
+        if hv_adhoc[0] > max_hv: max_hv = hv_adhoc[0]
+
+        min_igd = igd_aga[0]
+        if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
+
+        model_desc = ""
+        type_desc = ""
+        heter_desc = ""
+        if w[0] == 'A': model_desc = 'Ali'
+        if w[0] == 'B': model_desc = 'Braun'
+        if w[4] == 'c': type_desc = 'cons.'
+        if w[4] == 's': type_desc = 'semi.'
+        if w[4] == 'i': type_desc = 'incons.'
+        if w[6:] == 'hihi': heter_desc = 'high high'
+        if w[6:] == 'hilo': heter_desc = 'high low'
+        if w[6:] == 'lohi': heter_desc = 'low high'
+        if w[6:] == 'lolo': heter_desc = 'low low'
+
+        print w
+        print w[0]
+        print w[4]
+        print w[6:]
+
+        if model_desc == 'Braun' and type_desc == 'cons.' and heter_desc == 'high high':
+            Latex_Q = Latex_Q + "\\hline\n"
+            Latex_D = Latex_D + "\\hline\n"
+
+        if type_desc != 'cons.' and heter_desc == 'high high':
+            Latex_Q = Latex_Q + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
+            Latex_D = Latex_D + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
+
+        if type_desc == 'cons.' and heter_desc == 'high high':
+            Latex_Q = Latex_Q + "\multirow{12}{*}{%s} & " % (model_desc)
+            Latex_D = Latex_D + "\multirow{12}{*}{%s} & " % (model_desc)
+        else:
+            Latex_Q = Latex_Q + " & "
+            Latex_D = Latex_D + " & "
+
+        if heter_desc == 'high high':
+            Latex_Q = Latex_Q + "\multirow{4}{*}{%s} & " % (type_desc)
+            Latex_D = Latex_D + "\multirow{4}{*}{%s} & " % (type_desc)
+        else:
+            Latex_Q = Latex_Q + " & "
+            Latex_D = Latex_D + " & "
+
+        Latex_Q = Latex_Q + "%s & & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s " % (heter_desc, \
+            nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1], kw_data['nd'][w])
+            
+        Latex_Q = Latex_Q + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (igd_aga[0]/min_igd, \
+            igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd, kw_data['igd'][w])
+            
+        Latex_D = Latex_D + "%s & & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s " % (heter_desc, \
+            spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread, kw_data['spread'][w])
+            
+        Latex_D = Latex_D + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (hv_aga[0], \
+            hv_aga[1],hv_adhoc[0],hv_adhoc[1], kw_data['hv'][w])
+
+    print "[========== ND/IGD ==========]"
+    print Latex_Q
+    print "\n\n[========== Spread/HV ==========]"
+    print Latex_D

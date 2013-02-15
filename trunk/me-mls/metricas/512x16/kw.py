@@ -72,7 +72,7 @@ def recopilar_metricas(base, instancias, scenarios, cant_iters, metricas, output
                     
                     if h0_rechazada:
                         #output_file.write("(se rechaza H0 con un p-value %f) \n" % (chi2_g1[index][0]))
-                        output_file.write(metrica + ".scenario." + str(scenario) + ".workload." + instancia + "." + str(chi2_g1[index][0]) + "\n")
+                        #output_file.write(metrica + ".scenario." + str(scenario) + ".workload." + instancia + "." + str(chi2_g1[index][0]) + "\n")
                         
                         best = ""
                         if metrica == "nd" or metrica == "hv":
@@ -89,14 +89,12 @@ def recopilar_metricas(base, instancias, scenarios, cant_iters, metricas, output
                         resultados[metrica][instancia].append((chi2_g1[index][0], best))
                     else:
                         #output_file.write("(no se puede rechazar H0) \n")
-                        output_file.write(metrica + ".scenario." + str(scenario) + ".workload." + instancia + ".0\n")
+                        #output_file.write(metrica + ".scenario." + str(scenario) + ".workload." + instancia + ".0\n")
                         resultados[metrica][instancia].append((1, ""))
                     
                     #output_file.write("\n")
                 #print "========================================="
-    
-    output_file.close()
-    
+       
     for metrica in metricas:
         for instancia in instancias:
             print "================= %s %s" % (metrica, instancia)
@@ -115,16 +113,32 @@ def recopilar_metricas(base, instancias, scenarios, cant_iters, metricas, output
                     else:
                         count_adhoc = count_adhoc + 1
 
-            if count_aga == 11: count_aga = 12
-            if count_adhoc == 11: count_adhoc = 12
-            print "& AGA $%s/12$" % count_aga
-            print "& ad hoc $%s/12$" % count_adhoc
+            #if count_aga == 11: count_aga = 12
+            #if count_adhoc == 11: count_adhoc = 12
+            print "& AGA $%s/11$" % count_aga
+            print "& ad hoc $%s/11$" % count_adhoc
 
+            output_file.write(metrica + "|" + instancia + "|")
+            if (count_aga > count_adhoc):
+                if (count_aga == 11):
+                    output_file.write("\\textbf{AGA %s/11}\n" % count_aga)
+                else:
+                    output_file.write("AGA %s/11\n" % count_aga)
+            elif (count_adhoc > count_aga):
+                if (count_adhoc == 11):
+                    output_file.write("\\textbf{FGAA %s/11}\n" % count_adhoc)
+                else:
+                    output_file.write("FGAA %s/11\n" % count_adhoc)
+            else:
+                output_file.write("none\n")
+            
             #m = max(resultados[metrica][instancia])
             #if m == 1:
             #    print "N/A"
             #else:
             #    print m
+
+    output_file.close()
 
 if __name__ == '__main__':
     cant_iters = 30
