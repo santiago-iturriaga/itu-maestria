@@ -433,9 +433,10 @@ if __name__ == '__main__':
         #print "%s & %s & %.1f \\%% & %.1f \\%% \\\\" % (model_desc, type_desc, mk_total_improvement_avg / items, nrg_total_improvement_avg / items)
         print "%s & %s & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (model_desc, type_desc, mk_total_improvement_best_1, mk_total_improvement_avg_1 / items, nrg_total_improvement_best_1, nrg_total_improvement_avg_1 / items, mk_total_improvement_best_2, mk_total_improvement_avg_2 / items, nrg_total_improvement_best_2, nrg_total_improvement_avg_2 / items)
 
+    print "[============ Best/Average per dimension ====================]"
     print "%s & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ & $%.1f \\%%$ \\\\" % (dimension, mk_best_1, mk_avg_1 / len(instancias_grupo_2), nrg_best_1, nrg_avg_1 / len(instancias_grupo_2), mk_best_2, mk_avg_2 / len(instancias_grupo_2), nrg_best_2, nrg_avg_2 / len(instancias_grupo_2))
 
-    csv = "cons,heter,improv. best makespan,improv. best energy,improv. avg makespan,improv. avg energy,avg std dev makespan,avg std dev energy,avg nd\n"
+    #csv = "cons,heter,improv. best makespan,improv. best energy,improv. avg makespan,improv. avg energy,avg std dev makespan,avg std dev energy,avg nd\n"
 
     # ==============================================================================================================================
     
@@ -555,7 +556,6 @@ if __name__ == '__main__':
             nrg_total_improvement_best_2, \
             nrg_total_improvement_avg_2 / items, \
             nrg_total_gap_2 / items * 100)
-            
 
     print "[====== LATEX MAKESPAN ======]"
     print latex_makespan
@@ -586,6 +586,15 @@ if __name__ == '__main__':
         avg_energy[3] = avg_energy[3] + (100 - (resultados_pals_1[instancia][5] * 100 / resultados_MINMIN[instancia][1]))
 
     print "%.1f,%.1f,%.1f,%.1f" % (avg_energy[0]/len(instancias), avg_energy[1]/len(instancias), avg_energy[2]/len(instancias), avg_energy[3]/len(instancias))
+
+    print "[====== Tabla AGA gap makespan/energía ======]"
+    print "gap makespan (%%),gap energy (%%)"
+    avg_gap = [0.0,0.0]
+    for instancia in instancias:
+        avg_gap[0] = avg_gap[0] + resultados_pals_1[instancia][7]
+        avg_gap[1] = avg_gap[1] + resultados_pals_1[instancia][8]
+
+    print "%.1f,%.1f" % (avg_gap[0]/len(instancias) * 100, avg_gap[1]/len(instancias) * 100)
     
     print "[====== Tabla ad hoc improvements makespan ======]"
     print "MinMin,MinMIN,MINMin,MINMIN"
@@ -608,3 +617,12 @@ if __name__ == '__main__':
         avg_energy[3] = avg_energy[3] + (100 - (resultados_pals_2[instancia][5] * 100 / resultados_MINMIN[instancia][1]))
 
     print "%.1f,%.1f,%.1f,%.1f" % (avg_energy[0]/len(instancias), avg_energy[1]/len(instancias), avg_energy[2]/len(instancias), avg_energy[3]/len(instancias))
+
+    print "[====== Tabla ad hoc gap makespan/energía ======]"
+    print "gap makespan (%%),gap energy (%%)"
+    avg_gap = [0.0,0.0]
+    for instancia in instancias:
+        avg_gap[0] = avg_gap[0] + resultados_pals_2[instancia][7]
+        avg_gap[1] = avg_gap[1] + resultados_pals_2[instancia][8]
+
+    print "%.1f,%.1f" % (avg_gap[0]/len(instancias) * 100, avg_gap[1]/len(instancias) * 100)
