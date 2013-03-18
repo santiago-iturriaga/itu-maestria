@@ -12,23 +12,26 @@ import math
 if __name__ == '__main__':
     argc = len(sys.argv)
     
-    if argc != 3:
-        print "Modo de uso: python %s <#tareas> <seed>" % sys.argv[0]
+    if argc != 4:
+        print "Modo de uso: python %s <#tareas> <#scenarios> <seed>" % sys.argv[0]
         exit(0)
 
     cantidad_tareas = int(sys.argv[1])
-    current_seed = int(sys.argv[2])
+    cantidad_scenarios = int(sys.argv[2])
+    current_seed = int(sys.argv[3])
     
     random.seed(current_seed)
     
-    for task in range(cantidad_tareas):
-        # Calculo la prioridad asignada a la tarea.
-        prioridad = random.gauss(5, 2.5)
-        
-        if prioridad < 1: prioridad = 1
-        if prioridad > 10: prioridad = 10
-        
-        if prioridad >= 5:
-            print int(math.floor(prioridad))
-        else:
-            print int(math.ceil(prioridad))
+    for s in range(cantidad_scenarios):
+        with open('priorities.' + str(s), 'w') as output:
+            for task in range(cantidad_tareas):
+                # Calculo la prioridad asignada a la tarea.
+                prioridad = random.gauss(3, 1)
+                
+                if prioridad < 1: prioridad = 1
+                if prioridad > 5: prioridad = 5
+                
+                if prioridad >= 3:
+                    output.write(str(int(math.floor(prioridad))) + "\n")
+                else:
+                    output.write(str(int(math.ceil(prioridad))) + "\n")
