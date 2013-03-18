@@ -1,0 +1,106 @@
+48	1898162	127.0	559.0		# AMD Opteron 6238
+24	987946	89.8	290.0		# AMD Opteron 6238
+16	1236124	54.1	243.0		# Intel Xeon E5-2670 2.60 GHz
+16	1238932	51.0	231.0		# Intel Xeon E5-2670 2.60 GHz
+16	1236311	50.2	227.0		# Intel Xeon E5-2670 2.60 GHz
+16	1343300	53.1	245.0		# Intel Xeon E5-2660
+16	1280523	59.7	257.0		# Intel Xeon E5-2660
+16	959239	57.5	178.0		# Intel Xeon E5-2650L
+16	1336479	55.6	282.0		# Intel Xeon E5-2670
+16	960074	55.3	170.0		# Intel Xeon E5-2650L
+16	1426130	56.6	247.0		# Intel Xeon E5-2680
+32	1183480	94.9	307.0		# AMD Opteron 6276
+64	2205974	130.0	588.0		# AMD Opteron 6276
+64	2220373	187.0	779.0		# AMD Opteron 6276
+64	2228464	177.0	713.0		# AMD Opteron 6276
+64	2307328	127.0	584.0		# AMD Opteron 6278
+64	2299931	186.0	786.0		# AMD Opteron 6278
+64	2296333	176.0	713.0		# AMD Opteron 6278
+16	1304143	56.1	263.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1308474	52.7	250.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1316689	51.3	246.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+32	2540179	110.0	446.0		# Intel Xeon E5-4650L 2.60 GHz
+16	1187945	51.2	205.0		# Intel Xeon E5-2470 2.3GHz
+16	1261803	56.1	258.0		# Intel Xeon E5-2660 2.20 GHz
+16	1290357	50.3	240.0		# Intel Xeon E5-2660 2.20 GHz
+16	1338554	58.6	257.0		# Intel Xeon E5-2660
+4	416999	19.1	59.5		# Intel Xeon E3-1265LV2
+4	420255	15.7	56.2		# Intel Xeon E3-1265LV2
+16	1309437	52.6	240.0		# Intel Xeon E5-2660
+16	1306867	52.3	240.0		# Intel Xeon E5-2660
+16	1246966	54.7	243.0		# Intel Xeon E5-2660
+16	1269386	52.3	240.0		# Intel Xeon E5-2660
+16	1282967	51.6	239.0		# Intel Xeon E5-2660
+16	1297229	54.0	239.0		# Intel Xeon E5-2660
+16	1007084	52.2	161.0		# Intel Xeon E5-2650L
+16	1394534	54.8	279.0		# Intel Xeon E5-2670
+16	1006482	54.0	167.0		# Intel Xeon E5-2450L
+16	1328249	53.0	249.0		# Intel Xeon E5-2470
+16	1254329	53.4	231.0		# Intel Xeon E5-2450
+12	986986	55.1	207.0		# Intel Xeon E5-2440
+32	2395181	92.3	428.0		# Intel Xeon E5-4640
+32	2402711	92.7	430.0		# Intel Xeon E5-4640
+12	968689	56.2	205.0		# Intel Xeon E5-2630
+16	1348825	56.2	275.0		# Intel Xeon E5-2665
+12	1034209	57.0	231.0		# Intel Xeon E5-2640
+16	1337393	115.0	347.0		# Intel Xeon E5-2665
+16	1337474	102.0	331.0		# Intel Xeon E5-2665
+32	1233423	82.6	320.0		# AMD Opteron 6278
+12	946189	99.6	325.0		# Intel Xeon E5-2630
+12	1007444	99.5	307.0		# Intel Xeon E5-2640
+16	1347230	103.0	409.0		# Intel Xeon E5-2665
+12	990555	81.9	254.0		# Intel Xeon E5-2640
+12	1006865	83.5	255.0		# Intel Xeon E5-2640
+16	1365171	96.6	414.0		# Intel Xeon E5-2665
+12	961609	96.0	323.0		# Intel Xeon E5-2630
+12	1028960	98.2	327.0		# Intel Xeon E5-2640
+16	1347230	103.0	409.0		# Intel Xeon E5-2665
+64	2331362	118.0	593.0		# AMD Opteron 6278
+4	417806	18.9	55.3		# Intel Xeon E3-1265LV2
+32	2347591	94.6	402.0		# Intel Xeon E5-4640
+16	1367462	51.4	252.0		# Intel Xeon E5-2470
+4	467481	14.1	72.5		# Intel Xeon E3-1240V2
+16	1516025	50.7	252.0		# Intel Xeon E5-2470
+32	2619038	97.1	420.0		# Intel Xeon E5-4640
+16	1329468	80.6	294.0		# Intel Xeon E5-2470
+16	1394450	99.3	337.0		# Intel Xeon E5-2670
+16	1401473	104.0	325.0		# Intel Xeon E5-2670
+16	1327737	92.9	297.0		# Intel Xeon E5-2470
+8	670220	58.2	171.0		# Intel Xeon E5-2470
+16	1329120	88.9	286.0		# Intel Xeon E5-2470
+8	671815	52.7	156.0		# Intel Xeon E5-2470
+16	1384613	53.9	254.0		# Intel Xeon E5-2470
+16	1204440	56.1	196.0		# Intel Xeon E5-2660
+16	1169290	56.5	190.0		# Intel Xeon E5-2660
+16	1460149	52.1	259.0		# Intel Xeon E5-2470
+16	1443280	59.5	261.0		# Intel Xeon E5-2660
+16	1496064	47.9	264.0		# Intel Xeon E5-2470 (Intel Turbo Boost Technology up to 3.10 GHz )
+16	1447466	53.8	230.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1511097	53.3	263.0		# Intel Xeon E5-2470 (Intel Turbo Boost Technology up to 3.10 GHz )
+16	1450585	52.3	231.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1446931	51.0	242.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1447399	54.9	248.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+32	2790966	108.0	457.0		# Intel Xeon E5-4650L 2.60 GHz
+16	1432829	54.0	245.0		# Intel Xeon E5-2660
+16	1442516	59.8	258.0		# Intel Xeon E5-2660
+16	1432623	55.2	245.0		# Intel Xeon E5-2660
+16	1440306	55.1	246.0		# Intel Xeon E5-2660
+32	1660274	66.6	306.0		# AMD Opteron 6380
+16	1489644	51.0	241.0		# Intel Xeon E5-2470
+16	1437235	66.8	236.0		# Intel Xeon E5-2680
+16	1445741	51.5	239.0		# Intel Xeon E5-2660
+16	1397144	52.4	231.0		# Intel Xeon E5-2660
+16	1450305	57.2	262.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1459934	57.3	256.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1452648	60.6	265.0		# Intel Xeon E5-2660 2.20 GHz (Intel Turbo Boost Technology up to 3.00 GHz)
+16	1482687	50.8	260.0		# Intel Xeon E5-2470 2.30 GHz (Intel Turbo Boost Technology up to 3.10 GHz)
+16	1463219	62.6	274.0		# Intel Xeon E5-2470 2.30 GHz (Intel Turbo Boost Technology up to 3.10 GHz)
+16	1461469	58.1	269.0		# Intel Xeon E5-2470 2.30 GHz (Intel Turbo Boost Technology up to 3.10 GHz)
+32	1636298	77.9	308.0		# AMD Opteron 6380 (AMD Turbo CORE Technology up to 3.40GHz)
+32	1219688	72.7	216.0		# AMD Opteron 6366 HE (AMD Turbo CORE Technology up to 3.10GHz)
+16	1296979	83.6	272.0		# Intel Xeon E5-2660 (2.20GHz)
+16	1288201	62.4	285.0		# Intel Xeon E5-2470 (2.30GHz)
+16	1448093	101.0	413.0		# Intel Xeon E5-2670 (2.30GHz)
+16	843336	59.5	186.0		# AMD Opteron 4376 HE
+16	971064	60.9	256.0		# AMD Opteron 4386
+8	373385	56.8	109.0		# AMD Opteron 4310 EE
