@@ -1,0 +1,4 @@
+#!/bin/bash
+step=`expr 61 / $1`
+echo "step: $step"
+./shuffle.pl lista_proc | perl -ne 'print if $. % $step == 0'
