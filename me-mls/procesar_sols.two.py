@@ -520,19 +520,19 @@ if __name__ == '__main__':
         if item_grupo[2] == 'lolo': heter_desc = 'low low'
 
         if item_grupo[0] == 'B' and item_grupo[1] == 'c' and item_grupo[2] == 'hihi':
-            latex_makespan = latex_makespan + "\\hline\n"
-            latex_energy = latex_energy + "\\hline\n"
+            latex_makespan = latex_makespan + "\\cline{2-12}\n"
+            latex_energy = latex_energy + "\\cline{2-12}\n"
 
         if item_grupo[1] != 'c' and item_grupo[2] == 'hihi':
-            latex_makespan = latex_makespan + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
-            latex_energy = latex_energy + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
+            latex_makespan = latex_makespan + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
+            latex_energy = latex_energy + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
 
         if item_grupo[1] == 'c' and item_grupo[2] == 'hihi':
-            latex_makespan = latex_makespan + "\multirow{12}{*}{%s} & " % (model_desc)
-            latex_energy = latex_energy + "\multirow{12}{*}{%s} & " % (model_desc)
+            latex_makespan = latex_makespan + " & \multirow{12}{*}{%s} & " % (model_desc)
+            latex_energy = latex_energy + " & \multirow{12}{*}{%s} & " % (model_desc)
         else:
-            latex_makespan = latex_makespan + " & "
-            latex_energy = latex_energy + " & "
+            latex_makespan = latex_makespan + " & & "
+            latex_energy = latex_energy + " & & "
 
         if item_grupo[2] == 'hihi':
             latex_makespan = latex_makespan + "\multirow{4}{*}{%s} & " % (type_desc)

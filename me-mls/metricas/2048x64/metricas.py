@@ -93,15 +93,6 @@ def get_metric(path,s,w,suffix):
 if __name__ == '__main__':
     print "instance,aga nd avg,aga nd stdev,adhoc nd avg,adhoc nd stdev,aga spread avg,aga spread stdev,adhoc spread avg,adhoc spread stdev,aga hv avg,aga hv stdev,adhoc hv avg,adhoc hv stdev,aga igd avg,aga igd stdev,adhoc igd avg,adhoc igd stdev"
 
-    nd_aga_g = []
-    nd_adhoc_g = []
-    spread_aga_g = []
-    spread_adhoc_g = []
-    igd_aga_g = []
-    igd_adhoc_g = []
-    hv_aga_g = []
-    hv_adhoc_g = []
-
     nd_aga_w = {}
     nd_adhoc_w = {}
     spread_aga_w = {}
@@ -172,11 +163,9 @@ if __name__ == '__main__':
                 if aggr_hv_aga[0] > 0:
                     for i in hv_aga:
                         hv_aga_w[w].append(i/max_hv)
-                        hv_aga_g.append(i/max_hv)
                 if aggr_hv_adhoc[0] > 0:
                     for i in hv_adhoc:
                         hv_adhoc_w[w].append(i/max_hv)
-                        hv_adhoc_g.append(i/max_hv)
                 #print hv_adhoc_w[w]
 
             min_igd = aggr_igd_aga[0]
@@ -185,23 +174,21 @@ if __name__ == '__main__':
 
             for i in nd_aga:
                 nd_aga_w[w].append(i)
-                nd_aga_g.append(i)
             for i in spread_aga:
-                spread_aga_w[w].append(i/min_spread)
-                spread_aga_g.append(i/min_spread)
+                #spread_aga_w[w].append(i/min_spread)
+                spread_aga_w[w].append(i)
             for i in igd_aga:
                 igd_aga_w[w].append(i/min_igd)
-                igd_aga_g.append(i/min_igd)
-
+                #igd_aga_w[w].append(i)
+                
             for i in nd_adhoc:
-                nd_adhoc_g.append(i)
                 nd_adhoc_w[w].append(i)
             for i in spread_adhoc:
-                spread_adhoc_w[w].append(i/min_spread)
-                spread_adhoc_g.append(i/min_spread)
+                #spread_adhoc_w[w].append(i/min_spread)
+                spread_adhoc_w[w].append(i)
             for i in igd_adhoc:
+                #igd_adhoc_w[w].append(i)
                 igd_adhoc_w[w].append(i/min_igd)
-                igd_adhoc_g.append(i/min_igd)
 
     print "================"
 
@@ -252,15 +239,25 @@ if __name__ == '__main__':
         adhoc_avg_nd_mean = adhoc_avg_nd_mean + (nd_adhoc[0] / len(WORKLOADS))
         adhoc_avg_nd_stdev = adhoc_avg_nd_stdev + (nd_adhoc[1] / len(WORKLOADS))
 
-        aga_avg_spread_mean = aga_avg_spread_mean + ((spread_aga[0]/min_spread) / len(WORKLOADS))
-        aga_avg_spread_stdev = aga_avg_spread_stdev + ((spread_aga[1]/min_spread) / len(WORKLOADS))
-        adhoc_avg_spread_mean = adhoc_avg_spread_mean + ((spread_adhoc[0]/min_spread) / len(WORKLOADS))
-        adhoc_avg_spread_stdev = adhoc_avg_spread_stdev + ((spread_adhoc[1]/min_spread) / len(WORKLOADS))
+        #aga_avg_spread_mean = aga_avg_spread_mean + ((spread_aga[0]/min_spread) / len(WORKLOADS))
+        #aga_avg_spread_stdev = aga_avg_spread_stdev + ((spread_aga[1]/min_spread) / len(WORKLOADS))
+        #adhoc_avg_spread_mean = adhoc_avg_spread_mean + ((spread_adhoc[0]/min_spread) / len(WORKLOADS))
+        #adhoc_avg_spread_stdev = adhoc_avg_spread_stdev + ((spread_adhoc[1]/min_spread) / len(WORKLOADS))
 
-        aga_avg_igd_mean = aga_avg_igd_mean + ((igd_aga[0]/min_igd) / len(WORKLOADS))
-        aga_avg_igd_stdev = aga_avg_igd_stdev + ((igd_aga[1]/min_igd) / len(WORKLOADS))
-        adhoc_avg_igd_mean = adhoc_avg_igd_mean + ((igd_adhoc[0]/min_igd) / len(WORKLOADS))
-        adhoc_avg_igd_stdev = adhoc_avg_igd_stdev + ((igd_adhoc[1]/min_igd) / len(WORKLOADS))
+        aga_avg_spread_mean = aga_avg_spread_mean + ((spread_aga[0]) / len(WORKLOADS))
+        aga_avg_spread_stdev = aga_avg_spread_stdev + ((spread_aga[1]) / len(WORKLOADS))
+        adhoc_avg_spread_mean = adhoc_avg_spread_mean + ((spread_adhoc[0]) / len(WORKLOADS))
+        adhoc_avg_spread_stdev = adhoc_avg_spread_stdev + ((spread_adhoc[1]) / len(WORKLOADS))
+
+        #aga_avg_igd_mean = aga_avg_igd_mean + ((igd_aga[0]/min_igd) / len(WORKLOADS))
+        #aga_avg_igd_stdev = aga_avg_igd_stdev + ((igd_aga[1]/min_igd) / len(WORKLOADS))
+        #adhoc_avg_igd_mean = adhoc_avg_igd_mean + ((igd_adhoc[0]/min_igd) / len(WORKLOADS))
+        #adhoc_avg_igd_stdev = adhoc_avg_igd_stdev + ((igd_adhoc[1]/min_igd) / len(WORKLOADS))
+
+        aga_avg_igd_mean = aga_avg_igd_mean + ((igd_aga[0]) / len(WORKLOADS))
+        aga_avg_igd_stdev = aga_avg_igd_stdev + ((igd_aga[1]) / len(WORKLOADS))
+        adhoc_avg_igd_mean = adhoc_avg_igd_mean + ((igd_adhoc[0]) / len(WORKLOADS))
+        adhoc_avg_igd_stdev = adhoc_avg_igd_stdev + ((igd_adhoc[1]) / len(WORKLOADS))
 
         aga_avg_rhv_mean = aga_avg_rhv_mean + (hv_aga[0] / len(WORKLOADS))
         aga_avg_rhv_stdev = aga_avg_rhv_stdev + (hv_aga[1] / len(WORKLOADS))
@@ -297,24 +294,15 @@ if __name__ == '__main__':
         min_spread = spread_aga[0]
         if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
 
-        max_hv = hv_aga[0]
-        if hv_adhoc[0] > max_hv: max_hv = hv_adhoc[0]
-
         min_igd = igd_aga[0]
         if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
-
-        #print ""
-        #print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
-        #print "\\\\"
-        
+       
         print w
         
         print "ND/IGD"
         print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-        print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+        #print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+        print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (igd_aga[0],igd_aga[1],igd_adhoc[0],igd_adhoc[1]),
         print "\\\\"
 
         print ""
@@ -343,7 +331,8 @@ if __name__ == '__main__':
         print w
         
         print "Spread/HV"
-        print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+        #print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+        print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (spread_aga[0],spread_aga[1],spread_adhoc[0],spread_adhoc[1]),
         print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (hv_aga[0],hv_aga[1],hv_adhoc[0],hv_adhoc[1]),
         print "\\\\"
 
@@ -398,19 +387,19 @@ if __name__ == '__main__':
         if w[6:] == 'lolo': heter_desc = 'low low'
 
         if model_desc == 'Braun' and type_desc == 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\\hline\n"
-            Latex_D = Latex_D + "\\hline\n"
+            Latex_Q = Latex_Q + "\\cline{2-12}\n"
+            Latex_D = Latex_D + "\\cline{2-12}\n"
 
         if type_desc != 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
-            Latex_D = Latex_D + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
+            Latex_Q = Latex_Q + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
+            Latex_D = Latex_D + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
 
         if type_desc == 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\multirow{12}{*}{%s} & " % (model_desc)
-            Latex_D = Latex_D + "\multirow{12}{*}{%s} & " % (model_desc)
+            Latex_Q = Latex_Q + "& \multirow{12}{*}{%s} & " % (model_desc)
+            Latex_D = Latex_D + "& \multirow{12}{*}{%s} & " % (model_desc)
         else:
-            Latex_Q = Latex_Q + " & "
-            Latex_D = Latex_D + " & "
+            Latex_Q = Latex_Q + " & & "
+            Latex_D = Latex_D + " & & "
 
         if heter_desc == 'high high':
             Latex_Q = Latex_Q + "\multirow{4}{*}{%s} & " % (type_desc)
@@ -422,11 +411,17 @@ if __name__ == '__main__':
         Latex_Q = Latex_Q + "%s & & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s " % (heter_desc, \
             nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1], kw_data['nd'][w])
             
-        Latex_Q = Latex_Q + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (igd_aga[0]/min_igd, \
-            igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd, kw_data['igd'][w])
+        #Latex_Q = Latex_Q + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (igd_aga[0]/min_igd, \
+        #    igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd, kw_data['igd'][w])
+
+        Latex_Q = Latex_Q + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (igd_aga[0], \
+            igd_aga[1],igd_adhoc[0],igd_adhoc[1], kw_data['igd'][w])
             
+        #Latex_D = Latex_D + "%s & & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s " % (heter_desc, \
+        #    spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread, kw_data['spread'][w])
+
         Latex_D = Latex_D + "%s & & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s " % (heter_desc, \
-            spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread, kw_data['spread'][w])
+            spread_aga[0],spread_aga[1],spread_adhoc[0],spread_adhoc[1], kw_data['spread'][w])
             
         Latex_D = Latex_D + "& & %.2f$\pm$%.2f & %.2f$\pm$%.2f & %s \\\\ \n" % (hv_aga[0], \
             hv_aga[1],hv_adhoc[0],hv_adhoc[1], kw_data['hv'][w])

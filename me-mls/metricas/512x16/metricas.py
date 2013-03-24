@@ -387,19 +387,19 @@ if __name__ == '__main__':
         if w[6:] == 'lolo': heter_desc = 'low low'
 
         if model_desc == 'Braun' and type_desc == 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\\hline\n"
-            Latex_D = Latex_D + "\\hline\n"
+            Latex_Q = Latex_Q + "\\cline{2-12}\n"
+            Latex_D = Latex_D + "\\cline{2-12}\n"
 
         if type_desc != 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
-            Latex_D = Latex_D + "\\cline{2-3}\\cline{5-7}\\cline{9-11}\n"
+            Latex_Q = Latex_Q + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
+            Latex_D = Latex_D + "\\cline{3-4}\\cline{6-8}\\cline{10-12}\n"
 
         if type_desc == 'cons.' and heter_desc == 'high high':
-            Latex_Q = Latex_Q + "\multirow{12}{*}{%s} & " % (model_desc)
-            Latex_D = Latex_D + "\multirow{12}{*}{%s} & " % (model_desc)
+            Latex_Q = Latex_Q + "& \multirow{12}{*}{%s} & " % (model_desc)
+            Latex_D = Latex_D + "& \multirow{12}{*}{%s} & " % (model_desc)
         else:
-            Latex_Q = Latex_Q + " & "
-            Latex_D = Latex_D + " & "
+            Latex_Q = Latex_Q + " & & "
+            Latex_D = Latex_D + " & & "
 
         if heter_desc == 'high high':
             Latex_Q = Latex_Q + "\multirow{4}{*}{%s} & " % (type_desc)
