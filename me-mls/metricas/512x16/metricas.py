@@ -143,7 +143,7 @@ if __name__ == '__main__':
             if aggr_spread_adhoc[0] < min_spread: min_spread = aggr_spread_adhoc[0]
             if min_spread == 0: min_spread = 1
 
-            max_hv = aggr_hv_fp[0] #aggr_hv_aga[0]
+            #max_hv = aggr_hv_fp[0] #aggr_hv_aga[0]
 
             #print "%s %s" % (w, s)
             #if max_hv == 0: max_hv = 1
@@ -157,16 +157,16 @@ if __name__ == '__main__':
                 #hv_adhoc_g.append(i/max_hv)
                     
             #if max_hv > 0 and aggr_hv_aga[0] > 0 and aggr_hv_adhoc[0] > 0:
-            if max_hv > 0:
-                #print aggr_hv_fp
-                #print hv_adhoc
-                if aggr_hv_aga[0] > 0:
-                    for i in hv_aga:
-                        hv_aga_w[w].append(i/max_hv)
-                if aggr_hv_adhoc[0] > 0:
-                    for i in hv_adhoc:
-                        hv_adhoc_w[w].append(i/max_hv)
-                #print hv_adhoc_w[w]
+            #if max_hv > 0:
+            #print aggr_hv_fp
+            #print hv_adhoc
+            if aggr_hv_aga[0] > 0:
+                for i in hv_aga:
+                    hv_aga_w[w].append(i)
+            if aggr_hv_adhoc[0] > 0:
+                for i in hv_adhoc:
+                    hv_adhoc_w[w].append(i)
+            #print hv_adhoc_w[w]
 
             min_igd = aggr_igd_aga[0]
             if aggr_igd_adhoc[0] < min_igd: min_igd = aggr_igd_adhoc[0]
