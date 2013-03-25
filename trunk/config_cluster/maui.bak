@@ -160,7 +160,7 @@ SRCFG[eolo] USERLIST=eolico
 #SRCFG[eolo] USERLIST=eolico
 
 SRCFG[quick] PERIOD=INFINITY
-SRCFG[quick] HOSTLIST=node38.cluster.fing
+SRCFG[quick] HOSTLIST=node40.cluster.fing
 SRCFG[quick] CLASSLIST=quick_jobs
 
 #SRCFG[mantenimiento] STARTTIME=05:00
