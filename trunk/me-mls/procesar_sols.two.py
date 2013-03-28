@@ -321,6 +321,7 @@ if __name__ == '__main__':
 
         resultados_pals_info_2[instancia] = (total_time/cant_iters,)
 
+    instancias_grupo_0 = {}
     instancias_grupo_1 = {}
     instancias_grupo_2 = {}
     instancias_grupo_3 = {}
@@ -331,16 +332,19 @@ if __name__ == '__main__':
         workload_model = workload_parts[0]
         workload_type = workload_parts[1].split('_')
 
+        grupo_0 = (workload_type[1])
         grupo_1 = (workload_model, workload_type[1])
         grupo_2 = (workload_model, workload_type[2])
         grupo_3 = (workload_type[1], workload_type[2])
         grupo_4 = (workload_model, workload_type[1], workload_type[2])
 
+        if not grupo_0 in instancias_grupo_0: instancias_grupo_0[grupo_0] = []
         if not grupo_1 in instancias_grupo_1: instancias_grupo_1[grupo_1] = []
         if not grupo_2 in instancias_grupo_2: instancias_grupo_2[grupo_2] = []
         if not grupo_3 in instancias_grupo_3: instancias_grupo_3[grupo_3] = []
         if not grupo_4 in instancias_grupo_4: instancias_grupo_4[grupo_4] = []
 
+        instancias_grupo_0[grupo_0].append(instancia)
         instancias_grupo_1[grupo_1].append(instancia)
         instancias_grupo_2[grupo_2].append(instancia)
         instancias_grupo_3[grupo_3].append(instancia)
@@ -562,6 +566,91 @@ if __name__ == '__main__':
 
     print "[====== LATEX ENERGY ======]"
     print latex_energy
+    
+    # ==============================================================================================================================
+    
+    latex_makespan_energy = ""
+
+    #print "[====== Tabla GRUPO 0 ======]"
+    for item_grupo in sorted(instancias_grupo_0.keys()):
+        items = float(len(instancias_grupo_0[item_grupo]))
+
+        mk_total_improvement_best_1 = 0.0
+        mk_total_improvement_avg_1 = 0.0
+        #mk_total_std_dev = 0.0
+        #mk_total_nd = 0
+
+        nrg_total_improvement_best_1 = 0.0
+        nrg_total_improvement_avg_1 = 0.0
+        #nrg_total_std_dev = 0.0
+        #nrg_total_nd = 0
+
+        mk_total_improvement_best_2 = 0.0
+        mk_total_improvement_avg_2 = 0.0
+
+        nrg_total_improvement_best_2 = 0.0
+        nrg_total_improvement_avg_2 = 0.0
+        
+        mk_total_gap_1 = 0.0
+        nrg_total_gap_1 = 0.0
+
+        mk_total_gap_2 = 0.0
+        nrg_total_gap_2 = 0.0
+
+        for instancia in instancias_grupo_0[item_grupo]:
+            min_minmin = resultados_MinMin[instancia][0]
+            if resultados_MinMIN[instancia][0] < min_minmin: min_minmin = resultados_MinMIN[instancia][0]
+            if resultados_MINMin[instancia][0] < min_minmin: min_minmin = resultados_MINMin[instancia][0]
+            if resultados_MINMIN[instancia][0] < min_minmin: min_minmin = resultados_MINMIN[instancia][0]
+
+            mk_aux = 100.0 - (resultados_pals_1[instancia][0] * 100.0 / min_minmin)
+            if mk_aux > mk_total_improvement_best_1:
+                mk_total_improvement_best_1 = mk_aux
+            mk_total_improvement_avg_1 = mk_total_improvement_avg_1 + (100.0 - (resultados_pals_1[instancia][3] * 100.0 / min_minmin))
+
+            mk_aux = 100.0 - (resultados_pals_2[instancia][0] * 100.0 / min_minmin)
+            if mk_aux > mk_total_improvement_best_2:
+                mk_total_improvement_best_2 = mk_aux
+            mk_total_improvement_avg_2 = mk_total_improvement_avg_2 + (100.0 - (resultados_pals_2[instancia][3] * 100.0 / min_minmin))
+
+            min_minmin = resultados_MinMin[instancia][1]
+            if resultados_MinMIN[instancia][1] < min_minmin: min_minmin = resultados_MinMIN[instancia][1]
+            if resultados_MINMin[instancia][1] < min_minmin: min_minmin = resultados_MINMin[instancia][1]
+            if resultados_MINMIN[instancia][1] < min_minmin: min_minmin = resultados_MINMIN[instancia][1]
+
+            nrg_aux = 100.0 - (resultados_pals_1[instancia][1] * 100.0 / min_minmin)
+            if nrg_aux > nrg_total_improvement_best_1:
+                nrg_total_improvement_best_1 = nrg_aux
+            nrg_total_improvement_avg_1 = nrg_total_improvement_avg_1 + (100.0 - (resultados_pals_1[instancia][5] * 100.0 / min_minmin))
+
+            nrg_aux = 100.0 - (resultados_pals_2[instancia][1] * 100.0 / min_minmin)
+            if nrg_aux > nrg_total_improvement_best_2:
+                nrg_total_improvement_best_2 = nrg_aux
+            nrg_total_improvement_avg_2 = nrg_total_improvement_avg_2 + (100.0 - (resultados_pals_2[instancia][5] * 100.0 / min_minmin))
+            
+            mk_total_gap_1 = mk_total_gap_1 + resultados_pals_1[instancia][7]
+            nrg_total_gap_1 = nrg_total_gap_1 + resultados_pals_1[instancia][8]
+            
+            mk_total_gap_2 = mk_total_gap_2 + resultados_pals_2[instancia][7]
+            nrg_total_gap_2 = nrg_total_gap_2 + resultados_pals_2[instancia][8]
+
+        type_desc = ""
+        if item_grupo[0] == 'c': type_desc = 'cons.'
+        if item_grupo[0] == 's': type_desc = 'semi.'
+        if item_grupo[0] == 'i': type_desc = 'incons.'
+          
+        latex_makespan_energy = latex_makespan_energy + "& %s & & %.1f\\%% & %.1f\\%% & & %.1f\\%% & %.1f\\%% & & %.1f\\%% & %.1f\\%% & & %.1f\\%% & %.1f\\%% \\\\ \n" % (type_desc, \
+            mk_total_improvement_avg_1 / items, \
+            mk_total_improvement_avg_2 / items, \
+            mk_total_gap_1 / items * 100, \
+            mk_total_gap_2 / items * 100, \
+            nrg_total_improvement_avg_1 / items, \
+            nrg_total_improvement_avg_2 / items, \
+            nrg_total_gap_1 / items * 100, \
+            nrg_total_gap_2 / items * 100)
+
+    print "[====== LATEX MAKESPAN+ENERGY ======]"
+    print latex_makespan_energy
     
     # ==============================================================================================================================
 
