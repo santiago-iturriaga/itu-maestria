@@ -1,96 +1,96 @@
-nd|A.u_c_hihi|\textbf{AGA 11/11}
-nd|A.u_c_hilo|\textbf{AGA 11/11}
-nd|A.u_c_lohi|\textbf{AGA 11/11}
-nd|A.u_c_lolo|AGA 10/11
-nd|A.u_i_hihi|FGAA 1/11
-nd|A.u_i_hilo|none
-nd|A.u_i_lohi|AGA 1/11
-nd|A.u_i_lolo|none
-nd|A.u_s_hihi|\textbf{AGA 11/11}
-nd|A.u_s_hilo|\textbf{AGA 11/11}
-nd|A.u_s_lohi|\textbf{AGA 11/11}
-nd|A.u_s_lolo|AGA 5/11
-nd|B.u_c_hihi|\textbf{AGA 11/11}
-nd|B.u_c_hilo|\textbf{AGA 11/11}
-nd|B.u_c_lohi|\textbf{AGA 11/11}
-nd|B.u_c_lolo|\textbf{AGA 11/11}
-nd|B.u_i_hihi|AGA 1/11
-nd|B.u_i_hilo|FGAA 1/11
-nd|B.u_i_lohi|AGA 1/11
-nd|B.u_i_lolo|AGA 1/11
-nd|B.u_s_hihi|\textbf{AGA 11/11}
-nd|B.u_s_hilo|\textbf{AGA 11/11}
-nd|B.u_s_lohi|\textbf{AGA 11/11}
-nd|B.u_s_lolo|\textbf{AGA 11/11}
-hv|A.u_c_hihi|AGA 10/11
-hv|A.u_c_hilo|AGA 10/11
-hv|A.u_c_lohi|\textbf{AGA 11/11}
-hv|A.u_c_lolo|AGA 7/11
-hv|A.u_i_hihi|FGAA 3/11
-hv|A.u_i_hilo|FGAA 7/11
-hv|A.u_i_lohi|FGAA 7/11
-hv|A.u_i_lolo|FGAA 5/11
-hv|A.u_s_hihi|AGA 9/11
-hv|A.u_s_hilo|AGA 10/11
-hv|A.u_s_lohi|AGA 5/11
-hv|A.u_s_lolo|AGA 1/11
-hv|B.u_c_hihi|\textbf{AGA 11/11}
-hv|B.u_c_hilo|\textbf{AGA 11/11}
-hv|B.u_c_lohi|\textbf{AGA 11/11}
-hv|B.u_c_lolo|\textbf{AGA 11/11}
-hv|B.u_i_hihi|FGAA 8/11
-hv|B.u_i_hilo|FGAA 5/11
-hv|B.u_i_lohi|FGAA 3/11
-hv|B.u_i_lolo|FGAA 4/11
-hv|B.u_s_hihi|AGA 10/11
-hv|B.u_s_hilo|AGA 10/11
-hv|B.u_s_lohi|\textbf{AGA 11/11}
-hv|B.u_s_lolo|AGA 9/11
-spread|A.u_c_hihi|AGA 9/11
-spread|A.u_c_hilo|AGA 7/11
-spread|A.u_c_lohi|AGA 10/11
-spread|A.u_c_lolo|AGA 2/11
-spread|A.u_i_hihi|FGAA 2/11
-spread|A.u_i_hilo|FGAA 2/11
-spread|A.u_i_lohi|FGAA 3/11
-spread|A.u_i_lolo|FGAA 8/11
-spread|A.u_s_hihi|AGA 6/11
-spread|A.u_s_hilo|AGA 9/11
-spread|A.u_s_lohi|AGA 4/11
-spread|A.u_s_lolo|none
-spread|B.u_c_hihi|AGA 7/11
-spread|B.u_c_hilo|AGA 8/11
-spread|B.u_c_lohi|AGA 10/11
-spread|B.u_c_lolo|AGA 10/11
-spread|B.u_i_hihi|FGAA 4/11
-spread|B.u_i_hilo|FGAA 3/11
-spread|B.u_i_lohi|FGAA 2/11
-spread|B.u_i_lolo|FGAA 2/11
-spread|B.u_s_hihi|AGA 10/11
-spread|B.u_s_hilo|\textbf{AGA 11/11}
-spread|B.u_s_lohi|AGA 9/11
-spread|B.u_s_lolo|AGA 7/11
-igd|A.u_c_hihi|\textbf{AGA 11/11}
-igd|A.u_c_hilo|AGA 10/11
-igd|A.u_c_lohi|\textbf{AGA 11/11}
-igd|A.u_c_lolo|AGA 5/11
-igd|A.u_i_hihi|FGAA 2/11
-igd|A.u_i_hilo|FGAA 2/11
-igd|A.u_i_lohi|FGAA 4/11
-igd|A.u_i_lolo|FGAA 4/11
-igd|A.u_s_hihi|AGA 10/11
-igd|A.u_s_hilo|AGA 10/11
-igd|A.u_s_lohi|AGA 6/11
-igd|A.u_s_lolo|AGA 2/11
-igd|B.u_c_hihi|\textbf{AGA 11/11}
-igd|B.u_c_hilo|AGA 10/11
-igd|B.u_c_lohi|\textbf{AGA 11/11}
-igd|B.u_c_lolo|\textbf{AGA 11/11}
-igd|B.u_i_hihi|FGAA 4/11
-igd|B.u_i_hilo|FGAA 3/11
-igd|B.u_i_lohi|FGAA 2/11
-igd|B.u_i_lolo|FGAA 2/11
-igd|B.u_s_hihi|AGA 9/11
-igd|B.u_s_hilo|AGA 9/11
-igd|B.u_s_lohi|\textbf{AGA 11/11}
-igd|B.u_s_lolo|AGA 8/11
+nd|A.u_c_hihi|\textbf{AGA 11/11}|11|0
+nd|A.u_c_hilo|\textbf{AGA 11/11}|11|0
+nd|A.u_c_lohi|\textbf{AGA 11/11}|11|0
+nd|A.u_c_lolo|AGA 10/11|10|1
+nd|A.u_i_hihi|FGAA 1/11|0|1
+nd|A.u_i_hilo|none|0|0
+nd|A.u_i_lohi|AGA 1/11|1|0
+nd|A.u_i_lolo|none|0|0
+nd|A.u_s_hihi|\textbf{AGA 11/11}|11|0
+nd|A.u_s_hilo|\textbf{AGA 11/11}|11|0
+nd|A.u_s_lohi|\textbf{AGA 11/11}|11|0
+nd|A.u_s_lolo|AGA 5/11|5|2
+nd|B.u_c_hihi|\textbf{AGA 11/11}|11|0
+nd|B.u_c_hilo|\textbf{AGA 11/11}|11|0
+nd|B.u_c_lohi|\textbf{AGA 11/11}|11|0
+nd|B.u_c_lolo|\textbf{AGA 11/11}|11|0
+nd|B.u_i_hihi|AGA 1/11|1|0
+nd|B.u_i_hilo|FGAA 1/11|0|1
+nd|B.u_i_lohi|AGA 1/11|1|0
+nd|B.u_i_lolo|AGA 1/11|1|0
+nd|B.u_s_hihi|\textbf{AGA 11/11}|11|0
+nd|B.u_s_hilo|\textbf{AGA 11/11}|11|0
+nd|B.u_s_lohi|\textbf{AGA 11/11}|11|0
+nd|B.u_s_lolo|\textbf{AGA 11/11}|11|0
+hv|A.u_c_hihi|AGA 10/11|10|1
+hv|A.u_c_hilo|AGA 10/11|10|1
+hv|A.u_c_lohi|\textbf{AGA 11/11}|11|0
+hv|A.u_c_lolo|AGA 3/11|3|2
+hv|A.u_i_hihi|AGA 1/11|1|0
+hv|A.u_i_hilo|none|0|0
+hv|A.u_i_lohi|none|1|1
+hv|A.u_i_lolo|none|0|0
+hv|A.u_s_hihi|AGA 7/11|7|3
+hv|A.u_s_hilo|AGA 10/11|10|1
+hv|A.u_s_lohi|FGAA 4/11|3|4
+hv|A.u_s_lolo|FGAA 1/11|0|1
+hv|B.u_c_hihi|AGA 10/11|10|1
+hv|B.u_c_hilo|AGA 8/11|8|3
+hv|B.u_c_lohi|AGA 10/11|10|1
+hv|B.u_c_lolo|\textbf{AGA 11/11}|11|0
+hv|B.u_i_hihi|AGA 1/11|1|0
+hv|B.u_i_hilo|none|0|0
+hv|B.u_i_lohi|none|0|0
+hv|B.u_i_lolo|AGA 1/11|1|0
+hv|B.u_s_hihi|AGA 8/11|8|3
+hv|B.u_s_hilo|AGA 7/11|7|4
+hv|B.u_s_lohi|AGA 10/11|10|1
+hv|B.u_s_lolo|AGA 8/11|8|2
+spread|A.u_c_hihi|AGA 9/11|9|2
+spread|A.u_c_hilo|AGA 7/11|7|4
+spread|A.u_c_lohi|AGA 10/11|10|1
+spread|A.u_c_lolo|AGA 2/11|2|0
+spread|A.u_i_hihi|none|0|0
+spread|A.u_i_hilo|AGA 1/11|1|0
+spread|A.u_i_lohi|AGA 1/11|1|0
+spread|A.u_i_lolo|FGAA 6/11|1|6
+spread|A.u_s_hihi|AGA 6/11|6|2
+spread|A.u_s_hilo|AGA 9/11|9|2
+spread|A.u_s_lohi|AGA 4/11|4|3
+spread|A.u_s_lolo|none|0|0
+spread|B.u_c_hihi|AGA 7/11|7|2
+spread|B.u_c_hilo|AGA 8/11|8|3
+spread|B.u_c_lohi|AGA 10/11|10|1
+spread|B.u_c_lolo|AGA 10/11|10|1
+spread|B.u_i_hihi|FGAA 2/11|1|2
+spread|B.u_i_hilo|none|0|0
+spread|B.u_i_lohi|AGA 1/11|1|0
+spread|B.u_i_lolo|none|0|0
+spread|B.u_s_hihi|AGA 10/11|10|1
+spread|B.u_s_hilo|\textbf{AGA 11/11}|11|0
+spread|B.u_s_lohi|AGA 9/11|9|2
+spread|B.u_s_lolo|AGA 7/11|7|3
+igd|A.u_c_hihi|\textbf{AGA 11/11}|11|0
+igd|A.u_c_hilo|AGA 10/11|10|1
+igd|A.u_c_lohi|\textbf{AGA 11/11}|11|0
+igd|A.u_c_lolo|AGA 5/11|5|3
+igd|A.u_i_hihi|AGA 1/11|1|0
+igd|A.u_i_hilo|none|0|0
+igd|A.u_i_lohi|none|1|1
+igd|A.u_i_lolo|none|0|0
+igd|A.u_s_hihi|AGA 10/11|10|1
+igd|A.u_s_hilo|AGA 10/11|10|1
+igd|A.u_s_lohi|AGA 6/11|6|3
+igd|A.u_s_lolo|AGA 2/11|2|0
+igd|B.u_c_hihi|\textbf{AGA 11/11}|11|0
+igd|B.u_c_hilo|AGA 10/11|10|1
+igd|B.u_c_lohi|\textbf{AGA 11/11}|11|0
+igd|B.u_c_lolo|\textbf{AGA 11/11}|11|0
+igd|B.u_i_hihi|AGA 1/11|1|0
+igd|B.u_i_hilo|none|0|0
+igd|B.u_i_lohi|AGA 1/11|1|0
+igd|B.u_i_lolo|none|1|1
+igd|B.u_s_hihi|AGA 9/11|9|2
+igd|B.u_s_hilo|AGA 9/11|9|2
+igd|B.u_s_lohi|\textbf{AGA 11/11}|11|0
+igd|B.u_s_lolo|AGA 8/11|8|2

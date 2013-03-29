@@ -121,16 +121,18 @@ def recopilar_metricas(base, instancias, scenarios, cant_iters, metricas, output
             output_file.write(metrica + "|" + instancia + "|")
             if (count_aga > count_adhoc):
                 if (count_aga == 11):
-                    output_file.write("\\textbf{AGA %s/11}\n" % count_aga)
+                    output_file.write("\\textbf{AGA %s/11}" % count_aga)
                 else:
-                    output_file.write("AGA %s/11\n" % count_aga)
+                    output_file.write("AGA %s/11" % count_aga)
             elif (count_adhoc > count_aga):
                 if (count_adhoc == 11):
-                    output_file.write("\\textbf{FGAA %s/11}\n" % count_adhoc)
+                    output_file.write("\\textbf{FGAA %s/11}" % count_adhoc)
                 else:
-                    output_file.write("FGAA %s/11\n" % count_adhoc)
+                    output_file.write("FGAA %s/11" % count_adhoc)
             else:
-                output_file.write("none\n")
+                output_file.write("none")
+                
+            output_file.write("|%s|%s\n" % (count_aga, count_adhoc))
             
             #m = max(resultados[metrica][instancia])
             #if m == 1:
