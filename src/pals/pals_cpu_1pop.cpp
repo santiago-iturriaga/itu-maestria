@@ -471,7 +471,7 @@ void pals_cpu_1pop(struct params &input, struct etc_matrix *etc, struct energy_m
 
 
 void pals_cpu_1pop_init(struct params &input, struct etc_matrix *etc, struct energy_matrix *energy,
-int seed, struct pals_cpu_1pop_instance &empty_instance)
+    int seed, struct pals_cpu_1pop_instance &empty_instance)
 {
 
     // Asignacin del paralelismo del algoritmo.

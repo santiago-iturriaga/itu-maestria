@@ -8,7 +8,7 @@
 #ifndef LOAD_PARAMS_H_
 #define LOAD_PARAMS_H_
 
-#define PALS_2POP 0
+#define     RPALS 0
 #define PALS_1POP 1
 #define    MINMIN 2
 #define       MCT 3
