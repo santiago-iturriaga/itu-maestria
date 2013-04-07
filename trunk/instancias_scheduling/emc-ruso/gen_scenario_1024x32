@@ -1,0 +1,1 @@
+ ./shuffle.pl lista_proc_32 | perl -ne 'print if $. % 3 == 0' | head -32 > 1024x32/scenario.0

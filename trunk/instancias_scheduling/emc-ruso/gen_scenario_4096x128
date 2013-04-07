@@ -1,0 +1,4 @@
+for ((i=0;i<20;i++))
+do
+    ./shuffle.pl lista_proc_128 | head -128 > 4096x128/scenario.${i}
+done

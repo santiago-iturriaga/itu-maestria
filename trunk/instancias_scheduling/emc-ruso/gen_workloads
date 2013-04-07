@@ -1,0 +1,12 @@
+for i in $(seq 10 19)
+do
+	python gen.high.py 1024 32 1 $i > workload.1$i
+done
+for i in $(seq 20 29)
+do
+	python gen.high.py 1024 32 2 $i > workload.1$i
+done
+for i in $(seq 30 39)
+do
+	python gen.high.py 1024 32 3 $i > workload.1$i
+done

@@ -1,0 +1,2 @@
+#!/bin/bash
+./shuffle.pl lista_proc | perl -ne '$. % (61/$1) || print'
