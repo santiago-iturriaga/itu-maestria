@@ -2,6 +2,7 @@ import sys
 import os
 import math
 
+PATH_FP = "metrics-fp/fp"
 PATH_AGA = "metrics-aga/pals-aga"
 PATH_ADHOC = "metrics-adhoc/pals-1"
 ITERATIONS=30
@@ -15,8 +16,10 @@ ITERATIONS=30
 SCENARIOS=(0,3,6,9,10,11,13,14,16,17,19)
 #SCENARIOS=(0,6,9,11,13,16,17,19)
 #SCENARIOS=(0,6,11,13,16,19)
-WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
-#WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
+
+#WORKLOADS=("B.u_c_lohi",)
+#WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo")
+WORKLOADS=("A.u_c_hihi","A.u_c_hilo","A.u_c_lohi","A.u_c_lolo","A.u_s_hihi","A.u_s_hilo","A.u_s_lohi","A.u_s_lolo","B.u_c_hihi","B.u_c_hilo","B.u_c_lohi","B.u_c_lolo","B.u_s_hihi","B.u_s_hilo","B.u_s_lohi","B.u_s_lolo")
 
 def aggr_value(values):
     if len(values) > 0:
@@ -29,10 +32,26 @@ def aggr_value(values):
         aux = 0.0
         for v in values:
             aux += pow(v-mean,2) / float(len(values)) #float(len(values)-1)
-
+            
         return (mean,math.sqrt(aux))
     else:
         return (0,0)
+
+def get_fp_metric(path,s,w,suffix):
+    valor_aux = 0
+    full_path = path + ".scenario." + str(s) + ".workload." + w + "." + suffix
+    try:
+        file = open(full_path)
+
+        valor_aux = file.readline()
+        valor = float(valor_aux.split(' ')[0])
+
+        return (valor, 0)
+    except:
+        print full_path
+        print valor_aux
+
+    return (0,0)
 
 def get_metric(path,s,w,suffix):
     valores = []
@@ -46,9 +65,9 @@ def get_metric(path,s,w,suffix):
             valor_aux = file.readline()
             valor = float(valor_aux.split(' ')[0])
 
-                #if not math.isnan(valor):
-            if valor > 0:
-                valores.append(valor)
+            #if not math.isnan(valor):
+            #if valor > 0:
+            valores.append(valor)
         except:
             print full_path
             print valor_aux
@@ -87,84 +106,98 @@ if __name__ == '__main__':
         hv_adhoc_w[w] = []
 
         for s in SCENARIOS:
-            nd_aga = get_metric(PATH_AGA, s, w, "nd")
-            nd_adhoc = get_metric(PATH_ADHOC, s, w, "nd")
+            #nd_aga = get_metric(PATH_AGA, s, w, "nd")
+            #nd_adhoc = get_metric(PATH_ADHOC, s, w, "nd")
 
-            aggr_nd_aga = aggr_value(nd_aga)
-            aggr_nd_adhoc = aggr_value(nd_adhoc)
+            #aggr_nd_aga = aggr_value(nd_aga)
+            #aggr_nd_adhoc = aggr_value(nd_adhoc)
 
-            spread_aga = get_metric(PATH_AGA, s, w, "spread")
-            spread_adhoc = get_metric(PATH_ADHOC, s, w, "spread")
+            #spread_aga = get_metric(PATH_AGA, s, w, "spread")
+            #spread_adhoc = get_metric(PATH_ADHOC, s, w, "spread")
 
-            aggr_spread_aga = aggr_value(spread_aga)
-            aggr_spread_adhoc = aggr_value(spread_adhoc)
+            #aggr_spread_aga = aggr_value(spread_aga)
+            #aggr_spread_adhoc = aggr_value(spread_adhoc)
 
             hv_aga = get_metric(PATH_AGA, s, w, "hv")
             hv_adhoc = get_metric(PATH_ADHOC, s, w, "hv")
+            
+            aggr_hv_fp = get_fp_metric(PATH_FP, s, w, "hv")
 
-            #print hv_aga
+            ##aggr_hv_aga = aggr_value(hv_aga)
+            ##aggr_hv_adhoc = aggr_value(hv_adhoc)
 
-            aggr_hv_aga = aggr_value(hv_aga)
-            aggr_hv_adhoc = aggr_value(hv_adhoc)
+            #igd_aga = get_metric(PATH_AGA, s, w, "igd")
+            #igd_adhoc = get_metric(PATH_ADHOC, s, w, "igd")
 
-            igd_aga = get_metric(PATH_AGA, s, w, "igd")
-            igd_adhoc = get_metric(PATH_ADHOC, s, w, "igd")
+            #aggr_igd_aga = aggr_value(igd_aga)
+            #aggr_igd_adhoc = aggr_value(igd_adhoc)
 
-            aggr_igd_aga = aggr_value(igd_aga)
-            aggr_igd_adhoc = aggr_value(igd_adhoc)
+            #min_spread = aggr_spread_aga[0]
+            #if aggr_spread_adhoc[0] < min_spread: min_spread = aggr_spread_adhoc[0]
+            #if min_spread == 0: min_spread = 1
 
-            #print "%s %s,%s,%s,%s,%s" % (s,w,aggr_nd_aga[0],aggr_nd_aga[1],aggr_nd_adhoc[0],aggr_nd_adhoc[1]),
-            #print ",%s,%s,%s,%s" % (aggr_spread_aga[0],aggr_spread_aga[1],aggr_spread_adhoc[0],aggr_spread_adhoc[1]),
-            #print ",%s,%s,%s,%s" % (aggr_hv_aga[0],aggr_hv_aga[1],aggr_hv_adhoc[0],aggr_hv_adhoc[1]),
-            #print ",%s,%s,%s,%s" % (aggr_igd_aga[0],aggr_igd_aga[1],aggr_igd_adhoc[0],aggr_igd_adhoc[1])
+            max_hv = aggr_hv_fp[0] #aggr_hv_aga[0]
 
-            print "%s %s"%(s,w),
-            print ",%s,%s,%s,%s" % (aggr_nd_aga[0],aggr_nd_aga[1],aggr_nd_adhoc[0],aggr_nd_adhoc[1]),
+            print "============================================="
+            print "%s %s" % (w, s)
+            print max_hv
+            
+            ##if max_hv == 0: max_hv = 1
+            ##print max_hv
+            ##print hv_adhoc
+            ##for i in hv_aga:
+                ##hv_aga_w[w].append(i/max_hv)
+                ##hv_aga_g.append(i/max_hv)
+            ##for i in hv_adhoc:
+                ##hv_adhoc_w[w].append(i/max_hv)
+                ##hv_adhoc_g.append(i/max_hv)
+                    
+            ##if max_hv > 0 and aggr_hv_aga[0] > 0 and aggr_hv_adhoc[0] > 0:
+            if max_hv > 0:
+                ##print aggr_hv_fp
+                
+                ##if aggr_hv_aga[0] > 0:
+                for i in range(len(hv_aga)):
+                    print "%s - %s" % (i, hv_aga[i])
+                    
+                    ##if nd_aga[i] > 3:
+                    if hv_aga[i] > 0:
+                        hv_aga_w[w].append(hv_aga[i]/max_hv)
+                        hv_aga_g.append(hv_aga[i]/max_hv)
+                ##if aggr_hv_adhoc[0] > 0:
+                
+                for i in range(len(hv_adhoc)):
+                    ##if nd_adhoc[i] > 3:
+                    if hv_adhoc[i] > 0:
+                        hv_adhoc_w[w].append(hv_adhoc[i]/max_hv)
+                        hv_adhoc_g.append(hv_adhoc[i]/max_hv)
+                ##print hv_adhoc_w[w]
 
-            min_spread = aggr_spread_aga[0]
-            if aggr_spread_adhoc[0] < min_spread: min_spread = aggr_spread_adhoc[0]
-            if min_spread == 0: min_spread = 1
+            #min_igd = aggr_igd_aga[0]
+            #if aggr_igd_adhoc[0] < min_igd: min_igd = aggr_igd_adhoc[0]
+            #if min_igd == 0: min_igd = 1
 
-            print ",%s,%s,%s,%s" % (aggr_spread_aga[0]/min_spread,aggr_spread_aga[1]/min_spread,aggr_spread_adhoc[0]/min_spread,aggr_spread_adhoc[1]/min_spread),
+            #for i in nd_aga:
+                #nd_aga_w[w].append(i)
+                #nd_aga_g.append(i)
+            #for i in spread_aga:
+                #spread_aga_w[w].append(i/min_spread)
+                #spread_aga_g.append(i/min_spread)
+            #for i in igd_aga:
+                #igd_aga_w[w].append(i/min_igd)
+                #igd_aga_g.append(i/min_igd)
 
-            max_hv = aggr_hv_aga[0]
-            if aggr_hv_adhoc[0] > max_hv: max_hv = aggr_hv_adhoc[0]
-            if max_hv == 0: max_hv = 1
+            #for i in nd_adhoc:
+                #nd_adhoc_g.append(i)
+                #nd_adhoc_w[w].append(i)
+            #for i in spread_adhoc:
+                #spread_adhoc_w[w].append(i/min_spread)
+                #spread_adhoc_g.append(i/min_spread)
+            #for i in igd_adhoc:
+                #igd_adhoc_w[w].append(i/min_igd)
+                #igd_adhoc_g.append(i/min_igd)
 
-            print ",%s,%s,%s,%s" % (aggr_hv_aga[0]/max_hv,aggr_hv_aga[1]/max_hv,aggr_hv_adhoc[0]/max_hv,aggr_hv_adhoc[1]/max_hv),
-
-            min_igd = aggr_igd_aga[0]
-            if aggr_igd_adhoc[0] < min_igd: min_igd = aggr_igd_adhoc[0]
-            if min_igd == 0: min_igd = 1
-
-            print ",%s,%s,%s,%s" % (aggr_igd_aga[0]/min_igd,aggr_igd_aga[1]/min_igd,aggr_igd_adhoc[0]/min_igd,aggr_igd_adhoc[1]/min_igd),
-            print ""
-
-            for i in nd_aga:
-                nd_aga_w[w].append(i)
-                nd_aga_g.append(i)
-            for i in spread_aga:
-                spread_aga_w[w].append(i/min_spread)
-                spread_aga_g.append(i/min_spread)
-            for i in igd_aga:
-                igd_aga_w[w].append(i/min_igd)
-                igd_aga_g.append(i/min_igd)
-            for i in hv_aga:
-                hv_aga_w[w].append(i/max_hv)
-                hv_aga_g.append(i/max_hv)
-
-            for i in nd_adhoc:
-                nd_adhoc_g.append(i)
-                nd_adhoc_w[w].append(i)
-            for i in spread_adhoc:
-                spread_adhoc_w[w].append(i/min_spread)
-                spread_adhoc_g.append(i/min_spread)
-            for i in igd_adhoc:
-                igd_adhoc_w[w].append(i/min_igd)
-                igd_adhoc_g.append(i/min_igd)
-            for i in hv_adhoc:
-                hv_adhoc_w[w].append(i/max_hv)
-                hv_adhoc_g.append(i/max_hv)
+    print "================"
 
     nd_aga = aggr_value(nd_aga_g)
     nd_adhoc = aggr_value(nd_adhoc_g)
@@ -187,101 +220,96 @@ if __name__ == '__main__':
     min_igd = igd_aga[0]
     if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
 
-    #print ""
+    ##print ""
+    ##print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
+    ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+    ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+    ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+    ##print "\\\\"
+    
+    #print "NG/IGD"
     #print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-    #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
     #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-    #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
     #print "\\\\"
     
-    print "NG/IGD"
-    print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-    print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-    print "\\\\"
+    #print "Spread/HV"
+    #print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+    ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+    #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0],hv_aga[1],hv_adhoc[0],hv_adhoc[1]),
+    #print "\\\\"
     
-    print "Spread/HV"
-    print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
-    print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
-    print "\\\\"
-    
-    #print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1],spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread,igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd,hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv)
+    ##print "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1],spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread,igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd,hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv)
 
-    print "==========================================="
+    #print "==========================================="
 
+    #for w in WORKLOADS:
+        #nd_aga = aggr_value(nd_aga_w[w])
+        #nd_adhoc = aggr_value(nd_adhoc_w[w])
+
+        #spread_aga = aggr_value(spread_aga_w[w])
+        #spread_adhoc = aggr_value(spread_adhoc_w[w])
+
+        #igd_aga = aggr_value(igd_aga_w[w])
+        #igd_adhoc = aggr_value(igd_adhoc_w[w])
+
+        #hv_aga = aggr_value(hv_aga_w[w])
+        #hv_adhoc = aggr_value(hv_adhoc_w[w])
+
+        #min_spread = spread_aga[0]
+        #if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
+
+        #max_hv = hv_aga[0]
+        #if hv_adhoc[0] > max_hv: max_hv = hv_adhoc[0]
+
+        #min_igd = igd_aga[0]
+        #if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
+
+        ##print ""
+        ##print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
+        ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+        ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+        ##print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+        ##print "\\\\"
+        
+        #print w
+        
+        #print "NG/IGD"
+        #print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
+        #print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
+        #print "\\\\"
+
+        #print ""
+        
+    #print "==========================================="
+        
     for w in WORKLOADS:
-        nd_aga = aggr_value(nd_aga_w[w])
-        nd_adhoc = aggr_value(nd_adhoc_w[w])
+        #nd_aga = aggr_value(nd_aga_w[w])
+        #nd_adhoc = aggr_value(nd_adhoc_w[w])
 
-        spread_aga = aggr_value(spread_aga_w[w])
-        spread_adhoc = aggr_value(spread_adhoc_w[w])
+        #spread_aga = aggr_value(spread_aga_w[w])
+        #spread_adhoc = aggr_value(spread_adhoc_w[w])
 
-        igd_aga = aggr_value(igd_aga_w[w])
-        igd_adhoc = aggr_value(igd_adhoc_w[w])
+        #igd_aga = aggr_value(igd_aga_w[w])
+        #igd_adhoc = aggr_value(igd_adhoc_w[w])
 
         hv_aga = aggr_value(hv_aga_w[w])
         hv_adhoc = aggr_value(hv_adhoc_w[w])
 
-        min_spread = spread_aga[0]
-        if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
+        #min_spread = spread_aga[0]
+        #if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
 
-        max_hv = hv_aga[0]
-        if hv_adhoc[0] > max_hv: max_hv = hv_adhoc[0]
-
-        min_igd = igd_aga[0]
-        if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
-
-        #print ""
-        #print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
-        #print "\\\\"
+        #min_igd = igd_aga[0]
+        #if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
         
         print w
         
-        print "NG/IGD"
-        print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-        print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-        print "\\\\"
-
-        print ""
-        
-    print "==========================================="
-        
-    for w in WORKLOADS:
-        nd_aga = aggr_value(nd_aga_w[w])
-        nd_adhoc = aggr_value(nd_adhoc_w[w])
-
-        spread_aga = aggr_value(spread_aga_w[w])
-        spread_adhoc = aggr_value(spread_adhoc_w[w])
-
-        igd_aga = aggr_value(igd_aga_w[w])
-        igd_adhoc = aggr_value(igd_adhoc_w[w])
-
-        hv_aga = aggr_value(hv_aga_w[w])
-        hv_adhoc = aggr_value(hv_adhoc_w[w])
-
-        min_spread = spread_aga[0]
-        if spread_adhoc[0] < min_spread: min_spread = spread_adhoc[0]
-
-        max_hv = hv_aga[0]
-        if hv_adhoc[0] > max_hv: max_hv = hv_adhoc[0]
-
-        min_igd = igd_aga[0]
-        if igd_adhoc[0] < min_igd: min_igd = igd_adhoc[0]
-
-        #print ""
-        #print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (nd_aga[0],nd_aga[1],nd_adhoc[0],nd_adhoc[1]),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (igd_aga[0]/min_igd,igd_aga[1]/min_igd,igd_adhoc[0]/min_igd,igd_adhoc[1]/min_igd),
-        #print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+        #print "Spread/HV"
+        #print "%.2f$\pm$%.2f & %.2f$\pm$%.2f" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
+        #print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (hv_aga[0],hv_aga[1],hv_adhoc[0],hv_adhoc[1]),
         #print "\\\\"
         
-        print w
-        
-        print "Spread/HV"
-        print "$%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (spread_aga[0]/min_spread,spread_aga[1]/min_spread,spread_adhoc[0]/min_spread,spread_adhoc[1]/min_spread),
-        print "& $%.2f\pm%.2f$ & $%.2f\pm%.2f$" % (hv_aga[0]/max_hv,hv_aga[1]/max_hv,hv_adhoc[0]/max_hv,hv_adhoc[1]/max_hv),
+        print "HV"
+        print "& %.2f$\pm$%.2f & %.2f$\pm$%.2f" % (hv_aga[0],hv_aga[1],hv_adhoc[0],hv_adhoc[1]),
         print "\\\\"
 
         print ""

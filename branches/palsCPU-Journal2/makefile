@@ -4,14 +4,13 @@ LIBS=-lpthread -lrt
 #-mtune=opteron -mfpmath=sse -m64
 OUTPUT_BIN=pals_cpu
 
-all: pals-opt verificador fp
+all: pals-gdb verificador fp
 
 fp: fp_2obj.cpp
 	$(CXX) fp_2obj.cpp -o bin/fp_2obj
 
 verificador: verificador.c
 	$(CC) verificador.c -o bin/verificador
-	
 
 pals-prof: src/main.cpp \
 		src/load_params.cpp \
@@ -24,9 +23,9 @@ pals-prof: src/main.cpp \
 		src/basic/minmin.cpp \
 		src/basic/pminmin.cpp \
 		src/random/cpu_rand.cpp \
-	        src/random/cpu_drand48.cpp \
+		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
-	        src/pals/archivers/aga.cpp \
+		src/pals/archivers/aga.cpp \
 		src/pals/pals_cpu_1pop.cpp 
 	$(CX) -g -O3 src/main.cpp \
 		src/load_instance.cpp \
@@ -59,7 +58,8 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_drand48.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
-		src/pals/pals_cpu_1pop.cpp 
+		src/pals/pals_cpu_1pop.cpp \
+		src/pals/rpals_cpu.cpp 
 	$(CX) -g src/main.cpp \
 		src/load_instance.cpp \
 		src/load_params.cpp \
@@ -75,6 +75,7 @@ pals-gdb: src/main.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
 		src/pals/pals_cpu_1pop.cpp \
+		src/pals/rpals_cpu.cpp \
 		$(LIBS) -o bin/$(OUTPUT_BIN) 
 
 pals-opt: src/main.cpp \
@@ -92,7 +93,7 @@ pals-opt: src/main.cpp \
 		src/random/cpu_mt.cpp \
 		src/pals/archivers/aga.cpp \
 		src/pals/pals_cpu_1pop.cpp 
-	$(CX) -O3 src/main.cpp \
+	$(CX) src/main.cpp \
 		src/load_params.cpp \
 		src/load_instance.cpp \
 		src/etc_matrix.cpp \

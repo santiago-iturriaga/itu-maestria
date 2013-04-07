@@ -27,6 +27,7 @@
 #include "basic/pminmin.h"
 
 #include "pals/pals_cpu_1pop.h"
+#include "pals/rpals_cpu.h"
 
 int main(int argc, char** argv)
 {
@@ -68,7 +69,14 @@ int main(int argc, char** argv)
     timming_start(ts);
     // Timming -----------------------------------------------------
 
-    if (input.algorithm == PALS_1POP) {
+    if (input.algorithm == RPALS) {
+        // =============================================================
+        // rPALS
+        // =============================================================
+            
+        rpals_cpu(input, &etc, &energy);
+        
+    } else if (input.algorithm == PALS_1POP) {
         // =============================================================
         // PALS de 1 poblacion
         // =============================================================
