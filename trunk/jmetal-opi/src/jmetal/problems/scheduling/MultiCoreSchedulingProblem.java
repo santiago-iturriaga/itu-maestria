@@ -90,29 +90,44 @@ public class MultiCoreSchedulingProblem extends Problem {
 	}
 
 	private double evaluateEnergyConsumption(Solution solution) {
-		double energy = ((MultiCoreMachine) solution.getDecisionVariables()[0])
-				.getEnergyConsumption();
+		double aux_makespan;
+		double makespan = ((MultiCoreMachine) solution.getDecisionVariables()[0])
+				.getMachine_makespan();
+		
 		for (int m = 1; m < solution.numberOfVariables(); m++) {
-			energy += ((MultiCoreMachine) solution.getDecisionVariables()[m])
-					.getEnergyConsumption();
+			aux_makespan = ((MultiCoreMachine) solution.getDecisionVariables()[m]).getMachine_makespan();
+			if (makespan < aux_makespan) {
+				makespan = aux_makespan;
+			}
+		}
+		
+		double energy = 0;
+		MultiCoreMachine aux;
+		for (int m = 0; m < solution.numberOfVariables(); m++) {
+			aux = (MultiCoreMachine) solution.getDecisionVariables()[m];
+			energy += (aux.getExecutingTime()) * this.MACHINE_EMAX[m] +
+						(makespan * this.MACHINE_CORES[m]) * this.MACHINE_EIDLE[m];
 
 		}
+		
 		return energy;
 	}
 
 	private double evaluateWeightedCompletionTime(Solution solution) {
 		double wct = ((MultiCoreMachine) solution.getDecisionVariables()[0])
 				.getWeightedComputeTime();
+		
 		for (int m = 1; m < solution.numberOfVariables(); m++) {
 			wct += ((MultiCoreMachine) solution.getDecisionVariables()[m])
 					.getWeightedComputeTime();
 
 		}
+		
 		return wct;
 	}
 
-	//private static final int scale_factor = 10000;
-	private static final int scale_factor = 1;
+	public static final int scale_factor = 10000000;
+	//private static final int scale_factor = 1;
 
 	public static MultiCoreSchedulingProblem loadMultiCoreSchedulingProblem(
 			String task_arrival_file, String task_priority_file,
