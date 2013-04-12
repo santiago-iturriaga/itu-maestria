@@ -7,8 +7,10 @@ import java.util.List;
 import jmetal.core.Solution;
 import jmetal.encodings.solutionType.MultiCoreMachineSolutionType;
 import jmetal.encodings.solutionType.PermutationSolutionType;
+import jmetal.encodings.variable.MultiCoreMachine;
 import jmetal.encodings.variable.Permutation;
 import jmetal.operators.mutation.Mutation;
+import jmetal.problems.scheduling.MultiCoreSchedulingProblem;
 import jmetal.util.Configuration;
 import jmetal.util.JMException;
 import jmetal.util.PseudoRandom;
@@ -69,35 +71,121 @@ public class MultiCoreSwapMutation extends Mutation {
 	 */
 	public void doMutation(double probability, Solution solution)
 			throws JMException {
-		int permutation[];
-		int permutationLength;
-		
+
+		boolean[] modified_machines = new boolean[solution.numberOfVariables()];
+		for (int i = 0; i < solution.numberOfVariables(); i++)
+			modified_machines[i] = false;
+
 		if (solution.getType().getClass() == MultiCoreMachineSolutionType.class) {
-			/*
-			permutationLength = ((Permutation) solution.getDecisionVariables()[0])
-					.getLength();
-			permutation = ((Permutation) solution.getDecisionVariables()[0]).vector_;
+			for (int m_orig_id = 0; m_orig_id < solution.numberOfVariables(); m_orig_id++) {
+				MultiCoreMachine m_orig = ((MultiCoreMachine) (solution
+						.getDecisionVariables()[m_orig_id]));
+				int m_tasks = m_orig.getMachine_tasks_count();
 
-			if (PseudoRandom.randDouble() < probability) {
-				int pos1;
-				int pos2;
+				for (int t_orig_index = 0; t_orig_index < m_tasks; t_orig_index++) {
+					if (PseudoRandom.randDouble() < probability) {
+						MultiCoreSchedulingProblem problem = m_orig
+								.getProblem();
 
-				pos1 = PseudoRandom.randInt(0, permutationLength - 1);
-				pos2 = PseudoRandom.randInt(0, permutationLength - 1);
+						int t_orig_id = m_orig.getMachine_task(t_orig_index);
+						int t_orig_cores = problem.TASK_CORES[t_orig_id];
 
-				while (pos1 == pos2) {
-					if (pos1 == (permutationLength - 1))
-						pos2 = PseudoRandom.randInt(0, permutationLength - 2);
-					else
-						pos2 = PseudoRandom
-								.randInt(pos1, permutationLength - 1);
-				} // while
-					// swap
-				int temp = permutation[pos1];
-				permutation[pos1] = permutation[pos2];
-				permutation[pos2] = temp;
-			} // if
-			*/
+						int action_type = 0; //PseudoRandom.randInt(0, 2);
+						assert (action_type < 3);
+
+						if (action_type == 0) {
+							// Random swap
+							int m_dest_id;
+							m_dest_id = PseudoRandom.randInt(0,
+									solution.numberOfVariables());
+
+							while (problem.MACHINE_CORES[m_dest_id] < t_orig_cores) {
+								m_dest_id = (m_dest_id + 1)
+										% solution.numberOfVariables();
+							}
+
+							MultiCoreMachine m_dest;
+							m_dest = (MultiCoreMachine) (solution
+									.getDecisionVariables()[m_dest_id]);
+
+							if (m_dest.getMachine_tasks_count() > 0) {
+								int t_dest_index;
+								t_dest_index = PseudoRandom.randInt(0,
+										m_dest.getMachine_tasks_count());
+
+								if (!((m_dest_id == m_orig_id) && (t_dest_index == t_orig_index))) {
+									int aux_orig = m_orig
+											.getMachine_task(t_orig_index);
+
+									if (m_orig.getMachineId() != m_dest
+											.getMachineId()) {
+										m_orig.swapMachine_task(
+												t_orig_index,
+												m_dest.getMachine_task(t_dest_index));
+										m_dest.swapMachine_task(t_dest_index,
+												aux_orig);
+									} else {
+										m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+									}
+
+									modified_machines[m_orig_id] = true;
+									modified_machines[m_dest_id] = true;
+								}
+							}
+						} else if (action_type == 1) {
+							// Random move
+							int m_dest_id;
+							m_dest_id = PseudoRandom.randInt(0,
+									solution.numberOfVariables());
+
+							while (problem.MACHINE_CORES[m_dest_id] < t_orig_cores) {
+								m_dest_id = (m_dest_id + 1)
+										% solution.numberOfVariables();
+							}
+
+							MultiCoreMachine m_dest;
+							m_dest = (MultiCoreMachine) (solution
+									.getDecisionVariables()[m_dest_id]);
+
+							if (m_dest_id != m_orig_id) {
+								m_dest.enqueue(t_orig_id);
+								m_orig.removeMachine_task(t_orig_index);
+
+								modified_machines[m_orig_id] = true;
+								
+								m_tasks = m_orig.getMachine_tasks_count();
+								t_orig_index--;
+								
+							} else {
+								int t_dest_index;
+								t_dest_index = PseudoRandom.randInt(0, m_tasks);
+
+								if (t_dest_index != t_orig_index) {							
+									m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+									modified_machines[m_orig_id] = true;
+								}
+							}
+						} else if (action_type == 2) {
+							// Move forward or backward
+
+							int t_dest_index;
+							t_dest_index = PseudoRandom.randInt(0, m_tasks);
+
+							if (t_dest_index != t_orig_index) {							
+								m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+								modified_machines[m_orig_id] = true;
+							}
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < solution.numberOfVariables(); i++) {
+				if (modified_machines[i]) {
+					((MultiCoreMachine) (solution.getDecisionVariables()[i]))
+							.refresh();
+				}
+			}
 		} // if
 		else {
 			Configuration.logger_

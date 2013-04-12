@@ -1,4 +1,4 @@
-//  NSGAII_main.java
+//  SPEA2_main.java
 //
 //  Author:
 //       Antonio J. Nebro <antonio@lcc.uma.es>
@@ -19,7 +19,11 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package jmetal.metaheuristics.nsgaII;
+package jmetal.metaheuristics.spea2;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 import jmetal.core.*;
 import jmetal.operators.crossover.*;
@@ -33,70 +37,57 @@ import jmetal.problems.ZDT.*;
 import jmetal.problems.scheduling.MultiCoreSchedulingProblem;
 import jmetal.problems.WFG.*;
 import jmetal.problems.LZ09.*;
+import jmetal.qualityIndicator.QualityIndicator;
 
 import jmetal.util.Configuration;
 import jmetal.util.IRandomGenerator;
 import jmetal.util.JMException;
 import jmetal.util.MersenneTwisterFast;
 import jmetal.util.PseudoRandom;
-import jmetal.util.RandomGenerator;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
-import jmetal.qualityIndicator.QualityIndicator;
-
 /**
- * Class to configure and execute the NSGA-II algorithm.
- * 
- * Besides the classic NSGA-II, a steady-state version (ssNSGAII) is also
- * included (See: J.J. Durillo, A.J. Nebro, F. Luna and E. Alba "On the Effect
- * of the Steady-State Selection Scheme in Multi-Objective Genetic Algorithms"
- * 5th International Conference, EMO 2009, pp: 183-197. April 2009)
+ * Class for configuring and running the SPEA2 algorithm
  */
-
-public class NSGAII_OPI_main {
+public class SPEA2_OPI_main {
 	public static Logger logger_; // Logger object
 	public static FileHandler fileHandler_; // FileHandler object
 
 	/**
 	 * @param args
-	 *            Command line arguments.
+	 *            Command line arguments. The first (optional) argument
+	 *            specifies the problem to solve.
 	 * @throws JMException
 	 * @throws IOException
 	 * @throws SecurityException
 	 *             Usage: three options -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main problemName -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main problemName
-	 *             paretoFrontFile
+	 *             jmetal.metaheuristics.mocell.MOCell_main -
+	 *             jmetal.metaheuristics.mocell.MOCell_main problemName -
+	 *             jmetal.metaheuristics.mocell.MOCell_main problemName
+	 *             ParetoFrontFile
 	 */
-	public static void main(String[] args) throws JMException,
-			SecurityException, IOException, ClassNotFoundException {
-
+	public static void main(String[] args) throws JMException, IOException,
+			ClassNotFoundException {
 		Problem problem; // The problem to solve
 		Algorithm algorithm; // The algorithm to use
 		Operator crossover; // Crossover operator
 		Operator mutation; // Mutation operator
 		Operator selection; // Selection operator
 
-		HashMap parameters; // Operator parameters
-
 		QualityIndicator indicators; // Object to get quality indicators
 
 		String basePath = "/home/santiago/google-hosting/itu-maestria/svn/trunk/jmetal-opi/output/";
 
+		HashMap parameters; // Operator parameters
+
 		// Logger object and file to store log messages
 		logger_ = Configuration.logger_;
-		fileHandler_ = new FileHandler(basePath + "NSGAII_opi_main.log");
+		fileHandler_ = new FileHandler(basePath + "SPEA2.log");
 		logger_.addHandler(fileHandler_);
 
 		indicators = null;
@@ -116,12 +107,12 @@ public class NSGAII_OPI_main {
 			IRandomGenerator gen = new MersenneTwisterFast(1);
 			PseudoRandom.setRandomGenerator(gen);
 
-			algorithm = new NSGAII(problem);
-			// algorithm = new ssNSGAII(problem);
+			algorithm = new SPEA2(problem);
 
 			// Algorithm parameters
 			algorithm.setInputParameter("populationSize", 100);
-			algorithm.setInputParameter("maxEvaluations", 2500000);
+			algorithm.setInputParameter("archiveSize", 100);
+			algorithm.setInputParameter("maxEvaluations", 100000);
 
 			// Mutation and Crossover for Real codification
 			parameters = new HashMap();
@@ -130,37 +121,31 @@ public class NSGAII_OPI_main {
 			crossover = new MultiCoreHUXCrossover(parameters);
 
 			parameters = new HashMap();
-			// parameters.put("probability", 1.0 /
-			// problem.getNumberOfVariables());
-			parameters.put("probability",
-					1.0 / ((MultiCoreSchedulingProblem) problem).NUM_TASKS);
+			parameters.put("probability", 1.0 / problem.getNumberOfVariables());
 			parameters.put("distributionIndex", 20.0);
 			mutation = new MultiCoreSwapMutation(parameters);
 
-			// Selection Operator
+			// Selection operator
 			parameters = null;
 			selection = SelectionFactory.getSelectionOperator(
-					"BinaryTournament2", parameters);
+					"BinaryTournament", parameters);
 
 			// Add the operators to the algorithm
 			algorithm.addOperator("crossover", crossover);
 			algorithm.addOperator("mutation", mutation);
 			algorithm.addOperator("selection", selection);
 
-			// Add the indicator object to the algorithm
-			algorithm.setInputParameter("indicators", indicators);
-
-			// Execute the Algorithm
+			// Execute the algorithm
 			long initTime = System.currentTimeMillis();
 			SolutionSet population = algorithm.execute();
 			long estimatedTime = System.currentTimeMillis() - initTime;
 
 			// Result messages
 			logger_.info("Total execution time: " + estimatedTime + "ms");
-			logger_.info("Variables values have been writen to file VAR");
-			population.printVariablesToFile(basePath + "VAR");
 			logger_.info("Objectives values have been writen to file FUN");
 			population.printObjectivesToFile(basePath + "FUN");
+			logger_.info("Variables values have been writen to file VAR");
+			population.printVariablesToFile(basePath + "VAR");
 
 			if (indicators != null) {
 				logger_.info("Quality indicators");
@@ -171,16 +156,7 @@ public class NSGAII_OPI_main {
 				logger_.info("Spread     : " + indicators.getSpread(population));
 				logger_.info("Epsilon    : "
 						+ indicators.getEpsilon(population));
-
-				int evaluations = ((Integer) algorithm
-						.getOutputParameter("evaluations")).intValue();
-				logger_.info("Speed      : " + evaluations + " evaluations");
 			} // if
-		} else {
-			logger_.severe("Usage error.");
-			System.out
-					.println("Input arguments: "
-							+ " <task_arrival_file> <task_priority_file> <task_cost_file> <task_cores_file> <machine_file>");
 		}
-	} // main
-} // NSGAII_main
+	}// main
+} // SPEA2_main.java
