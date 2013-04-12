@@ -9,8 +9,8 @@ import sys
 import random
 
 # Todas las unidades de tiempo son segundos.
-TO_min = 0.25*60*60 # 15 minutos.
-TO_max = 72*60*60   # 72 horas.
+TO_min = 5*60 		# 5 minutos.
+TO_max = 12*60*60   # 12 horas.
 
 # Intel Xeon E5440: cores=4, ssj_ops=150,979, E_IDLE=76.9, E_MAX=131.8
 TO_default_ssj = float(150979 / 4)
