@@ -1,10 +1,9 @@
-//  NSGAII_main.java
+//  pNSGAII_main.java
 //
 //  Author:
 //       Antonio J. Nebro <antonio@lcc.uma.es>
-//       Juan J. Durillo <durillo@lcc.uma.es>
 //
-//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo
+//  Copyright (c) 2013 Antonio J. Nebro
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
@@ -21,49 +20,39 @@
 
 package jmetal.metaheuristics.nsgaII;
 
-import jmetal.core.*;
-import jmetal.operators.crossover.*;
-import jmetal.operators.crossover.scheduling.MultiCoreHUXCrossover;
-import jmetal.operators.mutation.*;
-import jmetal.operators.mutation.scheduling.MultiCoreSwapMutation;
-import jmetal.operators.selection.*;
-import jmetal.problems.*;
-import jmetal.problems.DTLZ.*;
-import jmetal.problems.ZDT.*;
-import jmetal.problems.scheduling.MultiCoreSchedulingProblem;
-import jmetal.problems.WFG.*;
-import jmetal.problems.LZ09.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
 
+import jmetal.core.Algorithm;
+import jmetal.core.Operator;
+import jmetal.core.Problem;
+import jmetal.core.SolutionSet;
+import jmetal.operators.crossover.scheduling.MultiCoreHUXCrossover;
+import jmetal.operators.mutation.scheduling.MultiCoreSwapMutation;
+import jmetal.operators.selection.SelectionFactory;
+import jmetal.problems.scheduling.MultiCoreSchedulingProblem;
+import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.Configuration;
 import jmetal.util.IRandomGenerator;
 import jmetal.util.JMException;
 import jmetal.util.MersenneTwisterFast;
 import jmetal.util.PseudoRandom;
-import jmetal.util.RandomGenerator;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.*;
-
-import java.util.logging.FileHandler;
-import java.util.logging.Logger;
-
-import jmetal.qualityIndicator.QualityIndicator;
+import jmetal.util.parallel.IParallelEvaluator;
+import jmetal.util.parallel.MultithreadedEvaluator;
 
 /**
- * Class to configure and execute the NSGA-II algorithm.
- * 
- * Besides the classic NSGA-II, a steady-state version (ssNSGAII) is also
- * included (See: J.J. Durillo, A.J. Nebro, F. Luna and E. Alba "On the Effect
- * of the Steady-State Selection Scheme in Multi-Objective Genetic Algorithms"
- * 5th International Conference, EMO 2009, pp: 183-197. April 2009)
+ * Class to configure and execute the pNSGAII algorithm. pNSGAII is a
+ * multihreaded version of NSGA-II, where solution evaluations are carried out
+ * in parallel.
  */
 
-public class NSGAII_OPI_main {
+public class pNSGAII_OPI_main {
 	public static Logger logger_; // Logger object
 	public static FileHandler fileHandler_; // FileHandler object
 
@@ -74,14 +63,13 @@ public class NSGAII_OPI_main {
 	 * @throws IOException
 	 * @throws SecurityException
 	 *             Usage: three options -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main problemName -
-	 *             jmetal.metaheuristics.nsgaII.NSGAII_main problemName
+	 *             jmetal.metaheuristics.nsgaII.pNSGAII_main -
+	 *             jmetal.metaheuristics.nsgaII.pNSGAII_main problemName -
+	 *             jmetal.metaheuristics.nsgaII.pNSGAII_main problemName
 	 *             paretoFrontFile
 	 */
 	public static void main(String[] args) throws JMException,
 			SecurityException, IOException, ClassNotFoundException {
-
 		Problem problem; // The problem to solve
 		Algorithm algorithm; // The algorithm to use
 		Operator crossover; // Crossover operator
@@ -93,10 +81,10 @@ public class NSGAII_OPI_main {
 		QualityIndicator indicators; // Object to get quality indicators
 
 		String basePath = "/home/santiago/google-hosting/itu-maestria/svn/trunk/jmetal-opi/output/";
-
+		
 		// Logger object and file to store log messages
 		logger_ = Configuration.logger_;
-		fileHandler_ = new FileHandler(basePath + "NSGAII_opi_main.log");
+		fileHandler_ = new FileHandler(basePath + "pNSGAII_main.log");
 		logger_.addHandler(fileHandler_);
 
 		indicators = null;
@@ -116,8 +104,11 @@ public class NSGAII_OPI_main {
 			IRandomGenerator gen = new MersenneTwisterFast(1);
 			PseudoRandom.setRandomGenerator(gen);
 
-			algorithm = new NSGAII(problem);
-			// algorithm = new ssNSGAII(problem);
+			int threads = 4; // 0 - use all the available cores
+			IParallelEvaluator parallelEvaluator = new MultithreadedEvaluator(
+					threads);
+
+			algorithm = new pNSGAII(problem, parallelEvaluator);
 
 			// Algorithm parameters
 			algorithm.setInputParameter("populationSize", 100);
@@ -130,10 +121,7 @@ public class NSGAII_OPI_main {
 			crossover = new MultiCoreHUXCrossover(parameters);
 
 			parameters = new HashMap();
-			// parameters.put("probability", 1.0 /
-			// problem.getNumberOfVariables());
-			parameters.put("probability",
-					1.0 / ((MultiCoreSchedulingProblem) problem).NUM_TASKS);
+			parameters.put("probability", 1.0 / problem.getNumberOfVariables());
 			parameters.put("distributionIndex", 20.0);
 			mutation = new MultiCoreSwapMutation(parameters);
 
@@ -176,11 +164,6 @@ public class NSGAII_OPI_main {
 						.getOutputParameter("evaluations")).intValue();
 				logger_.info("Speed      : " + evaluations + " evaluations");
 			} // if
-		} else {
-			logger_.severe("Usage error.");
-			System.out
-					.println("Input arguments: "
-							+ " <task_arrival_file> <task_priority_file> <task_cost_file> <task_cores_file> <machine_file>");
 		}
 	} // main
 } // NSGAII_main

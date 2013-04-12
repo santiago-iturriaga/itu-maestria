@@ -23,6 +23,7 @@ package jmetal.metaheuristics.nsgaII;
 
 import jmetal.core.*;
 import jmetal.util.comparators.CrowdingComparator;
+import jmetal.operators.mutation.scheduling.MultiCoreSwapMutation;
 import jmetal.qualityIndicator.QualityIndicator;
 import jmetal.util.*;
 
@@ -86,11 +87,14 @@ public class NSGAII extends Algorithm {
 		mutationOperator = operators_.get("mutation");
 		crossoverOperator = operators_.get("crossover");
 		selectionOperator = operators_.get("selection");
-
+		
 		// Create the initial solutionSet
 		Solution newSolution;
 		for (int i = 0; i < populationSize; i++) {
 			newSolution = new Solution(problem_);
+			
+			//mutationOperator.execute(newSolution);
+			
 			problem_.evaluate(newSolution);
 			problem_.evaluateConstraints(newSolution);
 			evaluations++;
@@ -99,7 +103,6 @@ public class NSGAII extends Algorithm {
 
 		// Generations 
 		while (evaluations < maxEvaluations) {
-
 			// Create the offSpring solutionSet      
 			offspringPopulation = new SolutionSet(populationSize);
 			Solution[] parents = new Solution[2];
