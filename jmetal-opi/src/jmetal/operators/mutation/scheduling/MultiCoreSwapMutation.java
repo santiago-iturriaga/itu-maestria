@@ -90,7 +90,7 @@ public class MultiCoreSwapMutation extends Mutation {
 						int t_orig_id = m_orig.getMachine_task(t_orig_index);
 						int t_orig_cores = problem.TASK_CORES[t_orig_id];
 
-						int action_type = 0; //PseudoRandom.randInt(0, 2);
+						int action_type = 0; // PseudoRandom.randInt(0, 2);
 						assert (action_type < 3);
 
 						if (action_type == 0) {
@@ -113,23 +113,36 @@ public class MultiCoreSwapMutation extends Mutation {
 								t_dest_index = PseudoRandom.randInt(0,
 										m_dest.getMachine_tasks_count());
 
-								if (!((m_dest_id == m_orig_id) && (t_dest_index == t_orig_index))) {
-									int aux_orig = m_orig
-											.getMachine_task(t_orig_index);
+								int t_dest_id = m_dest
+										.getMachine_task(t_dest_index);
+								int t_dest_cores = problem.TASK_CORES[t_dest_id];
 
-									if (m_orig.getMachineId() != m_dest
-											.getMachineId()) {
-										m_orig.swapMachine_task(
-												t_orig_index,
-												m_dest.getMachine_task(t_dest_index));
-										m_dest.swapMachine_task(t_dest_index,
-												aux_orig);
-									} else {
-										m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+								if (problem.MACHINE_CORES[m_orig_id] >= t_dest_cores) {
+									if (!((m_dest_id == m_orig_id) && (t_dest_index == t_orig_index))) {
+										int aux_orig = m_orig
+												.getMachine_task(t_orig_index);
+
+										if (m_orig.getMachineId() != m_dest
+												.getMachineId()) {
+											m_orig.swapMachine_task(
+													t_orig_index, t_dest_id);
+											m_dest.swapMachine_task(
+													t_dest_index, aux_orig);
+										} else {
+											m_orig.localSwapMachine_task(
+													t_orig_index, t_dest_index);
+										}
+
+										modified_machines[m_orig_id] = true;
+										modified_machines[m_dest_id] = true;
 									}
-
+								} else {
+									m_dest.enqueue(t_orig_id);
+									m_orig.removeMachine_task(t_orig_index);
 									modified_machines[m_orig_id] = true;
-									modified_machines[m_dest_id] = true;
+									
+									m_tasks = m_orig.getMachine_tasks_count();
+									t_orig_index--;
 								}
 							}
 						} else if (action_type == 1) {
@@ -152,16 +165,17 @@ public class MultiCoreSwapMutation extends Mutation {
 								m_orig.removeMachine_task(t_orig_index);
 
 								modified_machines[m_orig_id] = true;
-								
+
 								m_tasks = m_orig.getMachine_tasks_count();
 								t_orig_index--;
-								
+
 							} else {
 								int t_dest_index;
 								t_dest_index = PseudoRandom.randInt(0, m_tasks);
 
-								if (t_dest_index != t_orig_index) {							
-									m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+								if (t_dest_index != t_orig_index) {
+									m_orig.localSwapMachine_task(t_orig_index,
+											t_dest_index);
 									modified_machines[m_orig_id] = true;
 								}
 							}
@@ -171,8 +185,9 @@ public class MultiCoreSwapMutation extends Mutation {
 							int t_dest_index;
 							t_dest_index = PseudoRandom.randInt(0, m_tasks);
 
-							if (t_dest_index != t_orig_index) {							
-								m_orig.localSwapMachine_task(t_orig_index, t_dest_index);
+							if (t_dest_index != t_orig_index) {
+								m_orig.localSwapMachine_task(t_orig_index,
+										t_dest_index);
 								modified_machines[m_orig_id] = true;
 							}
 						}

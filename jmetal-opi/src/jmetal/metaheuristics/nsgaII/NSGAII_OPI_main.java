@@ -121,7 +121,8 @@ public class NSGAII_OPI_main {
 
 			// Algorithm parameters
 			algorithm.setInputParameter("populationSize", 100);
-			algorithm.setInputParameter("maxEvaluations", 2500000);
+			//algorithm.setInputParameter("maxEvaluations", 250000);
+			algorithm.setInputParameter("maxEvaluations", 500000);
 
 			// Mutation and Crossover for Real codification
 			parameters = new HashMap();
