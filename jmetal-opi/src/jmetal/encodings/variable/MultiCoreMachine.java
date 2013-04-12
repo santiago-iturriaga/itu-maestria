@@ -222,7 +222,7 @@ public class MultiCoreMachine extends Variable {
 		
 		this.machine_tasks[queue_index] = task_id;
 		
-		assert(check_integrity());
+		//assert(check_integrity());
 	}
 	
 	private boolean check_integrity() {
