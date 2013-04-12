@@ -9,6 +9,7 @@ import jmetal.encodings.solutionType.MultiCoreMachineSolutionType;
 import jmetal.encodings.variable.Binary;
 import jmetal.encodings.variable.MultiCoreMachine;
 import jmetal.operators.crossover.Crossover;
+import jmetal.problems.scheduling.MultiCoreSchedulingProblem;
 import jmetal.util.Configuration;
 import jmetal.util.JMException;
 import jmetal.util.PseudoRandom;
@@ -106,8 +107,10 @@ public class MultiCoreHUXCrossover extends Crossover {
 					MultiCoreMachine o2 = (MultiCoreMachine) offSpring[1]
 							.getDecisionVariables()[m_id];
 
-					int max_index = Math.min(p1.getMachine_tasks_count(),
-							p2.getMachine_tasks_count());
+					MultiCoreSchedulingProblem problem = p1.getProblem();
+
+					int max_index = Math.min(o1.getMachine_tasks_count(),
+							o2.getMachine_tasks_count());
 
 					for (int t_index = 0; t_index < max_index; t_index++) {
 						// if (p1.bits_.get(bit) != p2.bits_.get(bit)) {
@@ -122,7 +125,7 @@ public class MultiCoreHUXCrossover extends Crossover {
 								int o2_task_machine_id = 0;
 								MultiCoreMachine o2_task_machine = (MultiCoreMachine) offSpring[1]
 										.getDecisionVariables()[o2_task_machine_id];
-								
+
 								while (!o2_task_machine
 										.isTaskAssigned(p1_task_id)) {
 									o2_task_machine_id++;
@@ -130,21 +133,37 @@ public class MultiCoreHUXCrossover extends Crossover {
 											.getDecisionVariables()[o2_task_machine_id];
 								}
 
-								int o2_task_machine_index = o2_task_machine.getTaskIndex(p1_task_id);
-								
-								if (o2_task_machine.getMachineId() == o2.getMachineId()) {
-									o2.localSwapMachine_task(t_index, o2_task_machine_index);
+								int o2_task_machine_index = o2_task_machine
+										.getTaskIndex(p1_task_id);
+
+								if (o2_task_machine.getMachineId() == o2
+										.getMachineId()) {
+									o2.localSwapMachine_task(t_index,
+											o2_task_machine_index);
 								} else {
-									o2_task_machine.swapMachine_task(o2_task_machine_index , o2_task_id);
-									o2.swapMachine_task(t_index, p1_task_id);
+									if ((o2_task_machine.getMachineCores() >= problem.TASK_CORES[o2_task_id])
+											&& (PseudoRandom.randDouble() < 0.5)) {
+										o2_task_machine.swapMachine_task(
+												o2_task_machine_index,
+												o2_task_id);
+										o2.swapMachine_task(t_index, p1_task_id);
+									} else {
+										o2_task_machine
+												.removeMachine_task(o2_task_machine_index);
+										o2.insertMachine_task(t_index,
+												p1_task_id);
+
+										max_index = Math.min(max_index,
+												o2.getMachine_tasks_count());
+									}
 								}
 							}
-							
+
 							if (o1_task_id != p2_task_id) {
 								int o1_task_machine_id = 0;
 								MultiCoreMachine o1_task_machine = (MultiCoreMachine) offSpring[0]
 										.getDecisionVariables()[o1_task_machine_id];
-								
+
 								while (!o1_task_machine
 										.isTaskAssigned(p2_task_id)) {
 									o1_task_machine_id++;
@@ -152,13 +171,30 @@ public class MultiCoreHUXCrossover extends Crossover {
 											.getDecisionVariables()[o1_task_machine_id];
 								}
 
-								int o1_task_machine_index = o1_task_machine.getTaskIndex(p2_task_id);
-								
-								if (o1_task_machine.getMachineId() == o1.getMachineId()) {
-									o1.localSwapMachine_task(t_index, o1_task_machine_index);
+								int o1_task_machine_index = o1_task_machine
+										.getTaskIndex(p2_task_id);
+
+								if (o1_task_machine.getMachineId() == o1
+										.getMachineId()) {
+									o1.localSwapMachine_task(t_index,
+											o1_task_machine_index);
 								} else {
-									o1_task_machine.swapMachine_task(o1_task_machine_index , o1_task_id);
-									o1.swapMachine_task(t_index, p2_task_id);
+									if ((o1_task_machine.getMachineCores() >= problem.TASK_CORES[o1_task_id])
+											&& (PseudoRandom.randDouble() < 0.5)) {
+										o1_task_machine.swapMachine_task(
+												o1_task_machine_index,
+												o1_task_id);
+										o1.swapMachine_task(t_index, p2_task_id);
+									} else {
+										o1_task_machine
+												.removeMachine_task(o1_task_machine_index);
+										o1.insertMachine_task(t_index,
+												p2_task_id);
+
+										max_index = Math.min(
+												o1.getMachine_tasks_count(),
+												max_index);
+									}
 								}
 							}
 						}
