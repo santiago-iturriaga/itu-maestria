@@ -18,7 +18,7 @@ public class MultiCoreMachine extends Variable {
 	private double[] machine_core_ct; /* local makespan of each core */
 	private int[] machine_core_order; /* sorted core (from min to max) */
 
-	private double energy_consumption = 0.0;
+	//private double energy_consumption = 0.0;
 	private double total_executing_time = 0.0;
 	private double weighted_ct = 0;
 
@@ -43,7 +43,7 @@ public class MultiCoreMachine extends Variable {
 			this.machine_core_order[i] = i;
 		}
 
-		this.energy_consumption = 0;
+		//this.energy_consumption = 0;
 		this.weighted_ct = 0;
 		this.total_executing_time = 0;
 		this.assignedTasks = new HashSet<Integer>();
@@ -70,7 +70,7 @@ public class MultiCoreMachine extends Variable {
 			this.machine_core_order[i] = multiCoreMachine.machine_core_order[i];
 		}
 
-		this.energy_consumption = multiCoreMachine.energy_consumption;
+		//this.energy_consumption = multiCoreMachine.energy_consumption;
 		this.weighted_ct = multiCoreMachine.weighted_ct;
 		this.total_executing_time = multiCoreMachine.total_executing_time;
 		this.assignedTasks = new HashSet<Integer>(
@@ -87,7 +87,7 @@ public class MultiCoreMachine extends Variable {
 			this.machine_core_order[i] = i;
 		}
 
-		this.energy_consumption = 0;
+		//this.energy_consumption = 0;
 		this.weighted_ct = 0;
 		this.total_executing_time = 0;
 
@@ -117,16 +117,16 @@ public class MultiCoreMachine extends Variable {
 
 		/* Actualizo el weighted compute time */
 		// this.weighted_ct += starting_time * problem.TASK_PRIORITY[task_id];
-		this.weighted_ct += (starting_time - problem.TASK_ARRIVAL[task_id])
-				* problem.TASK_PRIORITY[task_id];
+		this.weighted_ct += ((starting_time - problem.TASK_ARRIVAL[task_id])
+				* problem.TASK_PRIORITY[task_id]) / MultiCoreSchedulingProblem.scale_factor;
 
 		double task_executing_time = (problem.TASK_COST[task_id] / this.ssj_per_core)
 				* task_cores;
 		this.total_executing_time += task_executing_time;
 
 		/* Actualizo la energía consumida por la máquina */
-		this.energy_consumption += task_executing_time
-				* this.consumption_per_core;
+		/*this.energy_consumption += task_executing_time
+				* this.consumption_per_core;*/
 
 		/* Calculo el ending time */
 		double assigned_worst_core_ct = starting_time
@@ -170,9 +170,9 @@ public class MultiCoreMachine extends Variable {
 		return this.total_executing_time;
 	}
 
-	public double getEnergyConsumption() {
-		return this.energy_consumption;
-	}
+	//public double getEnergyConsumption() {
+	//	return this.energy_consumption;
+	//}
 
 	public int getMachine_task(int queue_index) {
 		assert (queue_index < this.machine_tasks_count);
@@ -185,6 +185,10 @@ public class MultiCoreMachine extends Variable {
 
 	public double[] getMachine_core_ct() {
 		return this.machine_core_ct;
+	}
+	
+	public double getMachine_makespan() {
+		return this.machine_core_ct[this.machine_cores-1];
 	}
 
 	public double getConsumption_per_core() {
