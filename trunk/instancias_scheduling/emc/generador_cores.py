@@ -47,8 +47,8 @@ if __name__ == '__main__':
     argc = len(sys.argv)
     
     if argc != 4:
-        print "Modo de uso: python %s <#maquinas> <#scenarios> <seed>" % sys.argv[0]
-        exit(0)
+        print("Modo de uso: python {0} <#maquinas> <#scenarios> <seed>".format(sys.argv[0]))
+        sys.exit(0)
 
     cant_maquinas = int(sys.argv[1])
     cant_scenarios = int(sys.argv[2])

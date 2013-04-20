@@ -24,7 +24,7 @@
 
 import sys
 import random
-import numpy
+#import numpy
 
 def main(machine_count, scenario_count):
     machines_list = []
@@ -51,23 +51,23 @@ def main(machine_count, scenario_count):
             
             selected_machines.append(m)
         
-        print ssj_values
+        print(ssj_values)
         min_ssj = min(ssj_values)
         max_ssj = max(ssj_values)
         #mean_ssj = numpy.mean(ssj_values)
         #stdev_ssj = numpy.std(ssj_values)
         
-        print min_ssj
-        print max_ssj
+        print(min_ssj)
+        print(max_ssj)
         #print mean_ssj
         #print stdev_ssj
         
         ratio = min_ssj / max_ssj
-        print "ratio: %.2f" % ratio
+        print("ratio: {0:.2f}".format(ratio))
         
-        print cores_values
+        print(cores_values)
         max_cores = max(cores_values)
-        print max_cores
+        print(max_cores)
         
         if ratio <= 0.33:
             filename = 'scenario_c' + str(max_cores) + '_low.' + str(low)
@@ -87,17 +87,17 @@ def main(machine_count, scenario_count):
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
-        print "Error!"
-        print "Usage: python %s <#machines> <#scenarios> <seed>" % sys.argv[0]
-        exit(-1)
+        print("Error!")
+        print("Usage: python {0} <#machines> <#scenarios> <seed>".format(sys.argv[0]))
+        sys.exit(-1)
         
-    print "# machines: %s" % sys.argv[1]
+    print("# machines: {0}".format(sys.argv[1]))
     machine_count = int(sys.argv[1])
 
-    print "# scenarios: %s" % sys.argv[2]
+    print("# scenarios: {0}".format(sys.argv[2]))
     scenario_count = int(sys.argv[2])
     
-    print "seed: %s" % sys.argv[3]
+    print("seed: {0}".format(sys.argv[3]))
     seed = int(sys.argv[3])
         
     random.seed(seed)

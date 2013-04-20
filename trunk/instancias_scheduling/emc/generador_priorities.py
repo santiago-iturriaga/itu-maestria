@@ -13,8 +13,8 @@ if __name__ == '__main__':
     argc = len(sys.argv)
     
     if argc != 4:
-        print "Modo de uso: python %s <#tareas> <#scenarios> <seed>" % sys.argv[0]
-        exit(0)
+        print("Modo de uso: python {0} <#tareas> <#scenarios> <seed>".format(sys.argv[0]))
+        sys.exit(0)
 
     cantidad_tareas = int(sys.argv[1])
     cantidad_scenarios = int(sys.argv[2])
