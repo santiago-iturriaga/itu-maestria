@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #  convert_to_gams.py
@@ -22,6 +22,8 @@
 #
 #
 
+import sys
+
 #* dimension 8x2
 #* 8x2/scenario_c4_high.1
 #* 8x2/arrival.0
@@ -33,14 +35,18 @@ scale = 1
 #scale = 100
 
 def main():
-    dim_t = 8
-    dim_m = 2
+    if len(sys.argv) != 8:
+        print("Usage %s <#tasks> <#machines> <arrival_file> <priorities_file> <workload_file> <cores_file> <scenario_file>".format(sys.argv[0]))
+        sys.exit()
+    
+    dim_t = int(sys.argv[1]) #8
+    dim_m = int(sys.argv[2]) #2
 
-    scenario_file = "8x2/scenario_c4_high.1"
-    arrival_file = "8x2/arrival.0"
-    cores_file = "8x2/cores_c2.0"
-    priorities_file = "8x2/priorities.0"
-    workload_file = "8x2/workload_high.0"
+    scenario_file = sys.argv[7] #"8x2/scenario_c4_high.1"
+    arrival_file = sys.argv[3] #"8x2/arrival.0"
+    cores_file = sys.argv[6] #"8x2/cores_c2.0"
+    priorities_file = sys.argv[4] #"8x2/priorities.0"
+    workload_file = sys.argv[5] #"8x2/workload_high.0"
 
     scenario = []
     arrival = []
@@ -54,7 +60,7 @@ def main():
             assert(len(data_array)==4)
             scenario.append((int(data_array[0]),float(data_array[1]),float(data_array[2])/scale,float(data_array[3])/scale))
 
-    print(scenario)
+    #print(scenario)
 
     with open(arrival_file) as f:
         for line in f:
@@ -63,29 +69,36 @@ def main():
             for i in range(int(data_array[1])):
                 arrival.append(float(data_array[0])/scale)
 
-    print(arrival)
+    #print(arrival)
 
     with open(cores_file) as f:
         for line in f:
             cores.append(int(line.strip()))
             
-    print(cores)
+    #print(cores)
     
     with open(priorities_file) as f:
         for line in f:
             priorities.append(int(line.strip()))
             
-    print(priorities)
+    #print(priorities)
     
     with open(workload_file) as f:
         for line in f:
             workload.append(float(line.strip())/scale)
             
-    print(workload)
+    #print(workload)
 
     max_cores = 0
 
-    print("PARAMETER m_cant_cores(m) 'cantidad de cores de la maquina m'")
+    for i in scenario:          
+        if i[0] > max_cores: max_cores = i[0]
+
+    print("SET t /1*" + str(dim_t) + "/;")
+    print("SET m /1*" + str(dim_m) + "/;")
+    print("SET c /1*" + str(max_cores) + "/;")
+
+    print("PARAMETER m_cant_cores(m)")
     index = 1
     for i in scenario:
         if index == 1:
@@ -95,11 +108,9 @@ def main():
         else:
             print("\t\t" + str(index) + "\t" + str(i[0]))
             
-        if i[0] > max_cores: max_cores = i[0]
-            
         index = index + 1
         
-    print("PARAMETER m_cores(m, c) 'cores de la maquina m'")
+    print("PARAMETER m_cores(m, c)")
     index = 1
     for i in scenario:
         if index == 1:
@@ -130,7 +141,7 @@ def main():
             
         index = index + 1
 
-    print("PARAMETER t_arrival(t) 'arribo de la tarea t'")
+    print("PARAMETER t_arrival(t)")
     index = 1
     for i in arrival:
         if index == 1:
@@ -142,7 +153,7 @@ def main():
             
         index = index + 1
 
-    print("PARAMETER t_cores(t) 'cores requeridos por la tarea t'")
+    print("PARAMETER t_cores(t)")
     index = 1
     for i in cores:
         if index == 1:
@@ -154,7 +165,7 @@ def main():
             
         index = index + 1
         
-    print("PARAMETER t_priorities(t) 'prioridad de la tarea t'")
+    print("PARAMETER t_priorities(t)")
     index = 1
     for i in priorities:
         if index == 1:
@@ -166,7 +177,7 @@ def main():
             
         index = index + 1
         
-    print("PARAMETER etc(t,m) 'costo computacional por core de la ejecucion de la tarea t en la maquina m'")
+    print("PARAMETER etc(t,m)")
     i_idx = 1
     for i in workload:
         j_idx = 1
@@ -181,7 +192,7 @@ def main():
             j_idx = j_idx + 1
         i_idx = i_idx + 1
 
-    print("PARAMETER m_eidle(m) 'consumo por unidad de tiempo de la maquina m en estado ocioso'")
+    print("PARAMETER m_eidle(m)")
     index = 1
     for i in scenario:
         if index == 1:
@@ -193,7 +204,7 @@ def main():
             
         index = index + 1
 
-    print("PARAMETER eec(t,m) 'costo energetico de la ejecucion de la tarea t en la maquina m'")
+    print("PARAMETER eec(t,m)")
     i_idx = 1
     for i in workload:
         j_idx = 1
