@@ -24,9 +24,9 @@ if __name__ == '__main__':
     argc = len(sys.argv)
     
     if argc != 6:
-        print "Modo de uso: python %s <#tareas> <#maquinas> <heterogeneidad> <#scenarios> <seed>" % sys.argv[0]
-        print "             heterogeneidad: LOW=1, MEDIUM=2, HIGH=3"
-        exit(0)
+        print("Modo de uso: python {0} <#tareas> <#maquinas> <heterogeneidad> <#scenarios> <seed>".format(sys.argv[0]))
+        print("             heterogeneidad: LOW=1, MEDIUM=2, HIGH=3")
+        sys.exit(0)
 
     cantidad_tareas = int(sys.argv[1])
     cantidad_maquinas = int(sys.argv[2])
@@ -36,13 +36,13 @@ if __name__ == '__main__':
        
     random.seed(current_seed)
     
-    print "cantidad tareas: %d" % cantidad_tareas
-    print "cantidad maquinas: %d" % cantidad_maquinas
-    print "heterogeneidad: %d" % heterogeneidad
-    print "cantidad scenarios: %d" % cantidad_scenarios
-    print "seed: %d" % current_seed
-    print "min: %d" % TO_min_ssj
-    print "max: %d" % TO_max_ssj
+    print("cantidad tareas: {0:d}".format(cantidad_tareas))
+    print("cantidad maquinas: {0:d}".format(cantidad_maquinas))
+    print("heterogeneidad: {0:d}".format(heterogeneidad))
+    print("cantidad scenarios: {0:d}".format(cantidad_scenarios))
+    print("seed: {0:d}".format(current_seed))
+    print("min: {0:.2f}".format(TO_min_ssj))
+    print("max: {0:.2f}".format(TO_max_ssj))
     
     if heterogeneidad == 1: filename = 'workload_low.'
     elif heterogeneidad == 2: filename = 'workload_mid.'
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             for task in range(cantidad_tareas):
                 # Calculo el costo independiente de la máquina.
                 current_heter_mult = Heter_mult[random.randint(1,heterogeneidad) - 1]
-                TO_current = long(random.uniform(TO_min_ssj, TO_min_ssj + Heter_step) * current_heter_mult)
+                TO_current = int(random.uniform(TO_min_ssj, TO_min_ssj + Heter_step) * current_heter_mult)
                 
                 #for machine in range(cantidad_maquinas):
                     # Calculo el costo del overhead adicional para cada posible máquina.

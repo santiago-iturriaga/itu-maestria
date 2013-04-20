@@ -42,18 +42,18 @@ def main(tasks_count, arrival_rate, scenarios_count):
                 tasks_left = tasks_left - tasks_arrived
                 current_time = current_time + 1
     
-            print "> tasks arrived in %d seconds (%d minutes, or %d hours)\n" % (current_time, current_time / 60, (current_time / 60) / 60)
+            print("> tasks arrived in {0:d} seconds ({1:d} minutes, or {2:d} hours)\n".format(current_time, current_time / 60, (current_time / 60) / 60))
     return 0
 
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print "Usage: python %s <#tasks> <arrival rate/s> <#scenarios> <seed>" % sys.argv[0]
+        print("Usage: python {0} <#tasks> <arrival rate/s> <#scenarios> <seed>".format(sys.argv[0]))
         exit(-1)
     
-    print "# tasks      : %s" % sys.argv[1]
-    print "arrival rate/s: %s" % sys.argv[2]
-    print "# scenarios  : %s" % sys.argv[3]
-    print "seed         : %s" % sys.argv[4]
+    print("# tasks       : {0}" % sys.argv[1]
+    print("arrival rate/s: {0}" % sys.argv[2]
+    print("# scenarios   : {0}" % sys.argv[3]
+    print("seed          : {0}" % sys.argv[4]
     
     tasks_count = int(sys.argv[1])
     arrival_rate = float(sys.argv[2])
