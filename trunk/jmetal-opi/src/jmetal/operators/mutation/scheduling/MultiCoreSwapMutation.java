@@ -194,13 +194,6 @@ public class MultiCoreSwapMutation extends Mutation {
 					}
 				}
 			}
-
-			for (int i = 0; i < solution.numberOfVariables(); i++) {
-				if (modified_machines[i]) {
-					((MultiCoreMachine) (solution.getDecisionVariables()[i]))
-							.refresh();
-				}
-			}
 		} // if
 		else {
 			Configuration.logger_

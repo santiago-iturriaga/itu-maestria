@@ -199,9 +199,6 @@ public class MultiCoreHUXCrossover extends Crossover {
 							}
 						}
 					}
-
-					o1.refresh();
-					o2.refresh();
 				}
 			}
 		} catch (ClassCastException e1) {

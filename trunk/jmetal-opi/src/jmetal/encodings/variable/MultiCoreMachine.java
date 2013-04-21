@@ -10,13 +10,12 @@ public class MultiCoreMachine extends Variable {
 	private MultiCoreSchedulingProblem problem;
 	private int machine_id;
 	private int machine_cores;
-	private double consumption_per_core;
-	private double ssj_per_core;
 
-	private int machine_tasks_count; /* number of tasks assigned to the machine */
-	private int[] machine_tasks; /* tasks assigned to the machine */
-	private double[] machine_core_ct; /* local makespan of each core */
-	private int[] machine_core_order; /* sorted core (from min to max) */
+	private int machine_tasks_count; 	/* number of tasks assigned to the machine */
+	private int[] machine_tasks; 		/* tasks assigned to the machine */
+	private double[] machine_tasks_st; 	/* tasks assigned to the machine */
+	private double[] machine_core_ct; 	/* local makespan of each core */
+	private int[] machine_core_order; 	/* sorted core (from min to max) */
 
 	//private double energy_consumption = 0.0;
 	private double total_executing_time = 0.0;
@@ -27,14 +26,11 @@ public class MultiCoreMachine extends Variable {
 	public MultiCoreMachine(MultiCoreSchedulingProblem problem, int machine_id) {
 		this.problem = problem;
 		this.machine_id = machine_id;
-
 		this.machine_cores = problem.MACHINE_CORES[machine_id];
-		this.consumption_per_core = (problem.MACHINE_EMAX[machine_id] - problem.MACHINE_EIDLE[machine_id])
-				/ problem.MACHINE_CORES[machine_id];
-		this.ssj_per_core = (problem.MACHINE_SSJ[machine_id] / problem.MACHINE_CORES[machine_id]);
 
 		this.machine_tasks_count = 0;
 		this.machine_tasks = new int[problem.NUM_TASKS];
+		this.machine_tasks_st = new double[problem.NUM_TASKS];
 
 		this.machine_core_ct = new double[problem.MACHINE_CORES[machine_id]];
 		this.machine_core_order = new int[problem.MACHINE_CORES[machine_id]];
@@ -52,15 +48,14 @@ public class MultiCoreMachine extends Variable {
 	public MultiCoreMachine(MultiCoreMachine multiCoreMachine) {
 		this.problem = multiCoreMachine.problem;
 		this.machine_id = multiCoreMachine.machine_id;
-
 		this.machine_cores = multiCoreMachine.machine_cores;
-		this.consumption_per_core = multiCoreMachine.consumption_per_core;
-		this.ssj_per_core = multiCoreMachine.ssj_per_core;
 
 		this.machine_tasks_count = multiCoreMachine.getMachine_tasks_count();
 		this.machine_tasks = new int[multiCoreMachine.problem.NUM_TASKS];
+		this.machine_tasks_st = new double[multiCoreMachine.problem.NUM_TASKS];
 		for (int i = 0; i < this.getMachine_tasks_count(); i++) {
 			this.machine_tasks[i] = multiCoreMachine.machine_tasks[i];
+			this.machine_tasks_st[i] = multiCoreMachine.machine_tasks_st[i];
 		}
 
 		this.machine_core_ct = new double[problem.MACHINE_CORES[machine_id]];
@@ -92,19 +87,21 @@ public class MultiCoreMachine extends Variable {
 		this.total_executing_time = 0;
 
 		for (int i = 0; i < getMachine_tasks_count(); i++) {
-			addTaskComputation(machine_tasks[i]);
+			addTaskComputation(machine_tasks[i], i);
 		}
 	}
 
 	public void enqueue(int task_id) {
-		this.machine_tasks[getMachine_tasks_count()] = task_id;
+		int task_pos = getMachine_tasks_count();
+		
+		this.machine_tasks[task_pos] = task_id;
 		this.assignedTasks.add(task_id);
 		this.machine_tasks_count++;
 
-		addTaskComputation(task_id);
+		addTaskComputation(task_id, task_pos);
 	}
 
-	private void addTaskComputation(int task_id) {
+	private void addTaskComputation(int task_id, int task_pos) {
 		int task_cores = problem.TASK_CORES[task_id];
 		assert (task_cores <= machine_cores);
 
@@ -115,25 +112,19 @@ public class MultiCoreMachine extends Variable {
 		if (starting_time <= problem.TASK_ARRIVAL[task_id])
 			starting_time = problem.TASK_ARRIVAL[task_id];
 
+		this.machine_tasks_st[task_pos] = starting_time;
+		double completion_time = starting_time + problem.ETC[task_id][this.machine_id];
+		
 		/* Actualizo el weighted compute time */
-		// this.weighted_ct += starting_time * problem.TASK_PRIORITY[task_id];
-		this.weighted_ct += ((starting_time - problem.TASK_ARRIVAL[task_id])
+		this.weighted_ct += ((completion_time - problem.TASK_ARRIVAL[task_id]) 
 				* problem.TASK_PRIORITY[task_id]) / MultiCoreSchedulingProblem.scale_factor;
 
-		double task_executing_time = (problem.TASK_COST[task_id] / this.ssj_per_core)
-				* task_cores;
+		double task_executing_time = problem.ETC[task_id][this.machine_id] * task_cores;
 		this.total_executing_time += task_executing_time;
 
-		/* Actualizo la energía consumida por la máquina */
-		/*this.energy_consumption += task_executing_time
-				* this.consumption_per_core;*/
-
-		/* Calculo el ending time */
-		double assigned_worst_core_ct = starting_time
-				+ (problem.TASK_COST[task_id] / this.ssj_per_core);
-
+		/* Actualizo el ending time */
 		for (int i = 0; i < task_cores; i++) {
-			this.machine_core_ct[this.machine_core_order[i]] = assigned_worst_core_ct;
+			this.machine_core_ct[this.machine_core_order[i]] = completion_time;
 		}
 
 		/* Re-ordeno los cores por compute time */
@@ -170,10 +161,6 @@ public class MultiCoreMachine extends Variable {
 		return this.total_executing_time;
 	}
 
-	//public double getEnergyConsumption() {
-	//	return this.energy_consumption;
-	//}
-
 	public int getMachine_task(int queue_index) {
 		assert (queue_index < this.machine_tasks_count);
 		return this.machine_tasks[queue_index];
@@ -188,15 +175,7 @@ public class MultiCoreMachine extends Variable {
 	}
 	
 	public double getMachine_makespan() {
-		return this.machine_core_ct[this.machine_cores-1];
-	}
-
-	public double getConsumption_per_core() {
-		return this.consumption_per_core;
-	}
-
-	public double getSsj_per_core() {
-		return this.ssj_per_core;
+		return this.machine_core_ct[machine_core_order[this.machine_cores - 1]];
 	}
 
 	public boolean isTaskAssigned(int task_id) {
@@ -220,9 +199,12 @@ public class MultiCoreMachine extends Variable {
 		}
 
 		this.machine_tasks[queue_index] = task_id;
+		this.machine_tasks_st[queue_index] = -1;
+		
 		this.machine_tasks_count++;
 		this.assignedTasks.add(task_id);
-		
+
+		refresh();
 		assert (check_integrity());
 	}
 
@@ -236,6 +218,7 @@ public class MultiCoreMachine extends Variable {
 		}
 
 		this.machine_tasks_count--;
+		refresh();
 	}
 
 	public void localSwapMachine_task(int queue_index_1, int queue_index_2) {
@@ -245,6 +228,8 @@ public class MultiCoreMachine extends Variable {
 		int aux = this.machine_tasks[queue_index_1];
 		this.machine_tasks[queue_index_1] = this.machine_tasks[queue_index_2];
 		this.machine_tasks[queue_index_2] = aux;
+		
+		refresh();
 	}
 
 	public void swapMachine_task(int queue_index, int task_id) {
@@ -257,7 +242,9 @@ public class MultiCoreMachine extends Variable {
 		this.assignedTasks.add(task_id);
 
 		this.machine_tasks[queue_index] = task_id;
+		this.machine_tasks_st[queue_index] = -2;
 
+		refresh();
 		assert (check_integrity());
 	}
 
@@ -267,16 +254,29 @@ public class MultiCoreMachine extends Variable {
 				return false;
 			}
 		}
+		
+		for (int i = 0; i < this.getMachine_tasks_count(); i++) {
+			if (this.machine_tasks_st[i] < problem.TASK_ARRIVAL[this.machine_tasks[i]]) {
+				return false;
+			}
+		}
 
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		String output = "[machine " + this.machine_id + "] ";
+		String output = "<" + this.machine_id + "|";
+		
 		for (int i = 0; i < this.getMachine_tasks_count(); i++) {
-			output += this.machine_tasks[i] + " ";
+			output += this.machine_tasks[i] + "#" + this.machine_tasks_st[i] + "|";
 		}
+		
+		output += ">";
+		
+		//output += "\nExecution time: " + getExecutingTime() + "\n";
+		//output += "Makespan: " + getMachine_makespan() + "\n";
+		
 		return output;
 	}
 
