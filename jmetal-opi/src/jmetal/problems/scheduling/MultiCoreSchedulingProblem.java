@@ -29,6 +29,12 @@ public class MultiCoreSchedulingProblem extends Problem {
 	public double[] MACHINE_SSJ;
 	public double[] MACHINE_EIDLE;
 	public double[] MACHINE_EMAX;
+	
+	public double[][] ETC;
+	public double[][] EEC;
+	
+	public double[] MACHINE_SSJ_PER_CORE;
+	public double[] MACHINE_EADD_PER_CORE;
 
 	public MultiCoreSchedulingProblem(List<Double> task_arrival,
 			List<Integer> task_priority, List<Integer> task_cores,
@@ -78,6 +84,24 @@ public class MultiCoreSchedulingProblem extends Problem {
 			MACHINE_EIDLE[i] = machine_eidle.get(i).doubleValue();
 			MACHINE_EMAX[i] = machine_emax.get(i).doubleValue();
 		}
+		
+		ETC = new double[NUM_TASKS][NUM_MACHINES];
+		EEC = new double[NUM_TASKS][NUM_MACHINES];
+		
+		MACHINE_SSJ_PER_CORE = new double[NUM_MACHINES];
+		MACHINE_EADD_PER_CORE = new double[NUM_MACHINES];
+		
+		for (int i = 0; i < NUM_MACHINES; i++) {
+			MACHINE_SSJ_PER_CORE[i] = MACHINE_SSJ[i] / MACHINE_CORES[i];
+			MACHINE_EADD_PER_CORE[i] = (MACHINE_EMAX[i]-MACHINE_EIDLE[i]) / MACHINE_CORES[i];
+		}
+		
+		for (int i = 0; i < NUM_MACHINES; i++) {
+			for (int j = 0; j < NUM_TASKS; j++) {
+				ETC[j][i] = TASK_COST[j] / MACHINE_SSJ_PER_CORE[i];
+				EEC[j][i] = ETC[j][i] * MACHINE_EADD_PER_CORE[i] * TASK_CORES[j];
+			}
+		}
 	}
 
 	@Override
@@ -105,15 +129,14 @@ public class MultiCoreSchedulingProblem extends Problem {
 		MultiCoreMachine aux;
 		for (int m = 0; m < solution.numberOfVariables(); m++) {
 			aux = (MultiCoreMachine) solution.getDecisionVariables()[m];
-			energy += (aux.getExecutingTime()) * this.MACHINE_EMAX[m] +
-						(makespan * this.MACHINE_CORES[m]) * this.MACHINE_EIDLE[m];
-
+			energy += (aux.getExecutingTime()) * this.MACHINE_EADD_PER_CORE[m] +
+						(makespan * this.MACHINE_CORES[m] - aux.getExecutingTime()) * this.MACHINE_EIDLE[m];
 		}
 		
 		return energy;
 	}
 
-	private double evaluateWeightedCompletionTime(Solution solution) {
+	private double evaluateWeightedCompletionTime(Solution solution) {	
 		double wct = ((MultiCoreMachine) solution.getDecisionVariables()[0])
 				.getWeightedComputeTime();
 		
@@ -126,8 +149,8 @@ public class MultiCoreSchedulingProblem extends Problem {
 		return wct;
 	}
 
-	public static final int scale_factor = 10000000;
-	//private static final int scale_factor = 1;
+	//public static final int scale_factor = 10000000;
+	public static final int scale_factor = 1;
 
 	public static MultiCoreSchedulingProblem loadMultiCoreSchedulingProblem(
 			String task_arrival_file, String task_priority_file,
@@ -206,6 +229,12 @@ public class MultiCoreSchedulingProblem extends Problem {
 				reader.close();
 				file.close();
 			}
+			
+			/*
+			System.out.println("TASK ARRIVAL:");
+			for (int i = 0; i < task_arrival.size(); i++) {
+				System.out.println("[" + i + "] " + task_arrival.get(i));
+			}*/
 
 			List<Integer> machine_cores = new ArrayList<Integer>();
 			List<Double> machine_ssj = new ArrayList<Double>();
