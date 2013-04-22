@@ -24,7 +24,7 @@
 
 import sys
 
-DEBUG = True
+DEBUG = False
 
 scale = 1
 tolerance = 0.0001

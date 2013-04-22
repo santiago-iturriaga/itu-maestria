@@ -33,34 +33,33 @@
 [RP:WQT_SCENARIO_8X2]
 1=
 
+[RP:WQT_PARAMS_2_8X2]
+1=
+
 [RP:WQT_MODEL_2]
 1=
 
-[RP:WQT_PARAMS_2_8X2]
+[RP:WQT_PARAMS_2_16X3]
 1=
 
 [RP:WQT_RUN_2]
 1=
 
 [MRUFILES]
-1=C:\Users\Santiago\Desktop\gams-opi\wqt_scenario_8x2.lst
-2=C:\Users\Santiago\Desktop\gams-opi\wqt_scenario_8x2.gms
-3=C:\Users\Santiago\Desktop\gams-opi\wqt_model_3.lst
-4=C:\Users\Santiago\Desktop\gams-opi\wqt_model_3.gms
-5=C:\Users\Santiago\Desktop\gams-opi\wqt_model.lst
-6=C:\Users\Santiago\Desktop\gams-opi\wqt_model.gms
-7=C:\Users\Santiago\Desktop\gams-opi\wqt_solve.gms
-8=C:\Users\Santiago\Desktop\gams-opi\wqt_scenario_16x3.gms
+1=C:\Users\Santiago\Desktop\gams-opi\wqt_params_2_8x2.gms
+2=C:\Users\Santiago\Desktop\gams-opi\wqt_params_2_8x2.lst
+3=C:\Users\Santiago\Desktop\gams-opi\wqt_scenario_8x2.lst
+4=C:\Users\Santiago\Desktop\gams-opi\wqt_scenario_8x2.gms
+5=C:\Users\Santiago\Desktop\gams-opi\wqt_model_3.lst
 
 [OPENWINDOW_1]
 FILE0=C:\Users\Santiago\Desktop\gams-opi\wqt_model_2.gms
-FILE1=C:\Users\Santiago\Desktop\gams-opi\wqt_params_2_8x2.gms
-FILE2=C:\Users\Santiago\Desktop\gams-opi\wqt_params_2_8x2.lst
-FILE3=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2.gms
+FILE1=C:\Users\Santiago\Desktop\gams-opi\wqt_params_2_16x3.gms
+FILE2=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2.gms
+FILE3=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2.lst
 FILE4=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2.lst
-FILE5=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2.lst
 MAXIM=0
-TOP=32
-LEFT=49
-HEIGHT=845
-WIDTH=798
+TOP=0
+LEFT=0
+HEIGHT=878
+WIDTH=1490
