@@ -151,8 +151,7 @@ def main():
         schedule_wqt = schedule_wqt + (t_priority * (i_start + t_etc - t_arrival))
         if DEBUG: print("================================")
 
-    #if DEBUG:
-    print("Makespan: {0:.4f}".format(makespan))
+    if DEBUG: print("Makespan: {0:.4f}".format(makespan))
         
     energy = 0.0
     index = 0
