@@ -1,0 +1,147 @@
+
+--- Job nrg_run_2_16x3.gms Start 04/22/13 18:06:39 WEX-WEI 23.7.3 x86_64/MS Windows     
+GAMS Rev 237  Copyright (C) 1987-2011 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- nrg_run_2_16x3.gms(3) 2 Mb
+--- .params_2_16x3.gms(163) 3 Mb
+--- nrg_run_2_16x3.gms(4) 3 Mb
+--- .nrg_model_2.gms(104) 3 Mb
+--- nrg_run_2_16x3.gms(14) 3 Mb
+--- Starting execution: elapsed 0:00:00.004
+--- nrg_run_2_16x3.gms(261) 4 Mb
+--- Generating MIP model min_wqt
+--- nrg_run_2_16x3.gms(262) 5 Mb
+---   5,603 rows  2,036 columns  13,934 non-zeroes
+---   1,998 discrete-columns
+***
+***   972 Integer +INF Bounds have been reset to 100
+***
+--- Executing CPLEX: elapsed 0:00:00.023
+
+IBM ILOG CPLEX   Jul 14, 2011 23.7.3 WEX 27723.27726 WEI x86_64/MS Windows
+--- GAMS/Cplex licensed for continuous and discrete problems.
+Cplex 12.3.0.0
+
+Reading data...
+Starting Cplex...
+Tried aggregator 2 times.
+MIP Presolve eliminated 3487 rows and 412 columns.
+MIP Presolve modified 762 coefficients.
+Aggregator did 702 substitutions.
+Reduced MIP has 1414 rows, 922 columns, and 5598 nonzeros.
+Reduced MIP has 840 binaries, 63 generals, 0 SOSs, and 0 indicators.
+Probing time =    0.00 sec.
+Tried aggregator 1 time.
+Presolve time =    0.05 sec.
+Found feasible solution after 0.05 sec.  Objective = 1.1242e+008
+Probing time =    0.00 sec.
+Clique table members: 6474.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: none, using 1 thread.
+Tried aggregator 1 time.
+Aggregator did 36 substitutions.
+Reduced LP has 1378 rows, 886 columns, and 5526 nonzeros.
+Presolve time =    0.00 sec.
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        412087.147700
+Initializing dual steep norms . . .
+Root relaxation solution time =    0.02 sec.
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                      1.12417e+008                     58     --- 
+      0     0  3.09314e+007    38  1.12417e+008  3.09314e+007       58   72.49%
+      0     0  3.09314e+007    32  1.12417e+008      Cuts: 10       77   72.49%
+      0     0  3.09314e+007    50  1.12417e+008      Cuts: 42      143   72.49%
+*     0+    0                      8.84457e+007  3.09314e+007      143   65.03%
+      0     0  3.09314e+007    28  8.84457e+007      Cuts: 26      168   65.03%
+*     0+    0                      8.71847e+007  3.09314e+007      168   64.52%
+      0     0  3.09314e+007    37  8.71847e+007      Cuts: 28      204   64.52%
+*     0+    0                      8.57859e+007  3.09314e+007      204   63.94%
+*     0+    0                      7.08162e+007  3.09314e+007      204   56.32%
+*     0+    0                      6.86858e+007  3.09314e+007      204   54.97%
+      0     2  3.09314e+007    22  6.86858e+007  3.09314e+007      204   54.97%
+Elapsed real time =   0.42 sec. (tree size =  0.00 MB, solutions = 6)
+*    10+   10                      6.70664e+007  3.09314e+007      290   53.88%
+*    30+   30                      6.57015e+007  3.09314e+007      363   52.92%
+*    40+   40                      6.49112e+007  3.09314e+007      424   52.35%
+*    50+   50                      6.41162e+007  3.09314e+007      473   51.76%
+*    50+   50                      6.27637e+007  3.09314e+007      473   50.72%
+*    70+   70                      6.18899e+007  3.09314e+007      589   50.02%
+*    80+   76                      5.15545e+007  3.09314e+007      654   40.00%
+*    92    67      integral     0  4.42589e+007  3.09314e+007      685   30.11%
+*   110+   73                      4.42297e+007  3.09314e+007      932   30.07%
+                                                     Cuts: 14                  
+*   120+   72                      4.30005e+007  3.09314e+007     1009   28.07%
+*   130+   70                      4.24941e+007  3.09314e+007     1109   27.21%
+                                                      Cuts: 5                  
+*   230+  110                      4.16554e+007  3.09314e+007     2654   25.74%
+                                                     Cuts: 26                  
+*   230+  103                      4.09714e+007  3.09314e+007     2654   24.50%
+*   230+  103                      4.07872e+007  3.09314e+007     2654   24.16%
+    304   145  3.72600e+007    16  4.07872e+007  3.09314e+007     3619   24.16%
+                                                  Impl Bds: 9                  
+    509   237  3.09314e+007    22  4.07872e+007  3.09314e+007     6317   24.16%
+*   529+  171                      4.06882e+007  3.09314e+007     6523   23.98%
+    572   196  3.12587e+007    40  4.06882e+007  3.09314e+007     6955   23.98%
+*   587   146      integral     0  3.84787e+007  3.09314e+007     7033   19.61%
+*   591   109      integral     0  3.70158e+007  3.09314e+007     7039   16.44%
+*   639+  100                      3.61539e+007  3.09314e+007     7309   14.45%
+    709   117  3.22137e+007    12  3.61539e+007  3.09314e+007     7951   14.45%
+*   739+  132                      3.61416e+007  3.09314e+007     8119   14.42%
+    790   180  3.11836e+007    32  3.61416e+007  3.09314e+007     8477   14.42%
+*   909+  255                      3.54934e+007  3.09314e+007     9282   12.85%
+    989   309  3.23977e+007    10  3.54934e+007  3.09314e+007     9693   12.85%
+*  1109+  392                      3.54062e+007  3.09314e+007    10710   12.64%
+                                                 Impl Bds: 13                  
+*  1239+  383                      3.35231e+007  3.09314e+007    12003    7.73%
+                                                   MIRcuts: 1                  
+
+Implied bound cuts applied:  29
+Flow cuts applied:  4
+Mixed integer rounding cuts applied:  8
+Gomory fractional cuts applied:  4
+
+Root node processing (before b&c):
+  Real time             =    0.37
+Sequential b&c:
+  Real time             =    4.51
+                          -------
+Total (root+branch&cut) =    4.88 sec.
+MIP status(102): integer optimal, tolerance
+Fixing integer variables, and solving final LP...
+Tried aggregator 1 time.
+LP Presolve eliminated 5261 rows and 1999 columns.
+Aggregator did 18 substitutions.
+Reduced LP has 324 rows, 19 columns, and 648 nonzeros.
+Presolve time =    0.00 sec.
+
+Iteration log . . .
+Iteration:     1   Dual objective     =      33523148.382200
+Fixed MIP status(1): optimal
+
+Solution satisfies tolerances.
+
+MIP Solution:     33523148.382200    (12003 iterations, 1239 nodes)
+Final Solve:      33523148.382200    (11 iterations)
+
+Best possible:    30931392.313400
+Absolute gap:      2591756.068800
+Relative gap:            0.077312
+
+--- Restarting execution
+--- nrg_run_2_16x3.gms(262) 2 Mb
+--- Reading solution for model min_wqt
+--- nrg_run_2_16x3.gms(262) 3 Mb
+--- Executing after solve: elapsed 0:00:05.173
+--- nrg_run_2_16x3.gms(281) 3 Mb
+--- Putfile salida_starting_time C:\Users\Santiago\Desktop\gams-opi\m2_nrg_stime_16x3.txt
+--- Putfile salida_assignment C:\Users\Santiago\Desktop\gams-opi\m2_nrg_assign_16x3.txt
+*** Status: Normal completion
+--- Job nrg_run_2_16x3.gms Stop 04/22/13 18:06:44 elapsed 0:00:05.174
