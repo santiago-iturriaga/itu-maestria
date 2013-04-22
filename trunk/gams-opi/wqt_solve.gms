@@ -1,7 +1,7 @@
 scalar TMAX;
 TMAX = sum(t,smax(m,etc(t,m)));
 
-OPTION Reslim=2000;
+OPTION Reslim = 1000000;
 OPTION MIP = cplex;
 SOLVE min_wqt using mip minimizing f;
 
