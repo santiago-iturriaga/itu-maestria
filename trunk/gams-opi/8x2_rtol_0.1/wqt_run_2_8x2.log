@@ -1,0 +1,110 @@
+
+--- Job wqt_run_2_8x2.gms Start 04/22/13 19:21:44 WEX-WEI 23.7.3 x86_64/MS Windows     
+GAMS Rev 237  Copyright (C) 1987-2011 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- wqt_run_2_8x2.gms(3) 2 Mb
+--- .params_2_8x2.gms(79) 3 Mb
+--- wqt_run_2_8x2.gms(4) 3 Mb
+--- .wqt_model_2.gms(92) 3 Mb
+--- wqt_run_2_8x2.gms(14) 3 Mb
+--- Starting execution: elapsed 0:00:00.027
+--- wqt_run_2_8x2.gms(166) 4 Mb
+--- Generating MIP model min_wqt
+--- wqt_run_2_8x2.gms(167) 4 Mb
+---   1,125 rows  441 columns  2,755 non-zeroes
+---   420 discrete-columns
+***
+***   200 Integer +INF Bounds have been reset to 100
+***
+--- Executing CPLEX: elapsed 0:00:00.046
+
+IBM ILOG CPLEX   Jul 14, 2011 23.7.3 WEX 27723.27726 WEI x86_64/MS Windows
+--- GAMS/Cplex licensed for continuous and discrete problems.
+Cplex 12.3.0.0
+
+Reading data...
+Starting Cplex...
+Tried aggregator 2 times.
+MIP Presolve eliminated 767 rows and 157 columns.
+MIP Presolve modified 84 coefficients.
+Aggregator did 120 substitutions.
+Reduced MIP has 238 rows, 164 columns, and 896 nonzeros.
+Reduced MIP has 148 binaries, 6 generals, 0 SOSs, and 0 indicators.
+Probing time =    0.00 sec.
+Tried aggregator 1 time.
+Presolve time =    0.00 sec.
+Found feasible solution after 0.02 sec.  Objective = 1115823.4806
+Probing time =    0.00 sec.
+Clique table members: 1335.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: none, using 1 thread.
+Tried aggregator 1 time.
+No LP presolve or aggregator reductions.
+Presolve time =    0.00 sec.
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        233639.425400
+Root relaxation solution time =    0.05 sec.
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                      1115823.4806                     18     --- 
+      0     0   233639.4254    12  1115823.4806   233639.4254       18   79.06%
+*     0+    0                       539321.4612   233639.4254       18   56.68%
+      0     0   233639.4254    21   539321.4612      Cuts: 13       38   56.68%
+*     0+    0                       528337.8185   233639.4254       38   55.78%
+      0     0   233639.4254    19   528337.8185       Cuts: 8       54   55.78%
+*     0+    0                       522535.2661   233639.4254       54   55.29%
+      0     0   233639.4254    21   522535.2661      Cuts: 11       80   55.29%
+*     0+    0                       395230.5446   233639.4254       80   40.89%
+*     0+    0                       358025.2622   233639.4254       80   34.74%
+      0     2   233639.4254    19   358025.2622   233639.4254       80   34.74%
+Elapsed real time =   0.11 sec. (tree size =  0.00 MB, solutions = 6)
+*    10+    6                       302278.5085   233639.4254      123   22.71%
+*    30+    7                       264052.5233   233937.9212      222   11.40%
+*    40+   16                       258812.4098   233937.9212      278    9.61%
+
+Implied bound cuts applied:  15
+Flow cuts applied:  2
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =    0.11
+Sequential b&c:
+  Real time             =    0.02
+                          -------
+Total (root+branch&cut) =    0.13 sec.
+MIP status(102): integer optimal, tolerance
+Fixing integer variables, and solving final LP...
+Tried aggregator 1 time.
+LP Presolve eliminated 1035 rows and 431 columns.
+Reduced LP has 90 rows, 10 columns, and 180 nonzeros.
+Presolve time =    0.00 sec.
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        244945.273400
+Fixed MIP status(1): optimal
+
+Solution satisfies tolerances.
+
+MIP Solution:       258812.409800    (278 iterations, 40 nodes)
+Final Solve:        258812.409800    (3 iterations)
+
+Best possible:      233937.921208
+Absolute gap:        24874.488592
+Relative gap:            0.096110
+
+--- Restarting execution
+--- wqt_run_2_8x2.gms(167) 2 Mb
+--- Reading solution for model min_wqt
+--- Executing after solve: elapsed 0:00:00.278
+--- wqt_run_2_8x2.gms(185) 3 Mb
+--- Putfile salida_starting_time C:\Users\Santiago\Desktop\gams-opi\m2_wqt_stime_8x2.txt
+--- Putfile salida_assignment C:\Users\Santiago\Desktop\gams-opi\m2_wqt_assign_8x2.txt
+*** Status: Normal completion
+--- Job wqt_run_2_8x2.gms Stop 04/22/13 19:21:44 elapsed 0:00:00.291
