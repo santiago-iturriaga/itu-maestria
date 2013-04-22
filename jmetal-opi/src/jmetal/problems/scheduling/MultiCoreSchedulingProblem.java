@@ -130,7 +130,7 @@ public class MultiCoreSchedulingProblem extends Problem {
 		for (int m = 0; m < solution.numberOfVariables(); m++) {
 			aux = (MultiCoreMachine) solution.getDecisionVariables()[m];
 			energy += (aux.getExecutingTime()) * this.MACHINE_EADD_PER_CORE[m] +
-						(makespan * this.MACHINE_CORES[m] - aux.getExecutingTime()) * this.MACHINE_EIDLE[m];
+						(makespan * this.MACHINE_CORES[m] * this.MACHINE_EIDLE[m]);
 		}
 		
 		return energy;
