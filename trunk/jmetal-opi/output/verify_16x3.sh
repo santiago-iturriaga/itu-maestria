@@ -1,2 +1,4 @@
-python verify_solution.py 16 3 /home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/arrival.0 /home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/priorities.0 /home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/workload_high.0 /home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/cores_c4.19 /home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/scenario_c6_mid.31 VAR
+INST_PATH=/home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/
+
+python verify_solution.py 16 3 ${INST_PATH}arrival.0 ${INST_PATH}priorities.0 ${INST_PATH}workload_high.0 ${INST_PATH}cores_c4.19 ${INST_PATH}scenario_c6_mid.31 VAR
 

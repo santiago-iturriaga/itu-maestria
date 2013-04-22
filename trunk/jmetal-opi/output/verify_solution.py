@@ -165,7 +165,7 @@ def main():
             index = 0
             for i in range(dim_m):
                 consumption_per_core = (scenario[i][3]-scenario[i][2])/scenario[i][0]
-                energy = energy + (machine_et[i] * consumption_per_core) + ((makespan * scenario[i][0] - machine_et[i]) * scenario[i][2])
+                energy = energy + (machine_et[i] * consumption_per_core) + (makespan * scenario[i][0] * scenario[i][2])
                 
                 index = index + 1
                 
