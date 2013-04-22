@@ -49,9 +49,7 @@ eq_completion_time(t)..  completion_time(t) =e= starting_time(t) + sum(m, assign
 enforce_arrival(t)..     starting_time(t) =g= t_arrival(t);
 no_overlap(t,tt,m,c)..   starting_time(tt) =g= completion_time(t)
                                  - TMAX*(start(tt,m,c))
-                                 - TMAX*(1-precedence(t,tt,m,c))
-                                 - TMAX*(1-assignment_mc(t,m,c))
-                                 - TMAX*(1-assignment_mc(t,m,c));
+                                 - TMAX*(1-precedence(t,tt,m,c));
 
 enforce_precedence(t,m,c)..      1 =e= sum(tt, precedence(t,tt,m,c))
                                          + (1 - assignment_mc(t,m,c));

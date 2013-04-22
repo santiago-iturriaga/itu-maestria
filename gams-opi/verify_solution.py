@@ -24,7 +24,7 @@
 
 import sys
 
-DEBUG = False
+DEBUG = True
 
 scale = 1
 tolerance = 0.0001
@@ -140,7 +140,7 @@ def main():
         
         for c in range(t_cores):
             if DEBUG: print("    core[{0}].ct: {1:.2f}".format(c,machine_ct[i_m_id][c]))
-            
+            if DEBUG: print("    core[{0}].st: {1:.8f}".format(c,machine_ct[i_m_id][c] - i_start))
             assert(machine_ct[i_m_id][c] - i_start <= tolerance)
             machine_ct[i_m_id][c] = i_start + t_etc           
             machine_et[i_m_id] = machine_et[i_m_id] + t_etc
