@@ -150,18 +150,20 @@ def main():
         
         schedule_wqt = schedule_wqt + (t_priority * (i_start + t_etc - t_arrival))
         if DEBUG: print("================================")
-    
-    if DEBUG: print("WQT: ",end="")
-    print("{0:.4f}".format(schedule_wqt))
-    
+
+    #if DEBUG:
+    print("Makespan: {0:.4f}".format(makespan))
+        
     energy = 0.0
-    
     index = 0
     for i in range(dim_m):
         consumption_per_core = (scenario[i][3]-scenario[i][2])/scenario[i][0]
-        energy = energy + (machine_et[i] * consumption_per_core) + ((makespan * scenario[i][0] - machine_et[i]) * scenario[i][2])
+        energy = energy + (machine_et[i] * consumption_per_core) + (makespan * scenario[i][0] * scenario[i][2])
         
         index = index + 1
+
+    if DEBUG: print("WQT: ",end="")
+    print("{0:.4f}".format(schedule_wqt))
       
     if DEBUG: print("ENERGY: ",end="")
     print("{0:.4f}".format(energy))
