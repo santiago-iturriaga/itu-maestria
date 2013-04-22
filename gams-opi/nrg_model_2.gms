@@ -91,8 +91,8 @@ objective..                      f =e= makespan * sum(m, m_cores(m) * m_eidle(m)
 MODEL min_wqt /all/;
 
 OPTION Reslim = 1000000;
-OPTION Optca = 0.0;
-OPTION Optcr = 0.0;
+*OPTION Optca = 0.0;
+*OPTION Optcr = 0.0;
 OPTION MIP = cplex;
 SOLVE min_wqt using mip minimizing f;
 
