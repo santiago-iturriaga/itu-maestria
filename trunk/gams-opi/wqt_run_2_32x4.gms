@@ -1,5 +1,7 @@
 $TITLE multicore_scheduling_min_wqt_s1
 
+Option optcr = 0.21;
+
 $Include params_2_32x4
 $Include wqt_model_2
 

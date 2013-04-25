@@ -1,5 +1,7 @@
 $TITLE multicore_scheduling_min_wqt_8x2
 
+Option optcr = 0.00;
+
 $Include params_2_8x2
 $Include nrg_model_2
 

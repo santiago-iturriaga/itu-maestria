@@ -6,9 +6,6 @@
 [RP:WQT_SCENARIO_64X4]
 1=
 
-[RP:WQT_SCENARIO_32X4]
-1=
-
 [RP:WQT_SOLVE_RELAX]
 1=
 
@@ -21,16 +18,7 @@
 [RP:WQT_SCENARIO_16X3]
 1=
 
-[RP:WQT_SOLVE]
-1=
-
-[RP:WQT_MODEL]
-1=
-
 [RP:WQT_MODEL_3]
-1=
-
-[RP:WQT_SCENARIO_8X2]
 1=
 
 [RP:WQT_RUN_2]
@@ -48,44 +36,71 @@
 [RP:NRG_MODEL_2]
 1=
 
-[RP:PARAMS_2_16X3]
-1=
-
 [RP:PARAMS_2_8X2]
 1=
 
-[OPENWINDOW_1]
-MAXIM=0
-TOP=12
-LEFT=10
-HEIGHT=643
-WIDTH=1368
-
-[RP:WQT_RUN_2_16X3]
+[RP:WQT+ENERGY]
 1=
 
-[RP:WQT_RUN_2_32X4]
+[RP:WQT_SOLVE]
+1=
+
+[RP:WQT_MODEL]
+1=
+
+[RP:WQT_SCENARIO_32X4]
+1=
+
+[RP:PARAMS_2_16X3]
+1=
+
+[RP:WQT_SCENARIO_8X2]
 1=
 
 [RP:WQT_RUN_2_8X2]
 1=
 
-[RP:WQT_MODEL_2]
+[RP:WQT_RUN_2_32X4]
 1=
 
-[RP:NRG_RUN_2_8X2]
+[RP:WQT_RUN_2_16X3]
+1=
+
+[RP:NRG_RUN_2_32X4]
+1=
+
+[RP:WQT_MODEL_2]
 1=
 
 [RP:NRG_RUN_2_16X3]
 1=
 
+[RP:NRG_RUN_2_8X2]
+1=
+
 [MRUFILES]
-1=C:\Users\Santiago\Desktop\gams-opi\nrg_run_2_16x3.gms
-2=C:\Users\Santiago\Desktop\gams-opi\nrg_run_2_8x2.gms
-3=C:\Users\Santiago\Desktop\gams-opi\wqt_model_2.gms
-4=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2_8x2.gms
-5=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2_32x4.lst
-6=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2_32x4.gms
-7=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2_16x3.gms
-8=C:\Users\Santiago\Desktop\gams-opi\nrg_run_2_8x2.lst
-9=C:\Users\Santiago\Desktop\gams-opi\wqt_run_2_8x2.lst
+1=D:\Facultad\OPI\gams-opi\wqt_scenario_8x2.gms
+2=D:\Facultad\OPI\gams-opi\params_2_16x3.gms
+3=D:\Facultad\OPI\gams-opi\wqt_scenario_32x4.gms
+4=D:\Facultad\OPI\gams-opi\wqt_model.gms
+
+[OPENWINDOW_1]
+FILE0=D:\Facultad\OPI\gams-opi\nrg_run_2_16x3.gms
+FILE1=D:\Facultad\OPI\gams-opi\nrg_run_2_16x3.lst
+FILE2=D:\Facultad\OPI\gams-opi\nrg_run_2_32x4.gms
+FILE3=D:\Facultad\OPI\gams-opi\nrg_run_2_32x4.lst
+FILE4=D:\Facultad\OPI\gams-opi\nrg_run_2_8x2.gms
+FILE5=D:\Facultad\OPI\gams-opi\nrg_run_2_8x2.lst
+FILE6=D:\Facultad\OPI\gams-opi\wqt_model_2.gms
+FILE7=D:\Facultad\OPI\gams-opi\wqt_run_2_16x3.gms
+FILE8=D:\Facultad\OPI\gams-opi\wqt_run_2_16x3.lst
+FILE9=D:\Facultad\OPI\gams-opi\wqt_run_2_32x4.gms
+FILE10=D:\Facultad\OPI\gams-opi\wqt_run_2_32x4.lst
+FILE11=D:\Facultad\OPI\gams-opi\wqt_run_2_8x2.gms
+FILE12=D:\Facultad\OPI\gams-opi\wqt_run_2_8x2.lst
+FILE13=D:\Facultad\OPI\gams-opi\nrg_run_2_8x2.lst
+MAXIM=0
+TOP=75
+LEFT=75
+HEIGHT=607
+WIDTH=1376

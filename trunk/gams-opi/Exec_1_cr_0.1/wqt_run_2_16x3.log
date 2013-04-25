@@ -1,0 +1,256 @@
+
+--- Job wqt_run_2_16x3.gms Start 04/23/13 18:49:25 WEX-VS8 24.0.2 x86/MS Windows        
+GAMS Rev 240  Copyright (C) 1987-2013 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- wqt_run_2_16x3.gms(3) 2 Mb
+--- .params_2_16x3.gms(163) 3 Mb
+--- wqt_run_2_16x3.gms(4) 3 Mb
+--- .wqt_model_2.gms(92) 3 Mb
+--- wqt_run_2_16x3.gms(14) 3 Mb
+--- Starting execution: elapsed 0:00:00.047
+--- wqt_run_2_16x3.gms(250) 4 Mb
+--- Generating MIP model min_wqt
+--- wqt_run_2_16x3.gms(251) 4 Mb
+---   5,585 rows  2,035 columns  13,865 non-zeroes
+---   1,998 discrete-columns
+***
+***   972 Integer +INF Bounds have been reset to 100
+***
+--- Executing CPLEX: elapsed 0:00:00.266
+
+IBM ILOG CPLEX   Feb 14, 2013 24.0.2 WIN 38380.38394 VS8 x86/MS Windows       
+--- GAMS/Cplex licensed for continuous and discrete problems.
+Cplex 12.5.0.0
+
+Reading data...
+Starting Cplex...
+Tried aggregator 2 times.
+MIP Presolve eliminated 3505 rows and 430 columns.
+MIP Presolve modified 762 coefficients.
+Aggregator did 684 substitutions.
+Reduced MIP has 1396 rows, 921 columns, and 5514 nonzeros.
+Reduced MIP has 840 binaries, 63 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.13 sec. (11.21 ticks)
+Found incumbent of value 3527837.637100 after 0.33 sec. (13.70 ticks)
+Probing time = 0.02 sec. (0.93 ticks)
+Tried aggregator 2 times.
+Aggregator did 1 substitutions.
+Reduced MIP has 1395 rows, 920 columns, and 5513 nonzeros.
+Reduced MIP has 839 binaries, 63 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (3.33 ticks)
+Probing time = -0.00 sec. (0.93 ticks)
+Clique table members: 6667.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: none, using 1 thread.
+Tried aggregator 1 time.
+Aggregator did 36 substitutions.
+Reduced LP has 1359 rows, 884 columns, and 5441 nonzeros.
+Presolve time = -0.00 sec. (0.92 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =         74006.030100
+Initializing dual steep norms . . .
+Root relaxation solution time = 0.02 sec. (2.67 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                      3527837.6371    46885.9038       58   98.67%
+Found incumbent of value 3527837.637100 after 0.45 sec. (26.34 ticks)
+      0     0   607186.9078    42  3527837.6371   607186.9078       58   82.79%
+      0     0   607186.9078    36  3527837.6371      Cuts: 17      103   82.79%
+      0     0   607186.9078    45  3527837.6371      Cuts: 40      194   82.79%
+      0     0   607186.9078    39  3527837.6371      Cuts: 18      263   82.79%
+*     0+    0                      3146485.6297   607186.9078      263   80.70%
+Found incumbent of value 3146485.629700 after 0.67 sec. (63.54 ticks)
+      0     0   607186.9078    47  3146485.6297      Cuts: 27      357   80.70%
+*     0+    0                      2751206.8299   607186.9078      357   77.93%
+Found incumbent of value 2751206.829900 after 0.89 sec. (113.89 ticks)
+*     0+    0                      2531662.2376   607186.9078      357   76.02%
+Found incumbent of value 2531662.237600 after 1.03 sec. (164.60 ticks)
+*     0+    0                      1987002.2490   607186.9078      357   69.44%
+Found incumbent of value 1987002.249000 after 1.05 sec. (167.40 ticks)
+*     0+    0                      1806537.7021   607186.9078      357   66.39%
+Found incumbent of value 1806537.702100 after 1.27 sec. (233.85 ticks)
+      0     2   607186.9078    41  1806537.7021   607186.9078      357   66.39%
+Elapsed time = 1.41 sec. (271.48 ticks, tree = 0.00 MB, solutions = 6)
+*   150+  150                      1440265.7510   607369.1654     2250   57.83%
+Found incumbent of value 1440265.751000 after 1.86 sec. (410.08 ticks)
+*   252+  233                      1128955.2404   607417.9645     3283   46.20%
+Found incumbent of value 1128955.240400 after 2.23 sec. (512.82 ticks)
+    252   235   607844.6691    36  1128955.2404   608806.8626     3283   46.07%
+                                                     Cuts: 13                  
+    600   552   609142.3608    35  1128955.2404   608827.5706     7151   46.07%
+                                                     Cuts: 41                  
+*   840+  742                       998757.9218   609124.7830    11075   39.01%
+                                                     Cuts: 67                  
+Found incumbent of value 998757.921800 after 3.84 sec. (989.23 ticks)
+    862   766   668122.3253    29   998757.9218   609124.7830    11550   39.01%
+*   940+  822                       980559.5525   609181.7684    12568   37.87%
+                                                      Cuts: 5                  
+Found incumbent of value 980559.552500 after 4.22 sec. (1083.56 ticks)
+*   950+  807                       933996.8675   609181.7684    12666   34.78%
+Found incumbent of value 933996.867500 after 4.25 sec. (1093.96 ticks)
+*  1060+  602                       898466.4405   620165.9826    15623   30.98%
+Found incumbent of value 898466.440500 after 6.23 sec. (1615.36 ticks)
+*  1060+  401                       855704.0700   622122.8072    16030   27.30%
+Found incumbent of value 855704.070000 after 7.23 sec. (1829.14 ticks)
+*  1060+  266                       853271.4090   622122.8072    16030   27.09%
+Found incumbent of value 853271.409000 after 7.23 sec. (1830.33 ticks)
+*  1060+  177                       836288.7817   622164.4579    16063   25.60%
+Found incumbent of value 836288.781700 after 8.77 sec. (2248.28 ticks)
+*  1060+  117                       817785.2389   622164.4579    16063   23.92%
+Found incumbent of value 817785.238900 after 8.83 sec. (2260.31 ticks)
+*  1060+   77                       817224.8858   622164.4579    16063   23.87%
+Found incumbent of value 817224.885800 after 8.84 sec. (2263.44 ticks)
+*  1060+   50                       815352.5779   622164.4579    16063   23.69%
+Found incumbent of value 815352.577900 after 8.86 sec. (2267.25 ticks)
+   1060    51   622164.4579   435   815352.5779   622174.5917    16063   23.69%
+   1061    52   622290.4348   318   815352.5779   622281.6975    16150   23.68%
+   1062    52   622486.5871   368   815352.5779   622281.6975    16208   23.68%
+   1063    53   622577.1190   398   815352.5779   622281.6975    16233   23.68%
+   1065    54   623019.2678   344   815352.5779   622281.6975    16301   23.68%
+   1081    61   624648.4054   284   815352.5779   622281.6975    17009   23.68%
+   1265   207   711038.4672    89   815352.5779   622281.6975    23015   23.68%
+Elapsed time = 18.48 sec. (5704.58 ticks, tree = 0.21 MB, solutions = 18)
+   1651   575   736809.2034    77   815352.5779   623344.1046    33748   23.55%
+   2215  1086   807638.8804    60   815352.5779   623960.5144    48667   23.47%
+*  2440+ 1282                       812364.2987   624553.7671    53558   23.12%
+Found incumbent of value 812364.298700 after 25.36 sec. (7999.23 ticks)
+   2776  1610   763466.3616    23   812364.2987   624568.6959    60651   23.12%
+   3348  2160   745648.3795   127   812364.2987   625110.3743    76817   23.05%
+   4020  2797   682580.5640    77   812364.2987   626396.3825    92788   22.89%
+*  4060+ 2245                       754523.5028   626396.3825    93571   16.98%
+Found incumbent of value 754523.502800 after 33.19 sec. (10546.99 ticks)
+*  4060+ 2148                       748985.9036   626396.3825    93571   16.37%
+Found incumbent of value 748985.903600 after 33.31 sec. (10585.51 ticks)
+*  4060+ 2098                       747428.2442   626396.3825    93571   16.19%
+Found incumbent of value 747428.244200 after 33.33 sec. (10590.18 ticks)
+   4670  2644   715265.5225   104   747428.2442   626978.3197   108042   16.12%
+   5378  3256   709463.3440   100   747428.2442   628078.1156   124789   15.97%
+   5976  3795   746794.1857    80   747428.2442   628457.2009   139988   15.92%
+                                                  Impl Bds: 2                  
+*  6060+ 3758                       745507.2894   628583.7361   143140   15.68%
+Found incumbent of value 745507.289400 after 42.75 sec. (13729.97 ticks)
+   6331  3997   722801.8932    51   745507.2894   628698.9338   151690   15.67%
+   6840  4448   706577.9112    92   745507.2894   629698.1722   166762   15.53%
+Elapsed time = 47.52 sec. (15314.44 ticks, tree = 3.67 MB, solutions = 23)
+   7243  4810   707510.3899   165   745507.2894   629826.3080   181023   15.52%
+   7601  5133   705781.0592    88   745507.2894   629949.7792   195086   15.50%
+   8004  5503   723852.0436   161   745507.2894   630366.1871   208933   15.44%
+   8424  5868   727882.0521   139   745507.2894   630756.4501   223403   15.39%
+   8719  6131   663961.0700    78   745507.2894   631691.2242   236304   15.27%
+*  9060+ 6333                       744535.9698   632068.3151   245922   15.11%
+Found incumbent of value 744535.969800 after 64.09 sec. (20813.42 ticks)
+*  9060+ 5946                       739579.2520   632068.3151   245922   14.54%
+Found incumbent of value 739579.252000 after 64.14 sec. (20827.24 ticks)
+   9260  6119   724022.4501   195   739579.2520   632334.4063   250326   14.50%
+   9919  6669   664753.2596    78   739579.2520   633540.6830   266392   14.34%
+* 10260+ 6921                       739075.4503   633800.3686   275152   14.24%
+Found incumbent of value 739075.450300 after 69.14 sec. (22483.07 ticks)
+  10526  7152   731241.4278    36   739075.4503   634054.6391   284027   14.21%
+  11177  7709   671030.0361    51   739075.4503   634771.5258   299248   14.11%
+* 11540+ 7385                       733263.4269   634849.5638   308169   13.42%
+                                                      Cuts: 7                  
+Found incumbent of value 733263.426900 after 77.20 sec. (25178.97 ticks)
+* 11540+ 7037                       729814.5399   634849.5638   308169   13.01%
+Found incumbent of value 729814.539900 after 77.22 sec. (25184.92 ticks)
+* 11540+ 6963                       729086.1089   634849.5638   308169   12.93%
+Found incumbent of value 729086.108900 after 80.70 sec. (26368.38 ticks)
+* 11540+ 6907                       728339.1021   634849.5638   308169   12.84%
+Found incumbent of value 728339.102100 after 80.72 sec. (26372.76 ticks)
+* 11540+ 6628                       726078.1748   634849.5638   308169   12.56%
+Found incumbent of value 726078.174800 after 80.84 sec. (26393.20 ticks)
+* 11540+ 6513                       725242.5110   634849.5638   308169   12.46%
+Found incumbent of value 725242.511000 after 81.16 sec. (26462.21 ticks)
+* 11540+ 6493                       725085.6938   634849.5638   308169   12.44%
+Found incumbent of value 725085.693800 after 81.17 sec. (26463.43 ticks)
+* 11540+ 6444                       724690.2419   634849.5638   308169   12.40%
+Found incumbent of value 724690.241900 after 81.22 sec. (26472.05 ticks)
+  11540  6444   724827.3398    64   724690.2419   634849.5638   308169   12.40%
+Elapsed time = 81.61 sec. (26515.71 ticks, tree = 5.19 MB, solutions = 34)
+  11741  6596   688395.5637    80   724690.2419   635081.9397   314749   12.37%
+  12209  6983   668095.8090    39   724690.2419   635574.9381   330791   12.30%
+  12476  7193   692077.1016   134   724690.2419   636177.4917   343794   12.21%
+  12898  7532   703706.7594    45   724690.2419   636822.8985   359865   12.12%
+  13334  7889   667069.7423    99   724690.2419   637158.7910   372816   12.08%
+  13721  8200   715369.4029    54   724690.2419   637523.1003   387031   12.03%
+                                                     Cuts: 27                  
+  14164  8572   715069.2832    80   724690.2419   637890.9973   403461   11.98%
+                                                  Impl Bds: 2                  
+  14557  8884   701262.7867    94   724690.2419   638623.1529   418036   11.88%
+                                                  Impl Bds: 2                  
+  15060  9275   721657.9381    59   724690.2419   639377.1170   436074   11.77%
+                                                  Impl Bds: 1                  
+  15390  9532   705547.5105    92   724690.2419   639929.7214   448836   11.70%
+Elapsed time = 110.30 sec. (36173.46 ticks, tree = 7.82 MB, solutions = 34)
+  15795  9834   722440.4802   107   724690.2419   640337.4480   464969   11.64%
+* 16060+ 9531                       721805.8512   640574.0532   473127   11.25%
+Found incumbent of value 721805.851200 after 115.09 sec. (37726.64 ticks)
+  16218  9647   648703.0432   142   721805.8512   640705.7902   478730   11.24%
+  16509  9855   674665.6746   120   721805.8512   641117.7872   493697   11.18%
+  16801 10072   650048.5519   163   721805.8512   641324.0391   508172   11.15%
+  17126 10332   708502.4986    82   721805.8512   641675.8788   522159   11.10%
+  17662 10759   704827.3762    86   721805.8512   642000.2772   540569   11.06%
+  18134 11129   716875.1399    63   721805.8512   642537.0767   557954   10.98%
+  18755 11631   666834.4567   100   721805.8512   643090.6951   575912   10.91%
+  19218 11993   670705.9132   107   721805.8512   643673.3572   592449   10.82%
+  19688 12352   701560.7116    90   721805.8512   644255.0622   610326   10.74%
+Elapsed time = 139.31 sec. (45835.06 ticks, tree = 10.05 MB, solutions = 35)
+  20153 12706   720894.9296   104   721805.8512   644482.7940   626111   10.71%
+  20612 13071   691155.5917   179   721805.8512   644749.3053   641924   10.68%
+  21056 13398   714476.2885   163   721805.8512   645378.6176   655574   10.59%
+  21522 13720   700603.9584   144   721805.8512   645820.4148   671814   10.53%
+  21909 14054   716940.9524    19   721805.8512   646109.8498   686723   10.49%
+  22280 14333   720229.6169    89   721805.8512   646350.5307   699590   10.45%
+  22603 14600   689626.5951   247   721805.8512   646421.8167   712820   10.44%
+* 23060+13571                       717050.4894   646770.7783   727265    9.80%
+Found incumbent of value 717050.489400 after 162.25 sec. (53523.46 ticks)
+
+Implied bound cuts applied:  225
+Mixed integer rounding cuts applied:  201
+Zero-half cuts applied:  3
+Gomory fractional cuts applied:  14
+
+Root node processing (before b&c):
+  Real time             =    1.03 sec. (252.75 ticks)
+Sequential b&c:
+  Real time             =  160.86 sec. (53253.44 ticks)
+                          ------------
+Total (root+branch&cut) =  161.89 sec. (53506.19 ticks)
+MIP status(102): integer optimal, tolerance
+Cplex Time: 162.25sec (det. 53525.10 ticks)
+Fixing integer variables, and solving final LP...
+Tried aggregator 1 time.
+LP Presolve eliminated 5279 rows and 2017 columns.
+Reduced LP has 306 rows, 18 columns, and 612 nonzeros.
+Presolve time = -0.00 sec. (1.60 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        687913.680100
+Fixed MIP status(1): optimal
+Cplex Time: 0.00sec (det. 3.55 ticks)
+
+Solution satisfies tolerances.
+
+MIP Solution:       717050.489400    (727265 iterations, 23060 nodes)
+Final Solve:        717050.489400    (6 iterations)
+
+Best possible:      646770.778271
+Absolute gap:        70279.711129
+Relative gap:            0.098012
+
+--- Restarting execution
+--- wqt_run_2_16x3.gms(251) 0 Mb
+--- Reading solution for model min_wqt
+--- wqt_run_2_16x3.gms(251) 3 Mb
+--- Executing after solve: elapsed 0:02:43.656
+--- wqt_run_2_16x3.gms(269) 3 Mb
+--- Putfile salida_starting_time D:\Facultad\OPI\gams-opi\m2_wqt_stime_16x3.txt
+--- Putfile salida_assignment D:\Facultad\OPI\gams-opi\m2_wqt_assign_16x3.txt
+*** Status: Normal completion
+--- Job wqt_run_2_16x3.gms Stop 04/23/13 18:52:09 elapsed 0:02:43.656
