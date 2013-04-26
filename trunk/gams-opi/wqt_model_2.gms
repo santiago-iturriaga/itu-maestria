@@ -79,7 +79,7 @@ objective..              f =e= sum(t, t_priorities(t) * (completion_time(t)-t_ar
 
 MODEL min_wqt /all/;
 
-OPTION Reslim = 50000;
+OPTION Reslim = 21600;
 OPTION MIP = cplex;
 SOLVE min_wqt using mip minimizing f;
 
