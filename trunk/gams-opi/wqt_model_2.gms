@@ -81,6 +81,9 @@ MODEL min_wqt /all/;
 
 OPTION Reslim = 21600;
 OPTION MIP = cplex;
+
+min_wqt.optfile=1;
+
 SOLVE min_wqt using mip minimizing f;
 
 DISPLAY f.l;

@@ -1,0 +1,2168 @@
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 1
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+   2   
+   3  Option optcr = 0.0;
+   4   
+INCLUDE    D:\Facultad\OPI\gams-opi\params_2_32x4_2.gms
+   6  * Scenario 32x4 of model WQT
+   7   
+   8  SET t /0*33/;
+   9  SET m /1*4/;
+  10  PARAMETER m_cores(m)
+  11          /        1        10
+  12                  2        4
+  13                  3        6
+  14                  4        2 /;
+  15  PARAMETER t_arrival(t)
+  16          /        1        5.0
+  17                  2        23.0
+  18                  3        30.0
+  19                  4        61.0
+  20                  5        108.0
+  21                  6        140.0
+  22                  7        145.0
+  23                  8        168.0
+  24                  9        181.0
+  25                  10        189.0
+  26                  11        192.0
+  27                  12        215.0
+  28                  13        219.0
+  29                  14        228.0
+  30                  15        243.0
+  31                  16        246.0
+  32                  17        247.0
+  33                  18        283.0
+  34                  19        304.0
+  35                  20        309.0
+  36                  21        317.0
+  37                  22        351.0
+  38                  23        358.0
+  39                  24        365.0
+  40                  25        373.0
+  41                  26        384.0
+  42                  27        395.0
+  43                  28        411.0
+  44                  29        441.0
+  45                  30        451.0
+  46                  31        453.0
+  47                  32        508.0 /;
+  48  PARAMETER t_cores(t)
+  49          /        1        1
+  50                  2        1
+  51                  3        1
+  52                  4        1
+  53                  5        1
+  54                  6        1
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 2
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+  55                  7        8
+  56                  8        1
+  57                  9        2
+  58                  10        1
+  59                  11        1
+  60                  12        1
+  61                  13        1
+  62                  14        1
+  63                  15        1
+  64                  16        1
+  65                  17        1
+  66                  18        1
+  67                  19        1
+  68                  20        1
+  69                  21        1
+  70                  22        1
+  71                  23        1
+  72                  24        2
+  73                  25        1
+  74                  26        1
+  75                  27        1
+  76                  28        2
+  77                  29        1
+  78                  30        1
+  79                  31        1
+  80                  32        1 /;
+  81  PARAMETER t_priorities(t)
+  82          /        1        4
+  83                  2        3
+  84                  3        3
+  85                  4        3
+  86                  5        3
+  87                  6        3
+  88                  7        2
+  89                  8        3
+  90                  9        4
+  91                  10        3
+  92                  11        3
+  93                  12        3
+  94                  13        3
+  95                  14        3
+  96                  15        4
+  97                  16        2
+  98                  17        3
+  99                  18        3
+ 100                  19        2
+ 101                  20        3
+ 102                  21        3
+ 103                  22        3
+ 104                  23        3
+ 105                  24        2
+ 106                  25        3
+ 107                  26        3
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 3
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 108                  27        4
+ 109                  28        3
+ 110                  29        3
+ 111                  30        2
+ 112                  31        3
+ 113                  32        3 /;
+ 114  PARAMETER etc(t,m)
+ 115          /        1        .1        28673.2186
+ 116                  1        .2        36847.9911
+ 117                  1        .3        20840.0481
+ 118                  1        .4        60997.5401
+ 119                  2        .1        27205.0196
+ 120                  2        .2        34961.2067
+ 121                  2        .3        19772.9430
+ 122                  2        .4        57874.1891
+ 123                  3        .1        1768.4326
+ 124                  3        .2        2272.6151
+ 125                  3        .3        1285.3186
+ 126                  3        .4        3762.0486
+ 127                  4        .1        5117.1896
+ 128                  4        .2        6576.1071
+ 129                  4        .3        3719.2363
+ 130                  4        .4        10885.9762
+ 131                  5        .1        17202.3400
+ 132                  5        .2        22106.7498
+ 133                  5        .3        12502.8724
+ 134                  5        .4        36595.1391
+ 135                  6        .1        10092.6506
+ 136                  6        .2        12970.0786
+ 137                  6        .3        7335.4627
+ 138                  6        .4        21470.4484
+ 139                  7        .1        3654.2164
+ 140                  7        .2        4696.0383
+ 141                  7        .3        2655.9294
+ 142                  7        .4        7773.7422
+ 143                  8        .1        10105.9852
+ 144                  8        .2        12987.2150
+ 145                  8        .3        7345.1544
+ 146                  8        .4        21498.8156
+ 147                  9        .1        5261.4542
+ 148                  9        .2        6761.5018
+ 149                  9        .3        3824.0897
+ 150                  9        .4        11192.8755
+ 151                  10        .1        8408.1570
+ 152                  10        .2        10805.3336
+ 153                  10        .3        6111.1519
+ 154                  10        .4        17886.9662
+ 155                  11        .1        8975.0603
+ 156                  11        .2        11533.8618
+ 157                  11        .3        6523.1843
+ 158                  11        .4        19092.9594
+ 159                  12        .1        9916.1439
+ 160                  12        .2        12743.2497
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 4
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 161                  12        .3        7207.1754
+ 162                  12        .4        21094.9596
+ 163                  13        .1        18787.5097
+ 164                  13        .2        24143.8535
+ 165                  13        .3        13654.9932
+ 166                  13        .4        39967.3260
+ 167                  14        .1        4327.7614
+ 168                  14        .2        5561.6119
+ 169                  14        .3        3145.4702
+ 170                  14        .4        9206.5981
+ 171                  15        .1        9156.3041
+ 172                  15        .2        11766.7785
+ 173                  15        .3        6654.9145
+ 174                  15        .4        19478.5258
+ 175                  16        .1        2175.3037
+ 176                  16        .2        2795.4856
+ 177                  16        .3        1581.0375
+ 178                  16        .4        4627.5995
+ 179                  17        .1        15010.9453
+ 180                  17        .2        19290.5856
+ 181                  17        .3        10910.1398
+ 182                  17        .4        31933.3086
+ 183                  18        .1        11191.4893
+ 184                  18        .2        14382.1977
+ 185                  18        .3        8134.1122
+ 186                  18        .4        23808.0465
+ 187                  19        .1        15579.3826
+ 188                  19        .2        20021.0852
+ 189                  19        .3        11323.2870
+ 190                  19        .4        33142.5652
+ 191                  20        .1        16751.4964
+ 192                  20        .2        21527.3701
+ 193                  20        .3        12175.1937
+ 194                  20        .4        35636.0438
+ 195                  21        .1        3584.7387
+ 196                  21        .2        4606.7524
+ 197                  21        .3        2605.4322
+ 198                  21        .4        7625.9399
+ 199                  22        .1        9255.6610
+ 200                  22        .2        11894.4622
+ 201                  22        .3        6727.1283
+ 202                  22        .4        19689.8912
+ 203                  23        .1        1688.7257
+ 204                  23        .2        2170.1837
+ 205                  23        .3        1227.3866
+ 206                  23        .4        3592.4853
+ 207                  24        .1        14099.9662
+ 208                  24        .2        18119.8851
+ 209                  24        .3        10248.0289
+ 210                  24        .4        29995.3509
+ 211                  25        .1        13105.3523
+ 212                  25        .2        16841.7055
+ 213                  25        .3        9525.1313
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 5
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 214                  25        .4        27879.4739
+ 215                  26        .1        8800.5481
+ 216                  26        .2        11309.5960
+ 217                  26        .3        6396.3467
+ 218                  26        .4        18721.7137
+ 219                  27        .1        751.1508
+ 220                  27        .2        965.3049
+ 221                  27        .3        545.9456
+ 222                  27        .4        1597.9493
+ 223                  28        .1        14163.5900
+ 224                  28        .2        18201.6482
+ 225                  28        .3        10294.2715
+ 226                  28        .4        30130.7000
+ 227                  29        .1        11331.7131
+ 228                  29        .2        14562.3995
+ 229                  29        .3        8236.0285
+ 230                  29        .4        24106.3493
+ 231                  30        .1        7194.4264
+ 232                  30        .2        9245.5669
+ 233                  30        .3        5228.9977
+ 234                  30        .4        15304.9548
+ 235                  31        .1        11834.3140
+ 236                  31        .2        15208.2926
+ 237                  31        .3        8601.3251
+ 238                  31        .4        25175.5499
+ 239                  32        .1        15084.1717
+ 240                  32        .2        19384.6889
+ 241                  32        .3        10963.3616
+ 242                  32        .4        32089.0856 /;
+ 243  PARAMETER m_eidle(m)
+ 244          /        1        105.8
+ 245                  2        59.5
+ 246                  3        59.9
+ 247                  4        105.0 /;
+ 248  PARAMETER eec(t,m)
+ 249          /        1        .1        296767.8124
+ 250                  1        .2        419145.8986
+ 251                  1        .3        314337.3925
+ 252                  1        .4        1951921.2833
+ 253                  2        .1        281571.9532
+ 254                  2        .2        397683.7257
+ 255                  2        .3        298241.8909
+ 256                  2        .4        1851974.0521
+ 257                  3        .1        18303.2778
+ 258                  3        .2        25850.9970
+ 259                  3        .3        19386.8889
+ 260                  3        .4        120385.5540
+ 261                  4        .1        52962.9120
+ 262                  4        .2        74803.2179
+ 263                  4        .3        56098.4816
+ 264                  4        .4        348351.2389
+ 265                  5        .1        178044.2188
+ 266                  5        .2        251464.2793
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 6
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 267                  5        .3        188584.9918
+ 268                  5        .4        1171044.4510
+ 269                  6        .1        104458.9337
+ 270                  6        .2        147534.6443
+ 271                  6        .3        110643.2284
+ 272                  6        .4        687054.3484
+ 273                  7        .1        302569.1150
+ 274                  7        .2        427339.4831
+ 275                  7        .3        320482.1502
+ 276                  7        .4        1990078.0018
+ 277                  8        .1        104596.9471
+ 278                  8        .2        147729.5702
+ 279                  8        .3        110789.4126
+ 280                  8        .4        687962.0990
+ 281                  9        .1        108912.1025
+ 282                  9        .2        153824.1654
+ 283                  9        .3        115360.0386
+ 284                  9        .4        716344.0304
+ 285                  10        .1        87024.4245
+ 286                  10        .2        122910.6698
+ 287                  10        .3        92176.5418
+ 288                  10        .4        572382.9177
+ 289                  11        .1        92891.8740
+ 290                  11        .2        131197.6783
+ 291                  11        .3        98391.3626
+ 292                  11        .4        610974.7023
+ 293                  12        .1        102632.0898
+ 294                  12        .2        144954.4651
+ 295                  12        .3        108708.2296
+ 296                  12        .4        675038.7072
+ 297                  13        .1        194450.7254
+ 298                  13        .2        274636.3339
+ 299                  13        .3        205962.8148
+ 300                  13        .4        1278954.4334
+ 301                  14        .1        44792.3303
+ 302                  14        .2        63263.3350
+ 303                  14        .3        47444.1760
+ 304                  14        .4        294611.1377
+ 305                  15        .1        94767.7478
+ 306                  15        .2        133847.1059
+ 307                  15        .3        100378.2940
+ 308                  15        .4        623312.8263
+ 309                  16        .1        22514.3930
+ 310                  16        .2        31798.6489
+ 311                  16        .3        23847.3153
+ 312                  16        .4        148083.1848
+ 313                  17        .1        155363.2837
+ 314                  17        .2        219430.4113
+ 315                  17        .3        164561.2746
+ 316                  17        .4        1021865.8742
+ 317                  18        .1        115831.9148
+ 318                  18        .2        163597.4993
+ 319                  18        .3        122689.5254
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 7
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 320                  18        .4        761857.4867
+ 321                  19        .1        161246.6101
+ 322                  19        .2        227739.8439
+ 323                  19        .3        170792.9123
+ 324                  19        .4        1060562.0854
+ 325                  20        .1        173377.9877
+ 326                  20        .2        244873.8354
+ 327                  20        .3        183642.5053
+ 328                  20        .4        1140353.4011
+ 329                  21        .1        37102.0453
+ 330                  21        .2        52401.8087
+ 331                  21        .3        39298.6021
+ 332                  21        .4        244030.0764
+ 333                  22        .1        95796.0918
+ 334                  22        .2        135299.5079
+ 335                  22        .3        101467.5192
+ 336                  22        .4        630076.5200
+ 337                  23        .1        17478.3114
+ 338                  23        .2        24685.8393
+ 339                  23        .3        18513.0819
+ 340                  23        .4        114959.5292
+ 341                  24        .1        291869.2997
+ 342                  24        .2        412227.3871
+ 343                  24        .3        309148.8726
+ 344                  24        .4        1919702.4550
+ 345                  25        .1        135640.3960
+ 346                  25        .2        191574.4002
+ 347                  25        .3        143670.7305
+ 348                  25        .4        892143.1664
+ 349                  26        .1        91085.6733
+ 350                  26        .2        128646.6550
+ 351                  26        .3        96478.2292
+ 352                  26        .4        599094.8374
+ 353                  27        .1        7774.4105
+ 354                  27        .2        10980.3427
+ 355                  27        .3        8234.6799
+ 356                  27        .4        51134.3775
+ 357                  28        .1        293186.3128
+ 358                  28        .2        414087.4966
+ 359                  28        .3        310543.8569
+ 360                  28        .4        1928364.8023
+ 361                  29        .1        117283.2304
+ 362                  29        .2        165647.2937
+ 363                  29        .3        124226.7634
+ 364                  29        .4        771403.1779
+ 365                  30        .1        74462.3134
+ 366                  30        .2        105168.3234
+ 367                  30        .3        78870.7146
+ 368                  30        .4        489758.5530
+ 369                  31        .1        122485.1501
+ 370                  31        .2        172994.3281
+ 371                  31        .3        129736.6530
+ 372                  31        .4        805617.5953
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 8
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 373                  32        .1        156121.1769
+ 374                  32        .2        220500.8368
+ 375                  32        .3        165364.0375
+ 376                  32        .4        1026850.7403 /;
+ 377   
+ 378   
+ 379   
+INCLUDE    D:\Facultad\OPI\gams-opi\wqt_model_2.gms
+ 381  * Model for scheduling of tasks in multicore
+ 382  * machine minimizing the weighted queued time (WQT)
+ 383   
+ 384  alias(t,tt);
+ 385  alias(m,mm);
+ 386   
+ 387  PARAMETER m_cores(m) 'cantidad de cores de la maquina m';
+ 388  PARAMETER t_arrival(t) 'arribo (en segundos) de la tarea t';
+ 389  PARAMETER t_cores(t) 'cores requeridos por la tarea t';
+ 390  PARAMETER t_priorities(t) 'prioridad de la tarea t (1 = tarea menos prioritaria, 5 tarea mas prioritaria)';
+ 391  PARAMETER m_eidle(m) 'consumo por unidad de tiempo de la maquina m en estado ocioso';
+ 392  PARAMETER etc(t,m) 'costo computacional por core de la ejecucion de la tarea t en la maquina m';
+ 393  PARAMETER eec(t,m) 'costo energetico de la ejecucion de la tarea t en la maquina m';
+ 394   
+ 395  VARIABLE f objetivo;
+ 396  POSITIVE VARIABLE starting_time(t)       'comienzo de ejecucion de la tarea t';
+ 397  POSITIVE VARIABLE completion_time(t)     'tiempo de finalizacion de la tarea t';
+ 398  BINARY VARIABLE assignment(t,m)        'asignacion de la tarea t en la maquina m';
+ 399  BINARY VARIABLE precedence(t,tt,m)     't es previa de tt en la maquina m, core c';
+ 400  INTEGER VARIABLE prec_res(t,tt,m)
+ 401   
+ 402  scalar BIG_M 'horizonte maximo de tiempo';
+ 403  BIG_M = sum(t,smax(m,etc(t,m)));
+ 404   
+ 405  EQUATION no_loop(t,tt,m)
+ 406  EQUATION exec_all_1(t)                   'cada tarea se debe ejecutar en una maquina';
+ 407  EQUATION exec_all_2(t,m)              'se deben ejecutar todos los cores requeridos por la tarea';
+ 408  EQUATION m_resources_1(m,tt)                   'cores disponibles en la maquina';
+ 409  EQUATION m_resources_2(m,tt)                 'cores disponibles en la maquina';
+ 410  EQUATION m_resources_3(m,tt)                 'cores disponibles en la maquina';
+ 411  EQUATION m_resources_4(m,tt)                 'cores disponibles en la maquina';
+ 412  EQUATION eq_completion_time(t)           'asigno el completion time de cada tarea';
+ 413  EQUATION no_overlap(t,tt,m)              'verifico que las tareas no se pisen';
+ 414  EQUATION t_precedence_1(t,tt,m)          'toda tarea tiene que tener una unica tarea previa';
+ 415  EQUATION t_precedence_2(t,tt,m)          'el previous es único dos tareas en un core no pueden tener el mismo previous';
+ 416  EQUATION t_precedence_3(t,tt,m)          'el previous es único dos tareas en un core no pueden tener el mismo previous';
+ 417  EQUATION t_precedence_4(t,tt,m)          'el previous es único dos tareas en un core no pueden tener el mismo previous';
+ 418  EQUATION t_precedence_5(tt,m)          'el previous es único dos tareas en un core no pueden tener el mismo previous';
+ 419  EQUATION t_precedence_6(t,m)          'el previous es único dos tareas en un core no pueden tener el mismo previous';
+ 420  EQUATION enforce_arrival(t)              'toda tarea debe empezar luego de su arrival time';
+ 421  EQUATION objective                       'evaluo el objetivo';
+ 422   
+ 423  no_loop(t,tt,m)..          precedence(t,tt,m) + precedence(tt,t,m) =l= 1;
+ 424   
+ 425  exec_all_1(t)$(ord(t)>1 and ord(t)<card(t))..          sum(m, assignment(t,m)) =e= 1;
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                            04/26/13 07:24:20 Page 9
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 426  exec_all_2(t,m)$(ord(t)=1 and ord(t)=card(t))..        assignment(t,m) =e= 1;
+ 427   
+ 428  m_resources_1(m,tt)$(ord(tt)=1)..       sum(t, prec_res(tt,t,m)) =l= m_cores(m);
+ 429  m_resources_2(m,tt)$(ord(tt)=1)..       sum(t, prec_res(t,tt,m)) =e= 0;
+ 430  m_resources_3(m,tt)$(ord(tt)=card(t))..       sum(t, prec_res(t,tt,m)) =e= m_cores(m);
+ 431  m_resources_4(m,tt)$(ord(tt)=card(t))..       sum(t, prec_res(tt,t,m)) =e= 0;
+ 432   
+ 433  eq_completion_time(t)..  completion_time(t) =e= starting_time(t) + sum(m, assignment(t,m) * etc(t,m));
+ 434   
+ 435  no_overlap(t,tt,m)..     starting_time(tt) - starting_time(t) =g= -BIG_M + (etc(t,m) + BIG_M) * precedence(t,tt,m);
+ 436  *no_overlap(t,tt,m)..   starting_time(tt) =g= completion_time(t) - bigM*(1-precedence(t,tt,m));
+ 437   
+ 438  t_precedence_1(t,tt,m)$(ord(t)>1 and ord(t)<card(t) and ord(tt)>1 and ord(tt)<card(t))..
+ 439  prec_res(t,tt,m) =l= t_cores(t) * precedence(t,tt,m);
+ 440   
+ 441  t_precedence_2(t,tt,m)$(ord(t)>1 and ord(t)<card(t) and ord(tt)>1 and ord(tt)<card(t))..
+ 442  prec_res(t,tt,m) =l= t_cores(tt) * precedence(t,tt,m);
+ 443   
+ 444  t_precedence_3(t,tt,m)..
+ 445  precedence(t,tt,m) =l= assignment(t,m);
+ 446   
+ 447  t_precedence_4(t,tt,m)..
+ 448  precedence(t,tt,m) =l= assignment(tt,m);
+ 449   
+ 450  t_precedence_5(tt,m)$(ord(tt)>1 and ord(tt)<card(t))..
+ 451  sum(t, prec_res(t,tt,m)) =e= t_cores(tt) * assignment(tt,m);
+ 452   
+ 453  t_precedence_6(t,m)$(ord(t)>1 and ord(t)<card(t))..
+ 454  sum(tt, prec_res(t,tt,m)) =e= t_cores(t) * assignment(t,m);
+ 455   
+ 456  enforce_arrival(t)..     starting_time(t) =g= t_arrival(t);
+ 457   
+ 458  objective..              f =e= sum(t, t_priorities(t) * (completion_time(t)-t_arrival(t)));
+ 459   
+ 460  MODEL min_wqt /all/;
+ 461   
+ 462  OPTION Reslim = 21600;
+ 463  OPTION MIP = cplex;
+ 464  SOLVE min_wqt using mip minimizing f;
+ 465   
+ 466  DISPLAY f.l;
+ 467  DISPLAY starting_time.l;
+ 468  DISPLAY completion_time.l;
+ 469  DISPLAY assignment.l;
+ 470  DISPLAY precedence.l;
+ 471  DISPLAY prec_res.l;
+ 472   
+ 473   
+ 474  file salida_starting_time /m2_wqt_stime_32x4.txt/;
+ 475  put salida_starting_time;
+ 476  loop(t$(ord(t)>1 and ord(t)<card(t)), put starting_time.l(t):<:4 /);
+ 477  putclose salida_starting_time;
+ 478   
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 10
+multicore_scheduling_min_wqt_s1
+C o m p i l a t i o n
+
+
+ 479  file salida_assignment /m2_wqt_assign_32x4.txt/;
+ 480  put salida_assignment;
+ 481  loop((t,m)$(assignment.l(t,m) = 1 and ord(t)>1 and ord(t)<card(t)), put ord(m):<:0 /);
+ 482  putclose salida_assignment;
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 11
+multicore_scheduling_min_wqt_s1
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  D:\Facultad\OPI\gams-opi\wqt_run_2_32x4_2.gms
+     2        5 INCLUDE        1       5  .D:\Facultad\OPI\gams-opi\params_2_32x4_2.gms
+     3      380 INCLUDE        1       6  .D:\Facultad\OPI\gams-opi\wqt_model_2.gms
+
+
+COMPILATION TIME     =        0.063 SECONDS      3 Mb  WIN240-240 Feb 14, 2013
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 12
+multicore_scheduling_min_wqt_s1
+Equation Listing    SOLVE min_wqt Using MIP From line 464
+
+
+---- no_loop  =L=  
+
+no_loop(0,0,1)..  2*precedence(0,0,1) =L= 1 ; (LHS = 0)
+     
+no_loop(0,0,2)..  2*precedence(0,0,2) =L= 1 ; (LHS = 0)
+     
+no_loop(0,0,3)..  2*precedence(0,0,3) =L= 1 ; (LHS = 0)
+     
+REMAINING 4621 ENTRIES SKIPPED
+
+
+---- exec_all_1  =E=  cada tarea se debe ejecutar en una maquina
+
+exec_all_1(1)..  assignment(1,1) + assignment(1,2) + assignment(1,3) + assignment(1,4) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+exec_all_1(2)..  assignment(2,1) + assignment(2,2) + assignment(2,3) + assignment(2,4) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+exec_all_1(3)..  assignment(3,1) + assignment(3,2) + assignment(3,3) + assignment(3,4) =E= 1 ; (LHS = 0, INFES = 1 ****)
+     
+REMAINING 29 ENTRIES SKIPPED
+
+
+---- exec_all_2  =E=  se deben ejecutar todos los cores requeridos por la tarea
+
+                NONE
+
+
+---- m_resources_1  =L=  cores disponibles en la maquina
+
+m_resources_1(1,0)..  prec_res(0,0,1) + prec_res(0,1,1) + prec_res(0,2,1) + prec_res(0,3,1) + prec_res(0,4,1) + prec_res(0,5,1) + prec_res(0,6,1) + prec_res(0,7,1) + prec_res(0,8,1) + prec_res(0,9,1) + prec_res(0,10,1) + prec_res(0,11,1)
+     
+      + prec_res(0,12,1) + prec_res(0,13,1) + prec_res(0,14,1) + prec_res(0,15,1) + prec_res(0,16,1) + prec_res(0,17,1) + prec_res(0,18,1) + prec_res(0,19,1) + prec_res(0,20,1) + prec_res(0,21,1) + prec_res(0,22,1) + prec_res(0,23,1) + prec_res(0,24,1)
+     
+      + prec_res(0,25,1) + prec_res(0,26,1) + prec_res(0,27,1) + prec_res(0,28,1) + prec_res(0,29,1) + prec_res(0,30,1) + prec_res(0,31,1) + prec_res(0,32,1) + prec_res(0,33,1) =L= 10 ; (LHS = 0)
+     
+m_resources_1(2,0)..  prec_res(0,0,2) + prec_res(0,1,2) + prec_res(0,2,2) + prec_res(0,3,2) + prec_res(0,4,2) + prec_res(0,5,2) + prec_res(0,6,2) + prec_res(0,7,2) + prec_res(0,8,2) + prec_res(0,9,2) + prec_res(0,10,2) + prec_res(0,11,2)
+     
+      + prec_res(0,12,2) + prec_res(0,13,2) + prec_res(0,14,2) + prec_res(0,15,2) + prec_res(0,16,2) + prec_res(0,17,2) + prec_res(0,18,2) + prec_res(0,19,2) + prec_res(0,20,2) + prec_res(0,21,2) + prec_res(0,22,2) + prec_res(0,23,2) + prec_res(0,24,2)
+     
+      + prec_res(0,25,2) + prec_res(0,26,2) + prec_res(0,27,2) + prec_res(0,28,2) + prec_res(0,29,2) + prec_res(0,30,2) + prec_res(0,31,2) + prec_res(0,32,2) + prec_res(0,33,2) =L= 4 ; (LHS = 0)
+     
+m_resources_1(3,0)..  prec_res(0,0,3) + prec_res(0,1,3) + prec_res(0,2,3) + prec_res(0,3,3) + prec_res(0,4,3) + prec_res(0,5,3) + prec_res(0,6,3) + prec_res(0,7,3) + prec_res(0,8,3) + prec_res(0,9,3) + prec_res(0,10,3) + prec_res(0,11,3)
+     
+      + prec_res(0,12,3) + prec_res(0,13,3) + prec_res(0,14,3) + prec_res(0,15,3) + prec_res(0,16,3) + prec_res(0,17,3) + prec_res(0,18,3) + prec_res(0,19,3) + prec_res(0,20,3) + prec_res(0,21,3) + prec_res(0,22,3) + prec_res(0,23,3) + prec_res(0,24,3)
+     
+      + prec_res(0,25,3) + prec_res(0,26,3) + prec_res(0,27,3) + prec_res(0,28,3) + prec_res(0,29,3) + prec_res(0,30,3) + prec_res(0,31,3) + prec_res(0,32,3) + prec_res(0,33,3) =L= 6 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 13
+multicore_scheduling_min_wqt_s1
+Equation Listing    SOLVE min_wqt Using MIP From line 464
+
+
+---- m_resources_2  =E=  cores disponibles en la maquina
+
+m_resources_2(1,0)..  prec_res(0,0,1) + prec_res(1,0,1) + prec_res(2,0,1) + prec_res(3,0,1) + prec_res(4,0,1) + prec_res(5,0,1) + prec_res(6,0,1) + prec_res(7,0,1) + prec_res(8,0,1) + prec_res(9,0,1) + prec_res(10,0,1) + prec_res(11,0,1)
+     
+      + prec_res(12,0,1) + prec_res(13,0,1) + prec_res(14,0,1) + prec_res(15,0,1) + prec_res(16,0,1) + prec_res(17,0,1) + prec_res(18,0,1) + prec_res(19,0,1) + prec_res(20,0,1) + prec_res(21,0,1) + prec_res(22,0,1) + prec_res(23,0,1) + prec_res(24,0,1)
+     
+      + prec_res(25,0,1) + prec_res(26,0,1) + prec_res(27,0,1) + prec_res(28,0,1) + prec_res(29,0,1) + prec_res(30,0,1) + prec_res(31,0,1) + prec_res(32,0,1) + prec_res(33,0,1) =E= 0 ; (LHS = 0)
+     
+m_resources_2(2,0)..  prec_res(0,0,2) + prec_res(1,0,2) + prec_res(2,0,2) + prec_res(3,0,2) + prec_res(4,0,2) + prec_res(5,0,2) + prec_res(6,0,2) + prec_res(7,0,2) + prec_res(8,0,2) + prec_res(9,0,2) + prec_res(10,0,2) + prec_res(11,0,2)
+     
+      + prec_res(12,0,2) + prec_res(13,0,2) + prec_res(14,0,2) + prec_res(15,0,2) + prec_res(16,0,2) + prec_res(17,0,2) + prec_res(18,0,2) + prec_res(19,0,2) + prec_res(20,0,2) + prec_res(21,0,2) + prec_res(22,0,2) + prec_res(23,0,2) + prec_res(24,0,2)
+     
+      + prec_res(25,0,2) + prec_res(26,0,2) + prec_res(27,0,2) + prec_res(28,0,2) + prec_res(29,0,2) + prec_res(30,0,2) + prec_res(31,0,2) + prec_res(32,0,2) + prec_res(33,0,2) =E= 0 ; (LHS = 0)
+     
+m_resources_2(3,0)..  prec_res(0,0,3) + prec_res(1,0,3) + prec_res(2,0,3) + prec_res(3,0,3) + prec_res(4,0,3) + prec_res(5,0,3) + prec_res(6,0,3) + prec_res(7,0,3) + prec_res(8,0,3) + prec_res(9,0,3) + prec_res(10,0,3) + prec_res(11,0,3)
+     
+      + prec_res(12,0,3) + prec_res(13,0,3) + prec_res(14,0,3) + prec_res(15,0,3) + prec_res(16,0,3) + prec_res(17,0,3) + prec_res(18,0,3) + prec_res(19,0,3) + prec_res(20,0,3) + prec_res(21,0,3) + prec_res(22,0,3) + prec_res(23,0,3) + prec_res(24,0,3)
+     
+      + prec_res(25,0,3) + prec_res(26,0,3) + prec_res(27,0,3) + prec_res(28,0,3) + prec_res(29,0,3) + prec_res(30,0,3) + prec_res(31,0,3) + prec_res(32,0,3) + prec_res(33,0,3) =E= 0 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- m_resources_3  =E=  cores disponibles en la maquina
+
+m_resources_3(1,33)..  prec_res(0,33,1) + prec_res(1,33,1) + prec_res(2,33,1) + prec_res(3,33,1) + prec_res(4,33,1) + prec_res(5,33,1) + prec_res(6,33,1) + prec_res(7,33,1) + prec_res(8,33,1) + prec_res(9,33,1) + prec_res(10,33,1) + prec_res(11,33,1)
+     
+      + prec_res(12,33,1) + prec_res(13,33,1) + prec_res(14,33,1) + prec_res(15,33,1) + prec_res(16,33,1) + prec_res(17,33,1) + prec_res(18,33,1) + prec_res(19,33,1) + prec_res(20,33,1) + prec_res(21,33,1) + prec_res(22,33,1) + prec_res(23,33,1)
+     
+      + prec_res(24,33,1) + prec_res(25,33,1) + prec_res(26,33,1) + prec_res(27,33,1) + prec_res(28,33,1) + prec_res(29,33,1) + prec_res(30,33,1) + prec_res(31,33,1) + prec_res(32,33,1) + prec_res(33,33,1) =E= 10 ; (LHS = 0, INFES = 10 ****)
+     
+m_resources_3(2,33)..  prec_res(0,33,2) + prec_res(1,33,2) + prec_res(2,33,2) + prec_res(3,33,2) + prec_res(4,33,2) + prec_res(5,33,2) + prec_res(6,33,2) + prec_res(7,33,2) + prec_res(8,33,2) + prec_res(9,33,2) + prec_res(10,33,2) + prec_res(11,33,2)
+     
+      + prec_res(12,33,2) + prec_res(13,33,2) + prec_res(14,33,2) + prec_res(15,33,2) + prec_res(16,33,2) + prec_res(17,33,2) + prec_res(18,33,2) + prec_res(19,33,2) + prec_res(20,33,2) + prec_res(21,33,2) + prec_res(22,33,2) + prec_res(23,33,2)
+     
+      + prec_res(24,33,2) + prec_res(25,33,2) + prec_res(26,33,2) + prec_res(27,33,2) + prec_res(28,33,2) + prec_res(29,33,2) + prec_res(30,33,2) + prec_res(31,33,2) + prec_res(32,33,2) + prec_res(33,33,2) =E= 4 ; (LHS = 0, INFES = 4 ****)
+     
+m_resources_3(3,33)..  prec_res(0,33,3) + prec_res(1,33,3) + prec_res(2,33,3) + prec_res(3,33,3) + prec_res(4,33,3) + prec_res(5,33,3) + prec_res(6,33,3) + prec_res(7,33,3) + prec_res(8,33,3) + prec_res(9,33,3) + prec_res(10,33,3) + prec_res(11,33,3)
+     
+      + prec_res(12,33,3) + prec_res(13,33,3) + prec_res(14,33,3) + prec_res(15,33,3) + prec_res(16,33,3) + prec_res(17,33,3) + prec_res(18,33,3) + prec_res(19,33,3) + prec_res(20,33,3) + prec_res(21,33,3) + prec_res(22,33,3) + prec_res(23,33,3)
+     
+      + prec_res(24,33,3) + prec_res(25,33,3) + prec_res(26,33,3) + prec_res(27,33,3) + prec_res(28,33,3) + prec_res(29,33,3) + prec_res(30,33,3) + prec_res(31,33,3) + prec_res(32,33,3) + prec_res(33,33,3) =E= 6 ; (LHS = 0, INFES = 6 ****)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- m_resources_4  =E=  cores disponibles en la maquina
+
+m_resources_4(1,33)..  prec_res(33,0,1) + prec_res(33,1,1) + prec_res(33,2,1) + prec_res(33,3,1) + prec_res(33,4,1) + prec_res(33,5,1) + prec_res(33,6,1) + prec_res(33,7,1) + prec_res(33,8,1) + prec_res(33,9,1) + prec_res(33,10,1) + prec_res(33,11,1)
+     
+      + prec_res(33,12,1) + prec_res(33,13,1) + prec_res(33,14,1) + prec_res(33,15,1) + prec_res(33,16,1) + prec_res(33,17,1) + prec_res(33,18,1) + prec_res(33,19,1) + prec_res(33,20,1) + prec_res(33,21,1) + prec_res(33,22,1) + prec_res(33,23,1)
+     
+      + prec_res(33,24,1) + prec_res(33,25,1) + prec_res(33,26,1) + prec_res(33,27,1) + prec_res(33,28,1) + prec_res(33,29,1) + prec_res(33,30,1) + prec_res(33,31,1) + prec_res(33,32,1) + prec_res(33,33,1) =E= 0 ; (LHS = 0)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 14
+multicore_scheduling_min_wqt_s1
+Equation Listing    SOLVE min_wqt Using MIP From line 464
+
+
+     m_resources_4  =E=  cores disponibles en la maquina
+
+m_resources_4(2,33)..  prec_res(33,0,2) + prec_res(33,1,2) + prec_res(33,2,2) + prec_res(33,3,2) + prec_res(33,4,2) + prec_res(33,5,2) + prec_res(33,6,2) + prec_res(33,7,2) + prec_res(33,8,2) + prec_res(33,9,2) + prec_res(33,10,2) + prec_res(33,11,2)
+     
+      + prec_res(33,12,2) + prec_res(33,13,2) + prec_res(33,14,2) + prec_res(33,15,2) + prec_res(33,16,2) + prec_res(33,17,2) + prec_res(33,18,2) + prec_res(33,19,2) + prec_res(33,20,2) + prec_res(33,21,2) + prec_res(33,22,2) + prec_res(33,23,2)
+     
+      + prec_res(33,24,2) + prec_res(33,25,2) + prec_res(33,26,2) + prec_res(33,27,2) + prec_res(33,28,2) + prec_res(33,29,2) + prec_res(33,30,2) + prec_res(33,31,2) + prec_res(33,32,2) + prec_res(33,33,2) =E= 0 ; (LHS = 0)
+     
+m_resources_4(3,33)..  prec_res(33,0,3) + prec_res(33,1,3) + prec_res(33,2,3) + prec_res(33,3,3) + prec_res(33,4,3) + prec_res(33,5,3) + prec_res(33,6,3) + prec_res(33,7,3) + prec_res(33,8,3) + prec_res(33,9,3) + prec_res(33,10,3) + prec_res(33,11,3)
+     
+      + prec_res(33,12,3) + prec_res(33,13,3) + prec_res(33,14,3) + prec_res(33,15,3) + prec_res(33,16,3) + prec_res(33,17,3) + prec_res(33,18,3) + prec_res(33,19,3) + prec_res(33,20,3) + prec_res(33,21,3) + prec_res(33,22,3) + prec_res(33,23,3)
+     
+      + prec_res(33,24,3) + prec_res(33,25,3) + prec_res(33,26,3) + prec_res(33,27,3) + prec_res(33,28,3) + prec_res(33,29,3) + prec_res(33,30,3) + prec_res(33,31,3) + prec_res(33,32,3) + prec_res(33,33,3) =E= 0 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- eq_completion_time  =E=  asigno el completion time de cada tarea
+
+eq_completion_time(0)..  - starting_time(0) + completion_time(0) =E= 0 ; (LHS = 0)
+     
+eq_completion_time(1)..  - starting_time(1) + completion_time(1) - 28673.2186*assignment(1,1) - 36847.9911*assignment(1,2) - 20840.0481*assignment(1,3) - 60997.5401*assignment(1,4) =E= 0 ; (LHS = 0)
+     
+eq_completion_time(2)..  - starting_time(2) + completion_time(2) - 27205.0196*assignment(2,1) - 34961.2067*assignment(2,2) - 19772.943*assignment(2,3) - 57874.1891*assignment(2,4) =E= 0 ; (LHS = 0)
+     
+REMAINING 31 ENTRIES SKIPPED
+
+
+---- no_overlap  =G=  verifico que las tareas no se pisen
+
+no_overlap(0,0,1)..  - 723835.1173*precedence(0,0,1) =G= -723835.1173 ; (LHS = 0)
+     
+no_overlap(0,0,2)..  - 723835.1173*precedence(0,0,2) =G= -723835.1173 ; (LHS = 0)
+     
+no_overlap(0,0,3)..  - 723835.1173*precedence(0,0,3) =G= -723835.1173 ; (LHS = 0)
+     
+REMAINING 4621 ENTRIES SKIPPED
+
+
+---- t_precedence_1  =L=  toda tarea tiene que tener una unica tarea previa
+
+t_precedence_1(1,1,1)..  - precedence(1,1,1) + prec_res(1,1,1) =L= 0 ; (LHS = 0)
+     
+t_precedence_1(1,1,2)..  - precedence(1,1,2) + prec_res(1,1,2) =L= 0 ; (LHS = 0)
+     
+t_precedence_1(1,1,3)..  - precedence(1,1,3) + prec_res(1,1,3) =L= 0 ; (LHS = 0)
+     
+REMAINING 4093 ENTRIES SKIPPED
+
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 15
+multicore_scheduling_min_wqt_s1
+Equation Listing    SOLVE min_wqt Using MIP From line 464
+
+
+---- t_precedence_2  =L=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+t_precedence_2(1,1,1)..  - precedence(1,1,1) + prec_res(1,1,1) =L= 0 ; (LHS = 0)
+     
+t_precedence_2(1,1,2)..  - precedence(1,1,2) + prec_res(1,1,2) =L= 0 ; (LHS = 0)
+     
+t_precedence_2(1,1,3)..  - precedence(1,1,3) + prec_res(1,1,3) =L= 0 ; (LHS = 0)
+     
+REMAINING 4093 ENTRIES SKIPPED
+
+
+---- t_precedence_3  =L=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+t_precedence_3(0,0,1)..  - assignment(0,1) + precedence(0,0,1) =L= 0 ; (LHS = 0)
+     
+t_precedence_3(0,0,2)..  - assignment(0,2) + precedence(0,0,2) =L= 0 ; (LHS = 0)
+     
+t_precedence_3(0,0,3)..  - assignment(0,3) + precedence(0,0,3) =L= 0 ; (LHS = 0)
+     
+REMAINING 4621 ENTRIES SKIPPED
+
+
+---- t_precedence_4  =L=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+t_precedence_4(0,0,1)..  - assignment(0,1) + precedence(0,0,1) =L= 0 ; (LHS = 0)
+     
+t_precedence_4(0,0,2)..  - assignment(0,2) + precedence(0,0,2) =L= 0 ; (LHS = 0)
+     
+t_precedence_4(0,0,3)..  - assignment(0,3) + precedence(0,0,3) =L= 0 ; (LHS = 0)
+     
+REMAINING 4621 ENTRIES SKIPPED
+
+
+---- t_precedence_5  =E=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+t_precedence_5(1,1)..  - assignment(1,1) + prec_res(0,1,1) + prec_res(1,1,1) + prec_res(2,1,1) + prec_res(3,1,1) + prec_res(4,1,1) + prec_res(5,1,1) + prec_res(6,1,1) + prec_res(7,1,1) + prec_res(8,1,1) + prec_res(9,1,1) + prec_res(10,1,1)
+     
+      + prec_res(11,1,1) + prec_res(12,1,1) + prec_res(13,1,1) + prec_res(14,1,1) + prec_res(15,1,1) + prec_res(16,1,1) + prec_res(17,1,1) + prec_res(18,1,1) + prec_res(19,1,1) + prec_res(20,1,1) + prec_res(21,1,1) + prec_res(22,1,1) + prec_res(23,1,1)
+     
+      + prec_res(24,1,1) + prec_res(25,1,1) + prec_res(26,1,1) + prec_res(27,1,1) + prec_res(28,1,1) + prec_res(29,1,1) + prec_res(30,1,1) + prec_res(31,1,1) + prec_res(32,1,1) + prec_res(33,1,1) =E= 0 ; (LHS = 0)
+     
+t_precedence_5(1,2)..  - assignment(1,2) + prec_res(0,1,2) + prec_res(1,1,2) + prec_res(2,1,2) + prec_res(3,1,2) + prec_res(4,1,2) + prec_res(5,1,2) + prec_res(6,1,2) + prec_res(7,1,2) + prec_res(8,1,2) + prec_res(9,1,2) + prec_res(10,1,2)
+     
+      + prec_res(11,1,2) + prec_res(12,1,2) + prec_res(13,1,2) + prec_res(14,1,2) + prec_res(15,1,2) + prec_res(16,1,2) + prec_res(17,1,2) + prec_res(18,1,2) + prec_res(19,1,2) + prec_res(20,1,2) + prec_res(21,1,2) + prec_res(22,1,2) + prec_res(23,1,2)
+     
+      + prec_res(24,1,2) + prec_res(25,1,2) + prec_res(26,1,2) + prec_res(27,1,2) + prec_res(28,1,2) + prec_res(29,1,2) + prec_res(30,1,2) + prec_res(31,1,2) + prec_res(32,1,2) + prec_res(33,1,2) =E= 0 ; (LHS = 0)
+     
+t_precedence_5(1,3)..  - assignment(1,3) + prec_res(0,1,3) + prec_res(1,1,3) + prec_res(2,1,3) + prec_res(3,1,3) + prec_res(4,1,3) + prec_res(5,1,3) + prec_res(6,1,3) + prec_res(7,1,3) + prec_res(8,1,3) + prec_res(9,1,3) + prec_res(10,1,3)
+     
+      + prec_res(11,1,3) + prec_res(12,1,3) + prec_res(13,1,3) + prec_res(14,1,3) + prec_res(15,1,3) + prec_res(16,1,3) + prec_res(17,1,3) + prec_res(18,1,3) + prec_res(19,1,3) + prec_res(20,1,3) + prec_res(21,1,3) + prec_res(22,1,3) + prec_res(23,1,3)
+     
+      + prec_res(24,1,3) + prec_res(25,1,3) + prec_res(26,1,3) + prec_res(27,1,3) + prec_res(28,1,3) + prec_res(29,1,3) + prec_res(30,1,3) + prec_res(31,1,3) + prec_res(32,1,3) + prec_res(33,1,3) =E= 0 ; (LHS = 0)
+     
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 16
+multicore_scheduling_min_wqt_s1
+Equation Listing    SOLVE min_wqt Using MIP From line 464
+
+
+     t_precedence_5  =E=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+REMAINING 125 ENTRIES SKIPPED
+
+
+---- t_precedence_6  =E=  el previous es único dos tareas en un core no pueden tener el mismo previous
+
+t_precedence_6(1,1)..  - assignment(1,1) + prec_res(1,0,1) + prec_res(1,1,1) + prec_res(1,2,1) + prec_res(1,3,1) + prec_res(1,4,1) + prec_res(1,5,1) + prec_res(1,6,1) + prec_res(1,7,1) + prec_res(1,8,1) + prec_res(1,9,1) + prec_res(1,10,1)
+     
+      + prec_res(1,11,1) + prec_res(1,12,1) + prec_res(1,13,1) + prec_res(1,14,1) + prec_res(1,15,1) + prec_res(1,16,1) + prec_res(1,17,1) + prec_res(1,18,1) + prec_res(1,19,1) + prec_res(1,20,1) + prec_res(1,21,1) + prec_res(1,22,1) + prec_res(1,23,1)
+     
+      + prec_res(1,24,1) + prec_res(1,25,1) + prec_res(1,26,1) + prec_res(1,27,1) + prec_res(1,28,1) + prec_res(1,29,1) + prec_res(1,30,1) + prec_res(1,31,1) + prec_res(1,32,1) + prec_res(1,33,1) =E= 0 ; (LHS = 0)
+     
+t_precedence_6(1,2)..  - assignment(1,2) + prec_res(1,0,2) + prec_res(1,1,2) + prec_res(1,2,2) + prec_res(1,3,2) + prec_res(1,4,2) + prec_res(1,5,2) + prec_res(1,6,2) + prec_res(1,7,2) + prec_res(1,8,2) + prec_res(1,9,2) + prec_res(1,10,2)
+     
+      + prec_res(1,11,2) + prec_res(1,12,2) + prec_res(1,13,2) + prec_res(1,14,2) + prec_res(1,15,2) + prec_res(1,16,2) + prec_res(1,17,2) + prec_res(1,18,2) + prec_res(1,19,2) + prec_res(1,20,2) + prec_res(1,21,2) + prec_res(1,22,2) + prec_res(1,23,2)
+     
+      + prec_res(1,24,2) + prec_res(1,25,2) + prec_res(1,26,2) + prec_res(1,27,2) + prec_res(1,28,2) + prec_res(1,29,2) + prec_res(1,30,2) + prec_res(1,31,2) + prec_res(1,32,2) + prec_res(1,33,2) =E= 0 ; (LHS = 0)
+     
+t_precedence_6(1,3)..  - assignment(1,3) + prec_res(1,0,3) + prec_res(1,1,3) + prec_res(1,2,3) + prec_res(1,3,3) + prec_res(1,4,3) + prec_res(1,5,3) + prec_res(1,6,3) + prec_res(1,7,3) + prec_res(1,8,3) + prec_res(1,9,3) + prec_res(1,10,3)
+     
+      + prec_res(1,11,3) + prec_res(1,12,3) + prec_res(1,13,3) + prec_res(1,14,3) + prec_res(1,15,3) + prec_res(1,16,3) + prec_res(1,17,3) + prec_res(1,18,3) + prec_res(1,19,3) + prec_res(1,20,3) + prec_res(1,21,3) + prec_res(1,22,3) + prec_res(1,23,3)
+     
+      + prec_res(1,24,3) + prec_res(1,25,3) + prec_res(1,26,3) + prec_res(1,27,3) + prec_res(1,28,3) + prec_res(1,29,3) + prec_res(1,30,3) + prec_res(1,31,3) + prec_res(1,32,3) + prec_res(1,33,3) =E= 0 ; (LHS = 0)
+     
+REMAINING 125 ENTRIES SKIPPED
+
+
+---- enforce_arrival  =G=  toda tarea debe empezar luego de su arrival time
+
+enforce_arrival(0)..  starting_time(0) =G= 0 ; (LHS = 0)
+     
+enforce_arrival(1)..  starting_time(1) =G= 5 ; (LHS = 0, INFES = 5 ****)
+     
+enforce_arrival(2)..  starting_time(2) =G= 23 ; (LHS = 0, INFES = 23 ****)
+     
+REMAINING 31 ENTRIES SKIPPED
+
+
+---- objective  =E=  evaluo el objetivo
+
+objective..  f - 4*completion_time(1) - 3*completion_time(2) - 3*completion_time(3) - 3*completion_time(4) - 3*completion_time(5) - 3*completion_time(6) - 2*completion_time(7) - 3*completion_time(8) - 4*completion_time(9) - 3*completion_time(10)
+     
+      - 3*completion_time(11) - 3*completion_time(12) - 3*completion_time(13) - 3*completion_time(14) - 4*completion_time(15) - 2*completion_time(16) - 3*completion_time(17) - 3*completion_time(18) - 2*completion_time(19) - 3*completion_time(20)
+     
+      - 3*completion_time(21) - 3*completion_time(22) - 3*completion_time(23) - 2*completion_time(24) - 3*completion_time(25) - 3*completion_time(26) - 4*completion_time(27) - 3*completion_time(28) - 3*completion_time(29) - 2*completion_time(30)
+     
+      - 3*completion_time(31) - 3*completion_time(32) =E= -24342 ; (LHS = 0, INFES = 24342 ****)
+     
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 17
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+---- f  objetivo
+
+f
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       objective
+
+
+---- starting_time  comienzo de ejecucion de la tarea t
+
+starting_time(0)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       eq_completion_time(0)
+       -1       no_overlap(0,1,1)
+       -1       no_overlap(0,1,2)
+       -1       no_overlap(0,1,3)
+       -1       no_overlap(0,1,4)
+       -1       no_overlap(0,2,1)
+       -1       no_overlap(0,2,2)
+       -1       no_overlap(0,2,3)
+       -1       no_overlap(0,2,4)
+       -1       no_overlap(0,3,1)
+       -1       no_overlap(0,3,2)
+       -1       no_overlap(0,3,3)
+       -1       no_overlap(0,3,4)
+       -1       no_overlap(0,4,1)
+       -1       no_overlap(0,4,2)
+       -1       no_overlap(0,4,3)
+       -1       no_overlap(0,4,4)
+       -1       no_overlap(0,5,1)
+       -1       no_overlap(0,5,2)
+       -1       no_overlap(0,5,3)
+       -1       no_overlap(0,5,4)
+       -1       no_overlap(0,6,1)
+       -1       no_overlap(0,6,2)
+       -1       no_overlap(0,6,3)
+       -1       no_overlap(0,6,4)
+       -1       no_overlap(0,7,1)
+       -1       no_overlap(0,7,2)
+       -1       no_overlap(0,7,3)
+       -1       no_overlap(0,7,4)
+       -1       no_overlap(0,8,1)
+       -1       no_overlap(0,8,2)
+       -1       no_overlap(0,8,3)
+       -1       no_overlap(0,8,4)
+       -1       no_overlap(0,9,1)
+       -1       no_overlap(0,9,2)
+       -1       no_overlap(0,9,3)
+       -1       no_overlap(0,9,4)
+       -1       no_overlap(0,10,1)
+       -1       no_overlap(0,10,2)
+       -1       no_overlap(0,10,3)
+       -1       no_overlap(0,10,4)
+       -1       no_overlap(0,11,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 18
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(0,11,2)
+       -1       no_overlap(0,11,3)
+       -1       no_overlap(0,11,4)
+       -1       no_overlap(0,12,1)
+       -1       no_overlap(0,12,2)
+       -1       no_overlap(0,12,3)
+       -1       no_overlap(0,12,4)
+       -1       no_overlap(0,13,1)
+       -1       no_overlap(0,13,2)
+       -1       no_overlap(0,13,3)
+       -1       no_overlap(0,13,4)
+       -1       no_overlap(0,14,1)
+       -1       no_overlap(0,14,2)
+       -1       no_overlap(0,14,3)
+       -1       no_overlap(0,14,4)
+       -1       no_overlap(0,15,1)
+       -1       no_overlap(0,15,2)
+       -1       no_overlap(0,15,3)
+       -1       no_overlap(0,15,4)
+       -1       no_overlap(0,16,1)
+       -1       no_overlap(0,16,2)
+       -1       no_overlap(0,16,3)
+       -1       no_overlap(0,16,4)
+       -1       no_overlap(0,17,1)
+       -1       no_overlap(0,17,2)
+       -1       no_overlap(0,17,3)
+       -1       no_overlap(0,17,4)
+       -1       no_overlap(0,18,1)
+       -1       no_overlap(0,18,2)
+       -1       no_overlap(0,18,3)
+       -1       no_overlap(0,18,4)
+       -1       no_overlap(0,19,1)
+       -1       no_overlap(0,19,2)
+       -1       no_overlap(0,19,3)
+       -1       no_overlap(0,19,4)
+       -1       no_overlap(0,20,1)
+       -1       no_overlap(0,20,2)
+       -1       no_overlap(0,20,3)
+       -1       no_overlap(0,20,4)
+       -1       no_overlap(0,21,1)
+       -1       no_overlap(0,21,2)
+       -1       no_overlap(0,21,3)
+       -1       no_overlap(0,21,4)
+       -1       no_overlap(0,22,1)
+       -1       no_overlap(0,22,2)
+       -1       no_overlap(0,22,3)
+       -1       no_overlap(0,22,4)
+       -1       no_overlap(0,23,1)
+       -1       no_overlap(0,23,2)
+       -1       no_overlap(0,23,3)
+       -1       no_overlap(0,23,4)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 19
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(0,24,1)
+       -1       no_overlap(0,24,2)
+       -1       no_overlap(0,24,3)
+       -1       no_overlap(0,24,4)
+       -1       no_overlap(0,25,1)
+       -1       no_overlap(0,25,2)
+       -1       no_overlap(0,25,3)
+       -1       no_overlap(0,25,4)
+       -1       no_overlap(0,26,1)
+       -1       no_overlap(0,26,2)
+       -1       no_overlap(0,26,3)
+       -1       no_overlap(0,26,4)
+       -1       no_overlap(0,27,1)
+       -1       no_overlap(0,27,2)
+       -1       no_overlap(0,27,3)
+       -1       no_overlap(0,27,4)
+       -1       no_overlap(0,28,1)
+       -1       no_overlap(0,28,2)
+       -1       no_overlap(0,28,3)
+       -1       no_overlap(0,28,4)
+       -1       no_overlap(0,29,1)
+       -1       no_overlap(0,29,2)
+       -1       no_overlap(0,29,3)
+       -1       no_overlap(0,29,4)
+       -1       no_overlap(0,30,1)
+       -1       no_overlap(0,30,2)
+       -1       no_overlap(0,30,3)
+       -1       no_overlap(0,30,4)
+       -1       no_overlap(0,31,1)
+       -1       no_overlap(0,31,2)
+       -1       no_overlap(0,31,3)
+       -1       no_overlap(0,31,4)
+       -1       no_overlap(0,32,1)
+       -1       no_overlap(0,32,2)
+       -1       no_overlap(0,32,3)
+       -1       no_overlap(0,32,4)
+       -1       no_overlap(0,33,1)
+       -1       no_overlap(0,33,2)
+       -1       no_overlap(0,33,3)
+       -1       no_overlap(0,33,4)
+        1       no_overlap(1,0,1)
+        1       no_overlap(1,0,2)
+        1       no_overlap(1,0,3)
+        1       no_overlap(1,0,4)
+        1       no_overlap(2,0,1)
+        1       no_overlap(2,0,2)
+        1       no_overlap(2,0,3)
+        1       no_overlap(2,0,4)
+        1       no_overlap(3,0,1)
+        1       no_overlap(3,0,2)
+        1       no_overlap(3,0,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 20
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(3,0,4)
+        1       no_overlap(4,0,1)
+        1       no_overlap(4,0,2)
+        1       no_overlap(4,0,3)
+        1       no_overlap(4,0,4)
+        1       no_overlap(5,0,1)
+        1       no_overlap(5,0,2)
+        1       no_overlap(5,0,3)
+        1       no_overlap(5,0,4)
+        1       no_overlap(6,0,1)
+        1       no_overlap(6,0,2)
+        1       no_overlap(6,0,3)
+        1       no_overlap(6,0,4)
+        1       no_overlap(7,0,1)
+        1       no_overlap(7,0,2)
+        1       no_overlap(7,0,3)
+        1       no_overlap(7,0,4)
+        1       no_overlap(8,0,1)
+        1       no_overlap(8,0,2)
+        1       no_overlap(8,0,3)
+        1       no_overlap(8,0,4)
+        1       no_overlap(9,0,1)
+        1       no_overlap(9,0,2)
+        1       no_overlap(9,0,3)
+        1       no_overlap(9,0,4)
+        1       no_overlap(10,0,1)
+        1       no_overlap(10,0,2)
+        1       no_overlap(10,0,3)
+        1       no_overlap(10,0,4)
+        1       no_overlap(11,0,1)
+        1       no_overlap(11,0,2)
+        1       no_overlap(11,0,3)
+        1       no_overlap(11,0,4)
+        1       no_overlap(12,0,1)
+        1       no_overlap(12,0,2)
+        1       no_overlap(12,0,3)
+        1       no_overlap(12,0,4)
+        1       no_overlap(13,0,1)
+        1       no_overlap(13,0,2)
+        1       no_overlap(13,0,3)
+        1       no_overlap(13,0,4)
+        1       no_overlap(14,0,1)
+        1       no_overlap(14,0,2)
+        1       no_overlap(14,0,3)
+        1       no_overlap(14,0,4)
+        1       no_overlap(15,0,1)
+        1       no_overlap(15,0,2)
+        1       no_overlap(15,0,3)
+        1       no_overlap(15,0,4)
+        1       no_overlap(16,0,1)
+        1       no_overlap(16,0,2)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 21
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(16,0,3)
+        1       no_overlap(16,0,4)
+        1       no_overlap(17,0,1)
+        1       no_overlap(17,0,2)
+        1       no_overlap(17,0,3)
+        1       no_overlap(17,0,4)
+        1       no_overlap(18,0,1)
+        1       no_overlap(18,0,2)
+        1       no_overlap(18,0,3)
+        1       no_overlap(18,0,4)
+        1       no_overlap(19,0,1)
+        1       no_overlap(19,0,2)
+        1       no_overlap(19,0,3)
+        1       no_overlap(19,0,4)
+        1       no_overlap(20,0,1)
+        1       no_overlap(20,0,2)
+        1       no_overlap(20,0,3)
+        1       no_overlap(20,0,4)
+        1       no_overlap(21,0,1)
+        1       no_overlap(21,0,2)
+        1       no_overlap(21,0,3)
+        1       no_overlap(21,0,4)
+        1       no_overlap(22,0,1)
+        1       no_overlap(22,0,2)
+        1       no_overlap(22,0,3)
+        1       no_overlap(22,0,4)
+        1       no_overlap(23,0,1)
+        1       no_overlap(23,0,2)
+        1       no_overlap(23,0,3)
+        1       no_overlap(23,0,4)
+        1       no_overlap(24,0,1)
+        1       no_overlap(24,0,2)
+        1       no_overlap(24,0,3)
+        1       no_overlap(24,0,4)
+        1       no_overlap(25,0,1)
+        1       no_overlap(25,0,2)
+        1       no_overlap(25,0,3)
+        1       no_overlap(25,0,4)
+        1       no_overlap(26,0,1)
+        1       no_overlap(26,0,2)
+        1       no_overlap(26,0,3)
+        1       no_overlap(26,0,4)
+        1       no_overlap(27,0,1)
+        1       no_overlap(27,0,2)
+        1       no_overlap(27,0,3)
+        1       no_overlap(27,0,4)
+        1       no_overlap(28,0,1)
+        1       no_overlap(28,0,2)
+        1       no_overlap(28,0,3)
+        1       no_overlap(28,0,4)
+        1       no_overlap(29,0,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 22
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(29,0,2)
+        1       no_overlap(29,0,3)
+        1       no_overlap(29,0,4)
+        1       no_overlap(30,0,1)
+        1       no_overlap(30,0,2)
+        1       no_overlap(30,0,3)
+        1       no_overlap(30,0,4)
+        1       no_overlap(31,0,1)
+        1       no_overlap(31,0,2)
+        1       no_overlap(31,0,3)
+        1       no_overlap(31,0,4)
+        1       no_overlap(32,0,1)
+        1       no_overlap(32,0,2)
+        1       no_overlap(32,0,3)
+        1       no_overlap(32,0,4)
+        1       no_overlap(33,0,1)
+        1       no_overlap(33,0,2)
+        1       no_overlap(33,0,3)
+        1       no_overlap(33,0,4)
+        1       enforce_arrival(0)
+
+starting_time(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       eq_completion_time(1)
+        1       no_overlap(0,1,1)
+        1       no_overlap(0,1,2)
+        1       no_overlap(0,1,3)
+        1       no_overlap(0,1,4)
+       -1       no_overlap(1,0,1)
+       -1       no_overlap(1,0,2)
+       -1       no_overlap(1,0,3)
+       -1       no_overlap(1,0,4)
+       -1       no_overlap(1,2,1)
+       -1       no_overlap(1,2,2)
+       -1       no_overlap(1,2,3)
+       -1       no_overlap(1,2,4)
+       -1       no_overlap(1,3,1)
+       -1       no_overlap(1,3,2)
+       -1       no_overlap(1,3,3)
+       -1       no_overlap(1,3,4)
+       -1       no_overlap(1,4,1)
+       -1       no_overlap(1,4,2)
+       -1       no_overlap(1,4,3)
+       -1       no_overlap(1,4,4)
+       -1       no_overlap(1,5,1)
+       -1       no_overlap(1,5,2)
+       -1       no_overlap(1,5,3)
+       -1       no_overlap(1,5,4)
+       -1       no_overlap(1,6,1)
+       -1       no_overlap(1,6,2)
+       -1       no_overlap(1,6,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 23
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(1,6,4)
+       -1       no_overlap(1,7,1)
+       -1       no_overlap(1,7,2)
+       -1       no_overlap(1,7,3)
+       -1       no_overlap(1,7,4)
+       -1       no_overlap(1,8,1)
+       -1       no_overlap(1,8,2)
+       -1       no_overlap(1,8,3)
+       -1       no_overlap(1,8,4)
+       -1       no_overlap(1,9,1)
+       -1       no_overlap(1,9,2)
+       -1       no_overlap(1,9,3)
+       -1       no_overlap(1,9,4)
+       -1       no_overlap(1,10,1)
+       -1       no_overlap(1,10,2)
+       -1       no_overlap(1,10,3)
+       -1       no_overlap(1,10,4)
+       -1       no_overlap(1,11,1)
+       -1       no_overlap(1,11,2)
+       -1       no_overlap(1,11,3)
+       -1       no_overlap(1,11,4)
+       -1       no_overlap(1,12,1)
+       -1       no_overlap(1,12,2)
+       -1       no_overlap(1,12,3)
+       -1       no_overlap(1,12,4)
+       -1       no_overlap(1,13,1)
+       -1       no_overlap(1,13,2)
+       -1       no_overlap(1,13,3)
+       -1       no_overlap(1,13,4)
+       -1       no_overlap(1,14,1)
+       -1       no_overlap(1,14,2)
+       -1       no_overlap(1,14,3)
+       -1       no_overlap(1,14,4)
+       -1       no_overlap(1,15,1)
+       -1       no_overlap(1,15,2)
+       -1       no_overlap(1,15,3)
+       -1       no_overlap(1,15,4)
+       -1       no_overlap(1,16,1)
+       -1       no_overlap(1,16,2)
+       -1       no_overlap(1,16,3)
+       -1       no_overlap(1,16,4)
+       -1       no_overlap(1,17,1)
+       -1       no_overlap(1,17,2)
+       -1       no_overlap(1,17,3)
+       -1       no_overlap(1,17,4)
+       -1       no_overlap(1,18,1)
+       -1       no_overlap(1,18,2)
+       -1       no_overlap(1,18,3)
+       -1       no_overlap(1,18,4)
+       -1       no_overlap(1,19,1)
+       -1       no_overlap(1,19,2)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 24
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(1,19,3)
+       -1       no_overlap(1,19,4)
+       -1       no_overlap(1,20,1)
+       -1       no_overlap(1,20,2)
+       -1       no_overlap(1,20,3)
+       -1       no_overlap(1,20,4)
+       -1       no_overlap(1,21,1)
+       -1       no_overlap(1,21,2)
+       -1       no_overlap(1,21,3)
+       -1       no_overlap(1,21,4)
+       -1       no_overlap(1,22,1)
+       -1       no_overlap(1,22,2)
+       -1       no_overlap(1,22,3)
+       -1       no_overlap(1,22,4)
+       -1       no_overlap(1,23,1)
+       -1       no_overlap(1,23,2)
+       -1       no_overlap(1,23,3)
+       -1       no_overlap(1,23,4)
+       -1       no_overlap(1,24,1)
+       -1       no_overlap(1,24,2)
+       -1       no_overlap(1,24,3)
+       -1       no_overlap(1,24,4)
+       -1       no_overlap(1,25,1)
+       -1       no_overlap(1,25,2)
+       -1       no_overlap(1,25,3)
+       -1       no_overlap(1,25,4)
+       -1       no_overlap(1,26,1)
+       -1       no_overlap(1,26,2)
+       -1       no_overlap(1,26,3)
+       -1       no_overlap(1,26,4)
+       -1       no_overlap(1,27,1)
+       -1       no_overlap(1,27,2)
+       -1       no_overlap(1,27,3)
+       -1       no_overlap(1,27,4)
+       -1       no_overlap(1,28,1)
+       -1       no_overlap(1,28,2)
+       -1       no_overlap(1,28,3)
+       -1       no_overlap(1,28,4)
+       -1       no_overlap(1,29,1)
+       -1       no_overlap(1,29,2)
+       -1       no_overlap(1,29,3)
+       -1       no_overlap(1,29,4)
+       -1       no_overlap(1,30,1)
+       -1       no_overlap(1,30,2)
+       -1       no_overlap(1,30,3)
+       -1       no_overlap(1,30,4)
+       -1       no_overlap(1,31,1)
+       -1       no_overlap(1,31,2)
+       -1       no_overlap(1,31,3)
+       -1       no_overlap(1,31,4)
+       -1       no_overlap(1,32,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 25
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(1,32,2)
+       -1       no_overlap(1,32,3)
+       -1       no_overlap(1,32,4)
+       -1       no_overlap(1,33,1)
+       -1       no_overlap(1,33,2)
+       -1       no_overlap(1,33,3)
+       -1       no_overlap(1,33,4)
+        1       no_overlap(2,1,1)
+        1       no_overlap(2,1,2)
+        1       no_overlap(2,1,3)
+        1       no_overlap(2,1,4)
+        1       no_overlap(3,1,1)
+        1       no_overlap(3,1,2)
+        1       no_overlap(3,1,3)
+        1       no_overlap(3,1,4)
+        1       no_overlap(4,1,1)
+        1       no_overlap(4,1,2)
+        1       no_overlap(4,1,3)
+        1       no_overlap(4,1,4)
+        1       no_overlap(5,1,1)
+        1       no_overlap(5,1,2)
+        1       no_overlap(5,1,3)
+        1       no_overlap(5,1,4)
+        1       no_overlap(6,1,1)
+        1       no_overlap(6,1,2)
+        1       no_overlap(6,1,3)
+        1       no_overlap(6,1,4)
+        1       no_overlap(7,1,1)
+        1       no_overlap(7,1,2)
+        1       no_overlap(7,1,3)
+        1       no_overlap(7,1,4)
+        1       no_overlap(8,1,1)
+        1       no_overlap(8,1,2)
+        1       no_overlap(8,1,3)
+        1       no_overlap(8,1,4)
+        1       no_overlap(9,1,1)
+        1       no_overlap(9,1,2)
+        1       no_overlap(9,1,3)
+        1       no_overlap(9,1,4)
+        1       no_overlap(10,1,1)
+        1       no_overlap(10,1,2)
+        1       no_overlap(10,1,3)
+        1       no_overlap(10,1,4)
+        1       no_overlap(11,1,1)
+        1       no_overlap(11,1,2)
+        1       no_overlap(11,1,3)
+        1       no_overlap(11,1,4)
+        1       no_overlap(12,1,1)
+        1       no_overlap(12,1,2)
+        1       no_overlap(12,1,3)
+        1       no_overlap(12,1,4)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 26
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(13,1,1)
+        1       no_overlap(13,1,2)
+        1       no_overlap(13,1,3)
+        1       no_overlap(13,1,4)
+        1       no_overlap(14,1,1)
+        1       no_overlap(14,1,2)
+        1       no_overlap(14,1,3)
+        1       no_overlap(14,1,4)
+        1       no_overlap(15,1,1)
+        1       no_overlap(15,1,2)
+        1       no_overlap(15,1,3)
+        1       no_overlap(15,1,4)
+        1       no_overlap(16,1,1)
+        1       no_overlap(16,1,2)
+        1       no_overlap(16,1,3)
+        1       no_overlap(16,1,4)
+        1       no_overlap(17,1,1)
+        1       no_overlap(17,1,2)
+        1       no_overlap(17,1,3)
+        1       no_overlap(17,1,4)
+        1       no_overlap(18,1,1)
+        1       no_overlap(18,1,2)
+        1       no_overlap(18,1,3)
+        1       no_overlap(18,1,4)
+        1       no_overlap(19,1,1)
+        1       no_overlap(19,1,2)
+        1       no_overlap(19,1,3)
+        1       no_overlap(19,1,4)
+        1       no_overlap(20,1,1)
+        1       no_overlap(20,1,2)
+        1       no_overlap(20,1,3)
+        1       no_overlap(20,1,4)
+        1       no_overlap(21,1,1)
+        1       no_overlap(21,1,2)
+        1       no_overlap(21,1,3)
+        1       no_overlap(21,1,4)
+        1       no_overlap(22,1,1)
+        1       no_overlap(22,1,2)
+        1       no_overlap(22,1,3)
+        1       no_overlap(22,1,4)
+        1       no_overlap(23,1,1)
+        1       no_overlap(23,1,2)
+        1       no_overlap(23,1,3)
+        1       no_overlap(23,1,4)
+        1       no_overlap(24,1,1)
+        1       no_overlap(24,1,2)
+        1       no_overlap(24,1,3)
+        1       no_overlap(24,1,4)
+        1       no_overlap(25,1,1)
+        1       no_overlap(25,1,2)
+        1       no_overlap(25,1,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 27
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(25,1,4)
+        1       no_overlap(26,1,1)
+        1       no_overlap(26,1,2)
+        1       no_overlap(26,1,3)
+        1       no_overlap(26,1,4)
+        1       no_overlap(27,1,1)
+        1       no_overlap(27,1,2)
+        1       no_overlap(27,1,3)
+        1       no_overlap(27,1,4)
+        1       no_overlap(28,1,1)
+        1       no_overlap(28,1,2)
+        1       no_overlap(28,1,3)
+        1       no_overlap(28,1,4)
+        1       no_overlap(29,1,1)
+        1       no_overlap(29,1,2)
+        1       no_overlap(29,1,3)
+        1       no_overlap(29,1,4)
+        1       no_overlap(30,1,1)
+        1       no_overlap(30,1,2)
+        1       no_overlap(30,1,3)
+        1       no_overlap(30,1,4)
+        1       no_overlap(31,1,1)
+        1       no_overlap(31,1,2)
+        1       no_overlap(31,1,3)
+        1       no_overlap(31,1,4)
+        1       no_overlap(32,1,1)
+        1       no_overlap(32,1,2)
+        1       no_overlap(32,1,3)
+        1       no_overlap(32,1,4)
+        1       no_overlap(33,1,1)
+        1       no_overlap(33,1,2)
+        1       no_overlap(33,1,3)
+        1       no_overlap(33,1,4)
+        1       enforce_arrival(1)
+
+starting_time(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -1       eq_completion_time(2)
+        1       no_overlap(0,2,1)
+        1       no_overlap(0,2,2)
+        1       no_overlap(0,2,3)
+        1       no_overlap(0,2,4)
+        1       no_overlap(1,2,1)
+        1       no_overlap(1,2,2)
+        1       no_overlap(1,2,3)
+        1       no_overlap(1,2,4)
+       -1       no_overlap(2,0,1)
+       -1       no_overlap(2,0,2)
+       -1       no_overlap(2,0,3)
+       -1       no_overlap(2,0,4)
+       -1       no_overlap(2,1,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 28
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(2,1,2)
+       -1       no_overlap(2,1,3)
+       -1       no_overlap(2,1,4)
+       -1       no_overlap(2,3,1)
+       -1       no_overlap(2,3,2)
+       -1       no_overlap(2,3,3)
+       -1       no_overlap(2,3,4)
+       -1       no_overlap(2,4,1)
+       -1       no_overlap(2,4,2)
+       -1       no_overlap(2,4,3)
+       -1       no_overlap(2,4,4)
+       -1       no_overlap(2,5,1)
+       -1       no_overlap(2,5,2)
+       -1       no_overlap(2,5,3)
+       -1       no_overlap(2,5,4)
+       -1       no_overlap(2,6,1)
+       -1       no_overlap(2,6,2)
+       -1       no_overlap(2,6,3)
+       -1       no_overlap(2,6,4)
+       -1       no_overlap(2,7,1)
+       -1       no_overlap(2,7,2)
+       -1       no_overlap(2,7,3)
+       -1       no_overlap(2,7,4)
+       -1       no_overlap(2,8,1)
+       -1       no_overlap(2,8,2)
+       -1       no_overlap(2,8,3)
+       -1       no_overlap(2,8,4)
+       -1       no_overlap(2,9,1)
+       -1       no_overlap(2,9,2)
+       -1       no_overlap(2,9,3)
+       -1       no_overlap(2,9,4)
+       -1       no_overlap(2,10,1)
+       -1       no_overlap(2,10,2)
+       -1       no_overlap(2,10,3)
+       -1       no_overlap(2,10,4)
+       -1       no_overlap(2,11,1)
+       -1       no_overlap(2,11,2)
+       -1       no_overlap(2,11,3)
+       -1       no_overlap(2,11,4)
+       -1       no_overlap(2,12,1)
+       -1       no_overlap(2,12,2)
+       -1       no_overlap(2,12,3)
+       -1       no_overlap(2,12,4)
+       -1       no_overlap(2,13,1)
+       -1       no_overlap(2,13,2)
+       -1       no_overlap(2,13,3)
+       -1       no_overlap(2,13,4)
+       -1       no_overlap(2,14,1)
+       -1       no_overlap(2,14,2)
+       -1       no_overlap(2,14,3)
+       -1       no_overlap(2,14,4)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 29
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(2,15,1)
+       -1       no_overlap(2,15,2)
+       -1       no_overlap(2,15,3)
+       -1       no_overlap(2,15,4)
+       -1       no_overlap(2,16,1)
+       -1       no_overlap(2,16,2)
+       -1       no_overlap(2,16,3)
+       -1       no_overlap(2,16,4)
+       -1       no_overlap(2,17,1)
+       -1       no_overlap(2,17,2)
+       -1       no_overlap(2,17,3)
+       -1       no_overlap(2,17,4)
+       -1       no_overlap(2,18,1)
+       -1       no_overlap(2,18,2)
+       -1       no_overlap(2,18,3)
+       -1       no_overlap(2,18,4)
+       -1       no_overlap(2,19,1)
+       -1       no_overlap(2,19,2)
+       -1       no_overlap(2,19,3)
+       -1       no_overlap(2,19,4)
+       -1       no_overlap(2,20,1)
+       -1       no_overlap(2,20,2)
+       -1       no_overlap(2,20,3)
+       -1       no_overlap(2,20,4)
+       -1       no_overlap(2,21,1)
+       -1       no_overlap(2,21,2)
+       -1       no_overlap(2,21,3)
+       -1       no_overlap(2,21,4)
+       -1       no_overlap(2,22,1)
+       -1       no_overlap(2,22,2)
+       -1       no_overlap(2,22,3)
+       -1       no_overlap(2,22,4)
+       -1       no_overlap(2,23,1)
+       -1       no_overlap(2,23,2)
+       -1       no_overlap(2,23,3)
+       -1       no_overlap(2,23,4)
+       -1       no_overlap(2,24,1)
+       -1       no_overlap(2,24,2)
+       -1       no_overlap(2,24,3)
+       -1       no_overlap(2,24,4)
+       -1       no_overlap(2,25,1)
+       -1       no_overlap(2,25,2)
+       -1       no_overlap(2,25,3)
+       -1       no_overlap(2,25,4)
+       -1       no_overlap(2,26,1)
+       -1       no_overlap(2,26,2)
+       -1       no_overlap(2,26,3)
+       -1       no_overlap(2,26,4)
+       -1       no_overlap(2,27,1)
+       -1       no_overlap(2,27,2)
+       -1       no_overlap(2,27,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 30
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+       -1       no_overlap(2,27,4)
+       -1       no_overlap(2,28,1)
+       -1       no_overlap(2,28,2)
+       -1       no_overlap(2,28,3)
+       -1       no_overlap(2,28,4)
+       -1       no_overlap(2,29,1)
+       -1       no_overlap(2,29,2)
+       -1       no_overlap(2,29,3)
+       -1       no_overlap(2,29,4)
+       -1       no_overlap(2,30,1)
+       -1       no_overlap(2,30,2)
+       -1       no_overlap(2,30,3)
+       -1       no_overlap(2,30,4)
+       -1       no_overlap(2,31,1)
+       -1       no_overlap(2,31,2)
+       -1       no_overlap(2,31,3)
+       -1       no_overlap(2,31,4)
+       -1       no_overlap(2,32,1)
+       -1       no_overlap(2,32,2)
+       -1       no_overlap(2,32,3)
+       -1       no_overlap(2,32,4)
+       -1       no_overlap(2,33,1)
+       -1       no_overlap(2,33,2)
+       -1       no_overlap(2,33,3)
+       -1       no_overlap(2,33,4)
+        1       no_overlap(3,2,1)
+        1       no_overlap(3,2,2)
+        1       no_overlap(3,2,3)
+        1       no_overlap(3,2,4)
+        1       no_overlap(4,2,1)
+        1       no_overlap(4,2,2)
+        1       no_overlap(4,2,3)
+        1       no_overlap(4,2,4)
+        1       no_overlap(5,2,1)
+        1       no_overlap(5,2,2)
+        1       no_overlap(5,2,3)
+        1       no_overlap(5,2,4)
+        1       no_overlap(6,2,1)
+        1       no_overlap(6,2,2)
+        1       no_overlap(6,2,3)
+        1       no_overlap(6,2,4)
+        1       no_overlap(7,2,1)
+        1       no_overlap(7,2,2)
+        1       no_overlap(7,2,3)
+        1       no_overlap(7,2,4)
+        1       no_overlap(8,2,1)
+        1       no_overlap(8,2,2)
+        1       no_overlap(8,2,3)
+        1       no_overlap(8,2,4)
+        1       no_overlap(9,2,1)
+        1       no_overlap(9,2,2)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 31
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(9,2,3)
+        1       no_overlap(9,2,4)
+        1       no_overlap(10,2,1)
+        1       no_overlap(10,2,2)
+        1       no_overlap(10,2,3)
+        1       no_overlap(10,2,4)
+        1       no_overlap(11,2,1)
+        1       no_overlap(11,2,2)
+        1       no_overlap(11,2,3)
+        1       no_overlap(11,2,4)
+        1       no_overlap(12,2,1)
+        1       no_overlap(12,2,2)
+        1       no_overlap(12,2,3)
+        1       no_overlap(12,2,4)
+        1       no_overlap(13,2,1)
+        1       no_overlap(13,2,2)
+        1       no_overlap(13,2,3)
+        1       no_overlap(13,2,4)
+        1       no_overlap(14,2,1)
+        1       no_overlap(14,2,2)
+        1       no_overlap(14,2,3)
+        1       no_overlap(14,2,4)
+        1       no_overlap(15,2,1)
+        1       no_overlap(15,2,2)
+        1       no_overlap(15,2,3)
+        1       no_overlap(15,2,4)
+        1       no_overlap(16,2,1)
+        1       no_overlap(16,2,2)
+        1       no_overlap(16,2,3)
+        1       no_overlap(16,2,4)
+        1       no_overlap(17,2,1)
+        1       no_overlap(17,2,2)
+        1       no_overlap(17,2,3)
+        1       no_overlap(17,2,4)
+        1       no_overlap(18,2,1)
+        1       no_overlap(18,2,2)
+        1       no_overlap(18,2,3)
+        1       no_overlap(18,2,4)
+        1       no_overlap(19,2,1)
+        1       no_overlap(19,2,2)
+        1       no_overlap(19,2,3)
+        1       no_overlap(19,2,4)
+        1       no_overlap(20,2,1)
+        1       no_overlap(20,2,2)
+        1       no_overlap(20,2,3)
+        1       no_overlap(20,2,4)
+        1       no_overlap(21,2,1)
+        1       no_overlap(21,2,2)
+        1       no_overlap(21,2,3)
+        1       no_overlap(21,2,4)
+        1       no_overlap(22,2,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 32
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     starting_time  comienzo de ejecucion de la tarea t
+
+        1       no_overlap(22,2,2)
+        1       no_overlap(22,2,3)
+        1       no_overlap(22,2,4)
+        1       no_overlap(23,2,1)
+        1       no_overlap(23,2,2)
+        1       no_overlap(23,2,3)
+        1       no_overlap(23,2,4)
+        1       no_overlap(24,2,1)
+        1       no_overlap(24,2,2)
+        1       no_overlap(24,2,3)
+        1       no_overlap(24,2,4)
+        1       no_overlap(25,2,1)
+        1       no_overlap(25,2,2)
+        1       no_overlap(25,2,3)
+        1       no_overlap(25,2,4)
+        1       no_overlap(26,2,1)
+        1       no_overlap(26,2,2)
+        1       no_overlap(26,2,3)
+        1       no_overlap(26,2,4)
+        1       no_overlap(27,2,1)
+        1       no_overlap(27,2,2)
+        1       no_overlap(27,2,3)
+        1       no_overlap(27,2,4)
+        1       no_overlap(28,2,1)
+        1       no_overlap(28,2,2)
+        1       no_overlap(28,2,3)
+        1       no_overlap(28,2,4)
+        1       no_overlap(29,2,1)
+        1       no_overlap(29,2,2)
+        1       no_overlap(29,2,3)
+        1       no_overlap(29,2,4)
+        1       no_overlap(30,2,1)
+        1       no_overlap(30,2,2)
+        1       no_overlap(30,2,3)
+        1       no_overlap(30,2,4)
+        1       no_overlap(31,2,1)
+        1       no_overlap(31,2,2)
+        1       no_overlap(31,2,3)
+        1       no_overlap(31,2,4)
+        1       no_overlap(32,2,1)
+        1       no_overlap(32,2,2)
+        1       no_overlap(32,2,3)
+        1       no_overlap(32,2,4)
+        1       no_overlap(33,2,1)
+        1       no_overlap(33,2,2)
+        1       no_overlap(33,2,3)
+        1       no_overlap(33,2,4)
+        1       enforce_arrival(2)
+
+REMAINING 31 ENTRIES SKIPPED
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 33
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+---- completion_time  tiempo de finalizacion de la tarea t
+
+completion_time(0)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       eq_completion_time(0)
+
+completion_time(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       eq_completion_time(1)
+       -4       objective
+
+completion_time(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       eq_completion_time(2)
+       -3       objective
+
+REMAINING 31 ENTRIES SKIPPED
+
+---- assignment  asignacion de la tarea t en la maquina m
+
+assignment(0,1)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       t_precedence_3(0,0,1)
+       -1       t_precedence_3(0,1,1)
+       -1       t_precedence_3(0,2,1)
+       -1       t_precedence_3(0,3,1)
+       -1       t_precedence_3(0,4,1)
+       -1       t_precedence_3(0,5,1)
+       -1       t_precedence_3(0,6,1)
+       -1       t_precedence_3(0,7,1)
+       -1       t_precedence_3(0,8,1)
+       -1       t_precedence_3(0,9,1)
+       -1       t_precedence_3(0,10,1)
+       -1       t_precedence_3(0,11,1)
+       -1       t_precedence_3(0,12,1)
+       -1       t_precedence_3(0,13,1)
+       -1       t_precedence_3(0,14,1)
+       -1       t_precedence_3(0,15,1)
+       -1       t_precedence_3(0,16,1)
+       -1       t_precedence_3(0,17,1)
+       -1       t_precedence_3(0,18,1)
+       -1       t_precedence_3(0,19,1)
+       -1       t_precedence_3(0,20,1)
+       -1       t_precedence_3(0,21,1)
+       -1       t_precedence_3(0,22,1)
+       -1       t_precedence_3(0,23,1)
+       -1       t_precedence_3(0,24,1)
+       -1       t_precedence_3(0,25,1)
+       -1       t_precedence_3(0,26,1)
+       -1       t_precedence_3(0,27,1)
+       -1       t_precedence_3(0,28,1)
+       -1       t_precedence_3(0,29,1)
+       -1       t_precedence_3(0,30,1)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 34
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     assignment  asignacion de la tarea t en la maquina m
+
+       -1       t_precedence_3(0,31,1)
+       -1       t_precedence_3(0,32,1)
+       -1       t_precedence_3(0,33,1)
+       -1       t_precedence_4(0,0,1)
+       -1       t_precedence_4(1,0,1)
+       -1       t_precedence_4(2,0,1)
+       -1       t_precedence_4(3,0,1)
+       -1       t_precedence_4(4,0,1)
+       -1       t_precedence_4(5,0,1)
+       -1       t_precedence_4(6,0,1)
+       -1       t_precedence_4(7,0,1)
+       -1       t_precedence_4(8,0,1)
+       -1       t_precedence_4(9,0,1)
+       -1       t_precedence_4(10,0,1)
+       -1       t_precedence_4(11,0,1)
+       -1       t_precedence_4(12,0,1)
+       -1       t_precedence_4(13,0,1)
+       -1       t_precedence_4(14,0,1)
+       -1       t_precedence_4(15,0,1)
+       -1       t_precedence_4(16,0,1)
+       -1       t_precedence_4(17,0,1)
+       -1       t_precedence_4(18,0,1)
+       -1       t_precedence_4(19,0,1)
+       -1       t_precedence_4(20,0,1)
+       -1       t_precedence_4(21,0,1)
+       -1       t_precedence_4(22,0,1)
+       -1       t_precedence_4(23,0,1)
+       -1       t_precedence_4(24,0,1)
+       -1       t_precedence_4(25,0,1)
+       -1       t_precedence_4(26,0,1)
+       -1       t_precedence_4(27,0,1)
+       -1       t_precedence_4(28,0,1)
+       -1       t_precedence_4(29,0,1)
+       -1       t_precedence_4(30,0,1)
+       -1       t_precedence_4(31,0,1)
+       -1       t_precedence_4(32,0,1)
+       -1       t_precedence_4(33,0,1)
+
+assignment(0,2)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       t_precedence_3(0,0,2)
+       -1       t_precedence_3(0,1,2)
+       -1       t_precedence_3(0,2,2)
+       -1       t_precedence_3(0,3,2)
+       -1       t_precedence_3(0,4,2)
+       -1       t_precedence_3(0,5,2)
+       -1       t_precedence_3(0,6,2)
+       -1       t_precedence_3(0,7,2)
+       -1       t_precedence_3(0,8,2)
+       -1       t_precedence_3(0,9,2)
+       -1       t_precedence_3(0,10,2)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 35
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     assignment  asignacion de la tarea t en la maquina m
+
+       -1       t_precedence_3(0,11,2)
+       -1       t_precedence_3(0,12,2)
+       -1       t_precedence_3(0,13,2)
+       -1       t_precedence_3(0,14,2)
+       -1       t_precedence_3(0,15,2)
+       -1       t_precedence_3(0,16,2)
+       -1       t_precedence_3(0,17,2)
+       -1       t_precedence_3(0,18,2)
+       -1       t_precedence_3(0,19,2)
+       -1       t_precedence_3(0,20,2)
+       -1       t_precedence_3(0,21,2)
+       -1       t_precedence_3(0,22,2)
+       -1       t_precedence_3(0,23,2)
+       -1       t_precedence_3(0,24,2)
+       -1       t_precedence_3(0,25,2)
+       -1       t_precedence_3(0,26,2)
+       -1       t_precedence_3(0,27,2)
+       -1       t_precedence_3(0,28,2)
+       -1       t_precedence_3(0,29,2)
+       -1       t_precedence_3(0,30,2)
+       -1       t_precedence_3(0,31,2)
+       -1       t_precedence_3(0,32,2)
+       -1       t_precedence_3(0,33,2)
+       -1       t_precedence_4(0,0,2)
+       -1       t_precedence_4(1,0,2)
+       -1       t_precedence_4(2,0,2)
+       -1       t_precedence_4(3,0,2)
+       -1       t_precedence_4(4,0,2)
+       -1       t_precedence_4(5,0,2)
+       -1       t_precedence_4(6,0,2)
+       -1       t_precedence_4(7,0,2)
+       -1       t_precedence_4(8,0,2)
+       -1       t_precedence_4(9,0,2)
+       -1       t_precedence_4(10,0,2)
+       -1       t_precedence_4(11,0,2)
+       -1       t_precedence_4(12,0,2)
+       -1       t_precedence_4(13,0,2)
+       -1       t_precedence_4(14,0,2)
+       -1       t_precedence_4(15,0,2)
+       -1       t_precedence_4(16,0,2)
+       -1       t_precedence_4(17,0,2)
+       -1       t_precedence_4(18,0,2)
+       -1       t_precedence_4(19,0,2)
+       -1       t_precedence_4(20,0,2)
+       -1       t_precedence_4(21,0,2)
+       -1       t_precedence_4(22,0,2)
+       -1       t_precedence_4(23,0,2)
+       -1       t_precedence_4(24,0,2)
+       -1       t_precedence_4(25,0,2)
+       -1       t_precedence_4(26,0,2)
+       -1       t_precedence_4(27,0,2)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 36
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     assignment  asignacion de la tarea t en la maquina m
+
+       -1       t_precedence_4(28,0,2)
+       -1       t_precedence_4(29,0,2)
+       -1       t_precedence_4(30,0,2)
+       -1       t_precedence_4(31,0,2)
+       -1       t_precedence_4(32,0,2)
+       -1       t_precedence_4(33,0,2)
+
+assignment(0,3)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+       -1       t_precedence_3(0,0,3)
+       -1       t_precedence_3(0,1,3)
+       -1       t_precedence_3(0,2,3)
+       -1       t_precedence_3(0,3,3)
+       -1       t_precedence_3(0,4,3)
+       -1       t_precedence_3(0,5,3)
+       -1       t_precedence_3(0,6,3)
+       -1       t_precedence_3(0,7,3)
+       -1       t_precedence_3(0,8,3)
+       -1       t_precedence_3(0,9,3)
+       -1       t_precedence_3(0,10,3)
+       -1       t_precedence_3(0,11,3)
+       -1       t_precedence_3(0,12,3)
+       -1       t_precedence_3(0,13,3)
+       -1       t_precedence_3(0,14,3)
+       -1       t_precedence_3(0,15,3)
+       -1       t_precedence_3(0,16,3)
+       -1       t_precedence_3(0,17,3)
+       -1       t_precedence_3(0,18,3)
+       -1       t_precedence_3(0,19,3)
+       -1       t_precedence_3(0,20,3)
+       -1       t_precedence_3(0,21,3)
+       -1       t_precedence_3(0,22,3)
+       -1       t_precedence_3(0,23,3)
+       -1       t_precedence_3(0,24,3)
+       -1       t_precedence_3(0,25,3)
+       -1       t_precedence_3(0,26,3)
+       -1       t_precedence_3(0,27,3)
+       -1       t_precedence_3(0,28,3)
+       -1       t_precedence_3(0,29,3)
+       -1       t_precedence_3(0,30,3)
+       -1       t_precedence_3(0,31,3)
+       -1       t_precedence_3(0,32,3)
+       -1       t_precedence_3(0,33,3)
+       -1       t_precedence_4(0,0,3)
+       -1       t_precedence_4(1,0,3)
+       -1       t_precedence_4(2,0,3)
+       -1       t_precedence_4(3,0,3)
+       -1       t_precedence_4(4,0,3)
+       -1       t_precedence_4(5,0,3)
+       -1       t_precedence_4(6,0,3)
+       -1       t_precedence_4(7,0,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 37
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     assignment  asignacion de la tarea t en la maquina m
+
+       -1       t_precedence_4(8,0,3)
+       -1       t_precedence_4(9,0,3)
+       -1       t_precedence_4(10,0,3)
+       -1       t_precedence_4(11,0,3)
+       -1       t_precedence_4(12,0,3)
+       -1       t_precedence_4(13,0,3)
+       -1       t_precedence_4(14,0,3)
+       -1       t_precedence_4(15,0,3)
+       -1       t_precedence_4(16,0,3)
+       -1       t_precedence_4(17,0,3)
+       -1       t_precedence_4(18,0,3)
+       -1       t_precedence_4(19,0,3)
+       -1       t_precedence_4(20,0,3)
+       -1       t_precedence_4(21,0,3)
+       -1       t_precedence_4(22,0,3)
+       -1       t_precedence_4(23,0,3)
+       -1       t_precedence_4(24,0,3)
+       -1       t_precedence_4(25,0,3)
+       -1       t_precedence_4(26,0,3)
+       -1       t_precedence_4(27,0,3)
+       -1       t_precedence_4(28,0,3)
+       -1       t_precedence_4(29,0,3)
+       -1       t_precedence_4(30,0,3)
+       -1       t_precedence_4(31,0,3)
+       -1       t_precedence_4(32,0,3)
+       -1       t_precedence_4(33,0,3)
+
+REMAINING 133 ENTRIES SKIPPED
+
+---- precedence  t es previa de tt en la maquina m, core c
+
+precedence(0,0,1)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+        2       no_loop(0,0,1)
+  -723835.1173  no_overlap(0,0,1)
+        1       t_precedence_3(0,0,1)
+        1       t_precedence_4(0,0,1)
+
+precedence(0,0,2)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+        2       no_loop(0,0,2)
+  -723835.1173  no_overlap(0,0,2)
+        1       t_precedence_3(0,0,2)
+        1       t_precedence_4(0,0,2)
+
+precedence(0,0,3)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+        2       no_loop(0,0,3)
+  -723835.1173  no_overlap(0,0,3)
+        1       t_precedence_3(0,0,3)
+        1       t_precedence_4(0,0,3)
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 38
+multicore_scheduling_min_wqt_s1
+Column Listing      SOLVE min_wqt Using MIP From line 464
+
+
+     precedence  t es previa de tt en la maquina m, core c
+
+
+REMAINING 4621 ENTRIES SKIPPED
+
+---- prec_res  
+
+prec_res(0,0,1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       m_resources_1(1,0)
+        1       m_resources_2(1,0)
+
+prec_res(0,0,2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       m_resources_1(2,0)
+        1       m_resources_2(2,0)
+
+prec_res(0,0,3)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       m_resources_1(3,0)
+        1       m_resources_2(3,0)
+
+REMAINING 4621 ENTRIES SKIPPED
+
+****
+****  4624 Integer +INF Bounds have been reset to 100
+****
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 39
+multicore_scheduling_min_wqt_s1
+Model Statistics    SOLVE min_wqt Using MIP From line 464
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS          17     SINGLE EQUATIONS       27,061
+BLOCKS OF VARIABLES           6     SINGLE VARIABLES        9,453
+NON ZERO ELEMENTS        67,487     DISCRETE VARIABLES      9,384
+
+
+GENERATION TIME      =        0.204 SECONDS      8 Mb  WIN240-240 Feb 14, 2013
+
+
+EXECUTION TIME       =        0.219 SECONDS      8 Mb  WIN240-240 Feb 14, 2013
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 40
+multicore_scheduling_min_wqt_s1
+Solution Report     SOLVE min_wqt Using MIP From line 464
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   min_wqt             OBJECTIVE  f
+     TYPE    MIP                 DIRECTION  MINIMIZE
+     SOLVER  CPLEX               FROM LINE  464
+
+**** SOLVER STATUS     4 Terminated By Solver      
+**** MODEL STATUS      14 No Solution Returned     
+**** OBJECTIVE VALUE               NA
+
+ RESOURCE USAGE, LIMIT         NA         21600.000
+ ITERATION COUNT, LIMIT  27785423    2000000000
+
+IBM ILOG CPLEX   Feb 14, 2013 24.0.2 WIN 38380.38394 VS8 x86/MS Windows       
+--- GAMS/Cplex licensed for continuous and discrete problems.
+Cplex 12.5.0.0
+
+MIP status(109): error termination
+Cplex Time: 16423.31sec (det. 3947935.64 ticks)
+*** CPLEX Error  1001: Out of memory.
+
+Fixing integer variables, and solving final LP...
+Fixed MIP status(0): 
+Cplex Time: 0.03sec (det. 10.09 ticks)
+*** CPLEX Error  1001: Out of memory.
+
+
+No solution returned
+GAMS Rev 240  WEX-VS8 24.0.2 x86/MS Windows                                                                                                                                                                                           04/26/13 07:24:20 Page 41
+multicore_scheduling_min_wqt_s1
+E x e c u t i o n
+
+
+----    466 VARIABLE f.L                   =        0.000  objetivo
+
+----    467 VARIABLE starting_time.L  comienzo de ejecucion de la tarea t
+
+                      ( ALL       0.000 )
+
+
+----    468 VARIABLE completion_time.L  tiempo de finalizacion de la tarea t
+
+                      ( ALL       0.000 )
+
+
+----    469 VARIABLE assignment.L  asignacion de la tarea t en la maquina m
+
+                      ( ALL       0.000 )
+
+
+----    470 VARIABLE precedence.L  t es previa de tt en la maquina m, core c
+
+                      ( ALL       0.000 )
+
+
+----    471 VARIABLE prec_res.L  
+
+                      ( ALL       0.000 )
+
+
+**** REPORT FILE SUMMARY
+
+salida_starting_time D:\Facultad\OPI\gams-opi\m2_wqt_stime_32x4.txt
+
+
+EXECUTION TIME       =        0.032 SECONDS      3 Mb  WIN240-240 Feb 14, 2013
+
+
+USER: Gary Goldstein                                 G010614:2121CA-WIN
+      Decision Ware, Inc.                                        DC2807
+
+
+**** FILE SUMMARY
+
+Input      D:\Facultad\OPI\gams-opi\wqt_run_2_32x4_2.gms
+Output     D:\Facultad\OPI\gams-opi\wqt_run_2_32x4_2.lst
