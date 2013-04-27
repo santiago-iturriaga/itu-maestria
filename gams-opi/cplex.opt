@@ -1,5 +1,3 @@
 threads 2
 nodefileind 2
 workmem 768
-nodesel 2
-varsel 3
