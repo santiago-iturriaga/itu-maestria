@@ -5,7 +5,7 @@
 //       Juan J. Durillo <durillo@lcc.uma.es>
 //       Jorge Rodriguez
 //
-//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo, Jorge Rodriguez�
+//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo, Jorge Rodriguez�
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
@@ -22,9 +22,12 @@
 
 package jmetal.experiments.util;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,23 +38,26 @@ import jmetal.core.SolutionSet;
 import jmetal.experiments.Experiment;
 import jmetal.experiments.Settings;
 import jmetal.problems.ProblemFactory;
+import jmetal.util.Configuration;
 import jmetal.util.JMException;
-import jmetal.qualityIndicator.* ;
+import jmetal.qualityIndicator.*;
+
 /**
  * Class implementing the steps to run an experiment
  */
 public class RunExperiment extends Thread {
 
-	public Experiment experiment_ ;
-	public int id_ ;
-	public HashMap<String, Object> map_ ;
-	public int numberOfThreads_ ;
-	public int numberOfProblems_ ;
+	public Experiment experiment_;
+	public int id_;
+	public HashMap<String, Object> map_;
+	public int numberOfThreads_;
+	public int numberOfProblems_;
 
 	static boolean finished;
 
 	String experimentName_;
-	String[] algorithmNameList_; // List of the names of the algorithms to be executed
+	String[] algorithmNameList_; // List of the names of the algorithms to be
+									// executed
 	String[] problemList_; // List of problems to be solved
 	String[] paretoFrontFile_; // List of the files containing the pareto fronts
 	// corresponding to the problems in problemList_
@@ -66,22 +72,18 @@ public class RunExperiment extends Thread {
 	// Pareto set
 	int independentRuns_; // Number of independent runs per algorithm
 	Settings[] algorithmSettings_; // Paremeter settings of each algorithm
-	
 
-	public RunExperiment(Experiment experiment, 
-			HashMap<String, Object> map,
-			int id,
-			int numberOfThreads,
-			int numberOfProblems) {
-		experiment_ = experiment ;
-		id_ = id ;
-		map_ = map ;
-		numberOfThreads_ = numberOfThreads  ;
+	public RunExperiment(Experiment experiment, HashMap<String, Object> map,
+			int id, int numberOfThreads, int numberOfProblems) {
+		experiment_ = experiment;
+		id_ = id;
+		map_ = map;
+		numberOfThreads_ = numberOfThreads;
 		numberOfProblems_ = numberOfProblems;
 
 		// Inicio modificación planificación Threads
 		finished = false;
-		// Fin modificación planificación Threads		
+		// Fin modificación planificación Threads
 	}
 
 	public void run() {
@@ -99,19 +101,19 @@ public class RunExperiment extends Thread {
 		outputParetoSetFile_ = (String) map_.get("outputParetoSetFile");
 
 		int numberOfAlgorithms = algorithmNameList_.length;
-		
-		algorithm = new Algorithm[numberOfAlgorithms] ;
 
-		SolutionSet resultFront = null;  
+		algorithm = new Algorithm[numberOfAlgorithms];
+
+		SolutionSet resultFront = null;
 
 		int[] problemData; // Contains current problemId, algorithmId and iRun
 
-		while(!finished){
+		while (!finished) {
 
 			problemData = null;
 			problemData = experiment_.getNextProblem();
 
-			if(!finished && problemData != null){
+			if (!finished && problemData != null) {
 				int problemId = problemData[0];
 				int alg = problemData[1];
 				int runs = problemData[2];
@@ -123,26 +125,29 @@ public class RunExperiment extends Thread {
 				// STEP 2: get the problem from the list
 				problemName = problemList_[problemId];
 
-				// STEP 3: check the file containing the Pareto front of the problem
+				// STEP 3: check the file containing the Pareto front of the
+				// problem
 
 				// STEP 4: configure the algorithms
 				try {
-					experiment_.algorithmSettings(problemName, problemId, algorithm);
+					experiment_.algorithmSettings(problemName, problemId,
+							algorithm);
 				} catch (ClassNotFoundException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
-				problem = algorithm[0].getProblem() ;
-				
+				problem = algorithm[0].getProblem();
+
 				// STEP 5: run the algorithms
-				
+
 				// STEP 6: create output directories
 				File experimentDirectory;
 				String directory;
 
-				directory = experimentBaseDirectory_ + "/data/" + algorithmNameList_[alg] + "/" +
-						problemList_[problemId];
+				directory = experimentBaseDirectory_ + "/data/"
+						+ algorithmNameList_[alg] + "/"
+						+ problemList_[problemId];
 
 				experimentDirectory = new File(directory);
 				if (!experimentDirectory.exists()) {
@@ -151,30 +156,55 @@ public class RunExperiment extends Thread {
 				}
 
 				// STEP 7: run the algorithm
-				System.out.println(Thread.currentThread().getName() + " Running algorithm: " + 
-						algorithmNameList_[alg] +
-						", problem: " + problemList_[problemId] +
-						", run: " + runs);
+				System.out.println(Thread.currentThread().getName()
+						+ " Running algorithm: " + algorithmNameList_[alg]
+						+ ", problem: " + problemList_[problemId] + ", run: "
+						+ runs);
+
+				long initTime = System.currentTimeMillis();
 				try {
 					try {
-						resultFront= algorithm[alg].execute();
+						resultFront = algorithm[alg].execute();
 					} catch (ClassNotFoundException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} catch (JMException ex) {
-					Logger.getLogger(Experiment.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(Experiment.class.getName()).log(
+							Level.SEVERE, null, ex);
 				}
+				long estimatedTime = System.currentTimeMillis() - initTime;
 
 				// STEP 8: put the results in the output directory
-				resultFront.printObjectivesToFile(directory + "/" + outputParetoFrontFile_ + "." + runs);
-				resultFront.printVariablesToFile(directory + "/" + outputParetoSetFile_ + "." + runs);
-				if(!finished){
-					if(experiment_.finished_){
-						finished = true;						
+				resultFront.printObjectivesToFile(directory + "/"
+						+ outputParetoFrontFile_ + "." + runs);
+				resultFront.printVariablesToFile(directory + "/"
+						+ outputParetoSetFile_ + "." + runs);
+
+				System.out.println("Total execution time: " + estimatedTime
+						+ "ms");
+				try {
+					/* Open the file */
+					FileOutputStream fos = new FileOutputStream(directory
+							+ "/Log." + runs);
+					OutputStreamWriter osw = new OutputStreamWriter(fos);
+					BufferedWriter bw = new BufferedWriter(osw);
+
+					bw.write(estimatedTime + "");
+					bw.newLine();
+
+					bw.close();
+				} catch (IOException e) {
+					Configuration.logger_.severe("Error acceding to the file");
+					e.printStackTrace();
+				}
+
+				if (!finished) {
+					if (experiment_.finished_) {
+						finished = true;
 					}
 				}
 			} // if
-		} //while
+		} // while
 	}
 }
