@@ -1,0 +1,11 @@
+--- Job nrg_run_2_16x3_3.gms Start 04/29/13 00:56:50 WEX-VS8 24.0.2 x86/MS Windows        
+GAMS Rev 240  Copyright (C) 1987-2013 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- nrg_run_2_16x3_3.gms(5) 2 Mb
+*** Termination requested by Control C
+--- .params_2_16x3_3.gms(5) 2 Mb 1 Error
+--- nrg_run_2_16x3_3.gms(5) 2 Mb 1 Error
+*** Status: Compilation error(s)
+--- Job nrg_run_2_16x3_3.gms Stop 04/29/13 00:56:51 elapsed 0:00:00.141
