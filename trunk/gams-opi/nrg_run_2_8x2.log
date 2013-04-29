@@ -1,4 +1,4 @@
---- Job nrg_run_2_8x2.gms Start 04/28/13 14:15:14 WEX-VS8 24.0.2 x86/MS Windows        
+--- Job nrg_run_2_8x2.gms Start 04/29/13 01:03:27 WEX-VS8 24.0.2 x86/MS Windows        
 GAMS Rev 240  Copyright (C) 1987-2013 GAMS Development. All rights reserved
 Licensee: Gary Goldstein                                 G010614:2121CA-WIN
           Decision Ware, Inc.                                        DC2807
@@ -6,18 +6,18 @@ Licensee: Gary Goldstein                                 G010614:2121CA-WIN
 --- nrg_run_2_8x2.gms(5) 2 Mb
 --- .params_2_8x2.gms(79) 3 Mb
 --- nrg_run_2_8x2.gms(6) 3 Mb
---- .nrg_model_2.gms(109) 3 Mb
+--- .nrg_model_2.gms(107) 3 Mb
 --- nrg_run_2_8x2.gms(16) 3 Mb
---- Starting execution: elapsed 0:00:00.078
---- nrg_run_2_8x2.gms(183) 4 Mb
+--- Starting execution: elapsed 0:00:00.000
+--- nrg_run_2_8x2.gms(181) 4 Mb
 --- Generating MIP model min_wqt
---- nrg_run_2_8x2.gms(185) 4 Mb
+--- nrg_run_2_8x2.gms(183) 4 Mb
 ---   1,135 rows  442 columns  2,784 non-zeroes
 ---   420 discrete-columns
 ***
 ***   200 Integer +INF Bounds have been reset to 100
 ***
---- Executing CPLEX: elapsed 0:00:00.140
+--- Executing CPLEX: elapsed 0:00:00.032
 
 IBM ILOG CPLEX   Feb 14, 2013 24.0.2 WIN 38380.38394 VS8 x86/MS Windows       
 --- GAMS/Cplex licensed for continuous and discrete problems.
@@ -37,7 +37,7 @@ Aggregator did 130 substitutions.
 Reduced MIP has 248 rows, 165 columns, and 924 nonzeros.
 Reduced MIP has 148 binaries, 6 generals, 0 SOSs, and 0 indicators.
 Presolve time = 0.02 sec. (2.29 ticks)
-Found incumbent of value 3.4658277e+007 after 0.05 sec. (2.83 ticks)
+Found incumbent of value 3.4658277e+007 after 0.03 sec. (2.83 ticks)
 Probing time = 0.00 sec. (0.46 ticks)
 Tried aggregator 1 time.
 Presolve time = 0.00 sec. (0.49 ticks)
@@ -59,25 +59,25 @@ Root relaxation solution time = 0.00 sec. (0.36 ticks)
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
 *     0+    0                      3.46583e+007  1.17093e+007       18   66.22%
-Found incumbent of value 3.4658277e+007 after 0.11 sec. (5.17 ticks)
+Found incumbent of value 3.4658277e+007 after 0.05 sec. (5.17 ticks)
       0     0  1.17093e+007    12  3.46583e+007  1.17093e+007       18   66.22%
 *     0+    0                      2.87946e+007  1.17093e+007       18   59.34%
-Found incumbent of value 2.8794643e+007 after 0.13 sec. (5.57 ticks)
+Found incumbent of value 2.8794643e+007 after 0.05 sec. (5.57 ticks)
       0     0  1.17093e+007     6  2.87946e+007   Impl Bds: 1       21   59.34%
 *     0+    0                      2.71620e+007  1.17093e+007       21   56.89%
-Found incumbent of value 2.7162005e+007 after 0.14 sec. (9.54 ticks)
+Found incumbent of value 2.7162005e+007 after 0.06 sec. (9.54 ticks)
       0     0  1.17093e+007     8  2.71620e+007      Cuts: 35       31   56.89%
 *     0+    0                      2.07877e+007  1.17093e+007       31   43.67%
-Found incumbent of value 2.0787656e+007 after 0.14 sec. (10.68 ticks)
+Found incumbent of value 2.0787656e+007 after 0.08 sec. (10.68 ticks)
       0     0  1.17093e+007    16  2.07877e+007      Cuts: 22       41   43.67%
 *     0+    0                      1.65263e+007  1.17093e+007       41   29.15%
-Found incumbent of value 1.6526278e+007 after 0.14 sec. (11.72 ticks)
+Found incumbent of value 1.6526278e+007 after 0.08 sec. (11.72 ticks)
 *     0+    0                      1.49412e+007  1.17093e+007       41   21.63%
-Found incumbent of value 1.4941204e+007 after 0.16 sec. (14.43 ticks)
+Found incumbent of value 1.4941204e+007 after 0.09 sec. (14.43 ticks)
 *     0+    0                      1.32974e+007  1.17093e+007       41   11.94%
-Found incumbent of value 1.3297399e+007 after 0.16 sec. (14.88 ticks)
+Found incumbent of value 1.3297399e+007 after 0.09 sec. (14.88 ticks)
 *     0+    0                      1.17913e+007  1.17093e+007       49    0.70%
-Found incumbent of value 1.1791259e+007 after 0.22 sec. (26.61 ticks)
+Found incumbent of value 1.1791259e+007 after 0.16 sec. (26.61 ticks)
 
 Repeating presolve.
 Tried aggregator 2 times.
@@ -103,32 +103,32 @@ Initializing dual steep norms . . .
 
 Iteration log . . .
 Iteration:     1   Dual objective     =      11709297.854700
-Root relaxation solution time = 0.01 sec. (0.20 ticks)
+Root relaxation solution time = 0.02 sec. (0.20 ticks)
 
         Nodes                                         Cuts/
    Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
 
 *     0+    0                      1.17913e+007  1.17093e+007       69    0.70%
-Found incumbent of value 1.1791259e+007 after 0.25 sec. (28.71 ticks)
+Found incumbent of value 1.1791259e+007 after 0.19 sec. (28.71 ticks)
       0     0  1.17093e+007    21  1.17913e+007  1.17093e+007       69    0.70%
 *     0+    0                      1.17905e+007  1.17093e+007       69    0.69%
-Found incumbent of value 1.1790479e+007 after 0.25 sec. (29.06 ticks)
+Found incumbent of value 1.1790479e+007 after 0.19 sec. (29.06 ticks)
       0     2  1.17093e+007    20  1.17905e+007  1.17093e+007       69    0.69%
-Elapsed time = 0.25 sec. (29.91 ticks, tree = 0.01 MB, solutions = 9)
+Elapsed time = 0.19 sec. (29.91 ticks, tree = 0.01 MB, solutions = 9)
 
 Implied bound cuts applied:  187
 Mixed integer rounding cuts applied:  2
 
 Root node processing (before b&c):
-  Real time             =    0.20 sec. (25.99 ticks)
+  Real time             =    0.16 sec. (25.99 ticks)
 Parallel b&c, 2 threads:
-  Real time             =    0.63 sec. (174.11 ticks)
+  Real time             =    0.86 sec. (174.11 ticks)
   Sync time (average)   =    0.00 sec.
-  Wait time (average)   =    0.00 sec.
+  Wait time (average)   =    0.01 sec.
                           ------------
-Total (root+branch&cut) =    0.83 sec. (200.10 ticks)
+Total (root+branch&cut) =    1.02 sec. (200.10 ticks)
 MIP status(101): integer optimal solution
-Cplex Time: 0.89sec (det. 203.99 ticks)
+Cplex Time: 1.05sec (det. 203.99 ticks)
 Fixing integer variables, and solving final LP...
 Tried aggregator 1 time.
 LP Presolve eliminated 1025 rows and 421 columns.
@@ -151,10 +151,10 @@ Absolute gap:            0.000000
 Relative gap:            0.000000
 
 --- Restarting execution
---- nrg_run_2_8x2.gms(185) 0 Mb
+--- nrg_run_2_8x2.gms(183) 0 Mb
 --- Reading solution for model min_wqt
---- nrg_run_2_8x2.gms(204) 3 Mb
+--- nrg_run_2_8x2.gms(202) 3 Mb
 --- Putfile salida_starting_time D:\Facultad\OPI\gams-opi\m2_nrg_stime_8x2.txt
 --- Putfile salida_assignment D:\Facultad\OPI\gams-opi\m2_nrg_assign_8x2.txt
 *** Status: Normal completion
---- Job nrg_run_2_8x2.gms Stop 04/28/13 14:15:16 elapsed 0:00:01.484
+--- Job nrg_run_2_8x2.gms Stop 04/29/13 01:03:28 elapsed 0:00:01.250
