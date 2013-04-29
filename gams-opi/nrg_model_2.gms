@@ -90,9 +90,7 @@ objective..                      f =e= makespan * sum(m, m_cores(m) * m_eidle(m)
 
 MODEL min_wqt /all/;
 
-OPTION Reslim = 1000000;
-*OPTION Optca = 0.0;
-*OPTION Optcr = 0.0;
+OPTION Reslim = 21600;
 OPTION MIP = cplex;
 
 min_wqt.optfile=1;
