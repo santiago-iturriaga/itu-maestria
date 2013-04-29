@@ -1,0 +1,19 @@
+--- Job nrg_run_2_32x4_3.gms Start 04/29/13 00:56:51 WEX-VS8 24.0.2 x86/MS Windows        
+GAMS Rev 240  Copyright (C) 1987-2013 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- nrg_run_2_32x4_3.gms(5) 2 Mb
+--- .params_2_32x4_3.gms(371) 3 Mb
+--- nrg_run_2_32x4_3.gms(6) 3 Mb
+--- .nrg_model_2.gms(109) 3 Mb
+--- nrg_run_2_32x4_3.gms(16) 3 Mb
+--- Starting execution: elapsed 0:00:00.015
+--- nrg_run_2_32x4_3.gms(475) 4 Mb
+--- Generating MIP model min_wqt
+--- nrg_run_2_32x4_3.gms(477) 8 Mb 1 Error
+*** SOLVE aborted
+--- Executing CPLEX: elapsed 0:00:00.109
+--- nrg_run_2_32x4_3.gms(477) 8 Mb 1 Error
+*** Status: Execution error(s)
+--- Job nrg_run_2_32x4_3.gms Stop 04/29/13 00:56:52 elapsed 0:00:00.109
