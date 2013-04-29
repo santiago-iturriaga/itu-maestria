@@ -85,10 +85,10 @@ public class OPIStudy extends Experiment {
 
 		exp.experimentName_ = "OPIStudy";
 		exp.algorithmNameList_ = new String[] { "NSGAII_OPI" };
-		exp.problemList_ = new String[] { "FE-HCSP_8x2", "FE-HCSP_8x2_2",
-				"FE-HCSP_8x2_3", "FE-HCSP_16x3", "FE-HCSP_16x3_2",
-				"FE-HCSP_16x3_3", "FE-HCSP_32x4", "FE-HCSP_32x4_2",
-				"FE-HCSP_32x4_3", "FE-HCSP_512x16", "FE-HCSP_512x16_2",
+		exp.problemList_ = new String[] { "FE-HCSP_8x2_1", "FE-HCSP_8x2_2",
+				"FE-HCSP_8x2_3", "FE-HCSP_16x3_1", "FE-HCSP_16x3_2",
+				"FE-HCSP_16x3_3", "FE-HCSP_32x4_1", "FE-HCSP_32x4_2",
+				"FE-HCSP_32x4_3", "FE-HCSP_512x16_1", "FE-HCSP_512x16_2",
 				"FE-HCSP_512x16_3" };
 		exp.paretoFrontFile_ = new String[] {};
 		exp.indicatorList_ = new String[] {};

@@ -65,7 +65,7 @@ public class OPI_NSGAII_Settings extends Settings {
 		String task_cores_file = "";
 		String machine_file = "";
 
-		if (problem.equals("FE-HCSP_8x2")) {
+		if (problem.equals("FE-HCSP_8x2_1")) {
 			// python convert_to_gams_m2.py 8 2 8x2/arrival.0
 			// 8x2/priorities.0 8x2/workload_high.0 8x2/cores_c2.0
 			// 8x2/scenario_c4_high.1 > gams_8x2_m2.txt
@@ -98,7 +98,7 @@ public class OPI_NSGAII_Settings extends Settings {
 			machine_file = "scenario_c4_high.3";
 
 			base_path = "/home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/8x2/";
-		} else if (problem.equals("FE-HCSP_16x3")) {
+		} else if (problem.equals("FE-HCSP_16x3_1")) {
 			// python convert_to_gams_m2.py 16 3 16x3/arrival.0
 			// 16x3/priorities.0 16x3/workload_high.0 16x3/cores_c4.19
 			// 16x3/scenario_c6_mid.31 > gams_16x3_m2.txt
@@ -131,7 +131,7 @@ public class OPI_NSGAII_Settings extends Settings {
 			machine_file = "scenario_c4_high.0";
 
 			base_path = "/home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/16x3/";
-		} else if (problem.equals("FE-HCSP_32x4")) {
+		} else if (problem.equals("FE-HCSP_32x4_1")) {
 			// python convert_to_gams_m2.py 32 4 32x4/arrival.0
 			// 32x4/priorities.0 32x4/workload_high.0 32x4/cores_c8.22
 			// 32x4/scenario_c12_high.2 > gams_32x4_m2.txt
@@ -164,7 +164,7 @@ public class OPI_NSGAII_Settings extends Settings {
 			machine_file = "scenario_c4_high.1";
 
 			base_path = "/home/santiago/google-hosting/itu-maestria/svn/trunk/instancias_scheduling/emc/32x4/";
-		} else if (problem.equals("FE-HCSP_512x16")) {
+		} else if (problem.equals("FE-HCSP_512x16_1")) {
 			// python convert_to_gams.py 512 16 512x16/arrival.0
 			// 512x16/priorities.0 512x16/workload_high.0 512x16/cores_c8.1
 			// 512x16/scenario_c12_mid.2 > gams_512x16.txt
@@ -230,7 +230,7 @@ public class OPI_NSGAII_Settings extends Settings {
 		QualityIndicator indicators;
 
 		// IRandomGenerator gen = new RandomGenerator();
-		IRandomGenerator gen = new MersenneTwisterFast(1);
+		IRandomGenerator gen = new MersenneTwisterFast();
 		PseudoRandom.setRandomGenerator(gen);
 		
 		// Creating the algorithm. There are two choices: NSGAII and its steady-

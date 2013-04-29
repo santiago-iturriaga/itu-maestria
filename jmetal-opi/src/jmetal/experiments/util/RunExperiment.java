@@ -161,7 +161,9 @@ public class RunExperiment extends Thread {
 						+ ", problem: " + problemList_[problemId] + ", run: "
 						+ runs);
 
-				long initTime = System.currentTimeMillis();
+				long initTime;
+				initTime = System.currentTimeMillis();
+				
 				try {
 					try {
 						resultFront = algorithm[alg].execute();
@@ -173,7 +175,9 @@ public class RunExperiment extends Thread {
 					Logger.getLogger(Experiment.class.getName()).log(
 							Level.SEVERE, null, ex);
 				}
-				long estimatedTime = System.currentTimeMillis() - initTime;
+				
+				long estimatedTime;
+				estimatedTime = System.currentTimeMillis() - initTime;
 
 				// STEP 8: put the results in the output directory
 				resultFront.printObjectivesToFile(directory + "/"
