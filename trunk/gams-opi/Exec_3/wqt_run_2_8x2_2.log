@@ -1,0 +1,149 @@
+--- Job wqt_run_2_8x2_2.gms Start 04/27/13 01:12:17 WEX-VS8 24.0.2 x86/MS Windows        
+GAMS Rev 240  Copyright (C) 1987-2013 GAMS Development. All rights reserved
+Licensee: Gary Goldstein                                 G010614:2121CA-WIN
+          Decision Ware, Inc.                                        DC2807
+--- Starting compilation
+--- wqt_run_2_8x2_2.gms(5) 2 Mb
+--- .params_2_8x2_2.gms(71) 3 Mb
+--- wqt_run_2_8x2_2.gms(6) 3 Mb
+--- .wqt_model_2.gms(95) 3 Mb
+--- wqt_run_2_8x2_2.gms(16) 3 Mb
+--- Starting execution: elapsed 0:00:00.000
+--- wqt_run_2_8x2_2.gms(162) 4 Mb
+--- Generating MIP model min_wqt
+--- wqt_run_2_8x2_2.gms(164) 4 Mb
+---   1,125 rows  441 columns  2,755 non-zeroes
+---   420 discrete-columns
+***
+***   200 Integer +INF Bounds have been reset to 100
+***
+--- Executing CPLEX: elapsed 0:00:00.032
+
+IBM ILOG CPLEX   Feb 14, 2013 24.0.2 WIN 38380.38394 VS8 x86/MS Windows       
+--- GAMS/Cplex licensed for continuous and discrete problems.
+Cplex 12.5.0.0
+
+Reading parameter(s) from "D:\Facultad\OPI\gams-opi\cplex.opt"
+>>  threads 2
+>>  nodefileind 2
+>>  workmem 768
+Finished reading from "D:\Facultad\OPI\gams-opi\cplex.opt"
+Reading data...
+Starting Cplex...
+Tried aggregator 2 times.
+MIP Presolve eliminated 767 rows and 157 columns.
+MIP Presolve modified 84 coefficients.
+Aggregator did 120 substitutions.
+Reduced MIP has 238 rows, 164 columns, and 896 nonzeros.
+Reduced MIP has 148 binaries, 6 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (2.24 ticks)
+Found incumbent of value 1385509.301900 after 0.02 sec. (2.78 ticks)
+Probing time = -0.00 sec. (0.46 ticks)
+Tried aggregator 1 time.
+Presolve time = -0.00 sec. (0.47 ticks)
+Probing time = 0.00 sec. (0.46 ticks)
+Clique table members: 1336.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 2 threads.
+Tried aggregator 1 time.
+No LP presolve or aggregator reductions.
+Presolve time = 0.00 sec. (0.10 ticks)
+Initializing dual steep norms . . .
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        303103.571000
+Root relaxation solution time = 0.00 sec. (0.37 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                      1385509.3019   303103.5710       29   78.12%
+Found incumbent of value 1385509.301900 after 0.03 sec. (5.10 ticks)
+      0     0   303103.5710    18  1385509.3019   303103.5710       29   78.12%
+*     0+    0                       563333.6182   303103.5710       29   46.19%
+Found incumbent of value 563333.618200 after 0.05 sec. (5.49 ticks)
+      0     0   303103.5710    17   563333.6182      Cuts: 13       68   46.19%
+      0     0   303103.5710    25   563333.6182      Cuts: 18      108   46.19%
+      0     0   303111.6969    28   563333.6182      Cuts: 11      157   46.19%
+*     0+    0                       544318.4470   303111.6969      157   44.31%
+Found incumbent of value 544318.447000 after 0.06 sec. (10.94 ticks)
+*     0+    0                       507746.1815   303111.6969      157   40.30%
+Found incumbent of value 507746.181500 after 0.08 sec. (12.36 ticks)
+*     0+    0                       504323.9360   303111.6969      157   39.90%
+Found incumbent of value 504323.936000 after 0.08 sec. (12.89 ticks)
+*     0+    0                       433191.2632   303111.6969      157   30.03%
+Found incumbent of value 433191.263200 after 0.08 sec. (14.11 ticks)
+      0     2   303111.6969    28   433191.2632   303111.6969      157   30.03%
+Elapsed time = 0.09 sec. (14.40 ticks, tree = 0.01 MB, solutions = 6)
+*     4+    4                       411339.2973   303269.9644      198   26.27%
+Found incumbent of value 411339.297300 after 0.09 sec. (15.28 ticks)
+*    39+   33                       407150.6932   303847.7230      393   25.37%
+                                                  Impl Bds: 3                  
+Found incumbent of value 407150.693200 after 0.11 sec. (18.13 ticks)
+*    42    34      integral     0   393993.2264   303847.7230      434   22.88%
+Found incumbent of value 393993.226400 after 0.11 sec. (18.02 ticks)
+*    44    32      integral     0   391813.9772   303847.7230      441   22.45%
+Found incumbent of value 391813.977200 after 0.11 sec. (18.22 ticks)
+*    46    32      integral     0   389929.6646   303847.7230      458   22.08%
+Found incumbent of value 389929.664600 after 0.11 sec. (18.40 ticks)
+*    54    32      integral     0   373073.3119   303847.7230      515   18.56%
+                                                  Impl Bds: 3                  
+Found incumbent of value 373073.311900 after 0.11 sec. (19.22 ticks)
+*    63    29      integral     0   355300.7628   303847.7230      620   14.48%
+Found incumbent of value 355300.762800 after 0.11 sec. (20.21 ticks)
+*    65    23      integral     0   346902.1543   303847.7230      638   12.41%
+                                                  Impl Bds: 2                  
+Found incumbent of value 346902.154300 after 0.13 sec. (20.47 ticks)
+*    73    22      integral     0   336025.7749   303847.7230      703    9.58%
+Found incumbent of value 336025.774900 after 0.13 sec. (21.20 ticks)
+*    78    12      integral     0   320729.6214   303847.7230      712    5.26%
+Found incumbent of value 320729.621400 after 0.13 sec. (21.20 ticks)
+*    81+   11                       320708.6214   303847.7230      740    5.26%
+Found incumbent of value 320708.621400 after 0.13 sec. (21.75 ticks)
+*    87     4      integral     0   320474.6214   303847.7230      750    5.19%
+Found incumbent of value 320474.621400 after 0.13 sec. (22.06 ticks)
+
+Implied bound cuts applied:  23
+Flow cuts applied:  4
+Mixed integer rounding cuts applied:  11
+Gomory fractional cuts applied:  2
+
+Root node processing (before b&c):
+  Real time             =    0.06 sec. (10.51 ticks)
+Parallel b&c, 2 threads:
+  Real time             =    0.05 sec. (8.18 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.11 sec. (18.69 ticks)
+MIP status(101): integer optimal solution
+Cplex Time: 0.13sec (det. 22.54 ticks)
+Fixing integer variables, and solving final LP...
+Tried aggregator 1 time.
+LP Presolve eliminated 1035 rows and 431 columns.
+Reduced LP has 90 rows, 10 columns, and 180 nonzeros.
+Presolve time = 0.00 sec. (0.33 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        320474.621400
+Fixed MIP status(1): optimal
+Cplex Time: 0.00sec (det. 0.73 ticks)
+
+Proven optimal solution.
+
+MIP Solution:       320474.621400    (787 iterations, 92 nodes)
+Final Solve:        320474.621400    (1 iterations)
+
+Best possible:      320474.621400
+Absolute gap:            0.000000
+Relative gap:            0.000000
+
+--- Restarting execution
+--- wqt_run_2_8x2_2.gms(164) 0 Mb
+--- Reading solution for model min_wqt
+--- wqt_run_2_8x2_2.gms(182) 3 Mb
+--- Putfile salida_starting_time D:\Facultad\OPI\gams-opi\m2_wqt_stime_8x2_2.txt
+--- Putfile salida_assignment D:\Facultad\OPI\gams-opi\m2_wqt_assign_8x2_2.txt
+*** Status: Normal completion
+--- Job wqt_run_2_8x2_2.gms Stop 04/27/13 01:12:18 elapsed 0:00:00.328
