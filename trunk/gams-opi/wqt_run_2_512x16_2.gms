@@ -3,7 +3,7 @@ $TITLE multicore_scheduling_min_wqt_s1
 Option optcr = 0.0;
 
 $Include params_2_512x16_2
-$Include wqt_model_2
+$Include wqt_model_2_512x16
 
 file salida_starting_time /m2_wqt_stime_512x16_2.txt/;
 put salida_starting_time;
