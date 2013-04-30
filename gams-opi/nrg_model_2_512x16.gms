@@ -15,9 +15,9 @@ PARAMETER eec(t,m) 'costo energetico de la ejecucion de la tarea t en la maquina
 VARIABLE f objetivo;
 POSITIVE VARIABLE starting_time(t)       'comienzo de ejecucion de la tarea t';
 POSITIVE VARIABLE completion_time(t)     'tiempo de finalizacion de la tarea t';
-BINARY VARIABLE assignment(t,m)        'asignacion de la tarea t en la maquina m';
-BINARY VARIABLE precedence(t,tt,m)     't es previa de tt en la maquina m, core c';
-INTEGER VARIABLE prec_res(t,tt,m)
+POSITIVE VARIABLE assignment(t,m)        'asignacion de la tarea t en la maquina m';
+POSITIVE VARIABLE precedence(t,tt,m)     't es previa de tt en la maquina m, core c';
+POSITIVE VARIABLE prec_res(t,tt,m)
 
 scalar TOTAL_CORES;
 TOTAL_CORES = sum(m, m_cores(m));
