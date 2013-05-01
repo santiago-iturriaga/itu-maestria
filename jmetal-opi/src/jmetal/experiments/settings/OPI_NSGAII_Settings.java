@@ -80,9 +80,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 8 2 8x2/arrival.1
 			// 8x2/priorities.1 8x2/workload_high.1 8x2/cores_c4.15
 			// 8x2/scenario_c6_high.6 > gams_8x2_m2.2.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.1";
+			task_priority_file = "priorities.1";
+			task_cost_file = "workload_high.1";
 			task_cores_file = "cores_c4.15";
 			machine_file = "scenario_c6_high.6";
 
@@ -91,9 +91,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 8 2 8x2/arrival.2
 			// 8x2/priorities.2 8x2/workload_high.2 8x2/cores_c4.21
 			// 8x2/scenario_c4_high.3 > gams_8x2_m2.3.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.2";
+			task_priority_file = "priorities.2";
+			task_cost_file = "workload_high.2";
 			task_cores_file = "cores_c4.21";
 			machine_file = "scenario_c4_high.3";
 
@@ -113,9 +113,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 16 3 16x3/arrival.1
 			// 16x3/priorities.1 16x3/workload_high.1 16x3/cores_c4.10
 			// 16x3/scenario_c6_high.1 > gams_16x3_m2.2.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.1";
+			task_priority_file = "priorities.1";
+			task_cost_file = "workload_high.1";
 			task_cores_file = "cores_c4.10";
 			machine_file = "scenario_c6_high.1";
 
@@ -124,9 +124,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 16 3 16x3/arrival.2
 			// 16x3/priorities.2 16x3/workload_high.2 16x3/cores_c4.16
 			// 16x3/scenario_c4_high.0 > gams_16x3_m2.3.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.2";
+			task_priority_file = "priorities.2";
+			task_cost_file = "workload_high.2";
 			task_cores_file = "cores_c4.16";
 			machine_file = "scenario_c4_high.0";
 
@@ -146,9 +146,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 32 4 32x4/arrival.1
 			// 32x4/priorities.1 32x4/workload_high.1 32x4/cores_c8.21
 			// 32x4/scenario_c10_mid.40 > gams_32x4_m2.2.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.1";
+			task_priority_file = "priorities.1";
+			task_cost_file = "workload_high.1";
 			task_cores_file = "cores_c8.21";
 			machine_file = "scenario_c10_mid.40";
 
@@ -157,9 +157,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams_m2.py 32 4 32x4/arrival.2
 			// 32x4/priorities.2 32x4/workload_high.2 32x4/cores_c4.8
 			// 32x4/scenario_c4_high.1 > gams_32x4_m2.3.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.2";
+			task_priority_file = "priorities.2";
+			task_cost_file = "workload_high.2";
 			task_cores_file = "cores_c4.8";
 			machine_file = "scenario_c4_high.1";
 
@@ -179,9 +179,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams.py 512 16 512x16/arrival.1
 			// 512x16/priorities.1 512x16/workload_high.1 512x16/cores_c8.27
 			// 512x16/scenario_c12_low.8 > gams_512x16.2.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.1";
+			task_priority_file = "priorities.1";
+			task_cost_file = "workload_high.1";
 			task_cores_file = "cores_c8.27";
 			machine_file = "scenario_c12_low.8";
 
@@ -190,9 +190,9 @@ public class OPI_NSGAII_Settings extends Settings {
 			// python convert_to_gams.py 512 16 512x16/arrival.2
 			// 512x16/priorities.2 512x16/workload_high.2 512x16/cores_c8.10
 			// 512x16/scenario_c10_mid.4 > gams_512x16.3.txt
-			task_arrival_file = "arrival.0";
-			task_priority_file = "priorities.0";
-			task_cost_file = "workload_high.0";
+			task_arrival_file = "arrival.2";
+			task_priority_file = "priorities.2";
+			task_cost_file = "workload_high.2";
 			task_cores_file = "cores_c8.10";
 			machine_file = "scenario_c10_mid.4";
 
