@@ -162,6 +162,32 @@ set queue quick_jobs keep_completed = 300
 set queue quick_jobs enabled = True
 set queue quick_jobs started = True
 #
+# Create and define queue clusterB
+#
+create queue clusterB
+set queue clusterB queue_type = Execution
+set queue clusterB max_user_queuable = 200
+set queue clusterB acl_host_enable = False
+set queue clusterB acl_user_enable = True
+set queue clusterB acl_users = siturria@node01.cluster.fing
+set queue clusterB resources_max.ncpus = 16
+set queue clusterB resources_max.nodect = 16
+set queue clusterB resources_max.nodes = 16
+set queue clusterB resources_max.walltime = 240:00:00
+set queue clusterB resources_min.ncpus = 1
+set queue clusterB resources_min.nodect = 1
+set queue clusterB resources_default.ncpus = 1
+set queue clusterB resources_default.nodes = 1
+set queue clusterB acl_group_enable = True
+set queue clusterB acl_groups = clusterusers
+set queue clusterB acl_groups += clusterexternos
+set queue clusterB acl_logic_or = True
+set queue clusterB acl_group_sloppy = True
+set queue clusterB kill_delay = 30
+set queue clusterB keep_completed = 300
+set queue clusterB enabled = True
+set queue clusterB started = True
+#
 # Set server attributes.
 #
 set server scheduling = True
