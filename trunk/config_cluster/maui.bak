@@ -152,7 +152,7 @@ CLASSCFG[quick_jobs]    PRIORITY=100
 #SRCFG[eolica] USERLIST=eolico
 
 SRCFG[eolo] PERIOD=INFINITY
-SRCFG[eolo] HOSTLIST=node05.cluster.fing,node09.cluster.fing
+SRCFG[eolo] HOSTLIST=node08.cluster.fing,node09.cluster.fing
 SRCFG[eolo] USERLIST=eolico
 
 #SRCFG[eolo] PERIOD=INFINITY
