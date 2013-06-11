@@ -99,6 +99,8 @@ int load_params(int argc, char **argv, struct params *input) {
                 fprintf(stderr, " (Min-Min)\n");
             } else if (input->init_algorithm == MCT) {
                 fprintf(stderr, " (MCT)\n");
+            } else if (input->init_algorithm == PRE_DEFINED) {
+                fprintf(stderr, " (PRE_DEFINED)\n");
             }
         //#endif
 
@@ -113,6 +115,13 @@ int load_params(int argc, char **argv, struct params *input) {
             input->max_iter = atoi(argv[11]);
         }
         fprintf(stderr, "[PARAMS] max iterations: %d s\n", input->max_iter);
+        
+        if (argc >= 13) {
+            input->initial_sol = argv[12];
+        } else {
+            input->initial_sol = "";
+        }
+        fprintf(stderr, "[PARAMS] initial solution: %s s\n", input->initial_sol);
         
         // Input validation.
         if (input->tasks_count < 1) {
@@ -133,13 +142,14 @@ int load_params(int argc, char **argv, struct params *input) {
         return EXIT_SUCCESS;
     } else {
         fprintf(stdout, "Usage:\n");
-        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan] [init algorithm] [max iterations]\n\n", argv[0]);
+        fprintf(stdout, "       %s <instance_path> <tasks count> <machines count> <algorithm> [seed] [gpu device] [timeout] [target makespan] [init algorithm] [#threads] [max iterations] [initial sol.]\n\n", argv[0]);
         fprintf(stdout, "       Algorithm = 0 Serial full\n");
         fprintf(stdout, "                   1 GPU full\n");
         fprintf(stdout, "                   2 GPU rand. task\n");
         fprintf(stdout, "                   3 parallel Min-Min\n");
         fprintf(stdout, "                   4 Min-Min\n");
         fprintf(stdout, "                   5 MCT\n");
+        fprintf(stdout, "                   6 PRE_DEFINED\n");
         fprintf(stdout, "\n");
 
         return EXIT_FAILURE;

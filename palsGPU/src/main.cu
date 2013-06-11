@@ -242,6 +242,31 @@ int main(int argc, char** argv)
             
             fprintf(stderr, "INIT|pMINMIN|%d\n", thread_count);
             compute_pminmin(etc_matrix, current_solution, thread_count);
+        } else if (input.init_algorithm == PRE_DEFINED) {
+            fprintf(stderr, "INIT|PRE_DEFINED\n");
+            fprintf(stderr, "Path a la solucion: %s\n", input.initial_sol);
+            
+            FILE *solution_file;
+            if ((solution_file = open(input.initial_sol, "r")) == NULL) {
+                fprintf(stderr, "[ERROR] cargando la solucion\n");
+                return EXIT_FAILURE;
+            }
+            
+            current_solution->makespan = 0;
+            int machine;
+            for (int task = 0; task < input->tasks_count; task++) {
+                fscanf(fi, "%d", &machine);
+                
+                assert(machine >= 0);
+                assert(machine < input->tasks_count);
+                
+                current_solution->task_assignment[task] = machine;
+                current_solution->machine_compute_time[machine] += get_etc_value(etc_matrix, machine, task);
+                
+                if (current_solution->machine_compute_time[machine] > current_solution->makespan) {
+                    current_solution->makespan = current_solution->machine_compute_time[machine];
+                }
+            }
         }
 
         timespec ts_init_end;
