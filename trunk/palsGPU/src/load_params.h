@@ -14,6 +14,7 @@
 #define pMinMin 3
 #define MinMin 4
 #define MCT 5
+#define PRE_DEFINED 6
 
 struct params {
     char *instance_path;
@@ -28,6 +29,7 @@ struct params {
     int init_algorithm;
     int init_algorithm_threads;
     int max_iter;
+    char *initial_sol;
 };
 
 int load_params(int argc, char **argv, struct params *input);
