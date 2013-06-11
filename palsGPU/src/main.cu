@@ -13,6 +13,7 @@
 #include <cuda.h>
 #include <limits.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "load_params.h"
 #include "load_instance.h"
@@ -191,14 +192,14 @@ int main(int argc, char** argv)
             if (input.instance_path[79] == '.') {
                 // El número de la instancia es de 1 cifra.
                 solution_path[92] = input.instance_path[78];
-                solution_path[93] = '\n';
+                solution_path[93] = '\0';
                 
                 fprintf(stderr, "input.instance_path[78] == %c\n", input.instance_path[78]);
             } else {
                 // De dos cifras.
                 solution_path[92] = input.instance_path[78];
                 solution_path[93] = input.instance_path[79];
-                solution_path[94] = '\n';
+                solution_path[94] = '\0';
                 
                 fprintf(stderr, "input.instance_path[78] == %c\n", input.instance_path[78]);
                 fprintf(stderr, "input.instance_path[79] == %c\n", input.instance_path[79]);
@@ -211,18 +212,18 @@ int main(int argc, char** argv)
             
             FILE *solution_file;
             
-            if ((solution_file = open(solution_path, "r")) == NULL) {
+            if ((solution_file = fopen(solution_path, "r")) == NULL) {
                 fprintf(stderr, "[ERROR] cargando la solucion\n");
                 return EXIT_FAILURE;
             }
             
             current_solution->makespan = 0;
             int machine;
-            for (int task = 0; task < input->tasks_count; task++) {
-                fscanf(fi, "%d", &machine);
+            for (int task = 0; task < input.tasks_count; task++) {
+                fscanf(solution_file, "%d", &machine);
                 
                 assert(machine >= 0);
-                assert(machine < input->tasks_count);
+                assert(machine < input.tasks_count);
                 
                 current_solution->task_assignment[task] = machine;
                 current_solution->machine_compute_time[machine] += get_etc_value(etc_matrix, machine, task);
@@ -231,6 +232,8 @@ int main(int argc, char** argv)
                     current_solution->makespan = current_solution->machine_compute_time[machine];
                 }
             }
+
+            fclose(solution_file);
         } else if (input.init_algorithm == pMinMin) {
             int thread_count = input.init_algorithm_threads;
             

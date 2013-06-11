@@ -12,7 +12,7 @@ ITER=30
 #TIMEOUT=30
 #TIMEOUT=120
 #TIMEOUT=300
-TIMEOUT=900
+TIMEOUT=10
 
 TARGET_M_ARRAY=(1845 1889 1894 1890 1859 1863 1897 1874 1871 1865 1840 1867 1895  1884 1851 1846 1874 1862  1892 1869)
 
@@ -22,7 +22,7 @@ MAX_ITER=1073741824
 
 for (( p=0; p<ITER; p++ ))
 do
-    for (( i=1; i<21; i++ ))
+    for (( i=10; i<11; i++ ))
     do
         #TARGET_M=0
         TARGET_M=${TARGET_M_ARRAY[i-1]}
@@ -51,12 +51,12 @@ do
         ID_2=3
         THREADS=12
         
-        time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} ${ID_1} ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID_2} ${THREADS} ${MAX_ITER} \
-            1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.sol) \
-            2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.time
+        #time (${BASE_PATH}/bin/pals ${INSTANCE}${i}.dat ${DIMENSION} ${ID_1} ${RAND} 0 ${TIMEOUT} ${TARGET_M} ${ID_2} ${THREADS} ${MAX_ITER} \
+        #    1> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.sol) \
+        #    2> ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.time
 
-        ${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.sol ${DIMENSION} \
-            > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.makespan
+        #${BASE_PATH}/bin/verificador ${INSTANCE}${i}.dat ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.sol ${DIMENSION} \
+        #    > ${BASE_PATH}/${DIMENSION_X}/solutions/${i}.${NAME}.${p}.makespan
                     
         set +x
     done
