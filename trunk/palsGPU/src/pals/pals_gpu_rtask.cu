@@ -63,11 +63,16 @@ __global__ void pals_rtask_kernel(
     int *gpu_best_movements_discarded,
     float *gpu_makespan_array,
     float cpu_current_makespan,
-    int iteration_nro)
+    int iteration_nro,
+    short *gpu_block_op,
+    int *gpu_block_data1,
+    int *gpu_block_data2,
+    float *gpu_block_deltas)
 {
     const unsigned int thread_idx = threadIdx.x;
     const unsigned int block_idx = blockIdx.x;
     const unsigned int block_dim = blockDim.x; // Cantidad de threads.
+    
 
     const short mov_type = (short)(block_idx & 0x11);
     const short delta_type = (short)(iteration_nro & 0x1111);
@@ -81,10 +86,24 @@ __global__ void pals_rtask_kernel(
         const float current_makespan = gpu_makespan_array[0];
     #endif
 
-    __shared__ short block_op[PALS_GPU_RTASK__THREADS];
-    __shared__ int block_data1[PALS_GPU_RTASK__THREADS];
-    __shared__ int block_data2[PALS_GPU_RTASK__THREADS];
-    __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
+    #ifndef GPU_NO_SHARED_MEMORY
+        __shared__ short block_op[PALS_GPU_RTASK__THREADS];
+        __shared__ int block_data1[PALS_GPU_RTASK__THREADS];
+        __shared__ int block_data2[PALS_GPU_RTASK__THREADS];
+        __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
+    #else
+        const unsigned int block_offset = block_idx * block_dim;
+    
+        short *block_op;
+        int *block_data1;
+        int *block_data2;
+        float *block_deltas;
+        
+        block_op = *(gpu_block_op[block_offset]);
+        block_data1 = *(gpu_block_data1[block_offset]);
+        gpu_block_data2 = *(gpu_block_data2[block_offset]);
+        gpu_block_deltas = *(gpu_block_deltas[block_offset]);
+    #endif
 
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
         // Tipo de movimiento.
@@ -808,6 +827,28 @@ void pals_gpu_rtask_init(struct matrix *etc_matrix, struct solution *s,
         exit(EXIT_FAILURE);
     }
     
+    #ifdef GPU_NO_SHARED_MEMORY
+        if (cudaMalloc((void**)&(instance.gpu_block_op), sizeof(short) * instance.blocks * instance.threads) != cudaSuccess) {
+            fprintf(stderr, "[ERROR] Solicitando memoria gpu_block_op (%lu bytes).\n", sizeof(short) * instance.blocks * instance.threads);
+            exit(EXIT_FAILURE);
+        }
+        
+        if (cudaMalloc((void**)&(instance.gpu_block_data1), sizeof(int) * instance.blocks * instance.threads) != cudaSuccess) {
+            fprintf(stderr, "[ERROR] Solicitando memoria gpu_block_data1 (%lu bytes).\n", sizeof(int) * instance.blocks * instance.threads);
+            exit(EXIT_FAILURE);
+        }
+        
+        if (cudaMalloc((void**)&(instance.gpu_block_data2), sizeof(int) * instance.blocks * instance.threads) != cudaSuccess) {
+            fprintf(stderr, "[ERROR] Solicitando memoria gpu_block_data2 (%lu bytes).\n", sizeof(int) * instance.blocks * instance.threads);
+            exit(EXIT_FAILURE);
+        }
+        
+        if (cudaMalloc((void**)&(instance.gpu_block_deltas), sizeof(float) * instance.blocks * instance.threads) != cudaSuccess) {
+            fprintf(stderr, "[ERROR] Solicitando memoria gpu_block_deltas (%lu bytes).\n", sizeof(float) * instance.blocks * instance.threads);
+            exit(EXIT_FAILURE);
+        }
+    #endif
+    
     timming_end(".. gpu_best_movements", ts_1);
 
     // =========================================================================
@@ -1190,7 +1231,11 @@ void pals_gpu_rtask_wrapper(struct matrix *etc_matrix, struct solution *s,
         instance.gpu_best_movements_discarded,
         instance.gpu_makespan_ct_aux,
         s->makespan,
-        iteration_nro);
+        iteration_nro,
+        instance.gpu_block_op,
+        instance.gpu_block_data1,
+        instance.gpu_block_data2,
+        instance.gpu_block_deltas);
 
     cudaError_t e;
     e = cudaGetLastError();

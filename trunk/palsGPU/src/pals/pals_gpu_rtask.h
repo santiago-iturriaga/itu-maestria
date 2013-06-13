@@ -38,6 +38,11 @@ struct pals_gpu_rtask_instance {
     
     char *result_machine_history;
     
+    short *gpu_block_op;
+    int *gpu_block_data1;
+    int *gpu_block_data2;
+    float *gpu_block_deltas;
+    
     // Parámetros de ejecución del kernel.
     ushort blocks;
     ushort threads;
