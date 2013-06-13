@@ -93,16 +93,6 @@ __global__ void pals_rtask_kernel(
         __shared__ float block_deltas[PALS_GPU_RTASK__THREADS];
     #else
         const unsigned int block_offset = block_idx * block_dim;
-    
-        short *block_op;
-        int *block_data1;
-        int *block_data2;
-        float *block_deltas;
-        
-        block_op = *(gpu_block_op[block_offset]);
-        block_data1 = *(gpu_block_data1[block_offset]);
-        gpu_block_data2 = *(gpu_block_data2[block_offset]);
-        gpu_block_deltas = *(gpu_block_deltas[block_offset]);
     #endif
 
     for (int loop = 0; loop < PALS_GPU_RTASK__LOOPS; loop++) {
@@ -217,12 +207,22 @@ __global__ void pals_rtask_kernel(
                     
                 }
             }
-            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-                block_op[thread_idx] = PALS_GPU_RTASK_SWAP;
-                block_data1[thread_idx] = task_x;
-                block_data2[thread_idx] = task_y;
-                block_deltas[thread_idx] = delta;
-            }
+
+            #ifndef GPU_NO_SHARED_MEMORY
+                if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
+                    block_op[thread_idx] = PALS_GPU_RTASK_SWAP;
+                    block_data1[thread_idx] = task_x;
+                    block_data2[thread_idx] = task_y;
+                    block_deltas[thread_idx] = delta;
+                }
+            #else                
+                if ((loop == 0) || (gpu_block_deltas[block_offset+thread_idx] > delta)) {
+                    gpu_block_op[block_offset+thread_idx] = PALS_GPU_RTASK_SWAP;
+                    gpu_block_data1[block_offset+thread_idx] = task_x;
+                    gpu_block_data2[block_offset+thread_idx] = task_y;
+                    gpu_block_deltas[block_offset+thread_idx] = delta;
+                }
+            #endif
         } else {
             // PALS_GPU_RTASK_MOVE
 
@@ -306,12 +306,21 @@ __global__ void pals_rtask_kernel(
                 #endif
             }
 
-            if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
-                block_op[thread_idx] = PALS_GPU_RTASK_MOVE;
-                block_data1[thread_idx] = task_x;
-                block_data2[thread_idx] = machine_b;
-                block_deltas[thread_idx] = delta;
-            }
+            #ifndef GPU_NO_SHARED_MEMORY
+                if ((loop == 0) || (block_deltas[thread_idx] > delta)) {
+                    block_op[thread_idx] = PALS_GPU_RTASK_MOVE;
+                    block_data1[thread_idx] = task_x;
+                    block_data2[thread_idx] = machine_b;
+                    block_deltas[thread_idx] = delta;
+                }
+            #else                
+                if ((loop == 0) || (gpu_block_deltas[block_offset+thread_idx] > delta)) {
+                    gpu_block_op[block_offset+thread_idx] = PALS_GPU_RTASK_MOVE;
+                    gpu_block_data1[block_offset+thread_idx] = task_x;
+                    gpu_block_data2[block_offset+thread_idx] = machine_b;
+                    gpu_block_deltas[block_offset+thread_idx] = delta;
+                }
+            #endif
         }
     }
 
@@ -324,25 +333,45 @@ __global__ void pals_rtask_kernel(
     {
         if (thread_idx < s)
         {
-            delta_current = block_deltas[thread_idx];
-            delta = block_deltas[thread_idx + s];
+            #ifndef GPU_NO_SHARED_MEMORY
+                delta_current = block_deltas[thread_idx];
+                delta = block_deltas[thread_idx + s];
 
-            if (delta < delta_current) {
-                block_op[thread_idx] = block_op[thread_idx + s];
-                block_data1[thread_idx] = block_data1[thread_idx + s];
-                block_data2[thread_idx] = block_data2[thread_idx + s];
-                block_deltas[thread_idx] = delta;
-            }
+                if (delta < delta_current) {
+                    block_op[thread_idx] = block_op[thread_idx + s];
+                    block_data1[thread_idx] = block_data1[thread_idx + s];
+                    block_data2[thread_idx] = block_data2[thread_idx + s];
+                    block_deltas[thread_idx] = delta;
+                }
+            #else
+                delta_current = gpu_block_deltas[block_offset+thread_idx];
+                delta = gpu_block_deltas[block_offset+thread_idx + s];
+
+                if (delta < delta_current) {                    
+                    gpu_block_op[block_offset+thread_idx] = gpu_block_op[block_offset+thread_idx+s];
+                    gpu_block_data1[block_offset+thread_idx] = gpu_block_data1[block_offset+thread_idx+s];
+                    gpu_block_data2[block_offset+thread_idx] = gpu_block_data2[block_offset+thread_idx+s];
+                    gpu_block_deltas[block_offset+thread_idx] = delta;
+                }
+            #endif
         }
         __syncthreads();
     }
 
     if (thread_idx == 0) {
-        gpu_best_movements_op[block_idx] = block_op[0];
-        gpu_best_movements_data1[block_idx] = block_data1[0];
-        gpu_best_movements_data2[block_idx] = block_data2[0];
-        gpu_best_deltas[block_idx] = block_deltas[0];
-        gpu_best_movements_discarded[block_idx] = 0;
+        #ifndef GPU_NO_SHARED_MEMORY
+            gpu_best_movements_op[block_idx] = block_op[0];
+            gpu_best_movements_data1[block_idx] = block_data1[0];
+            gpu_best_movements_data2[block_idx] = block_data2[0];
+            gpu_best_deltas[block_idx] = block_deltas[0];
+            gpu_best_movements_discarded[block_idx] = 0;
+        #else
+            gpu_best_movements_op[block_idx] = gpu_block_op[block_offset];
+            gpu_best_movements_data1[block_idx] = gpu_block_data1[block_offset];
+            gpu_best_movements_data2[block_idx] = gpu_block_data2[block_offset];
+            gpu_best_deltas[block_idx] = gpu_block_deltas[block_offset];
+            gpu_best_movements_discarded[block_idx] = 0;
+        #endif
     }
 }
 
