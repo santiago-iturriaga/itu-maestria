@@ -1,7 +1,8 @@
 #CC=gcc
 #-arch=compute_20
 
-NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
+NVCC=nvcc
+#NVCC=/home/clusterusers/siturriaga/cuda/bin/nvcc
 #NVCC=/usr/local/cuda/bin/nvcc 
 NVCCLocal=/home/santiago/cuda/bin/nvcc -L/home/santiago/cuda/fake-libs/
 

@@ -247,18 +247,18 @@ int main(int argc, char** argv)
             fprintf(stderr, "Path a la solucion: %s\n", input.initial_sol);
             
             FILE *solution_file;
-            if ((solution_file = open(input.initial_sol, "r")) == NULL) {
+            if ((solution_file = fopen(input.initial_sol, "r")) == NULL) {
                 fprintf(stderr, "[ERROR] cargando la solucion\n");
                 return EXIT_FAILURE;
             }
             
             current_solution->makespan = 0;
             int machine;
-            for (int task = 0; task < input->tasks_count; task++) {
-                fscanf(fi, "%d", &machine);
+            for (int task = 0; task < input.tasks_count; task++) {
+                fscanf(solution_file, "%d", &machine);
                 
                 assert(machine >= 0);
-                assert(machine < input->tasks_count);
+                assert(machine < input.tasks_count);
                 
                 current_solution->task_assignment[task] = machine;
                 current_solution->machine_compute_time[machine] += get_etc_value(etc_matrix, machine, task);
@@ -267,6 +267,8 @@ int main(int argc, char** argv)
                     current_solution->makespan = current_solution->machine_compute_time[machine];
                 }
             }
+
+	    fclose(solution_file);
         }
 
         timespec ts_init_end;
