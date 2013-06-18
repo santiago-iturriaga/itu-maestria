@@ -22,6 +22,6 @@
 
 #define PALS_CONVERGENCE        7864318
 
-#define GPU_NO_SHARED_MEMORY
+//#define GPU_NO_SHARED_MEMORY
 
 #endif //CONFIG_H_
