@@ -1,5 +1,3 @@
-#set +x
-
 #export LD_LIBRARY_PATH=/home/clusterusers/siturriaga/cuda/lib64:/home/clusterusers/siturriaga/cuda/lib
 export LD_LIBRARY_PATH=:/usr/local/cuda/lib64
 
