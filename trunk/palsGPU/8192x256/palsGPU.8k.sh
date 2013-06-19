@@ -1,4 +1,5 @@
-export LD_LIBRARY_PATH=/home/clusterusers/siturriaga/cuda/lib64:/home/clusterusers/siturriaga/cuda/lib
+#export LD_LIBRARY_PATH=/home/clusterusers/siturriaga/cuda/lib64:/home/clusterusers/siturriaga/cuda/lib
+#export LD_LIBRARY_PATH=:/usr/local/cuda/lib64
 
 INSTANCE="/home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_8192x256_hihi_"
 BASE_PATH="/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU"
