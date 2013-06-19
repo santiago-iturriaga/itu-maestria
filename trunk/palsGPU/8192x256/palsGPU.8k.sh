@@ -22,7 +22,7 @@ MAX_ITER=1073741824
 
 for (( p=0; p<ITER; p++ ))
 do
-    for (( i=10; i<11; i++ ))
+    for (( i=1; i<21; i++ ))
     do
         TARGET_M=0
         #TARGET_M=${TARGET_M_ARRAY[i-1]}
