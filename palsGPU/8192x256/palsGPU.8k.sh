@@ -5,6 +5,8 @@ BASE_PATH="/home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU"
 DIMENSION="8192 256"
 DIMENSION_X="8192x256"
 
+hostname
+
 mkdir -p ${BASE_PATH}/8192x256/solutions
 
 ITER=30
