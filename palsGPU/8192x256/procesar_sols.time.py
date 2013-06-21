@@ -17,6 +17,7 @@ if __name__ == '__main__':
         for a in algoritmos:
             dtime = 0.0
             dmake = 0.0
+            dmake_list = []
 
             for t in range(30):
                 base_path = 'solutions/' + str(instancia) + '.' + a + '.' + str(t)
@@ -24,7 +25,8 @@ if __name__ == '__main__':
 
                 if os.path.isfile(base_path + '.makespan'):
                     dmake_file = open(base_path + '.makespan')
-                    dmake = dmake + float(dmake_file.readline())
+                    dmake_list.append(float(dmake_file.readline()))
+                    dmake = dmake + dmake_list[t]
 
                     dtime_file = open(base_path + '.time')
                     dtime_lines = dtime_file.readlines()
@@ -60,23 +62,28 @@ if __name__ == '__main__':
                 else:
                     exit(-1)
                     
-             resultados[instancia][a] = (dmake / 30.0, dtime / 30.0)
+            sdiff = 0.0
+            for value in dmake_list:
+                sdiff = sdiff + pow(value - (dmake / 30.0), 2)
+            
+            resultados[instancia][a] = (dmake / 30.0, math.sqrt(sdiff / 29.0), dtime / 30.0)
 
     print resultados
 
     print "====== Tabla de makespan ======"
     print "Instancia,makecpan PALS gMinMin"
     for instancia in range(21)[1:]:
-        pals_gminmin_makespan = resultados[instancia]['pals+gminmin'][0]
+        pals_gminmin_makespan_avg = resultados[instancia]['pals+gminmin'][0]
+        pals_gminmin_makespan_stdev = resultados[instancia]['pals+gminmin'][1]
 
-        print "%d,%.1f" % (instancia, pals_gminmin_makespan)
+        print "%d,%.1f,%.1f" % (instancia, pals_gminmin_makespan_avg, pals_gminmin_makespan_stdev)
 
     print "====== Tabla de tiempos (segundos) ======"
     print "Instancia,tiempo PALS gMinMin"
     for instancia in range(21)[1:]:
         #pals_mct_time = resultados[instancia]['pals+mct']
         #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
-        pals_gminmin_time = resultados[instancia]['pals+gminmin'][1]
+        pals_gminmin_time = resultados[instancia]['pals+gminmin'][2]
 
         #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
 	print "%d,%.1f" % (instancia, pals_gminmin_time)
