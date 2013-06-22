@@ -4,7 +4,7 @@ import os
 import math
 
 cantidad_instancias = 20
-algoritmos = ['minmin', 'pals+mct', 'pals+pminmin+12']
+algoritmos = ['pals+gminmin'] #,'minmin', 'pals+mct', 'pals+pminmin+12']
 
 if __name__ == '__main__':
     resultados = {}
