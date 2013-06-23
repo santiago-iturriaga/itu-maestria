@@ -8,7 +8,7 @@ DIMENSION_X="8192x256"
 
 hostname
 
-mkdir -p ${BASE_PATH}/8192x256/solutions_shared
+mkdir -p ${BASE_PATH}/8192x256/solutions
 
 ITER=30
 
