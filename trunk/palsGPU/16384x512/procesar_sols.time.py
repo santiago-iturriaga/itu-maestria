@@ -16,6 +16,8 @@ if __name__ == '__main__':
 
         for a in algoritmos:
             dtime = 0.0
+            dtime_list = []
+            
             dmake = 0.0
             dmake_list = []
 
@@ -38,7 +40,8 @@ if __name__ == '__main__':
                             dtime_str = line.split('\t')[1].strip()
                             dtime_mins = int(dtime_str.split('m')[0].strip())
                             dtime_secs = float(dtime_str.split('m')[1].strip().strip('s').strip())
-                            dtime = dtime + dtime_mins * 60 + dtime_secs
+                            dtime_list.append(dtime_mins * 60 + dtime_secs)
+                            dtime = dtime + dtime_list[t]
 
                         #if line.split('|')[0].strip() == 'LOADING(s)':
                         #    host_init_time = float(line.split('|')[1].strip())
@@ -66,7 +69,11 @@ if __name__ == '__main__':
             for value in dmake_list:
                 sdiff = sdiff + pow(value - (dmake / 30.0), 2)
             
-            resultados[instancia][a] = (dmake / 30.0, math.sqrt(sdiff / 29.0), dtime / 30.0)
+            sdiff_time = 0.0
+            for value in dtime_list:
+                sdiff_time = sdiff_time + pow(value - (dtime / 30.0), 2)
+            
+            resultados[instancia][a] = (dmake / 30.0, math.sqrt(sdiff / 29.0), dtime / 30.0, math.sqrt(sdiff_time / 29.0))
 
     print resultados
 
@@ -84,7 +91,8 @@ if __name__ == '__main__':
         #pals_mct_time = resultados[instancia]['pals+mct']
         #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
         pals_gminmin_time = resultados[instancia]['pals+gminmin'][2]
+        pals_gminmin_time_stdev = resultados[instancia]['pals+gminmin'][3]
 
         #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
-	print "%d,%.1f" % (instancia, pals_gminmin_time)
+        print "%d,%.2f,%.2f" % (instancia, pals_gminmin_time,pals_gminmin_time_stdev)
 
