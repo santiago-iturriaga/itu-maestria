@@ -91,8 +91,8 @@ if __name__ == '__main__':
         #pals_mct_time = resultados[instancia]['pals+mct']
         #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
         pals_gminmin_time = resultados[instancia]['pals+gminmin'][2]
-	pals_gminmin_time_stdev = resultados[instancia]['pals+gminmin'][3]
+        pals_gminmin_time_stdev = resultados[instancia]['pals+gminmin'][3]
 
         #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
-	print "%d,%.2f,%.2f" % (instancia, pals_gminmin_time,pals_gmin_time_stdev)
+        print "%d,%.2f,%.2f" % (instancia, pals_gminmin_time,pals_gminmin_time_stdev)
 
