@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     // =============================================================
 
     fprintf(stderr, "[DEBUG] argc = %d\n", argc);
-    if (argc != 13) {
+    if ((argc != 13)&&(world_rank==0)) {
         fprintf(stderr, "[ERROR] invalid arguments\n");
         fprintf(stderr, "[USAGE] %s <seed> <#iterations> <#threads> <#simulations> <density> <#reset iters> <min_coverage> <alpha> <elite> <init function> <report start s> <report every s>\n", argv[0]);
         fprintf(stderr, "        init functions:\n");
