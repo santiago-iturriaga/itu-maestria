@@ -31,6 +31,10 @@ struct aga_state {
     
     struct cpu_mt_state random_state;
     struct solution aux_population[MLS__MAX_THREADS];
+    
+        
+    double report_start;
+    double report_every;
 };
 
 extern struct aga_state AGA;

@@ -21,19 +21,16 @@
 #define AGA__NEW_SOL_MSG        0
 #define AGA__REQ_SOL_MSG        1
 #define AGA__EXIT_MSG           2
-//#define AGA__MAX_ARCHIVE_SIZE   5
 #define AGA__MAX_ARCHIVE_SIZE   100
 
 // How many local search operators
 #define NUM_LS_OPERATORS 4
 
 // Initialization procedure
-//#define MLS__ELITE
 //#define MLS__REF_SEED
 //#define MLS__COMPROMISE_SEED
-//#define MLS__SEED_BASED
 //#define MLS__SUBSPACE_BASED
-#define MLS__RANDOM_BASED
+//#define MLS__RANDOM_BASED
 
 // Local search operators
 #define LS_ENERGY 0

@@ -52,6 +52,18 @@ struct mls_instance {
 
     // Parámetros de ejecución.
     int count_threads;
+    
+    // Reset iterations
+    int count_reset;
+    
+    // Minimum acceptable coverage
+    int min_coverage;
+    
+    // Alpha value
+    float alpha;
+    
+    bool elite;
+    int init_func;
 
     // Statics
     int total_iterations[MLS__MAX_THREADS];
