@@ -80,7 +80,7 @@ void init_mpi_solution(int array_size) {
     MPI_Type_commit(&mpi_solution_type);
     
     MPI_Type_contiguous(array_size, mpi_solution_type, &mpi_solution_type_array);
-	MPI_Type_commit(&mpi_solution_type_array);
+    MPI_Type_commit(&mpi_solution_type_array);
 }
 
 void clone_solution(struct solution *dst, struct solution *src) {

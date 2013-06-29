@@ -22,14 +22,17 @@ void archivers_aga(int seed) {
     MPI_Status status;
     int finalize = 0, aux, msg_count;
     int rc;
-
     int iteration = 0;
+
+    double start_time, current_time;
+    start_time = MPI_Wtime();
+
+    bool initial_report = false;
+    double next_report = AGA.report_every;
 
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
-        iteration++;
-
         #ifndef NDEBUG
             fprintf(stderr, "[DEBUG][AGA] ITERATION %d ==================================\n", iteration);
             fprintf(stderr, "[DEBUG][AGA] Current population = %d\n", AGA.population_count);
@@ -85,18 +88,29 @@ void archivers_aga(int seed) {
 
             assert(AGA.population_count > 0);
 
-    /*
-	    if (iteration % 960 == 1) {
-            //if (iteration % 4800 == 1) {
-                fprintf(stderr, "[INFO][AGA] (%d) Information ============================================ \n", iteration);
-                fprintf(stderr, "[INFO][AGA] Population count: %d\n", AGA.population_count);
-                fprintf(stderr, "[INFO][AGA] Population:\n");
+            current_time = MPI_Wtime();
 
-                fprintf(stderr, "id,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
+            //if (iteration % 960 == 1) {
+            //if (iteration % 4800 == 1) {
+            if (((!initial_report) && (current_time-start_time >= AGA.report_start)) &&
+                (current_time-start_time >= next_report)) {
+
+                if (!initial_report) {
+                    initial_report = true;
+                } else {
+                    while (current_time-start_time >= next_report) {
+                        next_report += AGA.report_every;
+                    }
+                }
+
+                //fprintf(stderr, "[POPULATION][%d] ============================================\n", iteration);
+                //fprintf(stderr, "[POPULATION][%d] Count:%d\n", iteration, AGA.population_count);
+                //fprintf(stderr, "id,borders_threshold,margin_forwarding,min_delay,max_delay,neighbors_threshold,energy,coverage,nforwardings,time\n");
 
                 for (int i = 0; i < AGA__MAX_ARCHIVE_SIZE; i++) {
                     if (AGA.population[i].status == SOLUTION__STATUS_READY) {
-                        fprintf(stderr, "%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", i,
+                        fprintf(stderr, "[POPULATION][%d][%f]|%d,%f,%f,%f,%f,%d,%f,%f,%f,%f\n", 
+                            iteration, current_time-start_time, i, 
                             AGA.population[i].borders_threshold,
                             AGA.population[i].margin_forwarding,
                             AGA.population[i].min_delay,
@@ -108,7 +122,9 @@ void archivers_aga(int seed) {
                             AGA.population[i].time);
                     }
                 }
-            }*/
+
+                iteration++;
+            }
         } else if (status.MPI_TAG == AGA__REQ_SOL_MSG) {
             #ifndef NDEBUG
                 fprintf(stderr, "[DEBUG][AGA] AGA__REQ_SOL_MSG\n");
@@ -171,7 +187,6 @@ void archivers_aga(int seed) {
             #endif
 
             MPI_Send(AGA.aux_population, 1, mpi_solution_type_array, status.MPI_SOURCE, AGA__REQ_SOL_MSG, MPI_COMM_WORLD);
-
         } else if (status.MPI_TAG == AGA__EXIT_MSG) {
             MPI_Get_count(&status, mpi_solution_type, &msg_count);
 
@@ -182,7 +197,6 @@ void archivers_aga(int seed) {
 
             fprintf(stderr, "[INFO][AGA] Kaput!\n");
             finalize = 1;
-
         } else {
             fprintf(stderr, "[ERROR][AGA] Unknown TAG %d\n", status.MPI_TAG);
             MPI_Finalize();

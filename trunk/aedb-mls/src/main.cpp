@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <mpi.h>
+#include <assert.h>
 
 #include "solution.h"
 #include "config.h"
@@ -63,24 +64,26 @@ int main(int argc, char** argv)
     // =============================================================
 
     fprintf(stderr, "[DEBUG] argc = %d\n", argc);
-    if (argc != 6) {
+    if (argc != 13) {
         fprintf(stderr, "[ERROR] invalid arguments\n");
+        fprintf(stderr, "[USAGE] %s <seed> <#iterations> <#threads> <#simulations> <density> <#reset iters> <min_coverage> <alpha> <elite> <init function> <report start s> <report every s>\n", argv[0]);
+        fprintf(stderr, "        init functions:\n");
+        fprintf(stderr, "        0) MLS__REF_SEED\n");
+        fprintf(stderr, "        1) MLS__COMPROMISE_SEED\n");
+        fprintf(stderr, "        2) MLS__SUBSPACE_BASED\n");
+        fprintf(stderr, "        3) MLS__RANDOM_BASED\n");
         MPI_Finalize();
         exit(EXIT_FAILURE);
     }
 
-    // Semilla aleatoria!!!
+    // Semilla aleatoria
     int seed = atoi(argv[1]);
 
-    // Cantidad max. de hilos por procesos MPI
-    //MLS.count_threads = 12;
-    MLS.count_threads = atoi(argv[3]);
-
     // Condicion de parada
-    //MLS.max_iterations = 1000;
-    //MLS.max_iterations = 10000;
-    //MLS.max_iterations = 50000;
     MLS.max_iterations = atoi(argv[2]);
+
+    // Cantidad max. de hilos por procesos MPI
+    MLS.count_threads = atoi(argv[3]);
 
     if (MLS.count_threads > MLS__MAX_THREADS) {
         fprintf(stderr, "[ERROR][%d] La cantidad máxima de hilos en cada proceso MPI es de %d.\n", world_rank, MLS__MAX_THREADS);
@@ -89,12 +92,25 @@ int main(int argc, char** argv)
     }
 
     // Config. NS3
-    // 25 for 100 devices/km^2 density, 50 for 200, and 75 for 300
-    //MLS.number_devices = 25;
-    MLS.number_devices = atoi(argv[5]);
     // Number of independent runs of the simulator, if > 1, the results given are averaged over all the runs
-    //MLS.simul_runs = 10;
+    // MLS.simul_runs = 10;
     MLS.simul_runs = atoi(argv[4]);
+    // 25 for 100 devices/km^2 density, 50 for 200, and 75 for 300
+    // MLS.number_devices = 25;
+    MLS.number_devices = atoi(argv[5]);
+    
+    MLS.count_reset = atoi(argv[6]);
+    MLS.min_coverage = atoi(argv[7]);
+    MLS.alpha = atof(argv[8]);
+    
+    MLS.elite = (atoi(argv[9]) != 0);
+    MLS.init_func = atoi(argv[10]);
+    
+    assert(MLS.init_func >= 0);
+    assert(MLS.init_func < 4);
+    
+    AGA.report_start = atof(argv[11]);
+    AGA.report_every = atof(argv[12]);
 
     // Dominio de las variables de búsqueda.
     MLS.lbound_min_delay = 0;
@@ -118,21 +134,21 @@ int main(int argc, char** argv)
         fprintf(stderr, "   MLS.max_iterations = %d\n", MLS.max_iterations);
         fprintf(stderr, "   MLS.number_devices = %d\n", MLS.number_devices);
         fprintf(stderr, "   MLS.simul_runs     = %d\n", MLS.simul_runs);
-        #if defined(MLS__SEED_BASED)
-            fprintf(stderr, "   MLS.init           = MLS__SEED_BASED\n");
-        #endif
-        #if defined(MLS__SUBSPACE_BASED)
-            fprintf(stderr, "   MLS.init           = MLS__SUBSPACE_BASED\n");
-        #endif
-        #if defined(MLS__RANDOM_BASED)
-            fprintf(stderr, "   MLS.init           = MLS__RANDOM\n");
-        #endif
-        #if defined(MLS__REF_SEED)
-            fprintf(stderr, "   MLS.seed           = MLS__REF_SEED\n");
-        #endif
-        #if defined(MLS__COMPROMISE_SEED)
-            fprintf(stderr, "   MLS.seed           = MLS__COMPROMISE_SEED\n");
-        #endif
+        
+        fprintf(stderr, "   MLS.count_reset    = %d\n", MLS.count_reset);
+        fprintf(stderr, "   MLS.min_coverage   = %d\n", MLS.min_coverage);
+        fprintf(stderr, "   MLS.alpha          = %f\n", MLS.alpha);
+        fprintf(stderr, "   MLS.elite          = %d\n", MLS.elite);
+        
+        if (MLS.init_func == 0) {
+            fprintf(stderr, "   MLS.init_func           = MLS__REF_SEED\n");
+        } else if (MLS.init_func == 1) {
+            fprintf(stderr, "   MLS.init_func           = MLS__COMPROMISE_SEED\n");
+        } else if (MLS.init_func == 2) {
+            fprintf(stderr, "   MLS.init_func           = MLS__SUBSPACE_BASED\n");
+        } else if (MLS.init_func == 3) {
+            fprintf(stderr, "   MLS.init_func           = MLS__RANDOM\n");            
+        }
         
         fprintf(stderr, "===========================================================\n");
     }
