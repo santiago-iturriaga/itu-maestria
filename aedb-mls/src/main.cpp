@@ -69,12 +69,15 @@ int main(int argc, char** argv)
     
     if ((argc != 13)&&(world_rank==0)) {
         fprintf(stderr, "[ERROR] invalid arguments\n");
-        fprintf(stderr, "[USAGE] %s <seed> <#iterations> <#threads> <#simulations> <density> <#reset iters> <min_coverage> <alpha> <elite> <init function> <report start s> <report every s>\n", argv[0]);
-        fprintf(stderr, "        init functions:\n");
+        fprintf(stderr, "[USAGE] %s <seed> <#iterations> <#threads> <#simulations> <density> <#reset iters> ", argv[0]);
+        fprintf(stderr, "<min_coverage> <alpha> <elite> <init function> <report start s> <report every s>\n");
+        fprintf(stderr, "        Init functions:\n");
         fprintf(stderr, "        0) MLS__REF_SEED\n");
         fprintf(stderr, "        1) MLS__COMPROMISE_SEED\n");
         fprintf(stderr, "        2) MLS__SUBSPACE_BASED\n");
         fprintf(stderr, "        3) MLS__RANDOM_BASED\n");
+        fprintf(stderr, "        4) MLS__COMPROMISE_SEED (no nsga-ii)\n");
+        fprintf(stderr, "        5) MLS__SUBSPACE_BASED (no nsga-ii)\n");
         MPI_Finalize();
         exit(EXIT_FAILURE);
     }
@@ -110,7 +113,7 @@ int main(int argc, char** argv)
     MLS.init_func = atoi(argv[10]);
     
     assert(MLS.init_func >= 0);
-    assert(MLS.init_func < 4);
+    assert(MLS.init_func <= 5);
     
     AGA.report_start = atof(argv[11]);
     AGA.report_every = atof(argv[12]);
@@ -157,6 +160,10 @@ int main(int argc, char** argv)
             fprintf(stderr, "   MLS.init_func      = MLS__SUBSPACE_BASED\n");
         } else if (MLS.init_func == 3) {
             fprintf(stderr, "   MLS.init_func      = MLS__RANDOM\n");            
+        } else if (MLS.init_func == 4) {
+            fprintf(stderr, "   MLS.init_func      = MLS__COMPROMISE_SEED (no nsga-ii)\n");
+        } else if (MLS.init_func == 5) {
+            fprintf(stderr, "   MLS.init_func      = MLS__SUBSPACE_BASED (no nsga-ii)\n");
         }
         
         fprintf(stderr, "   AGA.report_start   = %f\n", AGA.report_start);
