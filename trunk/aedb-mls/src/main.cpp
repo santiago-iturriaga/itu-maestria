@@ -63,7 +63,10 @@ int main(int argc, char** argv)
     // Loading input parameters
     // =============================================================
 
-    fprintf(stderr, "[DEBUG] argc = %d\n", argc);
+    #ifndef NDEBUG
+        fprintf(stderr, "[DEBUG] argc = %d\n", argc);
+    #endif
+    
     if ((argc != 13)&&(world_rank==0)) {
         fprintf(stderr, "[ERROR] invalid arguments\n");
         fprintf(stderr, "[USAGE] %s <seed> <#iterations> <#threads> <#simulations> <density> <#reset iters> <min_coverage> <alpha> <elite> <init function> <report start s> <report every s>\n", argv[0]);
@@ -111,6 +114,12 @@ int main(int argc, char** argv)
     
     AGA.report_start = atof(argv[11]);
     AGA.report_every = atof(argv[12]);
+    
+    if (MLS.simul_runs % 2 != 0) {
+        fprintf(stderr, "[ERROR][%d] La cantidad de simulaciones debe ser par.\n", world_rank);
+        MPI_Finalize();
+        exit(EXIT_FAILURE);
+    }
 
     // Dominio de las variables de búsqueda.
     MLS.lbound_min_delay = 0;
