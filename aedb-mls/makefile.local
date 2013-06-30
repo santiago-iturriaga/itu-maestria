@@ -1,6 +1,6 @@
 CC=/opt/mpich/bin/mpicc -Wall -std=c99
 CX=/opt/mpich/bin/mpic++ -Wall
-LIBS=-lpthread -lrt -DLOCAL
+LIBS=-lpthread -lrt
 
 NS3_CC=gcc -Wall -std=c99
 NS3_CX=g++ -Wall

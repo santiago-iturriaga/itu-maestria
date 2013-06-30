@@ -256,8 +256,12 @@ void* mls_thread(void *data)
                     MLS.population[thread_id].neighbors_threshold = INIT_NEIGH[selected] *
                         (1.2 - (cpu_mt_generate(MLS.random_states[thread_id]) / 2.5));
                 }
-            } else if (MLS.init_func == 3) { // MLS__SUBSPACE_BASED
-                if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {
+            } else if (MLS.init_func == 2) { // MLS__SUBSPACE_BASED
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG] MLS__SUBSPACE_BASED\n");
+                #endif
+                
+                if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {                   
                     MLS.population[thread_id].min_delay = INIT_MIN_DELAY[world_rank];
                     MLS.population[thread_id].max_delay = INIT_MAX_DELAY[world_rank];
                     MLS.population[thread_id].borders_threshold = INIT_BORDERS[world_rank];
@@ -289,14 +293,14 @@ void* mls_thread(void *data)
                         ((pop_index + cpu_mt_generate(MLS.random_states[thread_id]))/((world_rank + 1) *
                         MLS.count_threads)) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold);
                 }
-            } else if (MLS.init_func == 4) { // MLS__RANDOM_BASED
-                /*if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {
+            } else if (MLS.init_func == 3) { // MLS__RANDOM_BASED
+                if ((world_rank < INIT_SOLS_COUNT) && (thread_id == 0)) {
                     MLS.population[thread_id].min_delay = INIT_MIN_DELAY[world_rank];
                     MLS.population[thread_id].max_delay = INIT_MAX_DELAY[world_rank];
                     MLS.population[thread_id].borders_threshold = INIT_BORDERS[world_rank];
                     MLS.population[thread_id].margin_forwarding = INIT_MARGIN[world_rank];
                     MLS.population[thread_id].neighbors_threshold = INIT_NEIGH[world_rank];
-                } else {*/
+                } else {
                     MLS.population[thread_id].min_delay = MLS.lbound_min_delay +
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_min_delay - MLS.lbound_min_delay);
                     MLS.population[thread_id].max_delay = MLS.lbound_max_delay +
@@ -307,7 +311,7 @@ void* mls_thread(void *data)
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_margin_threshold - MLS.lbound_margin_threshold);
                     MLS.population[thread_id].neighbors_threshold = MLS.lbound_neighbors_threshold +
                         cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.ubound_neighbors_threshold - MLS.lbound_neighbors_threshold);
-                //}
+                }
             }
 
             if (MLS.population[thread_id].min_delay > MLS.ubound_min_delay) {
@@ -348,7 +352,7 @@ void* mls_thread(void *data)
                 MLS.population[thread_id].neighbors_threshold);
 
             #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG] NS3 command line: %s\n", ns3_command);
+                fprintf(stderr, "[DEBUG][%d][%d] NS3 command line: %s\n", world_rank, thread_id, ns3_command);
             #endif
 
             if (!(fpipe = (FILE*)popen(ns3_command,"r")))
@@ -448,9 +452,28 @@ void* mls_thread(void *data)
             neighbors_threshold = MLS.population[thread_id].neighbors_threshold;
 
             int rand_other_thread;
-            rand_other_thread = (int)(cpu_mt_generate(MLS.random_states[thread_id]) * MLS.count_threads);
+            rand_other_thread = (int)(cpu_mt_generate(MLS.random_states[thread_id]) * (MLS.count_threads-1));
+            if (rand_other_thread >= thread_id) rand_other_thread++;
 
             MLS.total_iterations[thread_id]++;
+
+            #ifndef NDEBUG
+            fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
+                world_rank, thread_id, thread_id, 
+                MLS.population[thread_id].min_delay, 
+                MLS.population[thread_id].max_delay, 
+                MLS.population[thread_id].borders_threshold, 
+                MLS.population[thread_id].margin_forwarding, 
+                MLS.population[thread_id].neighbors_threshold);
+
+            fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
+                world_rank, thread_id, rand_other_thread, 
+                MLS.population[rand_other_thread].min_delay, 
+                MLS.population[rand_other_thread].max_delay, 
+                MLS.population[rand_other_thread].borders_threshold, 
+                MLS.population[rand_other_thread].margin_forwarding, 
+                MLS.population[rand_other_thread].neighbors_threshold);
+            #endif
 
             float prod = 0.0;
             for (search_iteration = 0; search_iteration < work_iteration_size; search_iteration++) {
@@ -461,49 +484,62 @@ void* mls_thread(void *data)
                     case LS_FORWARDING :
                         // Reduce borders_threshold
                         delta = MLS.population[rand_other_thread].borders_threshold - MLS.population[thread_id].borders_threshold;
-                        prod = alfa * delta;
+                        
+                        if (delta != 0) {
+                            prod = alfa * delta;
 
-                        if (delta > 0){
-                            borders_threshold = borders_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            if (delta > 0){
+                                borders_threshold = borders_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            } else {
+                                borders_threshold = borders_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            }
+
+                            // Reduce neighbors_threshold
+                            delta = MLS.population[rand_other_thread].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
+
+                            if (delta > 0){
+                                neighbors_threshold = floor(neighbors_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                            } else {
+                                neighbors_threshold = floor(neighbors_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                            }
                         } else {
-                            borders_threshold = borders_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            borders_threshold += ((borders_threshold * (alfa / 2) * cpu_mt_generate(MLS.random_states[thread_id])) - (alfa / 4));
+                            neighbors_threshold += ((neighbors_threshold * (alfa / 2) * cpu_mt_generate(MLS.random_states[thread_id])) - (alfa / 4));
                         }
 
-                        if (borders_threshold < MLS.lbound_border_threshold)
-                            borders_threshold = MLS.lbound_border_threshold;
-
-                        if (borders_threshold > MLS.ubound_border_threshold)
-                            borders_threshold = MLS.ubound_border_threshold;
-
-                        // Reduce neighbors_threshold
-                        delta = MLS.population[rand_other_thread].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
-
-                        if (delta > 0){
-                            neighbors_threshold = floor(neighbors_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
-                        } else {
-                            neighbors_threshold = floor(neighbors_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
-                        }
-
-                        if (neighbors_threshold < MLS.lbound_neighbors_threshold)
-                            neighbors_threshold = MLS.lbound_neighbors_threshold;
-
-                        if (neighbors_threshold > MLS.ubound_neighbors_threshold)
-                            neighbors_threshold = MLS.ubound_neighbors_threshold;
                         /*
                         if ((world_rank == 1)&&(thread_id == 0)) {
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: borders_threshold %.4f\n", borders_threshold);
                             fprintf(stderr, "   >> LS_ENERGY || LS_FORWARDING: neighbors_threshold %d\n", neighbors_threshold);
                         }*/
+                        
+                        if (borders_threshold < MLS.lbound_border_threshold)
+                            borders_threshold = MLS.lbound_border_threshold;
+
+                        if (borders_threshold > MLS.ubound_border_threshold)
+                            borders_threshold = MLS.ubound_border_threshold;
+                        
+                        if (neighbors_threshold < MLS.lbound_neighbors_threshold)
+                            neighbors_threshold = MLS.lbound_neighbors_threshold;
+
+                        if (neighbors_threshold > MLS.ubound_neighbors_threshold)
+                            neighbors_threshold = MLS.ubound_neighbors_threshold;
 
                         break;
                     case LS_COVERAGE :
                         // Augment neighbors_threshold
                         delta = MLS.population[rand_other_thread].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
 
-                        if (delta > 0){
-                            neighbors_threshold = floor(neighbors_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                        if (delta != 0) {
+                            prod = alfa * delta;
+                            
+                            if (delta > 0){
+                                neighbors_threshold = floor(neighbors_threshold-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                            } else {
+                                neighbors_threshold = floor(neighbors_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                            }
                         } else {
-                            neighbors_threshold = floor(neighbors_threshold+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]));
+                            neighbors_threshold += ((neighbors_threshold * (alfa / 2) * cpu_mt_generate(MLS.random_states[thread_id])) - (alfa / 4));
                         }
 
                         if (neighbors_threshold < MLS.lbound_neighbors_threshold)
@@ -520,12 +556,21 @@ void* mls_thread(void *data)
                     case LS_TIME :
                         delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay;
 
-                        if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5){
-                            // Reduce max delay
-                            max_delay = max_delay-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                        if (delta != 0) {
+                            prod = alfa * delta;
+                            if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5) {
+                                // Reduce max delay
+                                max_delay = max_delay-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            } else {
+                                // Augment min delay
+                                min_delay = min_delay+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            }
                         } else {
-                            // Augment min delay
-                            min_delay = min_delay+2*prod - 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
+                            if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5) {
+                                max_delay += ((max_delay * (alfa / 2) * cpu_mt_generate(MLS.random_states[thread_id])) - (alfa / 4));
+                            } else {
+                                min_delay += ((min_delay * (alfa / 2) * cpu_mt_generate(MLS.random_states[thread_id])) - (alfa / 4));
+                            }
                         }
 
                         if (min_delay < MLS.lbound_min_delay) min_delay = MLS.lbound_min_delay;
@@ -549,7 +594,7 @@ void* mls_thread(void *data)
                 min_delay, max_delay, borders_threshold, margin_forwarding, neighbors_threshold);
 
             #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG] NS3 command line: %s\n", ns3_command);
+                fprintf(stderr, "[DEBUG][%d][%d] NS3 command line: %s\n", world_rank, thread_id, ns3_command);
             #endif
 
             if (!(fpipe = (FILE*)popen(ns3_command,"r")))

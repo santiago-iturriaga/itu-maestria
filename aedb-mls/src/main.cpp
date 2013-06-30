@@ -141,14 +141,17 @@ int main(int argc, char** argv)
         fprintf(stderr, "   MLS.elite          = %d\n", MLS.elite);
         
         if (MLS.init_func == 0) {
-            fprintf(stderr, "   MLS.init_func           = MLS__REF_SEED\n");
+            fprintf(stderr, "   MLS.init_func      = MLS__REF_SEED\n");
         } else if (MLS.init_func == 1) {
-            fprintf(stderr, "   MLS.init_func           = MLS__COMPROMISE_SEED\n");
+            fprintf(stderr, "   MLS.init_func      = MLS__COMPROMISE_SEED\n");
         } else if (MLS.init_func == 2) {
-            fprintf(stderr, "   MLS.init_func           = MLS__SUBSPACE_BASED\n");
+            fprintf(stderr, "   MLS.init_func      = MLS__SUBSPACE_BASED\n");
         } else if (MLS.init_func == 3) {
-            fprintf(stderr, "   MLS.init_func           = MLS__RANDOM\n");            
+            fprintf(stderr, "   MLS.init_func      = MLS__RANDOM\n");            
         }
+        
+        fprintf(stderr, "   AGA.report_start   = %f\n", AGA.report_start);
+        fprintf(stderr, "   AGA.report_every   = %f\n", AGA.report_every);
         
         fprintf(stderr, "===========================================================\n");
     }
