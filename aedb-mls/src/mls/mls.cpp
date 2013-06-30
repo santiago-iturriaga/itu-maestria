@@ -23,16 +23,6 @@ double INIT_REF_BORDERS = -90;
 double INIT_REF_MARGIN = 0.5;
 double INIT_REF_NEIGH = 12;
 
-/*
-// Articulo
-#define INIT_SOLS_COUNT 3
-double INIT_MIN_DELAY[3] = {0.0927,0.0927,0.4169};
-double INIT_MAX_DELAY[3] = {0.8193,0.9170,0.6144};
-double INIT_BORDERS[3] = {-90.5793,-90.5793,-90.6721};
-double INIT_MARGIN[3] = {0.3923,0.2031,0.075};
-double INIT_NEIGH[3] = {24.6659,21.8288,21.6789};
-*/
-
 // NSGA-II
 #define INIT_SOLS_COUNT 6
 // min_delay	max_delay	borders_threshold	margin_forwarding	neighbors_threshold
@@ -183,6 +173,9 @@ void* mls_thread(void *data)
     pthread_mutex_lock(&MLS.work_type_mutex[thread_id]);
         work_type = MLS.work_type[thread_id];
     pthread_mutex_unlock(&MLS.work_type_mutex[thread_id]);
+
+    int half_simul_runs;
+    half_simul_runs = MLS.simul_runs / 2;
 
     while ((terminate == 0) && (MLS.total_iterations[thread_id] < MLS.max_iterations))
     {
@@ -458,21 +451,21 @@ void* mls_thread(void *data)
             MLS.total_iterations[thread_id]++;
 
             #ifndef NDEBUG
-            fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
-                world_rank, thread_id, thread_id, 
-                MLS.population[thread_id].min_delay, 
-                MLS.population[thread_id].max_delay, 
-                MLS.population[thread_id].borders_threshold, 
-                MLS.population[thread_id].margin_forwarding, 
-                MLS.population[thread_id].neighbors_threshold);
+                fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
+                    world_rank, thread_id, thread_id, 
+                    MLS.population[thread_id].min_delay, 
+                    MLS.population[thread_id].max_delay, 
+                    MLS.population[thread_id].borders_threshold, 
+                    MLS.population[thread_id].margin_forwarding, 
+                    MLS.population[thread_id].neighbors_threshold);
 
-            fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
-                world_rank, thread_id, rand_other_thread, 
-                MLS.population[rand_other_thread].min_delay, 
-                MLS.population[rand_other_thread].max_delay, 
-                MLS.population[rand_other_thread].borders_threshold, 
-                MLS.population[rand_other_thread].margin_forwarding, 
-                MLS.population[rand_other_thread].neighbors_threshold);
+                fprintf(stderr, "[DEBUG][%d][%d] POS=%d %f %f %f %f %d\n", 
+                    world_rank, thread_id, rand_other_thread, 
+                    MLS.population[rand_other_thread].min_delay, 
+                    MLS.population[rand_other_thread].max_delay, 
+                    MLS.population[rand_other_thread].borders_threshold, 
+                    MLS.population[rand_other_thread].margin_forwarding, 
+                    MLS.population[rand_other_thread].neighbors_threshold);
             #endif
 
             float prod = 0.0;
@@ -482,6 +475,10 @@ void* mls_thread(void *data)
                 switch(rand_op){
                     case LS_ENERGY :
                     case LS_FORWARDING :
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] LS_ENERGY && LS_FORWARDING\n", world_rank, thread_id);
+                        #endif
+                    
                         // Reduce borders_threshold
                         delta = MLS.population[rand_other_thread].borders_threshold - MLS.population[thread_id].borders_threshold;
                         
@@ -527,6 +524,10 @@ void* mls_thread(void *data)
 
                         break;
                     case LS_COVERAGE :
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] LS_COVERAGE\n", world_rank, thread_id);
+                        #endif
+                    
                         // Augment neighbors_threshold
                         delta = MLS.population[rand_other_thread].neighbors_threshold - MLS.population[thread_id].neighbors_threshold;
 
@@ -554,10 +555,15 @@ void* mls_thread(void *data)
 
                         break;
                     case LS_TIME :
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] LS_TIME\n", world_rank, thread_id);
+                        #endif
+                    
                         delta = MLS.population[thread_id].max_delay - MLS.population[thread_id].min_delay;
 
                         if (delta != 0) {
                             prod = alfa * delta;
+                            
                             if (cpu_mt_generate(MLS.random_states[thread_id]) < 0.5) {
                                 // Reduce max delay
                                 max_delay = max_delay-2*prod + 3*prod*cpu_mt_generate(MLS.random_states[thread_id]);
@@ -588,39 +594,147 @@ void* mls_thread(void *data)
                 }
             }
 
-            FILE *fpipe;
-
-            sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, MLS.simul_runs,
-                min_delay, max_delay, borders_threshold, margin_forwarding, neighbors_threshold);
-
-            #ifndef NDEBUG
-                fprintf(stderr, "[DEBUG][%d][%d] NS3 command line: %s\n", world_rank, thread_id, ns3_command);
-            #endif
-
-            if (!(fpipe = (FILE*)popen(ns3_command,"r")))
-            {
-                perror("Problems with pipe");
-                exit(EXIT_FAILURE);
-            }
-
             double energy;
             double coverage;
             double nforwardings;
             double time;
 
-            fscanf(fpipe, "%s", ns3_line);
-            energy = atof(ns3_line);
+            #ifndef ENABLE_HALF_SIMUL_PROBE
+                sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, MLS.simul_runs,
+                    min_delay, max_delay, borders_threshold, margin_forwarding, neighbors_threshold);
 
-            fscanf(fpipe, "%s", ns3_line);
-            coverage = atof(ns3_line);
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][%d][%d] NS3 command line: %s\n", world_rank, thread_id, ns3_command);
+                #endif
 
-            fscanf(fpipe, "%s", ns3_line);
-            nforwardings = atof(ns3_line);
+                FILE *fpipe;
 
-            fscanf(fpipe, "%s", ns3_line);
-            time = atof(ns3_line);
+                if (!(fpipe = (FILE*)popen(ns3_command,"r")))
+                {
+                    perror("Problems with pipe");
+                    exit(EXIT_FAILURE);
+                }
 
-            pclose(fpipe);
+                fscanf(fpipe, "%s", ns3_line);
+                energy = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                coverage = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                nforwardings = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                time = atof(ns3_line);
+
+                pclose(fpipe);
+            #else
+                sprintf(ns3_command, "%s %d %d %f %f %f %f %d\n", NS3_BIN, MLS.number_devices, half_simul_runs,
+                    min_delay, max_delay, borders_threshold, margin_forwarding, neighbors_threshold);
+
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][%d][%d] NS3 command line: %s\n", world_rank, thread_id, ns3_command);
+                #endif
+
+                FILE *fpipe;
+                
+                if (!(fpipe = (FILE*)popen(ns3_command,"r")))
+                {
+                    perror("Problems with pipe");
+                    exit(EXIT_FAILURE);
+                }
+
+                double energy_1;
+                double coverage_1;
+                double nforwardings_1;
+                double time_1;
+
+                fscanf(fpipe, "%s", ns3_line);
+                energy_1 = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                coverage_1 = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                nforwardings_1 = atof(ns3_line);
+
+                fscanf(fpipe, "%s", ns3_line);
+                time_1 = atof(ns3_line);
+
+                pclose(fpipe);
+                
+                if ((time_1 < 2) && (energy_1 > 0) && (coverage_1 >= MLS.min_coverage)) {
+                    bool is_non_dominated;
+                    is_non_dominated = (MLS.population[thread_id].energy >= energy_1) ||
+                        (MLS.population[thread_id].coverage <= coverage_1) ||
+                        (MLS.population[thread_id].nforwardings >= nforwardings_1);
+                
+                    if ((is_non_dominated) || (!MLS.elite)) {
+                        FILE *fpipe;
+
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] Second run\n", world_rank, thread_id);
+                        #endif
+
+                        if (!(fpipe = (FILE*)popen(ns3_command,"r")))
+                        {
+                            perror("Problems with pipe");
+                            exit(EXIT_FAILURE);
+                        }
+
+                        double energy_2;
+                        double coverage_2;
+                        double nforwardings_2;
+                        double time_2;
+
+                        fscanf(fpipe, "%s", ns3_line);
+                        energy_2 = atof(ns3_line);
+
+                        fscanf(fpipe, "%s", ns3_line);
+                        coverage_2 = atof(ns3_line);
+
+                        fscanf(fpipe, "%s", ns3_line);
+                        nforwardings_2 = atof(ns3_line);
+
+                        fscanf(fpipe, "%s", ns3_line);
+                        time_2 = atof(ns3_line);
+
+                        pclose(fpipe);
+                        
+                        energy = (energy_1 + energy_2) / 2;
+                        coverage = (coverage_1 + coverage_2) / 2;
+                        nforwardings = (nforwardings_1 + nforwardings_2) / 2;
+                        time = (time_1 + time_2) / 2;
+                        
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] Population accepted\n", world_rank, thread_id);
+                        #endif
+                    } else {
+                        #ifndef NDEBUG
+                            fprintf(stderr, "[DEBUG][%d][%d] Population discarded (dominated)\n", world_rank, thread_id);
+                        #endif
+                        
+                        energy = energy_1;
+                        coverage = coverage_1;
+                        nforwardings = nforwardings_1;
+                        time = time_1;
+                    }
+                } else {
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG][%d][%d] Population discarded (out of bounds)\n", world_rank, thread_id);
+                    #endif
+
+                    energy = energy_1;
+                    coverage = coverage_1;
+                    nforwardings = nforwardings_1;
+                    time = time_1;
+                }
+            #endif
+            
+            #ifndef NDEBUG
+                fprintf(stderr, "[DEBUG][%d][%d] Result: %.3f  %.3f  %.3f  %.3f\n", world_rank, thread_id, 
+                    energy, coverage, nforwardings, time);
+            #endif
 
             if ((time < 2) && (energy > 0) && (coverage >= MLS.min_coverage)) {
                 bool is_non_dominated;
@@ -650,6 +764,10 @@ void* mls_thread(void *data)
                         show_solution(&MLS.population[thread_id]);
                     #endif*/
 
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG][%d][%d] Population accepted and sended to AGA\n", world_rank, thread_id);
+                    #endif
+
                     pthread_mutex_lock(&MLS.mpi_mutex);
                         #ifndef NONMPI
                             #ifdef MPI_MODE_STANDARD
@@ -676,7 +794,15 @@ void* mls_thread(void *data)
                             }
                         #endif
                     pthread_mutex_unlock(&MLS.mpi_mutex);
+                } else {
+                    #ifndef NDEBUG
+                        fprintf(stderr, "[DEBUG][%d][%d] Ignored because discarded (ELITE)\n", world_rank, thread_id);
+                    #endif
                 }
+            } else {
+                #ifndef NDEBUG
+                    fprintf(stderr, "[DEBUG][%d][%d] Ignored because discarded (BOUNDS)\n", world_rank, thread_id);
+                #endif
             }
         }
 

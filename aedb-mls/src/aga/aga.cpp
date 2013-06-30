@@ -35,11 +35,11 @@ void archivers_aga(int seed) {
     struct solution input_buffer[ARCHIVER__MAX_INPUT_BUFFER];
 
     while (finalize == 0) {
-        #ifndef NDEBUG
+        /*#ifndef NDEBUG
             fprintf(stderr, "[DEBUG][AGA] ITERATION %d ==================================\n", iteration);
             fprintf(stderr, "[DEBUG][AGA] Current population = %d\n", AGA.population_count);
             fprintf(stderr, "[DEBUG][AGA] Waiting for a message.\n");
-        #endif
+        #endif*/
 
         //MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &probe_flag, &status);

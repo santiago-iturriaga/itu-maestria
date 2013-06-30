@@ -25,6 +25,8 @@
 #define LS_FORWARDING 2
 #define LS_TIME 3
 
+#define ENABLE_HALF_SIMUL_PROBE
+
 extern int world_rank, world_size;
 extern char machine_name[180];
 

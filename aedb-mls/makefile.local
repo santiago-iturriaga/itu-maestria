@@ -10,6 +10,9 @@ OUTPUT_BIN=mls
 
 all: release
 
+ns3_fake: src/ns3_fake.cpp
+	$(NS3_CX) -g src/ns3_fake.cpp $(NS3_LIBS_LOCAL) -o bin/ns3_fake
+
 ns3: src/ns3.cpp
 	$(NS3_CX) -O3 -DNDEBUG src/ns3.cpp $(NS3_LIBS) -o bin/ns3
 
