@@ -42,20 +42,20 @@ def epsilon_metric(ref_pf, comp_pf):
     assert(len(comp_pf) > 0)
 
     min_distances = []
-    
-    for comp_sol in comp_pf:
+
+    for ref_sol in ref_pf:
         min_sol = None
         min_sol_dist = None
         
-        for ref_sol in ref_pf:
+        for comp_sol in comp_pf:    
             if min_sol is None:
-                min_sol = ref_sol
+                min_sol = comp_sol
                 min_sol_dist = euclidean_distance(ref_sol, comp_sol)
             else:
                 aux_distance = euclidean_distance(ref_sol, comp_sol)
                 
                 if aux_distance < min_sol_dist:
-                    min_sol = ref_sol
+                    min_sol = comp_sol
                     min_sol_dist = aux_distance
 
         min_distances.append(min_sol_dist)
