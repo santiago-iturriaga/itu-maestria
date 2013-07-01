@@ -24,6 +24,7 @@
 
 import sys
 import math
+import re
 
 def euclidean_distance(point_a, point_b):
     distance = 0.0
@@ -108,8 +109,45 @@ def main():
     print(comp_pf_final)
     print()
 
+    comp_pf_index = 0
+    comp_pf = []
+    with open(comp_pf_file + ".err") as f:
+        line = f.readline()
+        
+        while line:
+            if line.startswith("[POPULATION]"):
+                data = line.strip().split("=")
+                assert(len(data)==2)
+                
+                count = int(data[1])
+                print("INDEX={0} COUNT={1}".format(comp_pf_index, count))
+
+                current_pf = []
+
+                for i in range(count):
+                    line = f.readline()
+                    data = line.strip().split(",")
+
+                    energy = float(data[-4])
+                    coverage = float(data[-3])
+                    nforwardings = float(data[-2])
+
+                    if coverage > min_cover:
+                        current_pf.append((energy,coverage,nforwardings))
+                
+                comp_pf.append(current_pf)
+                comp_pf_index = comp_pf_index + 1
+                    
+            line = f.readline()
+
+    print()
+
+    for i in range(len(comp_pf)):
+        epsilon_value = epsilon_metric(best_pf, comp_pf[i])
+        print("[{0}] Epsilon = {1:.2f}".format(i,epsilon_value))
+    
     epsilon_value = epsilon_metric(best_pf, comp_pf_final)
-    print("Epsilon = {0:.2f}".format(epsilon_value))
+    print("Final Epsilon = {0:.2f}".format(epsilon_value))
     
     return 0
 
