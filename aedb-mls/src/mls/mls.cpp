@@ -17,11 +17,19 @@
     #include "../aga/aga.h"
 #endif
 
+// Coverage 17%
 double INIT_REF_MIN_DELAY = 0;
 double INIT_REF_MAX_DELAY = 1;
 double INIT_REF_BORDERS = -90;
 double INIT_REF_MARGIN = 0.5;
 double INIT_REF_NEIGH = 12;
+
+// Coverage 22%
+//double INIT_REF_MIN_DELAY = 0;
+//double INIT_REF_MAX_DELAY = 0.5;
+//double INIT_REF_BORDERS = -85;
+//double INIT_REF_MARGIN = 0.5;
+//double INIT_REF_NEIGH = 12;
 
 // NSGA-II
 
