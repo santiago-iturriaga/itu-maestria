@@ -10,8 +10,8 @@ RESULT_DIR=$HOME_DIR/$TEST_NAME
 cd $HOME_DIR
 mkdir $RESULT_DIR
 
-make clean
-make release
+#make clean
+#make release
 
 SEED=1 #$RANDOM
 
