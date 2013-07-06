@@ -10,8 +10,8 @@ RESULT_DIR=$HOME_DIR/$TEST_NAME
 cd $HOME_DIR
 mkdir $RESULT_DIR
 
-make clean
-make release
+#make clean
+#make release
 
 SEED=1 #$RANDOM
 
@@ -41,7 +41,7 @@ EXECUTIONS=20
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NS3_DIR
 
-for (( e=0; e<$EXECUTIONS; e++ ))
+for (( e=6; e<$EXECUTIONS; e++ ))
 do
     time($MPI_DIR/bin/mpiexec -launcher ssh -launcher-exec oarsh -f $OAR_NODEFILE \
         -np $POPULATIONS -ppn 1 bin/mls $SEED $ITERATIONS $THREADS $SIMULATIONS $DENSITY $RESET \
