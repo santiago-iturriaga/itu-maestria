@@ -22,8 +22,8 @@ RESET=50
 MIN_COVERAGE=20
 ALPHA=0.2
 ELITE=1
-REPORT_START=15
-REPORT_EVERY=110
+REPORT_START=120
+REPORT_EVERY=970
 
 ## Init functions:
 ## 0) MLS__REF_SEED
@@ -41,7 +41,7 @@ EXECUTIONS=10
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NS3_DIR
 
-for (( e=3; e<$EXECUTIONS; e++ ))
+for (( e=0; e<$EXECUTIONS; e++ ))
 do
     time($MPI_DIR/bin/mpiexec -launcher ssh -launcher-exec oarsh -f $OAR_NODEFILE \
         -np $POPULATIONS -ppn 1 bin/mls $SEED $ITERATIONS $THREADS $SIMULATIONS $DENSITY $RESET \
