@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 #
 #  epsilon.py
-#
+#  
 #  Copyright 2013 Unknown <santiago@marga>
-#
+#  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#
+#  
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#
-#
+#  
+#  
 
 import sys
 import math
@@ -34,7 +34,7 @@ def euclidean_distance(point_a, point_b):
 
     for coord in range(dimension):
         distance = distance + pow(point_a[coord]-point_b[coord],2)
-
+    
     return math.sqrt(distance)
 
 def epsilon_metric(ref_pf, comp_pf):
@@ -43,18 +43,17 @@ def epsilon_metric(ref_pf, comp_pf):
 
     min_distances = []
 
-    for comp_sol in comp_pf:
-    
+    for ref_sol in ref_pf:
         min_sol = None
         min_sol_dist = None
-
-        for ref_sol in ref_pf:
+        
+        for comp_sol in comp_pf:    
             if min_sol is None:
-                min_sol = ref_sol
+                min_sol = comp_sol
                 min_sol_dist = euclidean_distance(ref_sol, comp_sol)
             else:
                 aux_distance = euclidean_distance(ref_sol, comp_sol)
-
+                
                 if aux_distance < min_sol_dist:
                     min_sol = comp_sol
                     min_sol_dist = aux_distance
@@ -67,7 +66,7 @@ def main():
     if len(sys.argv) != 5:
         print("[ERROR] Usage: {0} <best PF> <computed PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
         exit(-1)
-
+    
     best_pf_file = sys.argv[1]
     comp_pf_file = sys.argv[2]
     num_exec = int(sys.argv[3])
@@ -103,7 +102,7 @@ def main():
 
     for e in range(num_exec):
         comp_pf_final = []
-
+        
         with open(comp_pf_file + "." + str(e) + ".out") as f:
             for line in f:
                 if len(line.strip()) > 0:
@@ -128,12 +127,12 @@ def main():
         with open(comp_pf_file + "." + str(e) + ".err") as f:
             print(comp_pf_file + "." + str(e) + ".err")
             line = f.readline()
-
+            
             while line:
                 if line.startswith("[POPULATION]"):
                     data = line.strip().split("=")
                     assert(len(data)==2)
-
+                    
                     count = int(data[1])
                     nd_pf.append(count)
                     #print("INDEX={0} COUNT={1}".format(comp_pf_index, count))
@@ -150,10 +149,10 @@ def main():
 
                         if coverage > min_cover:
                             current_pf.append((energy,coverage,nforwardings))
-
+                    
                     comp_pf.append(current_pf)
                     #comp_pf_index = comp_pf_index + 1
-
+                        
                 line = f.readline()
 
         #print()
@@ -163,12 +162,12 @@ def main():
             #print("[{0}] Epsilon = {1:.2f}".format(i,epsilon_value))
             epsilons[i].append(epsilon_value)
             num_sols_pf[i].append(nd_pf[i])
-
+        
         epsilon_value = epsilon_metric(best_pf, comp_pf_final)
         #print("Final Epsilon = {0:.2f}".format(epsilon_value))
         epsilons[len(comp_pf)-1].append(epsilon_value)
         num_sols_pf[len(comp_pf)-1].append(len(comp_pf_final))
-
+    
     print("   Average epsilon, Average ND")
     for i in range(27):
         sum_i = 0
@@ -179,9 +178,9 @@ def main():
 
         if len(epsilons[i]) > 0 and len(num_sols_pf[i]):
             print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(epsilons[i]),sum_pf/len(num_sols_pf[i])))
-
+    
     #print(epsilons)
-
+    
     return 0
 
 if __name__ == '__main__':
