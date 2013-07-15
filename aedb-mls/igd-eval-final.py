@@ -78,11 +78,11 @@ def main():
     num_exec = int(sys.argv[3])
     min_cover = float(sys.argv[4])
 
-    print("Best PF file    : {0}".format(best_pf_file))
-    print("Computed PF file: {0}".format(comp_pf_file))
-    print("Num. executions : {0}".format(num_exec))
-    print("Min. coverage   : {0}".format(min_cover))
-    print()
+    #print("Best PF file    : {0}".format(best_pf_file))
+    #print("Computed PF file: {0}".format(comp_pf_file))
+    #print("Num. executions : {0}".format(num_exec))
+    #print("Min. coverage   : {0}".format(min_cover))
+    #print()
 
     best_pf = []
     with open(best_pf_file) as f:
@@ -94,17 +94,8 @@ def main():
                 if float(data[1]) >= min_cover:
                     best_pf.append((float(data[0]),float(data[1]),float(data[2])))
 
-    #print("Best PF [count={0}]".format(len(best_pf)))
-    #print(best_pf)
-    #print()
-
+    igd_sum = 0.0
     igd_list = []
-    for i in range(30):
-        igd_list.append([])
-
-    num_sols_pf = []
-    for i in range(30):
-        num_sols_pf.append([])
 
     for e in range(num_exec):
         comp_pf_final = []
@@ -123,66 +114,17 @@ def main():
                             if coverage > min_cover:
                                 comp_pf_final.append((energy,coverage,nforwardings))
 
-        #print("Computed PF [count={0}]".format(len(comp_pf_final)))
-        #print(comp_pf_final)
-        #print()
-
-        #comp_pf_index = 0
-        comp_pf = []
-        nd_pf = []
-        with open(comp_pf_file + "." + str(e) + ".err") as f:
-            print(comp_pf_file + "." + str(e) + ".err")
-            line = f.readline()
-
-            while line:
-                if line.startswith("[POPULATION]"):
-                    data = line.strip().split("=")
-                    assert(len(data)==2)
-
-                    count = int(data[1])
-                    nd_pf.append(count)
-                    #print("INDEX={0} COUNT={1}".format(comp_pf_index, count))
-
-                    current_pf = []
-
-                    for i in range(count):
-                        line = f.readline()
-                        data = line.strip().split(",")
-
-                        energy = float(data[-4])
-                        coverage = float(data[-3])
-                        nforwardings = float(data[-2])
-
-                        if coverage > min_cover:
-                            current_pf.append((energy,coverage,nforwardings))
-
-                    comp_pf.append(current_pf)
-                    #comp_pf_index = comp_pf_index + 1
-
-                line = f.readline()
-
-        #print()
-
-        for i in range(len(comp_pf)):
-            igd_value = igd(best_pf, comp_pf[i])
-            igd_list[i].append(igd_value)
-            num_sols_pf[i].append(nd_pf[i])
-
         igd_value = igd(best_pf, comp_pf_final)
-        for i in range(len(comp_pf),30):
-            igd_list[i].append(igd_value)
-            num_sols_pf[i].append(len(comp_pf_final))
+        igd_list.append(igd_value)
+        igd_sum = igd_sum + igd_value
 
-    print("   Average igd, Average ND")
-    for i in range(30):
-        sum_i = 0
-        for j in range(len(igd_list[i])): sum_i = sum_i + igd_list[i][j]
+    igd_average = igd_sum / len(igd_list)
+    
+    igd_sqsum = 0.0
+    for i in igd_list: igd_sqsum = igd_sqsum + pow(i-igd_average,2)
+    igd_stdev = math.sqrt(igd_sqsum/(len(igd_list)-1))
 
-        sum_pf = 0
-        for j in range(len(num_sols_pf[i])): sum_pf = sum_pf + num_sols_pf[i][j]
-
-        if len(igd_list[i]) > 0 and len(num_sols_pf[i]):
-            print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(igd_list[i]),sum_pf/len(num_sols_pf[i])))
+    print("{0:.4f} {1:.4f}".format(igd_average,igd_stdev))
 
     return 0
 

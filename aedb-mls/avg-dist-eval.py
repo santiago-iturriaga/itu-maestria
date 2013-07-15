@@ -37,6 +37,27 @@ def euclidean_distance(point_a, point_b):
 
     return math.sqrt(distance)
 
+def dominancia(sol_a, sol_b):
+    assert(len(sol_a)==len(sol_b))
+
+    if sol_a[0] <= sol_b[0] and sol_a[1] >= sol_b[1] and sol_a[2] <= sol_b[2]:
+        return 1 # domina
+    elif sol_a[0] >= sol_b[0] and sol_a[1] <= sol_b[1] and sol_a[2] >= sol_b[2]:
+        return -1 # es dominado
+    else:
+        return 0 # indeterminado
+
+def tipo_solucion(sol_a, ref_pf):
+    for sol_b in ref_pf:
+        d = dominancia(sol_a, sol_b)
+        
+        if d == 1:
+            return 1
+        elif d == -1:
+            return -1
+    
+    return 0
+
 def closest_point(p1, list_p):
     min_sol = None
     min_sol_dist = None
@@ -54,19 +75,21 @@ def closest_point(p1, list_p):
 
     return min_sol_dist
 
-def igd(pf, approx_pf):
-    #print("PF:")
-    #print(pf)
-    #print("Approx PF:")
-    #print(approx_pf)
-    
+def avg_dist_metric(pf, approx_pf):   
     partial_sum = 0
     
     for pf_s in pf:
         d = closest_point(pf_s, approx_pf)
-        partial_sum = partial_sum + pow(d,2)
+        t_sol = tipo_solucion(pf_s, approx_pf)
         
-    return math.sqrt(partial_sum) / len(pf)
+        if t_sol == 1: # La solución del MOEA domina a las de MLS
+            #print("domina: {0}".format(pow(d,2)))
+            partial_sum = partial_sum + d
+        elif t_sol == -1: # La solución del MOEA es dominada por las de MLS
+            #print("es dominada: -{0}".format(pow(d,2)))
+            partial_sum = partial_sum - d
+        
+    return partial_sum / len(pf)
 
 def main():
     if len(sys.argv) != 5:
@@ -164,16 +187,19 @@ def main():
         #print()
 
         for i in range(len(comp_pf)):
-            igd_value = igd(best_pf, comp_pf[i])
+            igd_value = avg_dist_metric(best_pf, comp_pf[i])
             igd_list[i].append(igd_value)
             num_sols_pf[i].append(nd_pf[i])
 
-        igd_value = igd(best_pf, comp_pf_final)
+        igd_value = avg_dist_metric(best_pf, comp_pf_final)
+        #igd_list[len(comp_pf)-1].append(igd_value)
+        #num_sols_pf[len(comp_pf)-1].append(len(comp_pf_final))
+        
         for i in range(len(comp_pf),30):
             igd_list[i].append(igd_value)
             num_sols_pf[i].append(len(comp_pf_final))
 
-    print("   Average igd, Average ND")
+    print("   Average distance, Average ND")
     for i in range(30):
         sum_i = 0
         for j in range(len(igd_list[i])): sum_i = sum_i + igd_list[i][j]
@@ -183,6 +209,7 @@ def main():
 
         if len(igd_list[i]) > 0 and len(num_sols_pf[i]):
             print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(igd_list[i]),sum_pf/len(num_sols_pf[i])))
+            #print(igd_list[i])
 
     return 0
 

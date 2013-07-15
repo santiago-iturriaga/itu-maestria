@@ -26,6 +26,27 @@ import sys
 import math
 import re
 
+def dominancia(sol_a, sol_b):
+    assert(len(sol_a)==len(sol_b))
+
+    if sol_a[0] <= sol_b[0] and sol_a[1] >= sol_b[1] and sol_a[2] <= sol_b[2]:
+        return 1 # domina
+    elif sol_a[0] >= sol_b[0] and sol_a[1] <= sol_b[1] and sol_a[2] >= sol_b[2]:
+        return -1 # es dominado
+    else:
+        return 0 # indeterminado
+
+def tipo_solucion(sol_a, ref_pf):
+    for sol_b in ref_pf:
+        d = dominancia(sol_a, sol_b)
+        
+        if d == 1:
+            return 1
+        elif d == -1:
+            return -1
+    
+    return 0
+
 def euclidean_distance(point_a, point_b):
     distance = 0.0
 
@@ -37,36 +58,78 @@ def euclidean_distance(point_a, point_b):
 
     return math.sqrt(distance)
 
-def closest_point(p1, list_p):
-    min_sol = None
-    min_sol_dist = None
+def epsilon_metric(ref_pf, comp_pf):
+    assert(len(ref_pf) > 0)
+    assert(len(comp_pf) > 0)
 
-    for p2 in list_p:
-        if min_sol is None:
-            min_sol = p2
-            min_sol_dist = euclidean_distance(p1, p2)
+    min_distances = []
+
+    for comp_sol in comp_pf:
+        if tipo_solucion(comp_sol, ref_pf) == 1:
+            # Agrego la min distancia negativa
+            min_sol = None
+            min_sol_dist = None
+
+            for ref_sol in ref_pf:
+                if min_sol is None:
+                    min_sol = ref_sol
+                    min_sol_dist = euclidean_distance(ref_sol, comp_sol)
+                else:
+                    aux_distance = euclidean_distance(ref_sol, comp_sol)
+
+                    if aux_distance < min_sol_dist:
+                        min_sol = comp_sol
+                        min_sol_dist = aux_distance
+                        
+            min_distances.append(-1*min_sol_dist)
+        elif tipo_solucion(comp_sol, ref_pf) == 0:
+            # Nada para hacer
+            pass
         else:
-            aux_distance = euclidean_distance(p1, p2)
+            # Agrego la min distancia positiva
+            min_sol = None
+            min_sol_dist = None
 
-            if aux_distance < min_sol_dist:
-                min_sol = p2
-                min_sol_dist = aux_distance
+            for ref_sol in ref_pf:
+                if min_sol is None:
+                    min_sol = ref_sol
+                    min_sol_dist = euclidean_distance(ref_sol, comp_sol)
+                else:
+                    aux_distance = euclidean_distance(ref_sol, comp_sol)
 
-    return min_sol_dist
+                    if aux_distance < min_sol_dist:
+                        min_sol = comp_sol
+                        min_sol_dist = aux_distance
 
-def igd(pf, approx_pf):
-    #print("PF:")
-    #print(pf)
-    #print("Approx PF:")
-    #print(approx_pf)
-    
-    partial_sum = 0
-    
-    for pf_s in pf:
-        d = closest_point(pf_s, approx_pf)
-        partial_sum = partial_sum + pow(d,2)
-        
-    return math.sqrt(partial_sum) / len(pf)
+            min_distances.append(min_sol_dist)
+
+    #print(min_distances)
+    return max(min_distances)
+
+def epsilon_metric2(ref_pf, comp_pf):
+    assert(len(ref_pf) > 0)
+    assert(len(comp_pf) > 0)
+
+    min_distances = []
+
+    for comp_sol in comp_pf:
+        min_sol = None
+        min_sol_dist = None
+
+        for ref_sol in ref_pf:
+            if min_sol is None:
+                min_sol = ref_sol
+                min_sol_dist = euclidean_distance(ref_sol, comp_sol)
+            else:
+                aux_distance = euclidean_distance(ref_sol, comp_sol)
+
+                if aux_distance < min_sol_dist:
+                    min_sol = comp_sol
+                    min_sol_dist = aux_distance
+
+        min_distances.append(min_sol_dist)
+
+    return max(min_distances)
 
 def main():
     if len(sys.argv) != 5:
@@ -98,9 +161,9 @@ def main():
     #print(best_pf)
     #print()
 
-    igd_list = []
+    epsilons = []
     for i in range(30):
-        igd_list.append([])
+        epsilons.append([])
 
     num_sols_pf = []
     for i in range(30):
@@ -164,25 +227,28 @@ def main():
         #print()
 
         for i in range(len(comp_pf)):
-            igd_value = igd(best_pf, comp_pf[i])
-            igd_list[i].append(igd_value)
+            epsilon_value = epsilon_metric(best_pf, comp_pf[i])
+            #print("[{0}] Epsilon = {1:.2f}".format(i,epsilon_value))
+            epsilons[i].append(epsilon_value)
             num_sols_pf[i].append(nd_pf[i])
 
-        igd_value = igd(best_pf, comp_pf_final)
+        epsilon_value = epsilon_metric(best_pf, comp_pf_final)
         for i in range(len(comp_pf),30):
-            igd_list[i].append(igd_value)
+            epsilons[i].append(epsilon_value)
             num_sols_pf[i].append(len(comp_pf_final))
 
-    print("   Average igd, Average ND")
+    print("   Average epsilon, Average ND")
     for i in range(30):
         sum_i = 0
-        for j in range(len(igd_list[i])): sum_i = sum_i + igd_list[i][j]
+        for j in range(len(epsilons[i])): sum_i = sum_i + epsilons[i][j]
 
         sum_pf = 0
         for j in range(len(num_sols_pf[i])): sum_pf = sum_pf + num_sols_pf[i][j]
 
-        if len(igd_list[i]) > 0 and len(num_sols_pf[i]):
-            print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(igd_list[i]),sum_pf/len(num_sols_pf[i])))
+        if len(epsilons[i]) > 0 and len(num_sols_pf[i]):
+            print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(epsilons[i]),sum_pf/len(num_sols_pf[i])))
+
+    #print(epsilons)
 
     return 0
 
