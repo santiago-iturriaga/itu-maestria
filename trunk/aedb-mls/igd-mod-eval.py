@@ -37,6 +37,27 @@ def euclidean_distance(point_a, point_b):
 
     return math.sqrt(distance)
 
+def dominancia(sol_a, sol_b):
+    assert(len(sol_a)==len(sol_b))
+
+    if sol_a[0] <= sol_b[0] and sol_a[1] >= sol_b[1] and sol_a[2] <= sol_b[2]:
+        return 1 # domina
+    elif sol_a[0] >= sol_b[0] and sol_a[1] <= sol_b[1] and sol_a[2] >= sol_b[2]:
+        return -1 # es dominado
+    else:
+        return 0 # indeterminado
+
+def tipo_solucion(sol_a, ref_pf):
+    for sol_b in ref_pf:
+        d = dominancia(sol_a, sol_b)
+        
+        if d == 1:
+            return 1
+        elif d == -1:
+            return -1
+    
+    return 0
+
 def closest_point(p1, list_p):
     min_sol = None
     min_sol_dist = None
@@ -64,9 +85,20 @@ def igd(pf, approx_pf):
     
     for pf_s in pf:
         d = closest_point(pf_s, approx_pf)
-        partial_sum = partial_sum + pow(d,2)
+        t_sol = tipo_solucion(pf_s, approx_pf)
         
-    return math.sqrt(partial_sum) / len(pf)
+        if t_sol == 1: # La solución del MOEA domina a las de MLS
+            #print("domina: {0}".format(pow(d,2)))
+            partial_sum = partial_sum + pow(d,2)
+        elif t_sol == -1: # La solución del MOEA es dominada por las de MLS
+            #print("es dominada: -{0}".format(pow(d,2)))
+            partial_sum = partial_sum - pow(d,2)
+        
+    #print(partial_sum)
+    if partial_sum >= 0:
+        return math.sqrt(partial_sum) / len(pf)
+    else:
+        return -1 * math.sqrt(-1 * partial_sum) / len(pf)
 
 def main():
     if len(sys.argv) != 5:

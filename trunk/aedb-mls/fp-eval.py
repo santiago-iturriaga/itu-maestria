@@ -44,10 +44,10 @@ def main():
     num_exec = int(sys.argv[2])
     min_cover = float(sys.argv[3])
 
-    print("Computed PF file: {0}".format(comp_pf_file))
-    print("Num. executions : {0}".format(num_exec))
-    print("Min. coverage   : {0}".format(min_cover))
-    print()
+    #print("Computed PF file: {0}".format(comp_pf_file))
+    #print("Num. executions : {0}".format(num_exec))
+    #print("Min. coverage   : {0}".format(min_cover))
+    #print()
 
     comp_pf_final = []
     num_pf = []
@@ -96,20 +96,18 @@ def main():
         if domination[i]==0:
             global_pf.append(comp_pf_final[i])
 
-    print("Computed PF [count={0}]".format(len(comp_pf_final)))
-    #print(comp_pf_final)
-    for i in comp_pf_final: print("{0:.4f} {1:.4f} {2:.4f}".format(i[0],i[1],i[2]))
-    print()
-    print("Computed PF [count={0}]".format(len(global_pf)))
-    #print(global_pf)
+    #print("Computed PF [count={0}]".format(len(comp_pf_final)))
+    #for i in comp_pf_final: print("{0:.4f} {1:.4f} {2:.4f}".format(i[0],i[1],i[2]))
+    #print()
+    #print("Computed PF [count={0}]".format(len(global_pf)))
     for i in global_pf: print("{0:.4f} {1:.4f} {2:.4f}".format(i[0],i[1],i[2]))
-    print()
-    print("Number of solutions:")
-    print(num_pf)
-    sum_num_pf=0
-    for s in num_pf: sum_num_pf = sum_num_pf + s
-    print("Average={0}".format(sum_num_pf / len(num_pf)))
-    print()
+    #print()
+    #print("Number of solutions:")
+    #print(num_pf)
+    #sum_num_pf=0
+    #for s in num_pf: sum_num_pf = sum_num_pf + s
+    #print("Average={0}".format(sum_num_pf / len(num_pf)))
+    #print()
     
     return 0
 
