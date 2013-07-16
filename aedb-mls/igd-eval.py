@@ -193,7 +193,7 @@ def main():
         for j in range(len(num_sols_pf[i])): sum_pf = sum_pf + num_sols_pf[i][j]
 
         if len(igd_list[i]) > 0 and len(num_sols_pf[i]):
-            print("[{0}] {1:.4f} {2:.4f}".format(i,(sum_i/len(igd_list[i]))/moea_igd,sum_pf/len(num_sols_pf[i])))
+            print("{0:.4f} {1:.4f}".format((sum_i/len(igd_list[i]))/moea_igd,sum_pf/len(num_sols_pf[i])))
 
     return 0
 

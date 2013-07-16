@@ -109,11 +109,11 @@ def main():
     num_exec = int(sys.argv[3])
     min_cover = float(sys.argv[4])
 
-    print("Best PF file    : {0}".format(best_pf_file))
-    print("Computed PF file: {0}".format(comp_pf_file))
-    print("Num. executions : {0}".format(num_exec))
-    print("Min. coverage   : {0}".format(min_cover))
-    print()
+    #print("Best PF file    : {0}".format(best_pf_file))
+    #print("Computed PF file: {0}".format(comp_pf_file))
+    #print("Num. executions : {0}".format(num_exec))
+    #print("Min. coverage   : {0}".format(min_cover))
+    #print()
 
     best_pf = []
     with open(best_pf_file) as f:
