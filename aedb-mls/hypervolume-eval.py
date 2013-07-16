@@ -210,11 +210,16 @@ def main():
     inverted_pf = invertedFront(normalized_pf)
     moea_hv = hypervolume(inverted_pf,len(inverted_pf), len(inverted_pf[0]))
 
-    hvolumes_sum = 0.0
-    hvolumes = []
+    hv_list = []
+    for i in range(30):
+        hv_list.append([])
+
+    num_sols_pf = []
+    for i in range(30):
+        num_sols_pf.append([])
 
     for e in range(num_exec):
-        comp_pf = []
+        comp_pf_final = []
 
         with open(comp_pf_file + "." + str(e) + ".out") as f:
             for line in f:
@@ -228,22 +233,66 @@ def main():
                             nforwardings = float(data[-2])
 
                             if coverage > min_cover:
-                                comp_pf.append((energy,1/coverage,nforwardings))
+                                comp_pf_final.append((energy,1/coverage,nforwardings))
 
-        normalized_pf = getNormalizedFront(comp_pf, maxValues, minValues)
+        comp_pf = []
+        nd_pf = []
+        with open(comp_pf_file + "." + str(e) + ".err") as f:
+            print(comp_pf_file + "." + str(e) + ".err")
+            line = f.readline()
+
+            while line:
+                if line.startswith("[POPULATION]"):
+                    data = line.strip().split("=")
+                    assert(len(data)==2)
+
+                    count = int(data[1])
+                    nd_pf.append(count)
+
+                    current_pf = []
+
+                    for i in range(count):
+                        line = f.readline()
+                        data = line.strip().split(",")
+
+                        energy = float(data[-4])
+                        coverage = float(data[-3])
+                        nforwardings = float(data[-2])
+
+                        if coverage > min_cover:
+                            current_pf.append((energy,1/coverage,nforwardings))
+
+                    comp_pf.append(current_pf)
+
+                line = f.readline()
+
+        for i in range(len(comp_pf)):
+            normalized_pf = getNormalizedFront(comp_pf[i], maxValues, minValues)
+            inverted_pf = invertedFront(normalized_pf)
+            hv_value = hypervolume(inverted_pf,len(inverted_pf), len(inverted_pf[0]))
+            
+            hv_list[i].append(hv_value)
+            num_sols_pf[i].append(nd_pf[i])
+
+        normalized_pf = getNormalizedFront(comp_pf_final, maxValues, minValues)
         inverted_pf = invertedFront(normalized_pf)
-        hv = hypervolume(inverted_pf,len(inverted_pf), len(inverted_pf[0]))
+        hv_value = hypervolume(inverted_pf,len(inverted_pf), len(inverted_pf[0]))
         
-        hvolumes.append(hv)
-        hvolumes_sum = hvolumes_sum + hv
+        for i in range(len(comp_pf),30):
+            hv_list[i].append(hv_value)
+            num_sols_pf[i].append(len(comp_pf_final))
 
-    hvolumes_average = hvolumes_sum / len(hvolumes)
-    
-    hvolumes_sqsum = 0.0
-    for i in hvolumes: hvolumes_sqsum = hvolumes_sqsum + pow(i-hvolumes_average,2)
-    hvolumes_stdev = math.sqrt(hvolumes_sqsum/(len(hvolumes)-1))
+    print("   Average hv, Average ND")
+    for i in range(30):
+        sum_i = 0
+        for j in range(len(hv_list[i])): sum_i = sum_i + hv_list[i][j]
 
-    print("{0:.4f} {1:.4f}".format(hvolumes_average/moea_hv,hvolumes_stdev/moea_hv))
+        sum_pf = 0
+        for j in range(len(num_sols_pf[i])): sum_pf = sum_pf + num_sols_pf[i][j]
+
+        if len(hv_list[i]) > 0 and len(num_sols_pf[i]):
+            print("{0:.4f} {1:.1f}".format((sum_i/len(hv_list[i]))/moea_hv,sum_pf/len(num_sols_pf[i])))
+
 
     return 0
 
