@@ -26,6 +26,8 @@ import sys
 import math
 import re
 
+obj = (0,1,0) # min, max, min
+
 def euclidean_distance(point_a, point_b):
     distance = 0.0
 
@@ -44,7 +46,6 @@ def epsilon_metric(ref_pf, comp_pf):
     min_distances = []
 
     for comp_sol in comp_pf:
-    
         min_sol = None
         min_sol_dist = None
 
@@ -62,6 +63,41 @@ def epsilon_metric(ref_pf, comp_pf):
         min_distances.append(min_sol_dist)
 
     return max(min_distances)
+
+def epsilon_jmetal_metric(ref_pf, comp_pf):
+    assert(len(ref_pf) > 0)
+    assert(len(comp_pf) > 0)
+
+    eps = None
+
+    for comp_sol in comp_pf:
+        eps_j = None
+        
+        for ref_sol in ref_pf:
+            assert(len(comp_sol)==len(ref_sol))
+            
+            for k in range(len(comp_sol)):
+                if obj[k]==0:
+                    eps_temp = ref_sol[k]-comp_sol[k]
+                else:
+                    eps_temp = comp_sol[k]-ref_sol[k]
+            
+                if k==0:
+                    eps_k=eps_temp
+                elif eps_k < eps_temp:
+                    eps_k=eps_temp
+                    
+            if eps_j is None:
+                eps_j = eps_k
+            elif eps_j > eps_k:
+                eps_j = eps_k
+                
+        if eps is None:
+            eps = eps_j
+        elif eps < eps_j:
+            eps = eps_j
+
+    return eps
 
 def main():
     if len(sys.argv) != 5:
@@ -109,6 +145,7 @@ def main():
                             if coverage > min_cover:
                                 comp_pf_final.append((energy,coverage,nforwardings))
 
+        #epsilon_value = epsilon_jmetal_metric(best_pf, comp_pf_final)
         epsilon_value = epsilon_metric(best_pf, comp_pf_final)
         epsilons.append(epsilon_value)
         epsilon_sum = epsilon_sum + epsilon_value
