@@ -189,7 +189,7 @@ def main():
                 assert(len(data)==3)
 
                 if float(data[1]) >= min_cover:
-                    true_pf.append((float(data[0]),float(data[1])*-1,float(data[2])))
+                    true_pf.append((float(data[0]),1/float(data[1]),float(data[2])))
 
     maxValues = getMaxValues(true_pf)
     minValues = getMinValues(true_pf)
@@ -215,7 +215,7 @@ def main():
                             nforwardings = float(data[-2])
 
                             if coverage > min_cover:
-                                comp_pf.append((energy,coverage*-1,nforwardings))
+                                comp_pf.append((energy,1/coverage,nforwardings))
 
         #print("==================================================")
         #print(comp_pf)
