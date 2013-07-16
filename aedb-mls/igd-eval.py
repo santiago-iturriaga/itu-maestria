@@ -69,16 +69,18 @@ def igd(pf, approx_pf):
     return math.sqrt(partial_sum) / len(pf)
 
 def main():
-    if len(sys.argv) != 5:
-        print("[ERROR] Usage: {0} <best PF> <computed PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
+    if len(sys.argv) != 6:
+        print("[ERROR] Usage: {0} <best PF> <moea PF> <computed PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
         exit(-1)
 
     best_pf_file = sys.argv[1]
-    comp_pf_file = sys.argv[2]
-    num_exec = int(sys.argv[3])
-    min_cover = float(sys.argv[4])
+    modea_pf_file = sys.argv[2]
+    comp_pf_file = sys.argv[3]
+    num_exec = int(sys.argv[4])
+    min_cover = float(sys.argv[5])
 
     print("Best PF file    : {0}".format(best_pf_file))
+    print("MOEA PF file    : {0}".format(modea_pf_file))
     print("Computed PF file: {0}".format(comp_pf_file))
     print("Num. executions : {0}".format(num_exec))
     print("Min. coverage   : {0}".format(min_cover))
@@ -94,9 +96,18 @@ def main():
                 if float(data[1]) >= min_cover:
                     best_pf.append((float(data[0]),float(data[1]),float(data[2])))
 
-    #print("Best PF [count={0}]".format(len(best_pf)))
-    #print(best_pf)
-    #print()
+    moea_pf = []
+
+    with open(modea_pf_file) as f:
+        for line in f:
+            if len(line.strip()) > 0:
+                data = line.strip().split(" ")
+                assert(len(data)==3)
+
+                if float(data[1]) >= min_cover:
+                    moea_pf.append((float(data[0]),float(data[1]),float(data[2])))
+
+    moea_igd = igd(best_pf, moea_pf)
 
     igd_list = []
     for i in range(30):
@@ -182,7 +193,7 @@ def main():
         for j in range(len(num_sols_pf[i])): sum_pf = sum_pf + num_sols_pf[i][j]
 
         if len(igd_list[i]) > 0 and len(num_sols_pf[i]):
-            print("[{0}] {1:.4f} {2:.4f}".format(i,sum_i/len(igd_list[i]),sum_pf/len(num_sols_pf[i])))
+            print("[{0}] {1:.4f} {2:.4f}".format(i,(sum_i/len(igd_list[i]))/moea_igd,sum_pf/len(num_sols_pf[i])))
 
     return 0
 

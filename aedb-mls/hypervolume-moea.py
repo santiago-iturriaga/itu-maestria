@@ -174,10 +174,10 @@ def main():
     comp_pf_file = sys.argv[2]
     min_cover = float(sys.argv[3])
 
-    print("True PF file    : {0}".format(true_pf_file))
-    print("Computed PF file: {0}".format(comp_pf_file))
-    print("Min. coverage   : {0}".format(min_cover))
-    print()
+    #print("True PF file    : {0}".format(true_pf_file))
+    #print("Computed PF file: {0}".format(comp_pf_file))
+    #print("Min. coverage   : {0}".format(min_cover))
+    #print()
 
     true_pf = []
     with open(true_pf_file) as f:

@@ -175,11 +175,11 @@ def main():
     num_exec = int(sys.argv[3])
     min_cover = float(sys.argv[4])
 
-    print("True PF file    : {0}".format(true_pf_file))
-    print("Computed PF file: {0}".format(comp_pf_file))
-    print("Num. executions : {0}".format(num_exec))
-    print("Min. coverage   : {0}".format(min_cover))
-    print()
+    #print("True PF file    : {0}".format(true_pf_file))
+    #print("Computed PF file: {0}".format(comp_pf_file))
+    #print("Num. executions : {0}".format(num_exec))
+    #print("Min. coverage   : {0}".format(min_cover))
+    #print()
 
     true_pf = []
     with open(true_pf_file) as f:
