@@ -81,12 +81,9 @@ CLASSWEIGHT     1
 #NODECFG[node07.cluster.fing] PARTITION=general
 #NODECFG[node08.cluster.fing] PARTITION=general
 #NODECFG[node09.cluster.fing] PARTITION=general
-
-NODECFG[node20.cluster.fing] PARTITION=sys
-
+#NODECFG[node20.cluster.fing] PARTITION=sys
 #NODECFG[node21.cluster.fing] PARTITION=general
-
-NODECFG[node22.cluster.fing] PARTITION=sys
+#NODECFG[node22.cluster.fing] PARTITION=sys
 
 # fileserver (/home)
 NODECFG[node23.cluster.fing] PARTITION=sys
