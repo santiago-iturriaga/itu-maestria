@@ -1,0 +1,51 @@
+Best PF file    : best-pf-d200-c60.pf
+MOEA PF file    : best_pf/All3Algs200dev-c60.pf
+Computed PF file: mls-eval-d200-c60/mls-eval-d200-c60
+Num. executions : 14
+Min. coverage   : 30.0
+
+mls-eval-d200-c60/mls-eval-d200-c60.0.err
+mls-eval-d200-c60/mls-eval-d200-c60.1.err
+mls-eval-d200-c60/mls-eval-d200-c60.2.err
+mls-eval-d200-c60/mls-eval-d200-c60.3.err
+mls-eval-d200-c60/mls-eval-d200-c60.4.err
+mls-eval-d200-c60/mls-eval-d200-c60.5.err
+mls-eval-d200-c60/mls-eval-d200-c60.6.err
+mls-eval-d200-c60/mls-eval-d200-c60.7.err
+mls-eval-d200-c60/mls-eval-d200-c60.8.err
+mls-eval-d200-c60/mls-eval-d200-c60.9.err
+mls-eval-d200-c60/mls-eval-d200-c60.10.err
+mls-eval-d200-c60/mls-eval-d200-c60.11.err
+mls-eval-d200-c60/mls-eval-d200-c60.12.err
+mls-eval-d200-c60/mls-eval-d200-c60.13.err
+   Average igd, Average ND
+6.1319 3.0000
+2.2633 20.5714
+1.8212 22.6429
+1.7025 23.5714
+1.6850 24.4286
+1.6784 24.9286
+1.5869 24.8571
+1.5238 25.8571
+1.5095 25.4286
+1.5154 25.3571
+1.5165 26.0000
+1.4872 27.0714
+1.4669 27.4286
+1.4570 27.8571
+1.4405 28.0000
+1.4472 28.2857
+1.4161 29.2143
+1.3789 29.3571
+1.3617 29.5000
+1.3604 29.3571
+1.3610 30.1429
+1.3885 30.7143
+1.3844 30.8571
+1.3825 31.0000
+1.3825 31.0000
+1.3825 31.0000
+1.3825 31.0000
+1.3825 31.0000
+1.3825 31.0000
+1.3825 31.0000

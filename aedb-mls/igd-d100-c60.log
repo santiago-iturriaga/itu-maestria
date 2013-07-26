@@ -1,0 +1,57 @@
+Best PF file    : best-pf-d100-c60.pf
+MOEA PF file    : best_pf/All3Algs100dev-c60.pf
+Computed PF file: mls-eval-d100-c60/mls-eval-d100-c15
+Num. executions : 20
+Min. coverage   : 15.0
+
+mls-eval-d100-c60/mls-eval-d100-c15.0.err
+mls-eval-d100-c60/mls-eval-d100-c15.1.err
+mls-eval-d100-c60/mls-eval-d100-c15.2.err
+mls-eval-d100-c60/mls-eval-d100-c15.3.err
+mls-eval-d100-c60/mls-eval-d100-c15.4.err
+mls-eval-d100-c60/mls-eval-d100-c15.5.err
+mls-eval-d100-c60/mls-eval-d100-c15.6.err
+mls-eval-d100-c60/mls-eval-d100-c15.7.err
+mls-eval-d100-c60/mls-eval-d100-c15.8.err
+mls-eval-d100-c60/mls-eval-d100-c15.9.err
+mls-eval-d100-c60/mls-eval-d100-c15.10.err
+mls-eval-d100-c60/mls-eval-d100-c15.11.err
+mls-eval-d100-c60/mls-eval-d100-c15.12.err
+mls-eval-d100-c60/mls-eval-d100-c15.13.err
+mls-eval-d100-c60/mls-eval-d100-c15.14.err
+mls-eval-d100-c60/mls-eval-d100-c15.15.err
+mls-eval-d100-c60/mls-eval-d100-c15.16.err
+mls-eval-d100-c60/mls-eval-d100-c15.17.err
+mls-eval-d100-c60/mls-eval-d100-c15.18.err
+mls-eval-d100-c60/mls-eval-d100-c15.19.err
+   Average igd, Average ND
+58.0154 3.0000
+8.5478 10.4000
+7.4852 14.8500
+5.3330 17.6500
+3.9333 19.9500
+3.7429 22.5000
+3.5576 24.4000
+3.6089 25.5000
+3.5032 25.7000
+3.4086 26.5000
+3.3380 27.5500
+3.3199 27.7500
+3.3037 28.1500
+3.2025 28.5000
+3.1601 28.5000
+3.2263 27.9500
+3.2252 28.0000
+3.2489 28.2500
+3.2514 28.4500
+3.2379 28.7500
+3.1821 28.6500
+3.1770 28.7000
+3.1769 28.7000
+3.1578 28.7000
+3.1578 28.0500
+3.1578 27.7000
+3.1578 27.7000
+3.1578 27.7000
+3.1578 27.7000
+3.1578 27.7000

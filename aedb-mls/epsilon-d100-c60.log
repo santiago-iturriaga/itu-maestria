@@ -1,0 +1,57 @@
+Best PF file    : best-pf-d100-c60.pf
+MOEA PF file    : best_pf/All3Algs100dev-c60.pf
+Computed PF file: mls-eval-d100-c60/mls-eval-d100-c15
+Num. executions : 20
+Min. coverage   : 15.0
+
+mls-eval-d100-c60/mls-eval-d100-c15.0.err
+mls-eval-d100-c60/mls-eval-d100-c15.1.err
+mls-eval-d100-c60/mls-eval-d100-c15.2.err
+mls-eval-d100-c60/mls-eval-d100-c15.3.err
+mls-eval-d100-c60/mls-eval-d100-c15.4.err
+mls-eval-d100-c60/mls-eval-d100-c15.5.err
+mls-eval-d100-c60/mls-eval-d100-c15.6.err
+mls-eval-d100-c60/mls-eval-d100-c15.7.err
+mls-eval-d100-c60/mls-eval-d100-c15.8.err
+mls-eval-d100-c60/mls-eval-d100-c15.9.err
+mls-eval-d100-c60/mls-eval-d100-c15.10.err
+mls-eval-d100-c60/mls-eval-d100-c15.11.err
+mls-eval-d100-c60/mls-eval-d100-c15.12.err
+mls-eval-d100-c60/mls-eval-d100-c15.13.err
+mls-eval-d100-c60/mls-eval-d100-c15.14.err
+mls-eval-d100-c60/mls-eval-d100-c15.15.err
+mls-eval-d100-c60/mls-eval-d100-c15.16.err
+mls-eval-d100-c60/mls-eval-d100-c15.17.err
+mls-eval-d100-c60/mls-eval-d100-c15.18.err
+mls-eval-d100-c60/mls-eval-d100-c15.19.err
+   Average epsilon, Average ND
+144.1011 3.0
+83.1065 10.4
+83.1065 14.8
+57.0260 17.6
+26.7207 19.9
+26.1936 22.5
+17.9723 24.4
+15.5193 25.5
+11.7030 25.7
+11.6148 26.5
+11.4381 27.6
+10.5625 27.8
+10.5625 28.1
+9.0499 28.5
+8.5726 28.5
+8.5193 27.9
+8.5193 28.0
+8.5193 28.2
+8.0792 28.4
+8.0792 28.8
+7.7099 28.6
+7.7099 28.7
+7.7099 28.7
+7.7099 28.7
+7.7099 28.1
+7.7099 27.7
+7.7099 27.7
+7.7099 27.7
+7.7099 27.7
+7.7099 27.7
