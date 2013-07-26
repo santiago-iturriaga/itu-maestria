@@ -42,11 +42,11 @@ def main():
     with open(comp_pf_file) as f:
         for line in f:
             if len(line.strip()) > 0:
-                data = line.strip().split(" ")
+                data = line.strip().split("\t")
                 assert(len(data)==3)
 
-                if float(data[1]) >= min_cover:
-                    print("{0} {1} {2}".format(float(data[0]),1/float(data[1]),float(data[2])))
+                if -1*float(data[1]) >= min_cover:
+                    print("{0} {1} {2}".format(float(data[0]),1/(-1*float(data[1])),float(data[2])))
     
     return 0
 

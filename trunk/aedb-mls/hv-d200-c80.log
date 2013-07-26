@@ -1,0 +1,47 @@
+Best PF file    : best-pf-d200-c80.pf
+MOEA PF file    : best_pf/All3Algs200dev-c80.pf
+Computed PF file: mls-eval-d200-c80/mls-eval-d200-c80
+Num. executions : 10
+Min. coverage   : 40.0
+
+mls-eval-d200-c80/mls-eval-d200-c80.0.err
+mls-eval-d200-c80/mls-eval-d200-c80.1.err
+mls-eval-d200-c80/mls-eval-d200-c80.2.err
+mls-eval-d200-c80/mls-eval-d200-c80.3.err
+mls-eval-d200-c80/mls-eval-d200-c80.4.err
+mls-eval-d200-c80/mls-eval-d200-c80.5.err
+mls-eval-d200-c80/mls-eval-d200-c80.6.err
+mls-eval-d200-c80/mls-eval-d200-c80.7.err
+mls-eval-d200-c80/mls-eval-d200-c80.8.err
+mls-eval-d200-c80/mls-eval-d200-c80.9.err
+   Average hv, Average ND
+0.4361 2.0
+0.7778 10.6
+0.8470 11.6
+0.8874 13.4
+0.9142 14.1
+0.9720 14.6
+1.0285 17.5
+1.0647 18.1
+1.0813 19.0
+1.1080 19.0
+1.1363 19.8
+1.1558 19.8
+1.1592 20.3
+1.1701 20.5
+1.1835 20.1
+1.1964 20.7
+1.2006 20.0
+1.2072 20.1
+1.2127 19.5
+1.2183 19.4
+1.2245 19.5
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
+1.2245 19.3
