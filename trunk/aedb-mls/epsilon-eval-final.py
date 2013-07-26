@@ -150,13 +150,16 @@ def main():
         epsilons.append(epsilon_value)
         epsilon_sum = epsilon_sum + epsilon_value
 
-    epsilon_average = epsilon_sum / len(epsilons)
-    
-    epsilon_sqsum = 0.0
-    for i in epsilons: epsilon_sqsum = epsilon_sqsum + pow(i-epsilon_average,2)
-    epsilon_stdev = math.sqrt(epsilon_sqsum/(len(epsilons)-1))
+    for i in epsilons:
+        print(i)
 
-    print("{0:.4f} {1:.4f}".format(epsilon_average,epsilon_stdev))
+    #epsilon_average = epsilon_sum / len(epsilons)
+    
+    #epsilon_sqsum = 0.0
+    #for i in epsilons: epsilon_sqsum = epsilon_sqsum + pow(i-epsilon_average,2)
+    #epsilon_stdev = math.sqrt(epsilon_sqsum/(len(epsilons)-1))
+
+    #print("{0:.4f} {1:.4f}".format(epsilon_average,epsilon_stdev))
 
     return 0
 

@@ -25,6 +25,7 @@
 import sys
 import math
 import re
+from scipy.stats import mstats
 
 def euclidean_distance(point_a, point_b):
     distance = 0.0
@@ -54,12 +55,7 @@ def closest_point(p1, list_p):
 
     return min_sol_dist
 
-def igd(pf, approx_pf):
-    #print("PF:")
-    #print(pf)
-    #print("Approx PF:")
-    #print(approx_pf)
-    
+def igd(pf, approx_pf):   
     partial_sum = 0
     
     for pf_s in pf:
@@ -68,19 +64,36 @@ def igd(pf, approx_pf):
         
     return math.sqrt(partial_sum) / len(pf)
 
+def avg_stdev(values):
+    sum_v = 0.0
+    
+    for v in values:
+        sum_v = sum_v + v
+        
+    avg = sum_v / len(values)
+    
+    diff_sq = 0.0
+    
+    for v in values:
+        diff_sq = diff_sq + pow(v - avg, 2)
+        
+    stdev = math.sqrt(diff_sq/(len(values)-1))
+    
+    return (avg, stdev)
+
 def main():
     if len(sys.argv) != 5:
-        print("[ERROR] Usage: {0} <best PF> <computed PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
+        print("[ERROR] Usage: {0} <best PF> <moea PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
         exit(-1)
 
     best_pf_file = sys.argv[1]
-    comp_pf_file = sys.argv[2]
-    num_exec = int(sys.argv[3])
+    moea_pf_file = sys.argv[2]
+    moea_num_exec = int(sys.argv[3])
     min_cover = float(sys.argv[4])
 
     #print("Best PF file    : {0}".format(best_pf_file))
-    #print("Computed PF file: {0}".format(comp_pf_file))
-    #print("Num. executions : {0}".format(num_exec))
+    #print("MOEA PF file    : {0} ({1})".format(moea_pf_file, moea_num_exec))
+    #print("Computed PF file: {0} ({1})".format(comp_pf_file, comp_num_exec))
     #print("Min. coverage   : {0}".format(min_cover))
     #print()
 
@@ -94,40 +107,42 @@ def main():
                 if float(data[1]) >= min_cover:
                     best_pf.append((float(data[0]),float(data[1]),float(data[2])))
 
-    igd_sum = 0.0
-    igd_list = []
+    moea_pf = []
+    moea_pf_value = []
+    for e in range(moea_num_exec):
+        moea_pf_exec = []
 
-    for e in range(num_exec):
-        comp_pf_final = []
-
-        with open(comp_pf_file + "." + str(e) + ".out") as f:
+        with open(moea_pf_file + "." + str(e)) as f:
             for line in f:
                 if len(line.strip()) > 0:
-                    data = line.strip().split(",")
+                    data = line.strip().split("\t")
 
-                    if len(data) == 10:
-                        if (data[0] != "id"):
-                            energy = float(data[-4])
-                            coverage = float(data[-3])
-                            nforwardings = float(data[-2])
+                    if len(data) == 3:
+                        energy = float(data[0])
+                        coverage = -1*float(data[1])
+                        nforwardings = float(data[2])
 
-                            if coverage > min_cover:
-                                comp_pf_final.append((energy,coverage,nforwardings))
+                        if coverage > min_cover and energy > 0:
+                            moea_pf_exec.append((energy,coverage,nforwardings))
+                                
+        moea_pf.append(moea_pf_exec)
+        moea_pf_value.append(igd(best_pf, moea_pf_exec))
 
-        igd_value = igd(best_pf, comp_pf_final)
-        igd_list.append(igd_value)
-        igd_sum = igd_sum + igd_value
+    #print ("===================================")
+    #for i in best_pf:
+    #    print("{0},{1},{2}".format(i[0],i[1],i[2]))
+    #print ("===================================")
+    #for i in comp_pf[0]:
+    #    print("{0},{1},{2}".format(i[0],i[1],i[2]))
+    #print (comp_pf_value[0])
+    #print ("===================================")
+    #for i in moea_pf[0]:
+    #    print("{0},{1},{2}".format(i[0],i[1],i[2]))
+    #print (moea_pf_value[0])
+    #print ("===================================")
 
-    for i in igd_list:
+    for i in moea_pf_value:
         print(i)
-
-    #igd_average = igd_sum / len(igd_list)
-    
-    #igd_sqsum = 0.0
-    #for i in igd_list: igd_sqsum = igd_sqsum + pow(i-igd_average,2)
-    #igd_stdev = math.sqrt(igd_sqsum/(len(igd_list)-1))
-
-    #print("{0:.4f} {1:.4f}".format(igd_average,igd_stdev))
 
     return 0
 

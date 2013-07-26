@@ -235,13 +235,16 @@ def main():
         hvolumes.append(hv)
         hvolumes_sum = hvolumes_sum + hv
 
-    hvolumes_average = hvolumes_sum / len(hvolumes)
-    
-    hvolumes_sqsum = 0.0
-    for i in hvolumes: hvolumes_sqsum = hvolumes_sqsum + pow(i-hvolumes_average,2)
-    hvolumes_stdev = math.sqrt(hvolumes_sqsum/(len(hvolumes)-1))
+    for i in hvolumes:
+        print(i)
 
-    print("{0:.4f} {1:.4f}".format(hvolumes_average,hvolumes_stdev))
+    #hvolumes_average = hvolumes_sum / len(hvolumes)
+    
+    #hvolumes_sqsum = 0.0
+    #for i in hvolumes: hvolumes_sqsum = hvolumes_sqsum + pow(i-hvolumes_average,2)
+    #hvolumes_stdev = math.sqrt(hvolumes_sqsum/(len(hvolumes)-1))
+
+    #print("{0:.4f} {1:.4f}".format(hvolumes_average,hvolumes_stdev))
 
     return 0
 
