@@ -191,8 +191,8 @@ def main():
                 if float(data[1]) >= min_cover:
                     best_pf.append((float(data[0]),float(data[1]),float(data[2])))
                     
-    maxValues = getMaxValues(true_pf)
-    minValues = getMinValues(true_pf)
+    maxValues = getMaxValues(best_pf)
+    minValues = getMinValues(best_pf)
 
     moea_pf = []
     moea_pf_value = []
@@ -243,4 +243,7 @@ def main():
         print(i)
 
     return 0
+
+if __name__ == '__main__':
+    main()
 
