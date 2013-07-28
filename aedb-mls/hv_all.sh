@@ -40,7 +40,7 @@ echo "hv-d300-c40" >> hv-final.log
 echo "hv-d300-c60" >> hv-final.log
 ./hypervolume-eval-final.py best-pf-d300-c60.pf mls-eval-d300-c60/mls-eval-d300-c60-1 5 45 >> hv-final.log
 ./hypervolume-moea.py best-pf-d300-c60.pf best_pf/All3Algs300dev-c60.pf 45 >> hv-final.log
-echo "hv-d100-c80" >> hv-final.log
+echo "hv-d300-c80" >> hv-final.log
 ./hypervolume-eval-final.py best-pf-d300-c80.pf mls-eval-d300-c80/mls-eval-d300-c80-1 5 60 >> hv-final.log
 ./hypervolume-moea.py best-pf-d300-c80.pf best_pf/All3Algs300dev-c80.pf 60 >> hv-final.log
 END
