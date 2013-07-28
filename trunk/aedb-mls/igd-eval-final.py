@@ -92,7 +92,7 @@ def main():
                 assert(len(data)==3)
 
                 if float(data[1]) >= min_cover:
-                    best_pf.append((float(data[0]),float(data[1]),float(data[2])))
+                    best_pf.append((float(data[0]),1/float(data[1]),float(data[2])))
 
     igd_sum = 0.0
     igd_list = []
@@ -112,7 +112,7 @@ def main():
                             nforwardings = float(data[-2])
 
                             if coverage > min_cover:
-                                comp_pf_final.append((energy,coverage,nforwardings))
+                                comp_pf_final.append((energy,1/coverage,nforwardings))
 
         igd_value = igd(best_pf, comp_pf_final)
         igd_list.append(igd_value)

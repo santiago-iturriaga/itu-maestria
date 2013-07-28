@@ -189,7 +189,7 @@ def main():
                 assert(len(data)==3)
 
                 if float(data[1]) >= min_cover:
-                    best_pf.append((float(data[0]),float(data[1]),float(data[2])))
+                    best_pf.append((float(data[0]),1/float(data[1]),float(data[2])))
                     
     maxValues = getMaxValues(best_pf)
     minValues = getMinValues(best_pf)
@@ -210,7 +210,7 @@ def main():
                         nforwardings = float(data[2])
 
                         if coverage > min_cover and energy > 0:
-                            moea_pf_exec.append((energy,coverage,nforwardings))
+                            moea_pf_exec.append((energy,1/coverage,nforwardings))
 
         moea_pf.append(moea_pf_exec)
         normalized_pf = getNormalizedFront(moea_pf_exec, maxValues, minValues)
