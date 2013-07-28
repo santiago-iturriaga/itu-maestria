@@ -99,10 +99,6 @@ def epsilon_jmetal_metric(ref_pf, comp_pf):
 
     return eps
 
-if __name__ == '__main__':
-    main()
-
-
 def main():
     if len(sys.argv) != 5:
         print("[ERROR] Usage: {0} <best PF> <moea PF> <num. exec.> <min. coverage>".format(sys.argv[0]))
