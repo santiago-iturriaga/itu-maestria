@@ -25,7 +25,7 @@
 import sys
 import math
 import re
-from scipy.stats import mstats
+#from scipy.stats import mstats
 
 def euclidean_distance(point_a, point_b):
     distance = 0.0
