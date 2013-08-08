@@ -66,7 +66,7 @@ set queue privada acl_logic_or = True
 set queue privada acl_group_sloppy = True
 set queue privada kill_delay = 30
 set queue privada keep_completed = 300
-set queue privada enabled = False
+set queue privada enabled = True
 set queue privada started = True
 #
 # Create and define queue clusterB
@@ -171,10 +171,10 @@ set queue quick_jobs queue_type = Execution
 set queue quick_jobs max_user_queuable = 100
 set queue quick_jobs acl_user_enable = True
 set queue quick_jobs acl_users = siturria@node01.cluster.fing
-set queue quick_jobs resources_max.ncpus = 24
-set queue quick_jobs resources_max.nodect = 24
-set queue quick_jobs resources_max.nodes = 24
-set queue quick_jobs resources_max.walltime = 02:00:00
+set queue quick_jobs resources_max.ncpus = 64
+set queue quick_jobs resources_max.nodect = 64
+set queue quick_jobs resources_max.nodes = 64
+set queue quick_jobs resources_max.walltime = 04:00:00
 set queue quick_jobs resources_min.ncpus = 1
 set queue quick_jobs resources_min.nodect = 1
 set queue quick_jobs resources_default.ncpus = 1

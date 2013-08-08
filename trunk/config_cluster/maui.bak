@@ -78,7 +78,10 @@ CLASSWEIGHT     1
 #NODECFG[node04.cluster.fing] PARTITION=general
 #NODECFG[node05.cluster.fing] PARTITION=general
 #NODECFG[node06.cluster.fing] PARTITION=general
-#NODECFG[node07.cluster.fing] PARTITION=general
+
+# submit node de usuarios externos
+NODECFG[node07.cluster.fing] PARTITION=sys
+
 #NODECFG[node08.cluster.fing] PARTITION=general
 #NODECFG[node09.cluster.fing] PARTITION=general
 #NODECFG[node20.cluster.fing] PARTITION=sys
