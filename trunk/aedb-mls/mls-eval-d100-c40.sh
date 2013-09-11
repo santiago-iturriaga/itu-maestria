@@ -13,7 +13,7 @@ mkdir $RESULT_DIR
 #make clean
 #make release
 
-SEED=1 #$RANDOM
+SEED=$RANDOM
 
 ITERATIONS=250
 SIMULATIONS=10

@@ -41,7 +41,7 @@ EXECUTIONS=20
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NS3_DIR
 
-for (( e=15; e<$EXECUTIONS; e++ ))
+for (( e=0; e<$EXECUTIONS; e++ ))
 do
     time($MPI_DIR/bin/mpiexec -launcher ssh -launcher-exec oarsh -f $OAR_NODEFILE \
         -np $POPULATIONS -ppn 1 bin/mls $SEED $ITERATIONS $THREADS $SIMULATIONS $DENSITY $RESET \
