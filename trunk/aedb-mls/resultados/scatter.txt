@@ -81,3 +81,30 @@ hold on
 scatter3(mls300_pf_aux(:,1),mls300_pf_aux(:,2),mls300_pf_aux(:,3))
 hleg1=legend('REF','MLS');
 set(hleg1,'Location','NorthEast');
+
+--------------------------------------------------------------------------
+
+scatter3(best_d100_40(:,1),best_d100_40(:,2),best_d100_40(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls_d100_40(:,1),mls_d100_40(:,2),mls_d100_40(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
+scatter3(best_d300_80(:,1),best_d300_80(:,2),best_d300_80(:,3))
+title('100dev')
+xlabel('Energy');
+ylabel('Coverage');
+zlabel('Forwardings');
+hold on
+scatter3(mls_d300_80(:,1),mls_d300_80(:,2),mls_d300_80(:,3))
+hleg1=legend('REF','MLS');
+set(hleg1,'Location','NorthEast');
+
+figure
+
