@@ -1,5 +1,5 @@
-++ /home/clusterusers/siturriaga/bin/mpich2-1.4.1p1/bin/mpiexec -launcher ssh -launcher-exec oarsh -f /var/lib/oar/2696393 -np 9 -ppn 1 bin/mls 18625 250 12 10 50 50 30 0.2 1 2 50 440
+++ /home/clusterusers/siturriaga/bin/mpich2-1.4.1p1/bin/mpiexec -launcher ssh -launcher-exec oarsh -f /var/lib/oar/2721672 -np 9 -ppn 1 bin/mls 32767 250 12 10 50 50 30 0.2 1 2 50 440
 
-real	176m7.048s
-user	51m5.316s
-sys	124m44.196s
+real	162m18.441s
+user	52m41.486s
+sys	109m21.206s
