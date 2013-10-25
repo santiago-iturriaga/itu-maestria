@@ -164,6 +164,10 @@ SRCFG[eolo] PERIOD=INFINITY
 SRCFG[eolo] HOSTLIST=node08.cluster.fing,node09.cluster.fing
 SRCFG[eolo] USERLIST=eolico
 
+SRCFG[draper] PERIOD=INFINITY
+SRCFG[draper] HOSTLIST=node50.cluster.fing
+SRCFG[draper] USERLIST=mdraper
+
 #SRCFG[eolo] PERIOD=INFINITY
 #SRCFG[eolo] HOSTLIST=node05.fing.edu.uy,node06.fing.edu.uy,node07.fing.edu.uy,node08.cluster.fing,node09.cluster.fing
 #SRCFG[eolo] USERLIST=eolico
