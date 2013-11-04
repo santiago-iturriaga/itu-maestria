@@ -1,22 +1,11 @@
 Best PF file    : best-pf-d200-c80.pf
-MOEA PF file    : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/CellDE/200dev/FUN (30)
-Computed PF file: mls-eval-d200-c80/mls-eval-d200-c80 (20)
-Min. coverage   : 40.0
-
-alg|avg|stdev
-comp|0.37424842786175444|0.10592408103584673
-moea|0.7959512475580517|0.22822884675869404
-h-static 35.29411764705881|p-value 2.8348699304881772e-09
-1x10^-3
-count moea=19.266666666666666 comp=19.75
-Best PF file    : best-pf-d200-c80.pf
 MOEA PF file    : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/NSGAII/200dev/FUN (30)
 Computed PF file: mls-eval-d200-c80/mls-eval-d200-c80 (20)
 Min. coverage   : 40.0
 
 alg|avg|stdev
-comp|0.37424842786175444|0.10592408103584673
-moea|0.6089736740467623|0.07230432493004443
-h-static 31.85294117647058|p-value 1.662976682296383e-08
+comp|0.43327942768143946|0.0958929204480016
+moea|0.5968189874238613|0.0731257489606697
+h-static 23.156470588235265|p-value 1.493398347523813e-06
 1x10^-3
-count moea=28.3 comp=19.75
+count moea=28.3 comp=20.15
