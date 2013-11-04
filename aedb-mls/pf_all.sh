@@ -6,9 +6,9 @@
 ./fp-eval.py mls-eval-d200-c60/mls-eval-d200-c60 20 30 > pf-d200-c60.log
 ./fp-eval.py mls-eval-d200-c80/mls-eval-d200-c80 20 40 > pf-d200-c80.log
 
-./fp-eval.py mls-eval-d300-c40/mls-eval-d300-c40 10 30 > pf-d300-c40.log
-./fp-eval.py mls-eval-d300-c60/mls-eval-d300-c60 10 45 > pf-d300-c60.log
-./fp-eval.py mls-eval-d300-c80/mls-eval-d300-c80 10 60 > pf-d300-c80.log
+./fp-eval.py mls-eval-d300-c40/mls-eval-d300-c40 20 30 > pf-d300-c40.log
+./fp-eval.py mls-eval-d300-c60/mls-eval-d300-c60 20 45 > pf-d300-c60.log
+./fp-eval.py mls-eval-d300-c80/mls-eval-d300-c80 20 60 > pf-d300-c80.log
 
 ./fp-best.py best_pf/All3Algs100dev-c40.pf pf-d100-c40.log > best-pf-d100-c40.pf
 ./fp-best.py best_pf/All3Algs100dev-c60.pf pf-d100-c60.log > best-pf-d100-c60.pf

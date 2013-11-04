@@ -26,8 +26,25 @@ import sys
 import math
 import re
 import subprocess
-#from scipy.stats import mstats
-#from scipy import stats
+from scipy.stats import mstats
+from scipy import stats
+
+def avg_stdev(values):
+    sum_v = 0.0
+    
+    for v in values:
+        sum_v = sum_v + v
+        
+    avg = sum_v / len(values)
+    
+    diff_sq = 0.0
+    
+    for v in values:
+        diff_sq = diff_sq + pow(v - avg, 2)
+        
+    stdev = math.sqrt(diff_sq/(len(values)-1))
+    
+    return (avg, stdev)
 
 def main():
     if len(sys.argv) != 7:
@@ -57,9 +74,11 @@ def main():
                 if float(data[1]) >= min_cover:
                     best_pf.append((float(data[0]),float(data[1]),float(data[2])))
 
-    with open("/home/siturria/aux_best.pf","w") as f:
+    with open("/home/santiago/aux_best.pf","w") as f:
          for l in best_pf:
-             f.write("{0} {1} {2}\n".format(l[0],1/l[1],l[2]))
+             f.write("{0} {1} {2}\n".format(l[0],-1*l[1],l[2]))
+
+    print("==== moea...")
 
     moea_pf = []
     moea_pf_value = []
@@ -79,21 +98,29 @@ def main():
                         if coverage > min_cover and energy > 0:
                             moea_pf_exec.append((energy,coverage,nforwardings))
                                 
-        with open("/home/siturria/aux_approx.pf","w") as f:
+        with open("/home/santiago/aux_approx.pf","w") as f:
             for l in moea_pf_exec:
-                f.write("{0} {1} {2}\n".format(l[0],1/l[1],l[2]))
+                f.write("{0} {1} {2}\n".format(l[0],-1*l[1],l[2]))
 
         moea_pf.append(moea_pf_exec)
 
-        p = subprocess.Popen("java -classpath /home/siturria/itu-maestria/trunk/metricas_mo/java/bin jmetal.qualityIndicator.Epsilon /home/siturria/aux_approx.pf /home/siturria/aux_best.pf 3", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        #p = subprocess.Popen("java -classpath /home/siturria/itu-maestria/trunk/metricas_mo/java/bin jmetal.qualityIndicator.Epsilon /home/siturria/aux_approx.pf /home/siturria/aux_best.pf 3", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen("java -classpath /home/santiago/google-hosting/itu-maestria/svn/trunk/metricas_mo/java/bin jmetal.qualityIndicator.Epsilon /home/santiago/aux_approx.pf /home/santiago/aux_best.pf 3", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         line = p.stdout.readlines()[0]
         #.strip("\n").strip()
-        print(str(line)) 
+        #print(str(line)) 
         epsilon_value = float(line)
         retval = p.wait()
 
+        print(epsilon_value)
+        if epsilon_value > 0: exit(-1)
+
+        subprocess.call(["rm","/home/santiago/aux_approx.pf"])
+
         #moea_pf_value.append(epsilon_metric(best_pf, moea_pf_exec))
         moea_pf_value.append(epsilon_value)
+
+    print("==== computed...")
 
     comp_pf = []
     comp_pf_value = []
@@ -114,8 +141,27 @@ def main():
                             if coverage > min_cover:
                                 comp_pf_exec.append((energy,coverage,nforwardings))
                                 
+        with open("/home/santiago/aux_comp.pf","w") as f:
+            for l in comp_pf_exec:
+                f.write("{0} {1} {2}\n".format(l[0],-1*l[1],l[2]))
+                                
         comp_pf.append(comp_pf_exec)
-        comp_pf_value.append(epsilon_metric(best_pf, comp_pf_exec))
+        
+        #p = subprocess.Popen("java -classpath /home/siturria/itu-maestria/trunk/metricas_mo/java/bin jmetal.qualityIndicator.Epsilon /home/siturria/aux_approx.pf /home/siturria/aux_best.pf 3", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen("cat ", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        line = p.stdout.readlines()[0]
+        #.strip("\n").strip()
+        #print(str(line)) 
+        epsilon_value = float(line)
+        retval = p.wait()
+
+        print(epsilon_value)
+        if epsilon_value < 0: exit(-1)
+
+        subprocess.call(["rm","/home/santiago/aux_comp.pf"])
+        
+        #moea_pf_value.append(epsilon_metric(best_pf, moea_pf_exec))
+        comp_pf_value.append(epsilon_value)
 
     #print ("===================================")
     #for i in best_pf:

@@ -73,8 +73,8 @@ def main():
         num_pf.append(curr_num_pf)
 
     global_pf = []
-    domination=array.array('i',(0,)*1000)
-    
+    domination=array.array('i',(0,)*2000)
+       
     for i in range(len(comp_pf_final)):
         j = i+1
         

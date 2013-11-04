@@ -1,33 +1,22 @@
 Best PF file    : best-pf-d300-c40.pf
-MOEA PF file    : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/CellDE/300dev/FUN (30)
-Computed PF file: mls-eval-d300-c40/mls-eval-d300-c40-1 (10)
-Min. coverage   : 30.0
-
-alg|avg|stdev
-comp|0.7234674603262944|0.004026641405916809
-moea|0.6790052586685127|0.0069416092059988626
-h-static 21.951219512195138|p-value 2.7966913074614425e-06
-1x10^-3
-count moea=33.13333333333333 comp=57.2
-Best PF file    : best-pf-d300-c40.pf
 MOEA PF file    : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/NSGAII/300dev/FUN (30)
-Computed PF file: mls-eval-d300-c40/mls-eval-d300-c40-1 (10)
+Computed PF file: mls-eval-d300-c40/mls-eval-d300-c40 (20)
 Min. coverage   : 30.0
 
 alg|avg|stdev
-comp|0.7234674603262944|0.004026641405916809
-moea|0.7052282155194383|0.005196119886060232
-h-static 21.951219512195138|p-value 2.7966913074614425e-06
+comp|0.7171879307351838|0.002799499522122452
+moea|0.6995119734375089|0.00529014874409174
+h-static 35.29411764705881|p-value 2.8348699304881772e-09
 1x10^-3
-count moea=51.666666666666664 comp=57.2
+count moea=51.666666666666664 comp=55.95
 Best PF file    : best-pf-d300-c40.pf
 MOEA1 PF file   : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/CellDE/300dev/FUN (30)
 MOEA2 PF file   : /home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data/NSGAII/300dev/FUN (30)
 Min. coverage   : 30.0
 
 alg|avg|stdev
-moea1|0.6790052586685127|0.0069416092059988626
-moea2|0.7052282155194383|0.005196119886060232
+moea1|0.6728244561349962|0.007067897779647486
+moea2|0.6995119734375089|0.00529014874409174
 h-static 44.26229508196721|p-value 2.8719490663203305e-11
 u 0.0|prob 1.5099296795810785e-11
 1x10^-3

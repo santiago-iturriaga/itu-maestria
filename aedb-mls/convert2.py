@@ -51,7 +51,7 @@ def main():
                         nforwardings = float(data[-2])
 
                         if coverage > min_cover:
-                            print("{0} {1} {2}".format(energy,1/coverage,nforwardings))
+                            print("{0} {1} {2}".format(energy,coverage,nforwardings))
     
     return 0
 
