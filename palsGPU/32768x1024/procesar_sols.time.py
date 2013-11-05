@@ -5,8 +5,8 @@ import math
 
 cantidad_instancias = 20
 #algoritmos = ['pminmin', 'minmin', 'pals+mct', 'pals+pminmin+12']
-#algoritmos = ['pals+mct', 'pals+pminmin+12']
-algoritmos = ['pals+gminmin']
+algoritmos = ['pals+mct', 'pals+pminmin+12']
+#algoritmos = ['pals+gminmin']
 
 if __name__ == '__main__':
     resultados = {}
@@ -22,7 +22,7 @@ if __name__ == '__main__':
             dmake_list = []
 
             for t in range(30):
-                base_path = 'solutions/' + str(instancia) + '.' + a + '.' + str(t)
+                base_path = 'solutions.by_time/' + str(instancia) + '.' + a + '.' + str(t)
                 print base_path
 
                 if os.path.isfile(base_path + '.makespan'):
@@ -77,22 +77,24 @@ if __name__ == '__main__':
 
     print resultados
 
-    print "====== Tabla de makespan ======"
-    print "Instancia,makecpan PALS gMinMin"
-    for instancia in range(21)[1:]:
-        pals_gminmin_makespan_avg = resultados[instancia]['pals+gminmin'][0]
-        pals_gminmin_makespan_stdev = resultados[instancia]['pals+gminmin'][1]
+    for a in algoritmos:
+        print "====== Tabla de makespan ======"
+        print "Instancia,makespan PALS %s" % a
+        for instancia in range(21)[1:]:
+            pals_gminmin_makespan_avg = resultados[instancia][a][0]
+            pals_gminmin_makespan_stdev = resultados[instancia][a][1]
 
-        print "%d,%.1f,%.1f" % (instancia, pals_gminmin_makespan_avg, pals_gminmin_makespan_stdev)
+            print "%d,%.1f,%.1f" % (instancia, pals_gminmin_makespan_avg, pals_gminmin_makespan_stdev)
 
-    print "====== Tabla de tiempos (segundos) ======"
-    print "Instancia,tiempo PALS gMinMin"
-    for instancia in range(21)[1:]:
-        #pals_mct_time = resultados[instancia]['pals+mct']
-        #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
-        pals_gminmin_time = resultados[instancia]['pals+gminmin'][2]
-        pals_gminmin_time_stdev = resultados[instancia]['pals+gminmin'][3]
+    for a in algoritmos:
+        print "====== Tabla de tiempos (segundos) ======"
+        print "Instancia,tiempo PALS %s" % a
+        for instancia in range(21)[1:]:
+            #pals_mct_time = resultados[instancia]['pals+mct']
+            #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
+            pals_gminmin_time = resultados[instancia][a][2]
+            pals_gminmin_time_stdev = resultados[instancia][a][3]
 
-        #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
-        print "%d,%.2f,%.2f" % (instancia, pals_gminmin_time,pals_gminmin_time_stdev)
+            #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
+            print "%d,%.2f,%.2f" % (instancia, pals_gminmin_time,pals_gminmin_time_stdev)
 
