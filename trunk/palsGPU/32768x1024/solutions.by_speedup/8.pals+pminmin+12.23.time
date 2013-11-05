@@ -1,0 +1,43 @@
+++ /home/clusterusers/siturriaga/itu-maestria/trunk/palsGPU/bin/pals /home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_32768x1024_hihi_8.dat 32768 1024 2 3067 0 900 1991 4 12 1073741824
+LOG|1356041214|165148821
+[PARAMS] instance path: /home/clusterusers/siturriaga/instances/Bernabe/palsGPU/etc_c_32768x1024_hihi_8.dat
+[PARAMS] tasks count: 32768
+[PARAMS] machines count: 1024
+[PARAMS] algorithm: 2 (PALS_GPU_randTask)
+[PARAMS] seed: 3067
+[PARAMS] gpu device: 0
+[PARAMS] timeout: 900 s
+[PARAMS] target makespan: 1991.000000
+[PARAMS] init algorithm: 4 (Min-Min)
+[PARAMS] init algorithm threads: 12 s
+[PARAMS] max iterations: 1073741824 s
+LOADING(s)|10.944622
+LOG|1356041225|109853728
+INIT|MINMIN
+input.instance_path[79] == .
+input.instance_path[78] == 8
+Instancia         : 0
+Path a la solucion: /home/users/siturriaga/itu-maestria/trunk/palsGPU/32768x1024/hpclatam.res/solutions.by_time/8.pminmin.sol
+INIT(s)|0.008002
+LOG|1356041225|117866829|gpu_set_device
+LOG|1356041228|958602657|gpu_set_device
+LOG|1356041228|958617262
+GPU_LOADING(s)|0.096826
+LOG|1356041229|55947972
+LOG|1356041229|56002304
+MAKESPAN|1356041229|56002304|0|3308.908691
+MAKESPAN|1356041229|56002304|0|3308.908691
+MAKESPAN|1356041229|301544975|500|2972.138184
+MAKESPAN|1356041229|482717402|1000|2772.228760
+MAKESPAN|1356041229|652953175|1500|2534.899414
+MAKESPAN|1356041229|820580409|2000|2319.639160
+MAKESPAN|1356041229|992780159|2500|2146.536865
+CANT_ITERACIONES|2906
+BEST_FOUND|2905
+BEST_FOUND_VALUE|1987.277344
+CURRENT_FOUND_VALUE|1987.277344
+LOG|1356041230|151100023
+
+real	0m16.109s
+user	0m11.989s
+sys	0m3.992s

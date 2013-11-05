@@ -76,7 +76,7 @@ if __name__ == '__main__':
         #pals_mct_time = resultados[instancia]['pals+mct']
         #pals_pminmin_time = resultados[instancia]['pals+pminmin+12']
         shared_time = resultados[instancia]['pals+shared'][2]
-	no_shared_time = resultados[instancia]['pals+no-shared'][2]
+				no_shared_time = resultados[instancia]['pals+no-shared'][2]
 
         #print "%d,%.1f,%.1f" % (instancia, pals_mct_time, pals_pminmin_time)
 	print "%d,%.1f,%.1f" % (instancia, shared_time, no_shared_time)

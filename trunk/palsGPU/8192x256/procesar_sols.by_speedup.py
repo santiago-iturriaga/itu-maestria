@@ -25,12 +25,12 @@ if __name__ == '__main__':
 
                 milestones = []
 
-		host_init_time = 0.0
-		sol_init_type = ''
-		sol_init_time = 0.0
-		device_init_time = 0.0
+                host_init_time = 0.0
+                sol_init_type = ''
+                sol_init_time = 0.0
+                device_init_time = 0.0
 
-		for line in dtime_lines:
+                for line in dtime_lines:
                     if line.split('\t')[0].strip() == 'real':
                         dtime_str = line.split('\t')[1].strip()
                         dtime_mins = int(dtime_str.split('m')[0].strip())
@@ -59,6 +59,7 @@ if __name__ == '__main__':
                 resultados[instancia][a] = (dmake, dtime, host_init_time, \
                     sol_init_type, sol_init_time, device_init_time, milestones)
             else:
+                print base_path + ".makespan not found"
                 exit(-1)
 
     print resultados
