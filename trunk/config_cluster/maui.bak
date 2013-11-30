@@ -172,9 +172,9 @@ SRCFG[eolo] USERLIST=eolico
 #SRCFG[eolo] HOSTLIST=node05.fing.edu.uy,node06.fing.edu.uy,node07.fing.edu.uy,node08.cluster.fing,node09.cluster.fing
 #SRCFG[eolo] USERLIST=eolico
 
-SRCFG[quick] PERIOD=INFINITY
-SRCFG[quick] HOSTLIST=node32.cluster.fing
-SRCFG[quick] CLASSLIST=quick_jobs
+#SRCFG[quick] PERIOD=INFINITY
+#SRCFG[quick] HOSTLIST=node32.cluster.fing
+#SRCFG[quick] CLASSLIST=quick_jobs
 
 #SRCFG[mantenimiento] STARTTIME=05:00
 #SRCFG[mantenimiento] ENDTIME=23:59
