@@ -127,6 +127,7 @@ def main():
 
     moea_pf = []
     moea_pf_value = []
+    
     for e in range(moea_num_exec):
         moea_pf_exec = []
 

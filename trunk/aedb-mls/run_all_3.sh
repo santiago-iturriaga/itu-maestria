@@ -15,21 +15,23 @@ function do_compute {
 MOEA="/home/santiago/Dropbox/Facultad/Publicaciones/EvoComnetAEDB/IJAHUC/NIDISC/comparison/data"
 
 METRIC="epsilon-compare.py"
-OUTPUT="epsilon-kw"
+OUTPUT="epsilon-kw-cellde"
 MOEA_ALG="CellDE"
 
 do_compute
 
+OUTPUT="epsilon-kw-nsgaii"
 MOEA_ALG="NSGAII"
 
 do_compute
 
 METRIC="hv-compare.py"
-OUTPUT="hv-kw.log"
+OUTPUT="hv-kw-cellde.log"
 MOEA_ALG="CellDE"
 
 do_compute
 
+OUTPUT="hv-kw-nsgaii.log"
 MOEA_ALG="NSGAII"
 
 do_compute
@@ -51,11 +53,12 @@ MOEA_ALG2="NSGAII"
 ./${METRIC} best-pf-d300-c80.pf ${MOEA}/${MOEA_ALG1}/300dev/FUN 30 ${MOEA}/${MOEA_ALG2}/300dev/FUN 30 60 >> ${OUTPUT}-d300-c80.log
 
 METRIC="igd-compare.py"
-OUTPUT="igd-kw.log"
+OUTPUT="igd-kw-cellde.log"
 MOEA_ALG="CellDE"
 
 do_compute
 
+OUTPUT="igd-kw-nsgaii.log"
 MOEA_ALG="NSGAII"
 
 do_compute
