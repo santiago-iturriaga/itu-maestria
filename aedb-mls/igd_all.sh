@@ -64,7 +64,7 @@ echo "igd-d200-c40"
 echo "igd-d200-c60"
 ./igd-eval-final.py best-pf-d200-c60.pf mls-eval-d200-c60/mls-eval-d200-c60 20 30 > mls_igd-d200-c60.log
 ./igd-eval-moea.py best-pf-d200-c60.pf ${MOEA}/CellDE/200dev/FUN 30 30 > cellde_igd-d200-c60.log
-./igd-eval-moea.py best-pf-d200-c60.pf ${MOEA}/NSGAII/200dev/FUN 30 10 > nsgaii_igd-d200-c60.log
+./igd-eval-moea.py best-pf-d200-c60.pf ${MOEA}/NSGAII/200dev/FUN 30 30 > nsgaii_igd-d200-c60.log
 echo "igd-d200-c80"
 ./igd-eval-final.py best-pf-d200-c80.pf mls-eval-d200-c80/mls-eval-d200-c80 20 40 > mls_igd-d200-c80.log
 ./igd-eval-moea.py best-pf-d200-c80.pf ${MOEA}/CellDE/200dev/FUN 30 40 > cellde_igd-d200-c80.log
