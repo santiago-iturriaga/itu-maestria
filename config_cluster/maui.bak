@@ -17,7 +17,7 @@ AMCFG[bank]     TYPE=NONE
 # Full parameter docs at http://supercluster.org/mauidocs/a.fparameters.html
 # use the 'schedctl -l' command to display current configuration
 
-RMPOLLINTERVAL      00:00:30
+RMPOLLINTERVAL      00:01:30
 RMTIMEOUT           30
 NODEPOLLFREQUENCY   2
 NODESYNCTIME        00:15:00
