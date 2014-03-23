@@ -192,7 +192,9 @@ set queue quick_jobs started = True
 #
 set server scheduling = True
 set server managers = root@node01.cluster.fing
-set server operators = root@node01.cluster.fing
+set server operators = gusera@node01.cluster.fing
+set server operators += root@node01.cluster.fing
+set server operators += sergion@node01.cluster.fing
 set server operators += siturria@node01.cluster.fing
 set server default_queue = publica
 set server log_events = 64
