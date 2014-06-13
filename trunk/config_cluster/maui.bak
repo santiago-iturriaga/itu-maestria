@@ -4,7 +4,7 @@ SERVERHOST      cluster.fing.edu.uy
 
 # Primary admin must be first in list
 ADMIN1          root
-ADMIN2          siturria gusera sergion
+ADMIN2          siturria gusera sergion nrocchetti
 ADMIN3          ALL
 
 # Resource Manager Definition
