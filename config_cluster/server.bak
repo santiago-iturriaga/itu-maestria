@@ -27,6 +27,26 @@ set queue medium_jobs keep_completed = 300
 set queue medium_jobs enabled = True
 set queue medium_jobs started = True
 #
+# Create and define queue workq
+#
+create queue workq
+set queue workq queue_type = Execution
+set queue workq resources_max.cput = 10000:00:00
+set queue workq resources_max.ncpus = 408
+set queue workq resources_max.nodect = 22
+set queue workq resources_max.walltime = 10000:00:00
+set queue workq resources_min.cput = 00:00:01
+set queue workq resources_min.ncpus = 1
+set queue workq resources_min.nodect = 1
+set queue workq resources_min.walltime = 00:00:01
+set queue workq resources_default.cput = 10000:00:00
+set queue workq resources_default.ncpus = 1
+set queue workq resources_default.nodect = 1
+set queue workq resources_default.walltime = 10000:00:00
+set queue workq resources_available.nodect = 22
+set queue workq enabled = True
+set queue workq started = True
+#
 # Create and define queue publica
 #
 create queue publica
@@ -184,26 +204,6 @@ set queue quick_jobs kill_delay = 30
 set queue quick_jobs keep_completed = 300
 set queue quick_jobs enabled = True
 set queue quick_jobs started = True
-#
-# Create and define queue workq
-#
-create queue workq
-set queue workq queue_type = Execution
-set queue workq resources_max.cput = 10000:00:00
-set queue workq resources_max.ncpus = 408
-set queue workq resources_max.nodect = 22
-set queue workq resources_max.walltime = 10000:00:00
-set queue workq resources_min.cput = 00:00:01
-set queue workq resources_min.ncpus = 1
-set queue workq resources_min.nodect = 1
-set queue workq resources_min.walltime = 00:00:01
-set queue workq resources_default.cput = 10000:00:00
-set queue workq resources_default.ncpus = 1
-set queue workq resources_default.nodect = 1
-set queue workq resources_default.walltime = 10000:00:00
-set queue workq resources_available.nodect = 22
-set queue workq enabled = True
-set queue workq started = True
 #
 # Set server attributes.
 #
