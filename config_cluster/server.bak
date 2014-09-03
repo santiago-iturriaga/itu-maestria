@@ -1,0 +1,236 @@
+#
+# Create queues and set their attributes.
+#
+#
+# Create and define queue medium_jobs
+#
+create queue medium_jobs
+set queue medium_jobs queue_type = Execution
+set queue medium_jobs max_user_queuable = 100
+set queue medium_jobs acl_user_enable = True
+set queue medium_jobs acl_users = siturria@node01.cluster.fing
+set queue medium_jobs resources_max.ncpus = 32
+set queue medium_jobs resources_max.nodect = 32
+set queue medium_jobs resources_max.nodes = 32
+set queue medium_jobs resources_max.walltime = 96:00:00
+set queue medium_jobs resources_min.ncpus = 1
+set queue medium_jobs resources_min.nodect = 1
+set queue medium_jobs resources_default.ncpus = 1
+set queue medium_jobs resources_default.nodes = 1
+set queue medium_jobs acl_group_enable = True
+set queue medium_jobs acl_groups = clusterusers
+set queue medium_jobs acl_groups += clusterexternos
+set queue medium_jobs acl_logic_or = True
+set queue medium_jobs acl_group_sloppy = True
+set queue medium_jobs kill_delay = 30
+set queue medium_jobs keep_completed = 300
+set queue medium_jobs enabled = True
+set queue medium_jobs started = True
+#
+# Create and define queue workq
+#
+create queue workq
+set queue workq queue_type = Execution
+set queue workq resources_max.cput = 10000:00:00
+set queue workq resources_max.ncpus = 408
+set queue workq resources_max.nodect = 22
+set queue workq resources_max.walltime = 10000:00:00
+set queue workq resources_min.cput = 00:00:01
+set queue workq resources_min.ncpus = 1
+set queue workq resources_min.nodect = 1
+set queue workq resources_min.walltime = 00:00:01
+set queue workq resources_default.cput = 10000:00:00
+set queue workq resources_default.ncpus = 1
+set queue workq resources_default.nodect = 1
+set queue workq resources_default.walltime = 10000:00:00
+set queue workq resources_available.nodect = 22
+set queue workq enabled = True
+set queue workq started = True
+#
+# Create and define queue publica
+#
+create queue publica
+set queue publica queue_type = Execution
+set queue publica max_user_queuable = 100
+set queue publica acl_host_enable = False
+set queue publica acl_user_enable = True
+set queue publica acl_users = siturria@node01.cluster.fing
+set queue publica resources_max.ncpus = 16
+set queue publica resources_max.nodect = 16
+set queue publica resources_max.nodes = 16
+set queue publica resources_max.walltime = 240:00:00
+set queue publica resources_min.ncpus = 1
+set queue publica resources_min.nodect = 1
+set queue publica resources_default.ncpus = 1
+set queue publica resources_default.nodes = 1
+set queue publica acl_group_enable = True
+set queue publica acl_groups = clusterusers
+set queue publica acl_groups += clusterexternos
+set queue publica acl_logic_or = True
+set queue publica acl_group_sloppy = True
+set queue publica kill_delay = 30
+set queue publica keep_completed = 300
+set queue publica enabled = True
+set queue publica started = True
+#
+# Create and define queue privada
+#
+create queue privada
+set queue privada queue_type = Execution
+set queue privada max_user_queuable = 100
+set queue privada acl_user_enable = True
+set queue privada acl_users = siturria@node01.cluster.fing
+set queue privada acl_group_enable = True
+set queue privada acl_groups = clusteradmins
+set queue privada acl_logic_or = True
+set queue privada acl_group_sloppy = True
+set queue privada kill_delay = 30
+set queue privada keep_completed = 300
+set queue privada enabled = True
+set queue privada started = True
+#
+# Create and define queue clusterB
+#
+create queue clusterB
+set queue clusterB queue_type = Execution
+set queue clusterB max_user_queuable = 200
+set queue clusterB acl_host_enable = False
+set queue clusterB acl_user_enable = True
+set queue clusterB acl_users = siturria@node01.cluster.fing
+set queue clusterB resources_max.ncpus = 16
+set queue clusterB resources_max.nodect = 16
+set queue clusterB resources_max.nodes = 16
+set queue clusterB resources_max.walltime = 240:00:00
+set queue clusterB resources_min.ncpus = 1
+set queue clusterB resources_min.nodect = 1
+set queue clusterB resources_default.ncpus = 1
+set queue clusterB resources_default.nodes = 1
+set queue clusterB acl_group_enable = True
+set queue clusterB acl_groups = clusterusers
+set queue clusterB acl_groups += clusterexternos
+set queue clusterB acl_logic_or = True
+set queue clusterB acl_group_sloppy = True
+set queue clusterB kill_delay = 30
+set queue clusterB keep_completed = 300
+set queue clusterB enabled = True
+set queue clusterB started = True
+#
+# Create and define queue long_jobs
+#
+create queue long_jobs
+set queue long_jobs queue_type = Execution
+set queue long_jobs max_user_queuable = 100
+set queue long_jobs acl_user_enable = True
+set queue long_jobs acl_users = lcanet@node01.cluster.fing
+set queue long_jobs acl_users += siturria@node01.cluster.fing
+set queue long_jobs resources_max.ncpus = 32
+set queue long_jobs resources_max.nodect = 32
+set queue long_jobs resources_max.nodes = 32
+set queue long_jobs resources_max.walltime = 800:00:00
+set queue long_jobs resources_min.ncpus = 1
+set queue long_jobs resources_min.nodect = 1
+set queue long_jobs resources_default.ncpus = 1
+set queue long_jobs acl_group_enable = True
+set queue long_jobs acl_groups = clusterusers
+set queue long_jobs acl_logic_or = False
+set queue long_jobs acl_group_sloppy = True
+set queue long_jobs kill_delay = 30
+set queue long_jobs keep_completed = 300
+set queue long_jobs enabled = True
+set queue long_jobs started = True
+#
+# Create and define queue small_jobs
+#
+create queue small_jobs
+set queue small_jobs queue_type = Route
+set queue small_jobs route_destinations = publica
+set queue small_jobs enabled = True
+set queue small_jobs started = True
+#
+# Create and define queue big_jobs
+#
+create queue big_jobs
+set queue big_jobs queue_type = Execution
+set queue big_jobs max_user_queuable = 100
+set queue big_jobs acl_user_enable = True
+set queue big_jobs acl_users = siturria@node01.cluster.fing
+set queue big_jobs resources_max.walltime = 48:00:00
+set queue big_jobs resources_min.ncpus = 1
+set queue big_jobs resources_min.nodect = 1
+set queue big_jobs resources_default.ncpus = 1
+set queue big_jobs acl_group_enable = True
+set queue big_jobs acl_groups = clusterusers
+set queue big_jobs acl_groups += clusterexternos
+set queue big_jobs acl_logic_or = True
+set queue big_jobs acl_group_sloppy = True
+set queue big_jobs kill_delay = 30
+set queue big_jobs keep_completed = 300
+set queue big_jobs enabled = True
+set queue big_jobs started = True
+#
+# Create and define queue especial
+#
+create queue especial
+set queue especial queue_type = Execution
+set queue especial max_user_queuable = 100
+set queue especial acl_user_enable = True
+set queue especial acl_users = siturria@node01.cluster.fing
+set queue especial acl_group_enable = True
+set queue especial acl_groups = clusterusers
+set queue especial acl_logic_or = True
+set queue especial acl_group_sloppy = True
+set queue especial kill_delay = 30
+set queue especial keep_completed = 300
+set queue especial enabled = False
+set queue especial started = True
+#
+# Create and define queue quick_jobs
+#
+create queue quick_jobs
+set queue quick_jobs queue_type = Execution
+set queue quick_jobs max_user_queuable = 100
+set queue quick_jobs acl_user_enable = True
+set queue quick_jobs acl_users = siturria@node01.cluster.fing
+set queue quick_jobs resources_max.walltime = 04:00:00
+set queue quick_jobs resources_min.ncpus = 1
+set queue quick_jobs resources_min.nodect = 1
+set queue quick_jobs resources_default.ncpus = 1
+set queue quick_jobs acl_group_enable = True
+set queue quick_jobs acl_groups = clusterusers
+set queue quick_jobs acl_groups += clusterexternos
+set queue quick_jobs acl_logic_or = True
+set queue quick_jobs acl_group_sloppy = True
+set queue quick_jobs kill_delay = 30
+set queue quick_jobs keep_completed = 300
+set queue quick_jobs enabled = True
+set queue quick_jobs started = True
+#
+# Set server attributes.
+#
+set server scheduling = True
+set server managers = root@node01.cluster.fing
+set server operators = gusera@node01.cluster.fing
+set server operators += root@node01.cluster.fing
+set server operators += sergion@node01.cluster.fing
+set server operators += siturria@node01.cluster.fing
+set server default_queue = publica
+set server log_events = 64
+set server mail_from = adm
+set server query_other_jobs = True
+set server resources_available.ncpus = 1024
+set server resources_available.nodect = 1024
+set server resources_available.nodes = 1024
+set server resources_default.nodes = 1
+set server resources_default.walltime = 12:00:00
+set server scheduler_iteration = 60
+set server node_ping_rate = 300
+set server node_check_rate = 600
+set server tcp_timeout = 30
+set server poll_jobs = True
+set server log_level = 0
+set server mom_job_sync = True
+set server mail_domain = fing.edu.uy
+set server pbs_version = 2.1.8
+set server submit_hosts = cluster.fing.edu.uy
+set server submit_hosts += node07.cluster.fing
+set server allow_node_submit = True
