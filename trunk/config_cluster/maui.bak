@@ -156,45 +156,28 @@ USERCFG[eolico]     PRIORITY=1000
 # Standing reservations
 # =============================================================
 
-#SRCFG[eolica] PERIOD=INFINITY
-#SRCFG[eolica] TPN=1
-#SRCFG[eolica] TASKCOUNT=2
-#SRCFG[eolica] RESOURCES=PROCS:8
-#SRCFG[eolica] NODEFEATURES=class0
-#SRCFG[eolica] USERLIST=eolico
+#SRCFG[eolo.0] PERIOD=INFINITY
+#SRCFG[eolo.0] HOSTLIST=node03.cluster.fing
+#SRCFG[eolo.0] USERLIST=eolico
+#SRCFG[eolo.0] PRIORITY=1000
 
-SRCFG[eolo.0] PERIOD=INFINITY
-SRCFG[eolo.0] HOSTLIST=node05.cluster.fing
-SRCFG[eolo.0] USERLIST=eolico
-SRCFG[eolo.0] PRIORITY=1000
+#SRCFG[eolo.1] PERIOD=INFINITY
+#SRCFG[eolo.1] HOSTLIST=node06.cluster.fing
+#SRCFG[eolo.1] USERLIST=eolico
+#SRCFG[eolo.1] PRIORITY=1000
 
-SRCFG[eolo.1] PERIOD=INFINITY
-SRCFG[eolo.1] HOSTLIST=node06.cluster.fing
-SRCFG[eolo.1] USERLIST=eolico
-SRCFG[eolo.1] PRIORITY=1000
+#SRCFG[eolo.2] PERIOD=INFINITY
+#SRCFG[eolo.2] HOSTLIST=node08.cluster.fing
+#SRCFG[eolo.2] USERLIST=eolico
+#SRCFG[eolo.2] PRIORITY=1000
 
-SRCFG[eolo.2] PERIOD=INFINITY
-SRCFG[eolo.2] HOSTLIST=node08.cluster.fing
-SRCFG[eolo.2] USERLIST=eolico
-SRCFG[eolo.2] PRIORITY=1000
-
-SRCFG[eolo.3] PERIOD=INFINITY
-SRCFG[eolo.3] HOSTLIST=node09.cluster.fing
-SRCFG[eolo.3] USERLIST=eolico
-SRCFG[eolo.3] PRIORITY=1000
+#SRCFG[eolo.3] PERIOD=INFINITY
+#SRCFG[eolo.3] HOSTLIST=node09.cluster.fing
+#SRCFG[eolo.3] USERLIST=eolico
+#SRCFG[eolo.3] PRIORITY=1000
 
 #SRCFG[draper] PERIOD=INFINITY
 #SRCFG[draper] HOSTLIST=node50.cluster.fing
 #SRCFG[draper] USERLIST=mdraper
 
-#SRCFG[eolo] PERIOD=INFINITY
-#SRCFG[eolo] HOSTLIST=node05.fing.edu.uy,node06.fing.edu.uy,node07.fing.edu.uy,node08.cluster.fing,node09.cluster.fing
-#SRCFG[eolo] USERLIST=eolico
-
-#SRCFG[quick] PERIOD=INFINITY
-#SRCFG[quick] HOSTLIST=node32.cluster.fing
-#SRCFG[quick] CLASSLIST=quick_jobs
-
-#SRCFG[mantenimiento] STARTTIME=05:00
-#SRCFG[mantenimiento] ENDTIME=23:59
 
